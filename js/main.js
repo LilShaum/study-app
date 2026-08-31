@@ -5,8 +5,13 @@
    ============================================================ */
 
 Theme.init();
+TreeTheme.init();
+
 window.addEventListener('hashchange', () => Router.handle());
-document.addEventListener('DOMContentLoaded', () => Router.handle());
+document.addEventListener('DOMContentLoaded', () => {
+  Router.handle();
+  Onboarding.maybeShow();
+});
 document.addEventListener('keydown', handleGlobalKeydown);
 
 /* --- Service Worker --- */
@@ -21,7 +26,6 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 
 /* --- Two-tab conflict detection ---
    If another tab writes to the same storage keys, warn the current tab.
-   This doesn't prevent the conflict but makes it visible rather than silent.
    The 'storage' event only fires in tabs that did NOT make the change. */
 window.addEventListener('storage', e => {
   if (e.key === Store.COURSES_KEY || e.key === Store.PROGRESS_KEY) {

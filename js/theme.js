@@ -1,11 +1,11 @@
 'use strict';
 
 /* ============================================================
-   THEME — light/dark mode, manual override persisted to localStorage
+   THEME — light/dark mode + tree theme, both persisted to localStorage
    ============================================================ */
 
 const Theme = {
-  KEY: 'study_theme',
+  KEY: 'arborous_theme',
 
   /** 'light' | 'dark' | null (follow system) */
   get() {
@@ -18,11 +18,16 @@ const Theme = {
   },
 
   apply(theme) {
+    const root = document.documentElement;
+    // Preserve existing data-tree attribute
+    const tree = root.getAttribute('data-tree');
     if (theme === 'light' || theme === 'dark') {
-      document.documentElement.setAttribute('data-theme', theme);
+      root.setAttribute('data-theme', theme);
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      root.removeAttribute('data-theme');
     }
+    // Re-apply tree (setAttribute clears nothing, but be safe)
+    if (tree) root.setAttribute('data-tree', tree);
   },
 
   init() {
@@ -47,6 +52,79 @@ const Theme = {
       html: icon(this.isDark() ? 'sun' : 'moon'),
     });
     btn.addEventListener('click', () => this.toggle(btn));
+    return btn;
+  },
+};
+
+/* ============================================================
+   TREE THEME — winter | banyan | fig (or null = default indigo)
+   ============================================================ */
+
+const TreeTheme = {
+  KEY: 'arborous_tree',
+  THEMES: [null, 'winter', 'banyan', 'fig'],
+  LABELS: {
+    null:   { name: 'Default', emoji: '📘', desc: 'Classic indigo' },
+    winter: { name: 'Winter',  emoji: '❄️',  desc: 'Icy slate blue' },
+    banyan: { name: 'Banyan',  emoji: '🌳',  desc: 'Forest green' },
+    fig:    { name: 'Fig',     emoji: '🌿',  desc: 'Deep purple' },
+  },
+
+  get() {
+    return localStorage.getItem(this.KEY) || null;
+  },
+
+  apply(tree) {
+    const root = document.documentElement;
+    if (tree) {
+      root.setAttribute('data-tree', tree);
+    } else {
+      root.removeAttribute('data-tree');
+    }
+  },
+
+  set(tree) {
+    if (tree) {
+      localStorage.setItem(this.KEY, tree);
+    } else {
+      localStorage.removeItem(this.KEY);
+    }
+    this.apply(tree);
+  },
+
+  init() {
+    this.apply(this.get());
+  },
+
+  /** Cycle to next theme and return it */
+  cycle() {
+    const current = this.get();
+    const idx = this.THEMES.indexOf(current);
+    const next = this.THEMES[(idx + 1) % this.THEMES.length];
+    this.set(next);
+    return next;
+  },
+
+  /** Returns a button that cycles through tree themes */
+  pickerButton() {
+    const update = (btn) => {
+      const t = this.get();
+      const info = this.LABELS[t] || this.LABELS[null];
+      btn.textContent = info.emoji;
+      btn.title = `Theme: ${info.name} — click to switch`;
+      btn.setAttribute('aria-label', `Current theme: ${info.name}. Click to switch.`);
+    };
+
+    const btn = el('button', {
+      className: 'btn btn--ghost tree-picker',
+    });
+    update(btn);
+
+    btn.addEventListener('click', () => {
+      this.cycle();
+      update(btn);
+    });
+
     return btn;
   },
 };

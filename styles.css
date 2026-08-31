@@ -545,3 +545,232 @@ body, .app-header, .card, .study-sidebar, .search-input {
   gap: 16px;
 }
 #course-grid.hidden, #no-match-state.hidden { display: none; }
+
+/* ============================================================
+   TREE THEMES — [data-tree] on <html> overrides accent colours.
+   Both variants (light root / dark root) are handled for each tree.
+   ============================================================ */
+
+/* ---- Winter (icy slate blue) ---- */
+:root[data-tree="winter"] {
+  --color-accent:        #3b82f6;
+  --color-accent-hover:  #2563eb;
+  --color-accent-light:  #eff6ff;
+  --color-accent-border: #bfdbfe;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-tree="winter"]:not([data-theme="light"]) {
+    --color-accent:        #93c5fd;
+    --color-accent-hover:  #60a5fa;
+    --color-accent-light:  #1e3a5f;
+    --color-accent-border: #1d4ed8;
+  }
+}
+:root[data-tree="winter"][data-theme="dark"] {
+  --color-accent:        #93c5fd;
+  --color-accent-hover:  #60a5fa;
+  --color-accent-light:  #1e3a5f;
+  --color-accent-border: #1d4ed8;
+}
+
+/* ---- Banyan (forest green) ---- */
+:root[data-tree="banyan"] {
+  --color-accent:        #059669;
+  --color-accent-hover:  #047857;
+  --color-accent-light:  #ecfdf5;
+  --color-accent-border: #6ee7b7;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-tree="banyan"]:not([data-theme="light"]) {
+    --color-accent:        #34d399;
+    --color-accent-hover:  #10b981;
+    --color-accent-light:  #052e1f;
+    --color-accent-border: #065f46;
+  }
+}
+:root[data-tree="banyan"][data-theme="dark"] {
+  --color-accent:        #34d399;
+  --color-accent-hover:  #10b981;
+  --color-accent-light:  #052e1f;
+  --color-accent-border: #065f46;
+}
+
+/* ---- Fig (deep violet) ---- */
+:root[data-tree="fig"] {
+  --color-accent:        #7c3aed;
+  --color-accent-hover:  #6d28d9;
+  --color-accent-light:  #f5f3ff;
+  --color-accent-border: #ddd6fe;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-tree="fig"]:not([data-theme="light"]) {
+    --color-accent:        #a78bfa;
+    --color-accent-hover:  #8b5cf6;
+    --color-accent-light:  #2e1065;
+    --color-accent-border: #4c1d95;
+  }
+}
+:root[data-tree="fig"][data-theme="dark"] {
+  --color-accent:        #a78bfa;
+  --color-accent-hover:  #8b5cf6;
+  --color-accent-light:  #2e1065;
+  --color-accent-border: #4c1d95;
+}
+
+/* Tree-picker button in the app header */
+.tree-picker {
+  font-size: 18px;
+  padding: 6px 10px;
+  line-height: 1;
+}
+
+/* ============================================================
+   ONBOARDING OVERLAY
+   ============================================================ */
+
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  padding: 20px;
+}
+.onboarding-overlay.ob-visible { opacity: 1; }
+.onboarding-overlay.ob-fade-out { opacity: 0; pointer-events: none; }
+
+.ob-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 32px 28px 24px;
+  max-width: 440px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ob-logo {
+  font-size: 48px;
+  line-height: 1;
+  text-align: center;
+}
+.ob-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: center;
+  margin: 0;
+}
+.ob-subtitle {
+  font-size: 14px;
+  color: var(--color-text-2);
+  text-align: center;
+  margin: 0;
+}
+
+/* Theme picker section */
+.ob-section { display: flex; flex-direction: column; gap: 10px; }
+.ob-section-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--color-text-3);
+}
+.ob-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.ob-theme-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+.ob-theme-btn:hover { border-color: var(--color-accent); }
+.ob-theme-btn--active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+.ob-theme-emoji { font-size: 20px; line-height: 1; }
+.ob-theme-name  { font-size: 11px; color: var(--color-text-2); font-weight: 500; }
+
+/* Install instructions */
+.ob-install {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.ob-install--done {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-success);
+  font-weight: 500;
+}
+.ob-install-icon { font-size: 18px; }
+.ob-install-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+.ob-steps {
+  padding-left: 20px;
+  list-style: decimal;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-2);
+}
+.ob-steps-text {
+  font-size: 13px;
+  color: var(--color-text-2);
+  margin: 0;
+}
+.ob-note {
+  font-size: 12px;
+  color: var(--color-text-3);
+  margin-top: 10px;
+}
+.ob-share-icon {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--color-accent);
+}
+
+/* CTAs */
+.ob-cta  { width: 100%; justify-content: center; }
+.ob-skip {
+  width: 100%;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--color-text-3);
+}
+.ob-skip:hover { color: var(--color-text-2); }
+
+@media (max-width: 480px) {
+  .ob-card { padding: 24px 18px 20px; }
+  .ob-theme-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .ob-theme-btn { padding: 8px 4px; }
+  .ob-theme-name { font-size: 10px; }
+}
