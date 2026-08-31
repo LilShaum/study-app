@@ -1,0 +1,62 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+# Grant the GITHUB_TOKEN the permissions required by the Pages actions.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment; do not cancel in-progress runs so a
+# deploy already in flight can finish before a new one starts.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inject commit SHA into service worker cache name
+        # sw.js contains the literal string COMMIT_SHA as a placeholder.
+        # Replace it with the real SHA so every deploy gets a fresh cache
+        # and old caches are pruned automatically on the next page load.
+        run: sed -i "s/COMMIT_SHA/${{ github.sha }}/g" sw.js
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Verify sw.js is reachable
+        # Poll for up to ~5 minutes (10 x 30 s) to give CDN propagation time.
+        run: |
+          URL="https://lilshaum.github.io/study-app/sw.js"
+          for i in $(seq 1 10); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+            if [ "$STATUS" = "200" ]; then
+              echo "✓ sw.js reachable on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $STATUS — waiting 30 s…"
+            sleep 30
+          done
+          echo "ERROR: sw.js not reachable at $URL after 10 attempts"
+          exit 1
