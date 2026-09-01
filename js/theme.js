@@ -64,10 +64,10 @@ const TreeTheme = {
   KEY: 'arborous_tree',
   THEMES: [null, 'winter', 'banyan', 'fig'],
   LABELS: {
-    null:   { name: 'Default', emoji: '📘', desc: 'Classic indigo' },
-    winter: { name: 'Winter',  emoji: '❄️',  desc: 'Icy slate blue' },
-    banyan: { name: 'Banyan',  emoji: '🌳',  desc: 'Forest green' },
-    fig:    { name: 'Fig',     emoji: '🌿',  desc: 'Deep purple' },
+    null:   { name: 'Default', icon: 'icons/default.svg', desc: 'Classic indigo' },
+    winter: { name: 'Winter',  icon: 'icons/winter.svg',  desc: 'Icy slate blue' },
+    banyan: { name: 'Banyan',  icon: 'icons/banyan.svg',  desc: 'Forest green' },
+    fig:    { name: 'Fig',     icon: 'icons/fig.svg',     desc: 'Deep purple' },
   },
 
   get() {
@@ -110,7 +110,7 @@ const TreeTheme = {
     const update = (btn) => {
       const t = this.get();
       const info = this.LABELS[t] || this.LABELS[null];
-      btn.textContent = info.emoji;
+      btn.innerHTML = `<img src="${info.icon}" alt="${info.name}" class="tree-picker-icon">`;
       btn.title = `Theme: ${info.name} — click to switch`;
       btn.setAttribute('aria-label', `Current theme: ${info.name}. Click to switch.`);
     };

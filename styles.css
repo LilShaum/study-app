@@ -619,9 +619,15 @@ body, .app-header, .card, .study-sidebar, .search-input {
 
 /* Tree-picker button in the app header */
 .tree-picker {
-  font-size: 18px;
-  padding: 6px 10px;
+  padding: 4px 6px;
   line-height: 1;
+}
+.tree-picker-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  display: block;
+  vertical-align: middle;
 }
 
 /* ============================================================
@@ -658,10 +664,12 @@ body, .app-header, .card, .study-sidebar, .search-input {
   gap: 18px;
 }
 
-.ob-logo {
-  font-size: 48px;
-  line-height: 1;
-  text-align: center;
+.ob-logo-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  display: block;
+  margin: 0 auto;
 }
 .ob-title {
   font-size: 22px;
@@ -709,7 +717,7 @@ body, .app-header, .card, .study-sidebar, .search-input {
   border-color: var(--color-accent);
   background: var(--color-accent-light);
 }
-.ob-theme-emoji { font-size: 20px; line-height: 1; }
+.ob-theme-icon { width: 40px; height: 40px; border-radius: 8px; display: block; }
 .ob-theme-name  { font-size: 11px; color: var(--color-text-2); font-weight: 500; }
 
 /* Install instructions */

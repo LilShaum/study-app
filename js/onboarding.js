@@ -73,7 +73,7 @@ const Onboarding = {
 
     overlay.innerHTML = `
       <div class="ob-card">
-        <div class="ob-logo">🌳</div>
+        <img src="icons/banyan.svg" class="ob-logo-icon" alt="Arborous">
         <h1 class="ob-title">Welcome to Arborous</h1>
         <p class="ob-subtitle">Your study companion — grow your knowledge one card at a time.</p>
 
@@ -81,19 +81,19 @@ const Onboarding = {
           <div class="ob-section-label">Choose your tree</div>
           <div class="ob-theme-grid">
             <button class="ob-theme-btn ob-theme-btn--active" data-tree="" aria-label="Default indigo theme">
-              <span class="ob-theme-emoji">📘</span>
+              <img src="icons/default.svg" class="ob-theme-icon" alt="Default">
               <span class="ob-theme-name">Default</span>
             </button>
             <button class="ob-theme-btn" data-tree="winter" aria-label="Winter slate theme">
-              <span class="ob-theme-emoji">❄️</span>
+              <img src="icons/winter.svg" class="ob-theme-icon" alt="Winter">
               <span class="ob-theme-name">Winter</span>
             </button>
             <button class="ob-theme-btn" data-tree="banyan" aria-label="Banyan forest theme">
-              <span class="ob-theme-emoji">🌳</span>
+              <img src="icons/banyan.svg" class="ob-theme-icon" alt="Banyan">
               <span class="ob-theme-name">Banyan</span>
             </button>
             <button class="ob-theme-btn" data-tree="fig" aria-label="Fig tree theme">
-              <span class="ob-theme-emoji">🌿</span>
+              <img src="icons/fig.svg" class="ob-theme-icon" alt="Fig">
               <span class="ob-theme-name">Fig</span>
             </button>
           </div>
@@ -120,7 +120,7 @@ const Onboarding = {
         if (picker) {
           const t = TreeTheme.get();
           const info = TreeTheme.LABELS[t] || TreeTheme.LABELS[null];
-          picker.textContent = info.emoji;
+          picker.innerHTML = `<img src="${info.icon}" alt="${info.name}" class="tree-picker-icon">`;
           picker.title = `Theme: ${info.name} — click to switch`;
         }
       });
