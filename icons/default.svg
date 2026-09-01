@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <!-- Background: deep indigo -->
   <rect width="512" height="512" rx="96" fill="#1e1b4b"/>
-  <!-- Trunk -->
-  <rect x="244" y="310" width="24" height="130" rx="8" fill="#a5b4fc"/>
-  <!-- Canopy layers -->
-  <ellipse cx="256" cy="255" rx="130" ry="95" fill="#3730a3"/>
-  <ellipse cx="256" cy="218" rx="100" ry="72" fill="#4338ca"/>
-  <ellipse cx="256" cy="182" rx="65" ry="52" fill="#4f46e5"/>
-  <ellipse cx="256" cy="156" rx="40" ry="33" fill="#6366f1"/>
-  <circle  cx="256" cy="138" r="20" fill="#818cf8"/>
   <!-- Ground -->
-  <rect x="60" y="434" width="392" height="12" rx="6" fill="#312e81"/>
+  <rect x="90" y="432" width="332" height="12" rx="6" fill="#312e81"/>
+  <!-- Trunk -->
+  <rect x="238" y="310" width="36" height="132" rx="10" fill="#a5b4fc"/>
+  <!-- Canopy: directional light from upper-left -->
+  <ellipse cx="268" cy="265" rx="148" ry="108" fill="#312e81"/>
+  <ellipse cx="254" cy="228" rx="142" ry="104" fill="#4338ca"/>
+  <ellipse cx="236" cy="190" rx="108" ry="82" fill="#4f46e5"/>
+  <ellipse cx="226" cy="158" rx="70" ry="55" fill="#6366f1"/>
+  <ellipse cx="220" cy="138" rx="36" ry="30" fill="#818cf8"/>
 </svg>

@@ -73,7 +73,7 @@ const Onboarding = {
 
     overlay.innerHTML = `
       <div class="ob-card">
-        <img src="icons/banyan.svg" class="ob-logo-icon" alt="Arborous">
+        <img src="icons/default.svg" class="ob-logo-icon" alt="Arborous">
         <h1 class="ob-title">Welcome to Arborous</h1>
         <p class="ob-subtitle">Your study companion — grow your knowledge one card at a time.</p>
 
