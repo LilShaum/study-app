@@ -547,76 +547,178 @@ body, .app-header, .card, .study-sidebar, .search-input {
 #course-grid.hidden, #no-match-state.hidden { display: none; }
 
 /* ============================================================
-   TREE THEMES — [data-tree] on <html> overrides accent colours.
-   Both variants (light root / dark root) are handled for each tree.
+   TREE THEMES — [data-tree] on <html> overrides the full palette.
+   Each theme sets bg, surface, borders, text, AND accent so the
+   whole atmosphere shifts — not just the button colour.
    ============================================================ */
 
-/* ---- Winter (icy slate blue) ---- */
+/* ---- Winter — bare branches, icy slate, cold air ---- */
 :root[data-tree="winter"] {
-  --color-accent:        #3b82f6;
-  --color-accent-hover:  #2563eb;
-  --color-accent-light:  #eff6ff;
-  --color-accent-border: #bfdbfe;
+  --color-bg:            #f0f4f8;
+  --color-surface:       #ffffff;
+  --color-border:        #c4d4e4;
+  --color-border-light:  #d8e6f0;
+  --color-text:          #1a2a3a;
+  --color-text-2:        #4a6070;
+  --color-text-3:        #7a98b0;
+  --color-accent:        #2563eb;
+  --color-accent-hover:  #1d4ed8;
+  --color-accent-light:  #dbeafe;
+  --color-accent-border: #93c5fd;
 }
 @media (prefers-color-scheme: dark) {
   :root[data-tree="winter"]:not([data-theme="light"]) {
+    --color-bg:            #090f18;
+    --color-surface:       #0e1a28;
+    --color-border:        #1a2e44;
+    --color-border-light:  #122038;
+    --color-text:          #dce8f5;
+    --color-text-2:        #6890b0;
+    --color-text-3:        #3a5870;
     --color-accent:        #93c5fd;
     --color-accent-hover:  #60a5fa;
-    --color-accent-light:  #1e3a5f;
-    --color-accent-border: #1d4ed8;
+    --color-accent-light:  #0a1e38;
+    --color-accent-border: #1e4480;
   }
 }
+:root[data-tree="winter"][data-theme="light"] {
+  --color-bg:            #f0f4f8;
+  --color-surface:       #ffffff;
+  --color-border:        #c4d4e4;
+  --color-border-light:  #d8e6f0;
+  --color-text:          #1a2a3a;
+  --color-text-2:        #4a6070;
+  --color-text-3:        #7a98b0;
+  --color-accent:        #2563eb;
+  --color-accent-hover:  #1d4ed8;
+  --color-accent-light:  #dbeafe;
+  --color-accent-border: #93c5fd;
+}
 :root[data-tree="winter"][data-theme="dark"] {
+  --color-bg:            #090f18;
+  --color-surface:       #0e1a28;
+  --color-border:        #1a2e44;
+  --color-border-light:  #122038;
+  --color-text:          #dce8f5;
+  --color-text-2:        #6890b0;
+  --color-text-3:        #3a5870;
   --color-accent:        #93c5fd;
   --color-accent-hover:  #60a5fa;
-  --color-accent-light:  #1e3a5f;
-  --color-accent-border: #1d4ed8;
+  --color-accent-light:  #0a1e38;
+  --color-accent-border: #1e4480;
 }
 
-/* ---- Banyan (forest green) ---- */
+/* ---- Banyan — warm parchment, earthy forest greens, aged ---- */
 :root[data-tree="banyan"] {
-  --color-accent:        #059669;
-  --color-accent-hover:  #047857;
-  --color-accent-light:  #ecfdf5;
-  --color-accent-border: #6ee7b7;
+  --color-bg:            #f2ede0;
+  --color-surface:       #fdf9ef;
+  --color-border:        #cec0a0;
+  --color-border-light:  #e4dcc4;
+  --color-text:          #281c08;
+  --color-text-2:        #624c28;
+  --color-text-3:        #9a8050;
+  --color-accent:        #2d6a3f;
+  --color-accent-hover:  #1e5030;
+  --color-accent-light:  #e4f0e4;
+  --color-accent-border: #80b890;
 }
 @media (prefers-color-scheme: dark) {
   :root[data-tree="banyan"]:not([data-theme="light"]) {
-    --color-accent:        #34d399;
-    --color-accent-hover:  #10b981;
-    --color-accent-light:  #052e1f;
-    --color-accent-border: #065f46;
+    --color-bg:            #0a1408;
+    --color-surface:       #121e10;
+    --color-border:        #203018;
+    --color-border-light:  #182610;
+    --color-text:          #c8e0b0;
+    --color-text-2:        #6a9850;
+    --color-text-3:        #3a5828;
+    --color-accent:        #6abf7a;
+    --color-accent-hover:  #4da862;
+    --color-accent-light:  #0a2808;
+    --color-accent-border: #205c30;
   }
 }
+:root[data-tree="banyan"][data-theme="light"] {
+  --color-bg:            #f2ede0;
+  --color-surface:       #fdf9ef;
+  --color-border:        #cec0a0;
+  --color-border-light:  #e4dcc4;
+  --color-text:          #281c08;
+  --color-text-2:        #624c28;
+  --color-text-3:        #9a8050;
+  --color-accent:        #2d6a3f;
+  --color-accent-hover:  #1e5030;
+  --color-accent-light:  #e4f0e4;
+  --color-accent-border: #80b890;
+}
 :root[data-tree="banyan"][data-theme="dark"] {
-  --color-accent:        #34d399;
-  --color-accent-hover:  #10b981;
-  --color-accent-light:  #052e1f;
-  --color-accent-border: #065f46;
+  --color-bg:            #0a1408;
+  --color-surface:       #121e10;
+  --color-border:        #203018;
+  --color-border-light:  #182610;
+  --color-text:          #c8e0b0;
+  --color-text-2:        #6a9850;
+  --color-text-3:        #3a5828;
+  --color-accent:        #6abf7a;
+  --color-accent-hover:  #4da862;
+  --color-accent-light:  #0a2808;
+  --color-accent-border: #205c30;
 }
 
-/* ---- Fig (deep violet) ---- */
+/* ---- Fig — dusty violet, Mediterranean, tree of knowledge ---- */
 :root[data-tree="fig"] {
-  --color-accent:        #7c3aed;
-  --color-accent-hover:  #6d28d9;
-  --color-accent-light:  #f5f3ff;
-  --color-accent-border: #ddd6fe;
+  --color-bg:            #ede8f5;
+  --color-surface:       #f8f5fd;
+  --color-border:        #c4b0dc;
+  --color-border-light:  #dcd0ec;
+  --color-text:          #1c1028;
+  --color-text-2:        #523870;
+  --color-text-3:        #8868a8;
+  --color-accent:        #6d28d9;
+  --color-accent-hover:  #5b21b6;
+  --color-accent-light:  #ede9fe;
+  --color-accent-border: #c4b5fd;
 }
 @media (prefers-color-scheme: dark) {
   :root[data-tree="fig"]:not([data-theme="light"]) {
+    --color-bg:            #0d0818;
+    --color-surface:       #171025;
+    --color-border:        #2c1848;
+    --color-border-light:  #201038;
+    --color-text:          #e4d4f8;
+    --color-text-2:        #9068c0;
+    --color-text-3:        #584080;
     --color-accent:        #a78bfa;
     --color-accent-hover:  #8b5cf6;
-    --color-accent-light:  #2e1065;
+    --color-accent-light:  #2a0e58;
     --color-accent-border: #4c1d95;
   }
 }
+:root[data-tree="fig"][data-theme="light"] {
+  --color-bg:            #ede8f5;
+  --color-surface:       #f8f5fd;
+  --color-border:        #c4b0dc;
+  --color-border-light:  #dcd0ec;
+  --color-text:          #1c1028;
+  --color-text-2:        #523870;
+  --color-text-3:        #8868a8;
+  --color-accent:        #6d28d9;
+  --color-accent-hover:  #5b21b6;
+  --color-accent-light:  #ede9fe;
+  --color-accent-border: #c4b5fd;
+}
 :root[data-tree="fig"][data-theme="dark"] {
+  --color-bg:            #0d0818;
+  --color-surface:       #171025;
+  --color-border:        #2c1848;
+  --color-border-light:  #201038;
+  --color-text:          #e4d4f8;
+  --color-text-2:        #9068c0;
+  --color-text-3:        #584080;
   --color-accent:        #a78bfa;
   --color-accent-hover:  #8b5cf6;
-  --color-accent-light:  #2e1065;
+  --color-accent-light:  #2a0e58;
   --color-accent-border: #4c1d95;
 }
-
 /* Tree-picker button in the app header */
 .tree-picker {
   padding: 4px 6px;
