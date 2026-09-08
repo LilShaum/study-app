@@ -120,7 +120,8 @@ const Onboarding = {
         if (picker) {
           const t = TreeTheme.get();
           const info = TreeTheme.LABELS[t] || TreeTheme.LABELS[null];
-          picker.innerHTML = `<img src="${info.icon}" alt="${info.name}" class="tree-picker-icon">`;
+          const iconName = 'tree-' + (t || 'default');
+          picker.innerHTML = icon(iconName, { size: 20 });
           picker.title = `Theme: ${info.name} — click to switch`;
         }
       });

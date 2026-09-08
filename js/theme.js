@@ -64,10 +64,10 @@ const TreeTheme = {
   KEY: 'arborous_tree',
   THEMES: [null, 'winter', 'banyan', 'fig'],
   LABELS: {
-    null:   { name: 'Default', icon: 'icons/default.svg', desc: 'Classic indigo' },
-    winter: { name: 'Winter',  icon: 'icons/winter.svg',  desc: 'Icy slate blue' },
-    banyan: { name: 'Banyan',  icon: 'icons/banyan.svg',  desc: 'Forest green' },
-    fig:    { name: 'Fig',     icon: 'icons/fig.svg',     desc: 'Deep purple' },
+    null:   { name: 'Default', icon: 'icons/default.svg', iconSm: 'icons/default-sm.svg', desc: 'Classic indigo' },
+    winter: { name: 'Winter',  icon: 'icons/winter.svg',  iconSm: 'icons/winter-sm.svg',  desc: 'Icy slate blue' },
+    banyan: { name: 'Banyan',  icon: 'icons/banyan.svg',  iconSm: 'icons/banyan-sm.svg',  desc: 'Forest green' },
+    fig:    { name: 'Fig',     icon: 'icons/fig.svg',     iconSm: 'icons/fig-sm.svg',     desc: 'Deep purple' },
   },
 
   get() {
@@ -110,7 +110,8 @@ const TreeTheme = {
     const update = (btn) => {
       const t = this.get();
       const info = this.LABELS[t] || this.LABELS[null];
-      btn.innerHTML = `<img src="${info.icon}" alt="${info.name}" class="tree-picker-icon">`;
+      const iconName = 'tree-' + (t || 'default');
+      btn.innerHTML = icon(iconName, { size: 20 });
       btn.title = `Theme: ${info.name} — click to switch`;
       btn.setAttribute('aria-label', `Current theme: ${info.name}. Click to switch.`);
     };
