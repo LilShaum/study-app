@@ -1,6 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <!-- Fig: recognizable leaf shape with pointed tip + stem -->
   <path d="M12 2 C9 4 6 7.5 6 11.5 C6 15.6 8.7 19 12 19 C15.3 19 18 15.6 18 11.5 C18 7.5 15 4 12 2Z" fill="currentColor"/>
-  <!-- Stem -->
   <rect x="11" y="19" width="2" height="4" rx="1" fill="currentColor"/>
 </svg>
