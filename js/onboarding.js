@@ -80,6 +80,11 @@ const Onboarding = {
         <div class="ob-section">
           <div class="ob-section-label">Choose your tree</div>
           <div class="ob-theme-grid">
+            <!-- NOTE: These use <img> tags (not inline SVG) intentionally.
+                 The theme hasn't been chosen yet at this point, so currentColor
+                 would reflect the default indigo theme for all buttons, making
+                 the winter/banyan/fig icons look wrong. Static SVG files render
+                 their own embedded colors correctly regardless of CSS variables. -->
             <button class="ob-theme-btn ob-theme-btn--active" data-tree="" aria-label="Default indigo theme">
               <img src="icons/default.svg" class="ob-theme-icon" alt="Default">
               <span class="ob-theme-name">Default</span>

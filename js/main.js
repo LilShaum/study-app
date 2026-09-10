@@ -15,8 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('keydown', handleGlobalKeydown);
 
 /* --- Service Worker --- */
-// Only register when served over HTTP/HTTPS (file:// doesn't support SW).
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+// Skip SW registration on localhost to avoid dev cache friction.
+// Add ?sw to the URL to force-register during local testing.
+const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const forceSW = location.search.includes('sw');
+if ('serviceWorker' in navigator && location.protocol !== 'file:' && (!isDev || forceSW)) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').catch(err => {
       console.warn('Service worker registration failed:', err);
