@@ -3,9 +3,10 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-  # Lets this workflow be run by hand from the Actions tab — useful for
-  # previewing a deploy from a branch before it's merged to main.
-  workflow_dispatch:
+  # NOTE: deliberately no workflow_dispatch. This workflow publishes to the
+  # live GitHub Pages site, and a manual run from the Actions tab lets you pick
+  # any branch — so dispatching from a feature branch would quietly overwrite
+  # production with unmerged work. Deploys happen by merging to main.
 
 # Grant the GITHUB_TOKEN the permissions required by the Pages actions.
 permissions:

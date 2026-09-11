@@ -46,8 +46,3 @@ export const useThemeStore = create<ThemeState>()(
     { name: 'arborous:theme', storage: safeJSONStorage },
   ),
 );
-
-/** True if dark mode is currently in effect (explicit choice, or system default). */
-export function isDarkNow(mode: ThemeMode): boolean {
-  return mode === 'dark' || (mode === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
-}

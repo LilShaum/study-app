@@ -41,7 +41,9 @@ export function EditableItem({ courseId, sectionId, item }: EditableItemProps) {
     toast('Item deleted.', {
       type: 'info',
       actionLabel: removed ? 'Undo' : undefined,
-      onAction: removed ? () => insertItem(courseId, sectionId, removed) : undefined,
+      // Restore at the original index — appending to the end would silently
+      // reorder the section, which is a worse outcome than the delete itself.
+      onAction: removed ? () => insertItem(courseId, sectionId, removed.item, removed.index) : undefined,
     });
   };
 

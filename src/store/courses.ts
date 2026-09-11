@@ -17,8 +17,11 @@ interface CoursesState {
 
   /** Replaces one item in place (edit-in-browse). */
   updateItem: (courseId: string, sectionId: string, itemId: string, updated: StudyItem) => void;
-  /** Removes one item, returning it (for an undo toast) or null if not found. */
-  deleteItem: (courseId: string, sectionId: string, itemId: string) => StudyItem | null;
+  /**
+   * Removes one item, returning it with the index it occupied so an undo can
+   * put it back where it was rather than at the end of the section.
+   */
+  deleteItem: (courseId: string, sectionId: string, itemId: string) => { item: StudyItem; index: number } | null;
   /** Inserts an item (new item, or an undo restore), at the given index or the end. */
   insertItem: (courseId: string, sectionId: string, item: StudyItem, atIndex?: number) => void;
 
@@ -39,7 +42,24 @@ export const useCoursesStore = create<CoursesState>()(
       },
 
       addCourse: (course) => {
-        const id = slugifyCourseId(course);
+        const baseId = slugifyCourseId(course);
+        const existing = get().courses;
+
+        // The id is derived from course_code||title and is lossy ("BIOL 200"
+        // and "biol-200" both slug to "biol_200"), so two genuinely different
+        // courses can collide and silently overwrite each other.
+        //
+        // Re-importing the SAME course (same title) should still overwrite —
+        // that's how you update a regenerated course. A different title on the
+        // same slug gets a suffixed id instead of destroying the first one.
+        let id = baseId;
+        const collision = existing[baseId];
+        if (collision && collision.metadata.title !== course.metadata.title) {
+          let n = 2;
+          while (existing[`${baseId}_${n}`]) n++;
+          id = `${baseId}_${n}`;
+        }
+
         set((state) => ({ courses: { ...state.courses, [id]: course } }));
         return id;
       },
@@ -70,7 +90,7 @@ export const useCoursesStore = create<CoursesState>()(
       },
 
       deleteItem: (courseId, sectionId, itemId) => {
-        let removed: StudyItem | null = null;
+        let removed: { item: StudyItem; index: number } | null = null;
         set((state) => {
           const course = state.courses[courseId];
           if (!course) return state;
@@ -78,7 +98,7 @@ export const useCoursesStore = create<CoursesState>()(
             if (s.id !== sectionId) return s;
             const idx = s.items.findIndex((it) => it.id === itemId);
             if (idx === -1) return s;
-            removed = s.items[idx];
+            removed = { item: s.items[idx], index: idx };
             const items = s.items.slice();
             items.splice(idx, 1);
             return { ...s, items };

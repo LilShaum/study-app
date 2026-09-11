@@ -27,10 +27,13 @@ function TypeFields({ item }: { item: StudyItem }) {
           <Field label="Question">
             <textarea name="question" defaultValue={item.question} rows={2} className={inputClass} />
           </Field>
+          {/* Driven by the item's own option count, not a hardcoded 4: the
+              schema allows any number >= 2, and reading back a fixed 4 silently
+              dropped a 5th option and padded 2-option questions with blanks. */}
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {[0, 1, 2, 3].map((i) => (
-              <Field key={i} label={`Option ${'ABCD'[i]}`}>
-                <input name={`option_${i}`} defaultValue={item.options?.[i] ?? ''} className={inputClass} />
+            {(item.options ?? []).map((opt, i) => (
+              <Field key={i} label={`Option ${'ABCDEFGH'[i] ?? i + 1}`}>
+                <input name={`option_${i}`} defaultValue={opt} className={inputClass} />
               </Field>
             ))}
           </div>
@@ -137,15 +140,22 @@ export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
 
     let updated: StudyItem;
     switch (item.type) {
-      case 'mcq':
+      case 'mcq': {
+        const options = (item.options ?? []).map((_, i) => str(`option_${i}`));
+        const submitted = Number(data.get('correct_index'));
         updated = {
           ...item,
           question: str('question'),
-          options: [0, 1, 2, 3].map((i) => str(`option_${i}`)),
-          correct_index: Number(data.get('correct_index')),
+          options,
+          // Clamp so a stale/out-of-range index can't point past the options
+          // and render "the answer is <blank>" on reveal.
+          correct_index: Number.isFinite(submitted)
+            ? Math.min(Math.max(submitted, 0), Math.max(options.length - 1, 0))
+            : 0,
           explanation: str('explanation'),
         };
         break;
+      }
       case 'flashcard':
         updated = { ...item, front: str('front'), back: str('back'), hint: str('hint') || undefined };
         break;
