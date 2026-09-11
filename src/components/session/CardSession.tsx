@@ -152,8 +152,16 @@ export function CardSession({ courseId, course, mode }: CardSessionProps) {
           item={current}
           revealMode={mode === 'definitions'}
           onAnswered={record}
-          onGot={() => record(true)}
-          onMissed={() => record(false)}
+          // Grading a flashcard also advances it, as the vanilla app did —
+          // otherwise the card just flips back and looks like nothing happened.
+          onGot={() => {
+            record(true);
+            handleNext();
+          }}
+          onMissed={() => {
+            record(false);
+            handleNext();
+          }}
           onNext={handleNext}
         />
       )}

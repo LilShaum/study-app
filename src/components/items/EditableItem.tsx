@@ -47,7 +47,9 @@ export function EditableItem({ courseId, sectionId, item }: EditableItemProps) {
   return (
     <div className="group relative">
       <ItemRenderer item={item} />
-      <div className="pointer-events-none absolute right-3 top-3 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+      {/* Hover-reveal on pointer devices; always visible (but muted) on touch,
+          where there is no hover and the controls would be unreachable. */}
+      <div className="pointer-events-none absolute right-3 top-3 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-70">
         <button
           type="button"
           aria-label="Edit item"

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeJSONStorage } from '@/lib/safeStorage';
 
 export type ThemeMode = 'light' | 'dark' | null;
 export type TreeName = 'winter' | 'banyan' | 'fig' | null;
@@ -42,7 +43,7 @@ export const useThemeStore = create<ThemeState>()(
         return next;
       },
     }),
-    { name: 'arborous:theme' },
+    { name: 'arborous:theme', storage: safeJSONStorage },
   ),
 );
 

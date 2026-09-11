@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { Course, StudyItem } from '@/schema/course';
 import { parseCourseFile } from '@/schema/parseCourse';
 import { slugifyCourseId } from '@/lib/slugify';
+import { safeJSONStorage } from '@/lib/safeStorage';
 
 interface CoursesState {
   courses: Record<string, Course>;
@@ -107,6 +108,7 @@ export const useCoursesStore = create<CoursesState>()(
     }),
     {
       name: 'arborous:courses',
+      storage: safeJSONStorage,
       partialize: (state) => ({ courses: state.courses }),
     },
   ),

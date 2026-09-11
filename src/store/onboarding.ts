@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeJSONStorage } from '@/lib/safeStorage';
 
 interface OnboardingState {
   onboarded: boolean;
@@ -12,6 +13,6 @@ export const useOnboardingStore = create<OnboardingState>()(
       onboarded: false,
       complete: () => set({ onboarded: true }),
     }),
-    { name: 'arborous:onboarding' },
+    { name: 'arborous:onboarding', storage: safeJSONStorage },
   ),
 );

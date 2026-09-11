@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeJSONStorage } from '@/lib/safeStorage';
 
 export interface ItemResult {
   got: number;
@@ -8,6 +9,16 @@ export interface ItemResult {
 }
 
 type CourseProgress = Record<string, ItemResult>;
+
+/**
+ * Shared empty result for courses with no recorded progress.
+ *
+ * This MUST be a stable reference. Returning a fresh `{}` makes zustand's
+ * useSyncExternalStore see a changed snapshot on every check, which sends any
+ * subscribed component into an infinite render loop (it crashed the whole
+ * progress dashboard). Frozen so a caller can't mutate the shared instance.
+ */
+export const EMPTY_PROGRESS: CourseProgress = Object.freeze({});
 
 interface ProgressState {
   byCourse: Record<string, CourseProgress>;
@@ -26,7 +37,7 @@ export const useProgressStore = create<ProgressState>()(
     (set, get) => ({
       byCourse: {},
 
-      getProgress: (courseId) => get().byCourse[courseId] ?? {},
+      getProgress: (courseId) => get().byCourse[courseId] ?? EMPTY_PROGRESS,
 
       missedIds: (courseId) => {
         const progress = get().getProgress(courseId);
@@ -70,6 +81,7 @@ export const useProgressStore = create<ProgressState>()(
     }),
     {
       name: 'arborous:progress',
+      storage: safeJSONStorage,
       partialize: (state) => ({ byCourse: state.byCourse }),
     },
   ),

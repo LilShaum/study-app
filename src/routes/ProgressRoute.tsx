@@ -1,6 +1,6 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
-import { useProgressStore } from '@/store/progress';
+import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { computeCourseStats, type StatRow } from '@/lib/computeCourseStats';
 
 function barColor(acc: number | null): string {
@@ -37,7 +37,8 @@ function Stat({ num, label }: { num: string; label: string }) {
 export function ProgressRoute() {
   const { id } = useParams<{ id: string }>();
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
-  const progress = useProgressStore((s) => (id ? s.getProgress(id) : {}));
+  // Both branches must return stable references — see EMPTY_PROGRESS.
+  const progress = useProgressStore((s) => (id ? s.getProgress(id) : EMPTY_PROGRESS));
 
   if (!id) return <Navigate to="/" replace />;
   if (!course) {

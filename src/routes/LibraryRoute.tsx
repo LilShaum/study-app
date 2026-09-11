@@ -180,7 +180,7 @@ export function LibraryRoute() {
                         e.preventDefault();
                         handleDelete(id, course.metadata.title);
                       }}
-                      className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded text-text-3 opacity-0 transition-opacity hover:bg-error-bg hover:text-error group-hover:opacity-100 group-focus-within:opacity-100"
+                      className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded text-text-3 opacity-0 transition-opacity hover:bg-error-bg hover:text-error group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-70"
                     >
                       ✕
                     </button>
