@@ -2,6 +2,7 @@ import { Link, Outlet } from 'react-router-dom';
 import { ThemeEffect } from '@/components/ThemeEffect';
 import { ThemePicker } from '@/components/ThemePicker';
 import { DarkModeToggle } from '@/components/DarkModeToggle';
+import { Toaster } from '@/components/Toaster';
 
 export function RootLayout() {
   return (
@@ -19,6 +20,7 @@ export function RootLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
+      <Toaster />
     </div>
   );
 }

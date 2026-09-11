@@ -16,6 +16,11 @@ const itemBase = {
   id: z.string().min(1),
   difficulty: DifficultySchema.optional(),
   tags: z.array(z.string()).optional(),
+  // Short quote/paraphrase of the source notes this item is drawn from.
+  // Optional (old files won't have it), but the generator is now required
+  // to fill it in — it's the main lever against fabricated content, and
+  // lets a student spot-check an item against their own notes.
+  source_excerpt: z.string().optional(),
 };
 
 export const McqItemSchema = z.looseObject({
@@ -25,6 +30,10 @@ export const McqItemSchema = z.looseObject({
   options: z.array(z.string()).min(2),
   correct_index: z.number().int().min(0),
   explanation: z.string().optional(),
+  // One short reason per wrong option (same order as `options`) for why
+  // it's plausible but incorrect — forces real distractors instead of
+  // filler like "None of the above".
+  distractor_rationale: z.array(z.string()).optional(),
 });
 
 export const FlashcardItemSchema = z.looseObject({

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Course } from '@/schema/course';
+import type { Course, StudyItem } from '@/schema/course';
 import { parseCourseFile } from '@/schema/parseCourse';
 import { slugifyCourseId } from '@/lib/slugify';
 
@@ -13,6 +13,13 @@ interface CoursesState {
   addCourse: (course: Course) => string;
   updateCourse: (id: string, course: Course) => void;
   removeCourse: (id: string) => void;
+
+  /** Replaces one item in place (edit-in-browse). */
+  updateItem: (courseId: string, sectionId: string, itemId: string, updated: StudyItem) => void;
+  /** Removes one item, returning it (for an undo toast) or null if not found. */
+  deleteItem: (courseId: string, sectionId: string, itemId: string) => StudyItem | null;
+  /** Inserts an item (new item, or an undo restore), at the given index or the end. */
+  insertItem: (courseId: string, sectionId: string, item: StudyItem, atIndex?: number) => void;
 
   /** Bulk-replace, used only by the one-time legacy-data migration. */
   _hydrateFromLegacy: (courses: Record<string, Course>) => void;
@@ -45,6 +52,52 @@ export const useCoursesStore = create<CoursesState>()(
           const courses = { ...state.courses };
           delete courses[id];
           return { courses };
+        });
+      },
+
+      updateItem: (courseId, sectionId, itemId, updated) => {
+        set((state) => {
+          const course = state.courses[courseId];
+          if (!course) return state;
+          const sections = course.sections.map((s) =>
+            s.id === sectionId
+              ? { ...s, items: s.items.map((it) => (it.id === itemId ? updated : it)) }
+              : s,
+          );
+          return { courses: { ...state.courses, [courseId]: { ...course, sections } } };
+        });
+      },
+
+      deleteItem: (courseId, sectionId, itemId) => {
+        let removed: StudyItem | null = null;
+        set((state) => {
+          const course = state.courses[courseId];
+          if (!course) return state;
+          const sections = course.sections.map((s) => {
+            if (s.id !== sectionId) return s;
+            const idx = s.items.findIndex((it) => it.id === itemId);
+            if (idx === -1) return s;
+            removed = s.items[idx];
+            const items = s.items.slice();
+            items.splice(idx, 1);
+            return { ...s, items };
+          });
+          return { courses: { ...state.courses, [courseId]: { ...course, sections } } };
+        });
+        return removed;
+      },
+
+      insertItem: (courseId, sectionId, item, atIndex) => {
+        set((state) => {
+          const course = state.courses[courseId];
+          if (!course) return state;
+          const sections = course.sections.map((s) => {
+            if (s.id !== sectionId) return s;
+            const items = s.items.slice();
+            items.splice(atIndex ?? items.length, 0, item);
+            return { ...s, items };
+          });
+          return { courses: { ...state.courses, [courseId]: { ...course, sections } } };
         });
       },
 
