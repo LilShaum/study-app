@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FlashcardItem } from '@/schema/course';
 import { DifficultyBadge } from './DifficultyBadge';
+import { SourceNote } from './SourceNote';
 
 interface FlashcardCardProps {
   item: FlashcardItem;
@@ -55,6 +56,7 @@ export function FlashcardCard({ item, onGot, onMissed }: FlashcardCardProps) {
               Missed it ✗
             </button>
           </div>
+          <SourceNote excerpt={item.source_excerpt} />
         </div>
       )}
     </div>

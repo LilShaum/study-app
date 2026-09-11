@@ -1,6 +1,31 @@
 import { useState, type KeyboardEvent } from 'react';
 import type { McqItem } from '@/schema/course';
 import { DifficultyBadge } from './DifficultyBadge';
+import { SourceNote } from './SourceNote';
+
+/**
+ * Resolves the "why is this wrong" note for one option.
+ *
+ * Tolerates both shapes seen in the wild: one entry per option (preferred —
+ * unambiguous, the correct option's slot is ignored) and one entry per *wrong*
+ * option in option order. Guessing wrong here would attach a rationale to the
+ * wrong answer, which is worse than showing nothing, hence the explicit
+ * length check rather than a best-effort index.
+ */
+function rationaleFor(item: McqItem, optionIndex: number): string | undefined {
+  const list = item.distractor_rationale;
+  const options = item.options ?? [];
+  if (!list?.length || optionIndex === item.correct_index) return undefined;
+
+  if (list.length === options.length) return list[optionIndex]?.trim() || undefined;
+
+  if (list.length === options.length - 1) {
+    const pos = optionIndex > item.correct_index ? optionIndex - 1 : optionIndex;
+    return list[pos]?.trim() || undefined;
+  }
+
+  return undefined;
+}
 
 interface McqCardProps {
   item: McqItem;
@@ -65,22 +90,30 @@ export function McqCard({ item, onAnswered, onNext }: McqCardProps) {
           } else if (isSelected) {
             stateClasses = 'border-accent bg-accent-light';
           }
+          const rationale = revealed ? rationaleFor(item, i) : undefined;
           return (
-            <button
-              key={i}
-              type="button"
-              role="radio"
-              aria-checked={isSelected}
-              tabIndex={isSelected || (selected < 0 && i === 0) ? 0 : -1}
-              disabled={revealed}
-              onClick={() => selectOption(i)}
-              className={`flex w-full items-center gap-3 rounded border px-3 py-2 text-left text-sm text-text transition-colors disabled:cursor-default ${stateClasses}`}
-            >
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold">
-                {'ABCD'[i] ?? i + 1}
-              </span>
-              <span>{opt}</span>
-            </button>
+            <div key={i}>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                tabIndex={isSelected || (selected < 0 && i === 0) ? 0 : -1}
+                disabled={revealed}
+                onClick={() => selectOption(i)}
+                className={`flex w-full items-center gap-3 rounded border px-3 py-2 text-left text-sm text-text transition-colors disabled:cursor-default ${stateClasses}`}
+              >
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold">
+                  {'ABCD'[i] ?? i + 1}
+                </span>
+                <span>{opt}</span>
+              </button>
+              {rationale && (
+                <div className="mt-1 pl-3 text-xs text-text-3">
+                  <span className="text-text-2">Why not: </span>
+                  {rationale}
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
@@ -107,6 +140,7 @@ export function McqCard({ item, onAnswered, onNext }: McqCardProps) {
           )}
         </div>
       )}
+      {revealed && <SourceNote excerpt={item.source_excerpt} />}
     </div>
   );
 }

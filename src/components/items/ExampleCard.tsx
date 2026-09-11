@@ -1,5 +1,6 @@
 import type { ExampleItem } from '@/schema/course';
 import { DifficultyBadge } from './DifficultyBadge';
+import { SourceNote } from './SourceNote';
 
 export function ExampleCard({ item }: { item: ExampleItem }) {
   return (
@@ -29,6 +30,7 @@ export function ExampleCard({ item }: { item: ExampleItem }) {
           💡 <span className="font-medium">Key Takeaway</span> — {item.takeaway}
         </div>
       )}
+      <SourceNote excerpt={item.source_excerpt} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, type KeyboardEvent } from 'react';
 import type { DefinitionItem } from '@/schema/course';
 import { DifficultyBadge } from './DifficultyBadge';
+import { SourceNote } from './SourceNote';
 
 interface DefinitionCardProps {
   item: DefinitionItem;
@@ -55,6 +56,7 @@ export function DefinitionCard({ item, revealMode = false }: DefinitionCardProps
           {item.also_known_as && item.also_known_as.length > 0 && (
             <div className="mt-2 text-xs text-text-3">Also known as: {item.also_known_as.join(', ')}</div>
           )}
+          <SourceNote excerpt={item.source_excerpt} />
         </div>
       )}
     </div>

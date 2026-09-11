@@ -76,9 +76,14 @@ Every item, of any type, carries these common fields:
 ```
 { "id", "type": "mcq", "question", "options": [4 strings],
   "correct_index": 0-3, "explanation",
-  "distractor_rationale": [3 strings],   // required — see quality bar below
+  "distractor_rationale": [4 strings],   // required — see quality bar below
   "difficulty", "tags", "source_excerpt" }
 ```
+`distractor_rationale` must have **exactly one entry per option, in the same
+order as `options`** — so four entries for four options. Put an empty string
+in the slot for the correct answer. (Index-aligning it this way is what lets
+the app show each rationale under the right option; a shorter list that only
+covers the wrong answers is ambiguous about which slot is which.)
 
 **`flashcard`** — one atomic fact, front as a question/prompt (not just a bare term).
 ```
@@ -108,6 +113,21 @@ clear as text.
   "alt_text" (describes the diagram for screen readers), "caption"?,
   "difficulty", "tags", "source_excerpt" }
 ```
+
+**Diagram colors — this matters.** Arborous has four themes and most of them
+are dark. A diagram with hardcoded dark strokes (`#000`, `#222`, `stroke="black"`)
+renders as a nearly invisible smudge on a dark background.
+
+- Use `currentColor` for every stroke and for text fills, so the diagram
+  inherits the reader's theme.
+- Use `fill="none"` for shape interiors rather than white.
+- Only use a literal color when the color *is* the information (e.g. a red
+  arrow for "inhibits" vs a green one for "activates"), and pick mid-tone
+  values that stay legible on both light and dark backgrounds.
+- Include a `viewBox` and avoid fixed pixel `width`/`height` so the diagram
+  scales on a phone.
+- No `<script>`, no `on*` event attributes, no external `<image href>` — they
+  are stripped on render and will simply not appear.
 
 ## Quality bar
 

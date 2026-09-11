@@ -1,5 +1,7 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
+import { exportCourse } from '@/lib/exportCourse';
+import { toast } from '@/store/toast';
 import type { StudyMode } from '@/lib/buildSessionItems';
 
 const MODES: { mode: StudyMode; label: string; desc: string }[] = [
@@ -35,9 +37,21 @@ export function CourseRoute() {
       </Link>
       <h1 className="mt-2 text-2xl font-semibold text-text">{course.metadata.title}</h1>
       {course.metadata.description && <p className="mt-1 text-text-2">{course.metadata.description}</p>}
-      <Link to={`/study/${id}/progress`} className="mt-2 inline-block text-sm text-accent hover:underline">
-        View progress →
-      </Link>
+      <div className="mt-2 flex flex-wrap items-center gap-4">
+        <Link to={`/study/${id}/progress`} className="text-sm text-accent hover:underline">
+          View progress →
+        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            exportCourse(id, course);
+            toast('Course exported.', { type: 'success' });
+          }}
+          className="text-sm text-text-2 hover:text-text"
+        >
+          ↓ Export .study.json
+        </button>
+      </div>
 
       <h2 className="mb-3 mt-6 text-sm font-semibold uppercase tracking-wide text-text-3">
         Choose a Study Mode
