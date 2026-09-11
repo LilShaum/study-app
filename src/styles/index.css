@@ -22,6 +22,32 @@
   }
 }
 
+@layer components {
+  /* Flashcard 3D flip. Tailwind v3 ships no utilities for perspective,
+     transform-style or backface-visibility, so these are hand-rolled.
+     The reduced-motion block below neutralises the transition. */
+  .flip-scene {
+    perspective: 1200px;
+  }
+  .flip-card {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .flip-card.is-flipped {
+    transform: rotateY(180deg);
+  }
+  .flip-face {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .flip-face--back {
+    position: absolute;
+    inset: 0;
+    transform: rotateY(180deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

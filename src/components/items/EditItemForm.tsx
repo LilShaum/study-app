@@ -27,7 +27,7 @@ function TypeFields({ item }: { item: StudyItem }) {
           <Field label="Question">
             <textarea name="question" defaultValue={item.question} rows={2} className={inputClass} />
           </Field>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {[0, 1, 2, 3].map((i) => (
               <Field key={i} label={`Option ${'ABCD'[i]}`}>
                 <input name={`option_${i}`} defaultValue={item.options?.[i] ?? ''} className={inputClass} />
@@ -187,7 +187,7 @@ export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-accent-border bg-surface p-5">
       <TypeFields item={item} />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Difficulty">
           <select name="difficulty" defaultValue={item.difficulty ?? ''} className={inputClass}>
             <option value="">—</option>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { useProgressStore } from '@/store/progress';
 import { toast } from '@/store/toast';
+import { Icon } from '@/components/Icon';
 
 /** "/" — the course library: upload, search/tag filter, open, and quietly-hidden delete-with-undo. */
 export function LibraryRoute() {
@@ -84,10 +85,11 @@ export function LibraryRoute() {
         </div>
         <button
           type="button"
-          className="rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
+          className="inline-flex items-center gap-1.5 rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
           onClick={() => inputRef.current?.click()}
         >
-          + Upload Course
+          <Icon name="plus" size={14} />
+          Upload Course
         </button>
         <input
           ref={inputRef}
@@ -100,6 +102,9 @@ export function LibraryRoute() {
 
       {ids.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-10 text-center text-text-2">
+          <div className="mb-3 flex justify-center text-text-3">
+            <Icon name="library" size={40} />
+          </div>
           No courses yet. Upload a{' '}
           <code className="rounded bg-accent-light px-1 font-mono text-accent">.study.json</code> file
           to get started.
@@ -107,14 +112,19 @@ export function LibraryRoute() {
       ) : (
         <>
           <div className="mb-4 space-y-3">
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search courses…"
-              aria-label="Search courses"
-              className="w-full rounded border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-3 focus:border-accent focus:outline-none"
-            />
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-3">
+                <Icon name="search" size={14} />
+              </span>
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search courses…"
+                aria-label="Search courses"
+                className="w-full rounded border border-border bg-surface py-2 pl-9 pr-3 text-sm text-text placeholder:text-text-3 focus:border-accent focus:outline-none"
+              />
+            </div>
             {allTags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {allTags.map((tag) => {
@@ -182,7 +192,7 @@ export function LibraryRoute() {
                       }}
                       className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded text-text-3 opacity-0 transition-opacity hover:bg-error-bg hover:text-error group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-70"
                     >
-                      ✕
+                      <Icon name="x" size={14} />
                     </button>
                   </li>
                 );

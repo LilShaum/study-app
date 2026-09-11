@@ -13,12 +13,14 @@ function barColor(acc: number | null): string {
 function BarRow({ row }: { row: StatRow }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="w-32 shrink-0 truncate text-sm text-text-2">{row.label}</div>
-      <div className="h-2 flex-1 rounded-full bg-border">
+      <div className="w-24 shrink-0 truncate text-sm text-text-2 sm:w-32" title={row.label}>
+        {row.label}
+      </div>
+      <div className="h-2 min-w-0 flex-1 rounded-full bg-border">
         <div className={`h-2 rounded-full ${barColor(row.acc)}`} style={{ width: `${row.acc ?? 0}%` }} />
       </div>
-      <div className="w-24 shrink-0 text-right text-sm text-text-2">
-        {row.acc ?? 0}% <span className="text-text-3">({row.attempts})</span>
+      <div className="w-16 shrink-0 text-right text-sm text-text-2 sm:w-24">
+        {row.acc ?? 0}% <span className="hidden text-text-3 sm:inline">({row.attempts})</span>
       </div>
     </div>
   );
@@ -85,7 +87,8 @@ export function ProgressRoute() {
       </Link>
       <h1 className="mt-2 text-2xl font-semibold text-text">{course.metadata.title} — Progress</h1>
 
-      <div className="mt-4 grid grid-cols-4 gap-3">
+      {/* 2-up on phones — four tiles at 375px wrapped labels and looked broken. */}
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat num={`${stats.accuracyPct ?? 0}%`} label="Accuracy" />
         <Stat num={String(stats.studiedCount)} label={`of ${stats.gradableCount} studied`} />
         <Stat num={String(stats.totalGot)} label="Correct" />

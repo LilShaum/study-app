@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { useThemeStore } from '@/store/theme';
+import { Icon } from './Icon';
 
 function subscribeSystemScheme(callback: () => void) {
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -29,7 +30,7 @@ export function DarkModeToggle() {
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       onClick={() => setMode(isDark ? 'light' : 'dark')}
     >
-      {isDark ? '☀️' : '🌙'}
+      <Icon name={isDark ? 'sun' : 'moon'} size={18} />
     </button>
   );
 }

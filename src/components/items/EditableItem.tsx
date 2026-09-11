@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { StudyItem } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
 import { toast } from '@/store/toast';
+import { Icon } from '@/components/Icon';
 import { ItemRenderer } from './ItemRenderer';
 import { EditItemForm } from './EditItemForm';
 
@@ -57,7 +58,7 @@ export function EditableItem({ courseId, sectionId, item }: EditableItemProps) {
           onClick={() => setEditing(true)}
           className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded border border-border bg-surface text-text-2 hover:text-text"
         >
-          ✎
+          <Icon name="edit" size={14} />
         </button>
         <button
           type="button"
@@ -66,7 +67,7 @@ export function EditableItem({ courseId, sectionId, item }: EditableItemProps) {
           onClick={handleDelete}
           className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded border border-border bg-surface text-error hover:bg-error-bg"
         >
-          ✕
+          <Icon name="trash" size={14} />
         </button>
       </div>
     </div>

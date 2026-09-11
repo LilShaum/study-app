@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import type { StudyMode } from '@/lib/buildSessionItems';
 import { useSessionStore } from '@/store/session';
+import { Icon } from '@/components/Icon';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
@@ -93,7 +94,9 @@ export function CardSession({ courseId, course, mode }: CardSessionProps) {
     const pct = attempted > 0 ? Math.round((score.got / attempted) * 100) : 100;
     return (
       <div className="mx-auto max-w-2xl p-10 text-center">
-        <div className="text-3xl">🎉</div>
+        <div className="flex justify-center text-success">
+          <Icon name="check-circle" size={40} />
+        </div>
         <h1 className="mt-3 text-xl font-semibold text-text">Session Complete!</h1>
         <div className="mt-3 flex justify-center gap-4 text-sm">
           <span className="text-success">{score.got} Correct</span>

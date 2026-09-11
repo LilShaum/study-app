@@ -2,15 +2,16 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { exportCourse } from '@/lib/exportCourse';
 import { toast } from '@/store/toast';
+import { Icon, type IconName } from '@/components/Icon';
 import type { StudyMode } from '@/lib/buildSessionItems';
 
-const MODES: { mode: StudyMode; label: string; desc: string }[] = [
-  { mode: 'browse', label: 'Browse', desc: 'Read all content in order' },
-  { mode: 'quiz', label: 'Quiz', desc: 'MCQs one at a time' },
-  { mode: 'flashcards', label: 'Flashcards', desc: 'Flip & track recall' },
-  { mode: 'definitions', label: 'Definitions', desc: 'Term → reveal' },
-  { mode: 'mixed', label: 'Mixed', desc: 'All types, shuffled' },
-  { mode: 'missed', label: 'Review Missed', desc: 'Retry what you got wrong' },
+const MODES: { mode: StudyMode; label: string; desc: string; icon: IconName }[] = [
+  { mode: 'browse', label: 'Browse', desc: 'Read all content in order', icon: 'book-open' },
+  { mode: 'quiz', label: 'Quiz', desc: 'MCQs one at a time', icon: 'help-circle' },
+  { mode: 'flashcards', label: 'Flashcards', desc: 'Flip & track recall', icon: 'layers' },
+  { mode: 'definitions', label: 'Definitions', desc: 'Term → reveal', icon: 'file-text' },
+  { mode: 'mixed', label: 'Mixed', desc: 'All types, shuffled', icon: 'shuffle' },
+  { mode: 'missed', label: 'Review Missed', desc: 'Retry what you got wrong', icon: 'repeat' },
 ];
 
 /** "/study/:id" — course overview + mode picker. */
@@ -47,9 +48,10 @@ export function CourseRoute() {
             exportCourse(id, course);
             toast('Course exported.', { type: 'success' });
           }}
-          className="text-sm text-text-2 hover:text-text"
+          className="inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
         >
-          ↓ Export .study.json
+          <Icon name="download" size={14} />
+          Export .study.json
         </button>
       </div>
 
@@ -63,6 +65,9 @@ export function CourseRoute() {
             to={`/session/${id}/${m.mode}`}
             className="rounded-lg border border-border bg-surface p-4 transition-colors hover:border-accent-border"
           >
+            <span className="mb-2 block text-accent">
+              <Icon name={m.icon} size={22} />
+            </span>
             <div className="font-medium text-text">{m.label}</div>
             <div className="text-sm text-text-2">{m.desc}</div>
           </Link>

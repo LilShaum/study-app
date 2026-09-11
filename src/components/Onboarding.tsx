@@ -1,5 +1,10 @@
-import { TREE_THEMES, useThemeStore } from '@/store/theme';
+import { TREE_THEMES, useThemeStore, type TreeName } from '@/store/theme';
 import { useOnboardingStore } from '@/store/onboarding';
+import { Icon, type IconName } from './Icon';
+
+function treeIcon(tree: TreeName): IconName {
+  return `tree-${tree ?? 'default'}` as IconName;
+}
 
 function detectPlatform(): 'ios' | 'android' | 'desktop' {
   const ua = navigator.userAgent;
@@ -28,8 +33,8 @@ export function Onboarding() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-lg border border-border bg-surface p-6 text-center shadow-md">
-        <div className="text-3xl" aria-hidden="true">
-          🌳
+        <div className="flex justify-center text-accent">
+          <Icon name={treeIcon(tree)} size={40} />
         </div>
         <h1 className="mt-2 text-xl font-semibold text-text">Welcome to Arborous</h1>
         <p className="mt-1 text-sm text-text-2">Your study companion — grow your knowledge one card at a time.</p>
@@ -43,12 +48,13 @@ export function Onboarding() {
                 type="button"
                 onClick={() => setTree(t.value)}
                 aria-pressed={tree === t.value}
-                className={`rounded border p-2 text-xs transition-colors ${
+                className={`flex flex-col items-center gap-1 rounded border px-1 py-2 text-xs transition-colors ${
                   tree === t.value
                     ? 'border-accent bg-accent-light text-accent'
                     : 'border-border text-text-2 hover:border-accent-border'
                 }`}
               >
+                <Icon name={treeIcon(t.value)} size={22} />
                 {t.name}
               </button>
             ))}

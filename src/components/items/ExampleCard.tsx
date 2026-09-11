@@ -1,4 +1,5 @@
 import type { ExampleItem } from '@/schema/course';
+import { Icon } from '@/components/Icon';
 import { DifficultyBadge } from './DifficultyBadge';
 import { SourceNote } from './SourceNote';
 
@@ -6,7 +7,8 @@ export function ExampleCard({ item }: { item: ExampleItem }) {
   return (
     <div className="rounded-lg border border-border bg-surface p-5 shadow">
       <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-text-3">
-        📋 Worked Example
+        <Icon name="clipboard" size={13} />
+        Worked Example
         <DifficultyBadge difficulty={item.difficulty} />
       </div>
       <div className="text-lg font-medium text-text">{item.title}</div>
@@ -26,8 +28,11 @@ export function ExampleCard({ item }: { item: ExampleItem }) {
       )}
 
       {item.takeaway && (
-        <div className="mt-3 rounded bg-accent-light px-3 py-2 text-sm text-accent">
-          💡 <span className="font-medium">Key Takeaway</span> — {item.takeaway}
+        <div className="mt-3 flex items-start gap-1.5 rounded bg-accent-light px-3 py-2 text-sm text-accent">
+          <Icon name="bulb" size={13} className="mt-0.5 shrink-0" />
+          <span>
+            <span className="font-medium">Key Takeaway</span> — {item.takeaway}
+          </span>
         </div>
       )}
       <SourceNote excerpt={item.source_excerpt} />

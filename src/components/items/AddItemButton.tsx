@@ -4,6 +4,7 @@ import { useCoursesStore } from '@/store/courses';
 import { toast } from '@/store/toast';
 import { createBlankItem } from '@/lib/createBlankItem';
 import { generateId } from '@/lib/generateId';
+import { Icon } from '@/components/Icon';
 import { EditItemForm } from './EditItemForm';
 
 const TYPES: { value: ItemType; label: string }[] = [
@@ -70,9 +71,10 @@ export function AddItemButton({ courseId, sectionId }: AddItemButtonProps) {
     <button
       type="button"
       onClick={() => setPicking(true)}
-      className="w-full rounded-lg border border-dashed border-border py-2 text-sm text-text-3 hover:border-accent-border hover:text-text-2"
+      className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border py-2 text-sm text-text-3 hover:border-accent-border hover:text-text-2"
     >
-      + Add item
+      <Icon name="plus" size={14} />
+      Add item
     </button>
   );
 }
