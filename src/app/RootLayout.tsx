@@ -3,6 +3,7 @@ import { ThemeEffect } from '@/components/ThemeEffect';
 import { ThemePicker } from '@/components/ThemePicker';
 import { DarkModeToggle } from '@/components/DarkModeToggle';
 import { Toaster } from '@/components/Toaster';
+import { Onboarding } from '@/components/Onboarding';
 
 export function RootLayout() {
   return (
@@ -21,6 +22,7 @@ export function RootLayout() {
         <Outlet />
       </main>
       <Toaster />
+      <Onboarding />
     </div>
   );
 }
