@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent } from 'react';
 import type { DefinitionItem } from '@/schema/course';
+import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { DifficultyBadge } from './DifficultyBadge';
 import { SourceNote } from './SourceNote';
 
@@ -7,12 +8,28 @@ interface DefinitionCardProps {
   item: DefinitionItem;
   /** "definitions" study mode: term first, click/Enter to reveal the definition. */
   revealMode?: boolean;
+  /** Only true for the single card in a study session, never in Browse. */
+  keyboardEnabled?: boolean;
+  onNext?: () => void;
 }
 
-export function DefinitionCard({ item, revealMode = false }: DefinitionCardProps) {
+export function DefinitionCard({
+  item,
+  revealMode = false,
+  keyboardEnabled = false,
+  onNext,
+}: DefinitionCardProps) {
   const [revealed, setRevealed] = useState(!revealMode);
 
   const toggle = () => setRevealed((r) => !r);
+
+  // Enter reveals, then Enter advances.
+  useKeyboardShortcuts((e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    if (revealMode && !revealed) setRevealed(true);
+    else onNext?.();
+  }, keyboardEnabled);
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();

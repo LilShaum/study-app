@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent } from 'react';
 import type { McqItem } from '@/schema/course';
+import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { DifficultyBadge } from './DifficultyBadge';
 import { SourceNote } from './SourceNote';
 
@@ -32,9 +33,11 @@ interface McqCardProps {
   onAnswered?: (correct: boolean) => void;
   /** Shows an inline "Next →" link after the answer is revealed. */
   onNext?: () => void;
+  /** Only true for the single card in a study session, never in Browse. */
+  keyboardEnabled?: boolean;
 }
 
-export function McqCard({ item, onAnswered, onNext }: McqCardProps) {
+export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: McqCardProps) {
   const [selected, setSelected] = useState(-1);
   const [revealed, setRevealed] = useState(false);
   const options = item.options ?? [];
@@ -63,6 +66,28 @@ export function McqCard({ item, onAnswered, onNext }: McqCardProps) {
     setRevealed(true);
     onAnswered?.(selected === item.correct_index);
   };
+
+  // 1-9 picks an option, Enter checks, then Enter advances. Matches the
+  // vanilla app's shortcuts.
+  useKeyboardShortcuts((e) => {
+    if (!revealed) {
+      const n = Number(e.key);
+      if (Number.isInteger(n) && n >= 1 && n <= options.length) {
+        e.preventDefault();
+        setSelected(n - 1);
+        return;
+      }
+      if (e.key === 'Enter' && selected >= 0) {
+        e.preventDefault();
+        check();
+      }
+      return;
+    }
+    if (e.key === 'Enter' && onNext) {
+      e.preventDefault();
+      onNext();
+    }
+  }, keyboardEnabled);
 
   const correct = selected === item.correct_index;
 

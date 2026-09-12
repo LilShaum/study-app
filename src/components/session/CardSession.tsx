@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
 import type { StudyMode } from '@/lib/buildSessionItems';
 import { useSessionStore } from '@/store/session';
@@ -20,6 +21,45 @@ const MODE_LABELS: Record<CardMode, string> = {
   definitions: 'Definitions',
   mixed: 'Mixed',
   missed: 'Review Missed',
+};
+
+interface KeyHint {
+  keys: string[];
+  label: string;
+}
+
+const NAV_HINTS: KeyHint[] = [
+  { keys: ['←', '→'], label: 'prev / next' },
+  { keys: ['Esc'], label: 'back' },
+];
+
+const KEY_HINTS: Record<CardMode, KeyHint[]> = {
+  quiz: [
+    { keys: ['1', '–', '4'], label: 'select' },
+    { keys: ['Enter'], label: 'check / next' },
+    ...NAV_HINTS,
+  ],
+  flashcards: [
+    { keys: ['Space'], label: 'flip' },
+    { keys: ['G'], label: 'got it' },
+    { keys: ['M'], label: 'missed it' },
+    ...NAV_HINTS,
+  ],
+  definitions: [{ keys: ['Enter'], label: 'reveal / next' }, ...NAV_HINTS],
+  mixed: [
+    { keys: ['1', '–', '4'], label: 'select' },
+    { keys: ['Space'], label: 'flip' },
+    { keys: ['Enter'], label: 'check / next' },
+    { keys: ['G'], label: 'got' },
+    { keys: ['M'], label: 'missed' },
+    ...NAV_HINTS,
+  ],
+  missed: [
+    { keys: ['1', '–', '4'], label: 'select' },
+    { keys: ['Space'], label: 'flip' },
+    { keys: ['Enter'], label: 'check / next' },
+    ...NAV_HINTS,
+  ],
 };
 
 const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
@@ -43,6 +83,7 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
 /** "quiz" / "flashcards" / "definitions" / "mixed" / "missed" — one item at a time. */
 export function CardSession({ courseId, course, mode }: CardSessionProps) {
   const [finished, setFinished] = useState(false);
+  const navigate = useNavigate();
   const init = useSessionStore((s) => s.init);
   const items = useSessionStore((s) => s.items);
   const index = useSessionStore((s) => s.index);
@@ -69,6 +110,35 @@ export function CardSession({ courseId, course, mode }: CardSessionProps) {
     if (next()) return;
     setFinished(true);
   };
+
+  // Session-level keys. The cards own their own shortcuts (1-4, Space, G/M,
+  // Enter) since only they know their internal state.
+  useKeyboardShortcuts(
+    (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        navigate(`/study/${courseId}`);
+        return;
+      }
+      // Inside the MCQ radiogroup, arrows move the selection instead — the
+      // card's own handler owns them there.
+      const inRadioGroup = document.activeElement?.closest('[role="radiogroup"]');
+      if (inRadioGroup) return;
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNext();
+      } else if (e.key === 'ArrowLeft' && hasPrev) {
+        e.preventDefault();
+        prev();
+      } else if (e.key === 'Enter' && (current?.type === 'example' || current?.type === 'graphic')) {
+        // Cards with no internal state advance on Enter.
+        e.preventDefault();
+        handleNext();
+      }
+    },
+    !finished && total > 0,
+  );
 
   if (total === 0) {
     const copy = EMPTY_COPY[mode];
@@ -166,6 +236,7 @@ export function CardSession({ courseId, course, mode }: CardSessionProps) {
             handleNext();
           }}
           onNext={handleNext}
+          keyboardEnabled
         />
       )}
 
@@ -186,6 +257,20 @@ export function CardSession({ courseId, course, mode }: CardSessionProps) {
           {hasNext ? 'Next →' : 'Finish'}
         </button>
       </div>
+
+      {/* Hidden on touch, where there's no keyboard to hint about. */}
+      <p className="mt-4 hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-3 [@media(hover:hover)]:flex">
+        {KEY_HINTS[mode].map((hint) => (
+          <span key={hint.keys.join()} className="flex items-center gap-1">
+            {hint.keys.map((k) => (
+              <kbd key={k} className="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-[11px]">
+                {k}
+              </kbd>
+            ))}
+            <span>{hint.label}</span>
+          </span>
+        ))}
+      </p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FlashcardItem } from '@/schema/course';
 import { Icon } from '@/components/Icon';
+import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { DifficultyBadge } from './DifficultyBadge';
 import { SourceNote } from './SourceNote';
 
@@ -8,12 +9,38 @@ interface FlashcardCardProps {
   item: FlashcardItem;
   onGot?: () => void;
   onMissed?: () => void;
+  /** Only true for the single card in a study session, never in Browse. */
+  keyboardEnabled?: boolean;
 }
 
 const FACE = 'flip-face flex min-h-[220px] w-full flex-col items-center justify-center gap-4 text-center';
 
-export function FlashcardCard({ item, onGot, onMissed }: FlashcardCardProps) {
+export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false }: FlashcardCardProps) {
   const [flipped, setFlipped] = useState(false);
+
+  const grade = (got: boolean) => {
+    setFlipped(false);
+    if (got) onGot?.();
+    else onMissed?.();
+  };
+
+  // Space flips; G/M grade once the answer is showing (grading blind would
+  // record a result the user never actually checked).
+  useKeyboardShortcuts((e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      setFlipped((f) => !f);
+      return;
+    }
+    if (!flipped) return;
+    if (e.key === 'g' || e.key === 'G') {
+      e.preventDefault();
+      grade(true);
+    } else if (e.key === 'm' || e.key === 'M') {
+      e.preventDefault();
+      grade(false);
+    }
+  }, keyboardEnabled);
 
   return (
     <div className="rounded-lg border border-border bg-surface p-5 shadow">
@@ -50,10 +77,7 @@ export function FlashcardCard({ item, onGot, onMissed }: FlashcardCardProps) {
               <button
                 type="button"
                 tabIndex={flipped ? 0 : -1}
-                onClick={() => {
-                  setFlipped(false);
-                  onGot?.();
-                }}
+                onClick={() => grade(true)}
                 className="rounded bg-success px-4 py-2 text-sm font-medium text-white hover:bg-success-hover"
               >
                 Got it ✓
@@ -61,10 +85,7 @@ export function FlashcardCard({ item, onGot, onMissed }: FlashcardCardProps) {
               <button
                 type="button"
                 tabIndex={flipped ? 0 : -1}
-                onClick={() => {
-                  setFlipped(false);
-                  onMissed?.();
-                }}
+                onClick={() => grade(false)}
                 className="rounded bg-error px-4 py-2 text-sm font-medium text-white hover:bg-error-hover"
               >
                 Missed it ✗
