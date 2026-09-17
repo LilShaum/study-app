@@ -79,6 +79,10 @@ Every item, of any type, carries these common fields:
   "distractor_rationale": [4 strings],   // required — see quality bar below
   "difficulty", "tags", "source_excerpt" }
 ```
+`correct_index` is **0-based** — `0` means the first option in the array, not
+the second. Getting this off by one silently teaches the wrong answer, so
+count carefully.
+
 `distractor_rationale` must have **exactly one entry per option, in the same
 order as `options`** — so four entries for four options. Put an empty string
 in the slot for the correct answer. (Index-aligning it this way is what lets
@@ -145,7 +149,15 @@ wrong thing. For every MCQ:
 - `explanation` states why the correct answer is right, grounded in the
   source, not just "because it's correct."
 
+**Only `mcq` and `flashcard` items are graded.** Definitions, examples and
+diagrams are read, not scored — they never appear in the accuracy figures or
+in Review Missed. So if the student needs to be *tested* on something rather
+than just shown it, it has to be an MCQ or a flashcard.
+
 **Across the whole file:**
+- Item `id`s must be unique across the whole course, not just within their
+  section — progress is tracked per id, so a duplicate makes two items share
+  one score.
 - No duplicate or near-duplicate items testing the same fact the same way.
 - Balance item types where the source supports it — a wall of MCQs from
   dense notes is worse than a mix of MCQs, flashcards, and definitions.

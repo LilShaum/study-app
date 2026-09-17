@@ -47,3 +47,16 @@ Course data and study progress live in the browser's `localStorage`. This
 app succeeded an earlier vanilla-JS version deployed at the same URL;
 `src/store/migrateLegacy.ts` imports that version's data once on first load
 so existing users don't lose their library.
+
+## Known gaps
+
+- Sections can be reordered in a course file via `section.order`, but items
+  within a section always display in array order.
+- The item edit form can change an MCQ's option text but not add or remove
+  options.
+- Course ids are derived from `course_code` (falling back to `title`). A
+  second course that slugs to the same id gets a suffixed id rather than
+  overwriting, but the ids are still not human-chosen.
+- Study sessions can't jump between sections; Browse can.
+- Course metadata (title, description, tags) isn't editable in-app — edit the
+  `.study.json` and re-upload, or regenerate it.
