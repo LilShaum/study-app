@@ -1,0 +1,59 @@
+/* @import must precede every other rule (incl. @tailwind) per the CSS spec —
+   browsers silently drop a later @import, which would leave every
+   --color-* variable undefined. */
+@import './theme.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-bg text-text font-sans antialiased;
+    line-height: 1.6;
+  }
+}
+
+@layer components {
+  /* Flashcard 3D flip. Tailwind v3 ships no utilities for perspective,
+     transform-style or backface-visibility, so these are hand-rolled.
+     The reduced-motion block below neutralises the transition. */
+  .flip-scene {
+    perspective: 1200px;
+  }
+  .flip-card {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .flip-card.is-flipped {
+    transform: rotateY(180deg);
+  }
+  .flip-face {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .flip-face--back {
+    position: absolute;
+    inset: 0;
+    transform: rotateY(180deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

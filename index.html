@@ -1,47 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="Arborous — grow your knowledge with flashcards, MCQs, definitions and diagrams">
-  <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#818cf8" media="(prefers-color-scheme: dark)">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Arborous">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Arborous — grow your knowledge with flashcards, MCQs, definitions and diagrams" />
+  <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#818cf8" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Arborous" />
   <title>Arborous</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.webmanifest" />
+  <!-- iOS ignores SVG here, so this must point at a raster icon or the
+       home-screen tile falls back to a screenshot of the page. -->
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <script>
+    // Pre-hydration theme stamp — avoids a flash of the wrong theme/tree on
+    // load. Mirrors useThemeStore's persisted shape; kept dependency-free.
+    (function () {
+      try {
+        var raw = localStorage.getItem('arborous:theme');
+        var state = raw ? JSON.parse(raw).state : null;
+        if (state && state.mode) document.documentElement.setAttribute('data-theme', state.mode);
+        if (state && state.tree) document.documentElement.setAttribute('data-tree', state.tree);
+      } catch (e) { /* localStorage unavailable — fall back to system default */ }
+    })();
+  </script>
 </head>
 <body>
-  <div id="app"></div>
-  <!-- Script load order matters — dependency graph:
-       dom-utils → (no deps)
-       icons     → dom-utils
-       theme     → dom-utils
-       toast     → dom-utils
-       store     → (no deps)
-       router    → dom-utils, store
-       session   → store, router
-       renderers → dom-utils, icons, store, session
-       views     → dom-utils, icons, renderers, router, session, store, toast
-       keyboard  → views, router
-       onboarding→ dom-utils, icons, theme
-       main      → ALL of the above (runs immediately on load)
-  -->
-  <script src="js/dom-utils.js"></script>
-  <script src="js/icons.js"></script>
-  <script src="js/theme.js"></script>
-  <script src="js/toast.js"></script>
-  <script src="js/store.js"></script>
-  <script src="js/router.js"></script>
-  <script src="js/session.js"></script>
-  <script src="js/renderers.js"></script>
-  <script src="js/views.js"></script>
-  <script src="js/keyboard.js"></script>
-  <script src="js/onboarding.js"></script>
-  <script src="js/main.js"></script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>

@@ -3,6 +3,10 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # NOTE: deliberately no workflow_dispatch. This workflow publishes to the
+  # live GitHub Pages site, and a manual run from the Actions tab lets you pick
+  # any branch — so dispatching from a feature branch would quietly overwrite
+  # production with unmerged work. Deploys happen by merging to main.
 
 # Grant the GITHUB_TOKEN the permissions required by the Pages actions.
 permissions:
@@ -17,21 +21,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Inject commit SHA into service worker cache name
-        # sw.js contains the literal string COMMIT_SHA as a placeholder.
-        # Replace it with the real SHA so every deploy gets a fresh cache
-        # and old caches are pruned automatically on the next page load.
-        run: sed -i "s/COMMIT_SHA/${{ github.sha }}/g" sw.js
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (vite build → dist/)
+        run: npm run build
 
       - name: Configure Pages
         uses: actions/configure-pages@v4
@@ -39,8 +45,15 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: './dist'
 
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
