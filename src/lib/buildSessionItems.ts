@@ -1,5 +1,6 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { shuffle } from './shuffle';
+import { sortedSections } from './sortedSections';
 
 export const STUDY_MODES = ['browse', 'quiz', 'flashcards', 'definitions', 'mixed', 'missed'] as const;
 export type StudyMode = (typeof STUDY_MODES)[number];
@@ -22,7 +23,7 @@ export function buildSessionItems(
   mode: StudyMode,
   missedIds?: ReadonlySet<string>,
 ): SessionItem[] {
-  let items: SessionItem[] = course.sections.flatMap((section) =>
+  let items: SessionItem[] = sortedSections(course).flatMap((section) =>
     section.items.map((item) => ({
       ...item,
       _sectionTitle: section.title,

@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Course } from '@/schema/course';
+import { sortedSections } from '@/lib/sortedSections';
 import { EditableItem } from '@/components/items/EditableItem';
 import { AddItemButton } from '@/components/items/AddItemButton';
 
@@ -18,7 +19,8 @@ interface BrowseSessionProps {
  * most of a 375px viewport).
  */
 export function BrowseSession({ courseId, course }: BrowseSessionProps) {
-  const [activeSection, setActiveSection] = useState<string | null>(course.sections[0]?.id ?? null);
+  const sections = useMemo(() => sortedSections(course), [course]);
+  const [activeSection, setActiveSection] = useState<string | null>(sections[0]?.id ?? null);
   const sectionRefs = useRef(new Map<string, HTMLElement>());
 
   // Highlight whichever section is currently nearest the top of the viewport.
@@ -42,7 +44,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
     setActiveSection(id);
   };
 
-  const hasNav = course.sections.length > 1;
+  const hasNav = sections.length > 1;
 
   return (
     <div className="mx-auto max-w-5xl p-6">
@@ -59,7 +61,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
           aria-label="Sections"
           className="sticky top-0 z-10 -mx-6 mb-4 flex gap-2 overflow-x-auto bg-bg px-6 py-2 lg:hidden"
         >
-          {course.sections.map((s) => (
+          {sections.map((s) => (
             <button
               key={s.id}
               type="button"
@@ -80,7 +82,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
         {hasNav && (
           <aside className="hidden shrink-0 lg:block lg:w-56">
             <nav aria-label="Sections" className="sticky top-6 space-y-1">
-              {course.sections.map((s) => (
+              {sections.map((s) => (
                 <button
                   key={s.id}
                   type="button"
@@ -99,7 +101,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
         )}
 
         <div className="min-w-0 flex-1">
-          {course.sections.map((section) => (
+          {sections.map((section) => (
             <section
               key={section.id}
               id={`section-${section.id}`}

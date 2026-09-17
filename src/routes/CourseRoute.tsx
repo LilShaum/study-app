@@ -1,6 +1,7 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { exportCourse } from '@/lib/exportCourse';
+import { sortedSections } from '@/lib/sortedSections';
 import { toast } from '@/store/toast';
 import { Icon, type IconName } from '@/components/Icon';
 import type { StudyMode } from '@/lib/buildSessionItems';
@@ -78,7 +79,7 @@ export function CourseRoute() {
         Sections ({course.sections.length})
       </h2>
       <ul className="space-y-2">
-        {course.sections.map((section) => (
+        {sortedSections(course).map((section) => (
           <li key={section.id} className="rounded border border-border bg-surface px-4 py-2">
             <div className="font-medium text-text">{section.title}</div>
             <div className="text-sm text-text-3">{section.items.length} items</div>
