@@ -62,6 +62,7 @@ to come from — the things the schema can't express:
 
 ```
 npm run audit -- course.study.json source.txt
+npm run audit -- course.study.json source.txt --terms terms.txt
 # for slides: pdftotext -layout lecture.pdf source.txt
 ```
 
@@ -73,6 +74,15 @@ are unique, that diagrams carry no scripts or event handlers, and that the
 metadata counts are true. Exit code is 1 on any hard failure, so it can gate a
 workflow. Dependency-free — it runs against a course file without installing
 the app.
+
+`--terms` takes a marking scheme of the jargon the notes introduce — one
+concept per line, `|` separating acceptable synonyms, `#` for comments. The
+audit then reports what fraction of those terms actually got a definition and
+names the ones that didn't. This is the check that catches the failure mode
+the prompt is built to prevent: a course that is internally consistent and
+fully grounded, but quietly covers a third of the syllabus. A companion
+warning flags terms that are defined but never appear in any MCQ or
+flashcard — shown to the student, never tested.
 
 It checks the contract, not the truth of an answer: whether `correct_index`
 points at the genuinely correct option still needs a human.
