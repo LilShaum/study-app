@@ -3,15 +3,21 @@ import type { Course } from '@/schema/course';
 import { parseFragment } from '@/schema/fragment';
 import { planMerge, type MergePlan } from '@/lib/mergeFragment';
 import { buildAddPrompt } from '@/lib/buildAddPrompt';
+import { buildPractisePrompt } from '@/lib/buildPractisePrompt';
+import { analyseCourseGaps } from '@/lib/courseGaps';
 import { sortedSections } from '@/lib/sortedSections';
 import { useCoursesStore } from '@/store/courses';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
 
+export type AddMode = 'material' | 'practice';
+
 interface AddToCourseDialogProps {
   courseId: string;
   course: Course;
   onClose: () => void;
+  /** Which prompt to hand out. Both paths merge through the same plan. */
+  initialMode?: AddMode;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -35,7 +41,8 @@ function plural(n: number, word: string): string {
  * student sees "12 items into 2 sections, 3 duplicates skipped" before
  * anything touches their course.
  */
-export function AddToCourseDialog({ courseId, course, onClose }: AddToCourseDialogProps) {
+export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'material' }: AddToCourseDialogProps) {
+  const [mode, setMode] = useState<AddMode>(initialMode);
   const [pasted, setPasted] = useState('');
   const [skipDuplicates, setSkipDuplicates] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -68,8 +75,10 @@ export function AddToCourseDialog({ courseId, course, onClose }: AddToCourseDial
   const plan = result && 'plan' in result ? result.plan : null;
   const canAdd = !!plan && plan.totalAdded > 0;
 
+  const gaps = useMemo(() => analyseCourseGaps(course), [course]);
+
   const copyPrompt = async () => {
-    const prompt = buildAddPrompt(course);
+    const prompt = mode === 'practice' ? buildPractisePrompt(course) : buildAddPrompt(course);
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
@@ -105,11 +114,13 @@ export function AddToCourseDialog({ courseId, course, onClose }: AddToCourseDial
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
       role="dialog"
       aria-modal="true"
-      aria-label={`Add material to ${course.metadata.title}`}
+      aria-label={`${mode === 'practice' ? 'More practice on' : 'Add material to'} ${course.metadata.title}`}
     >
       <div className="my-8 w-full max-w-2xl rounded-lg border border-border bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="font-semibold text-text">Add material to this course</h2>
+          <h2 className="font-semibold text-text">
+            {mode === 'practice' ? 'More practice on this course' : 'Add material to this course'}
+          </h2>
           <button
             type="button"
             onClick={onClose}
@@ -120,17 +131,91 @@ export function AddToCourseDialog({ courseId, course, onClose }: AddToCourseDial
           </button>
         </div>
 
+        <div className="flex gap-1 border-b border-border px-5 pt-3" role="tablist">
+          {(
+            [
+              ['material', 'New material'],
+              ['practice', 'More practice'],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              role="tab"
+              aria-selected={mode === value}
+              onClick={() => {
+                setMode(value);
+                setCopied(false);
+              }}
+              className={`rounded-t px-3 py-1.5 text-sm ${
+                mode === value
+                  ? 'border-b-2 border-accent font-medium text-text'
+                  : 'text-text-2 hover:text-text'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         <div className="space-y-5 px-5 py-4">
           {/* Step 1 */}
           <section>
             <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-text-3">
               Step 1 — generate
             </div>
-            <p className="mb-2 text-sm text-text-2">
-              Copy the prompt, paste it into your AI chat along with your new notes, and it will
-              return JSON. The prompt already tells it which sections, item ids and tags this course
-              uses, so it won&apos;t duplicate or collide with what you have.
-            </p>
+            {mode === 'material' ? (
+              <p className="mb-2 text-sm text-text-2">
+                Copy the prompt, paste it into your AI chat along with your new notes, and it will
+                return JSON. The prompt already tells it which sections, item ids and tags this
+                course uses, so it won&apos;t duplicate or collide with what you have.
+              </p>
+            ) : (
+              <p className="mb-2 text-sm text-text-2">
+                For when you already know the existing questions. This prompt asks for{' '}
+                <strong>new questions on the material you already have</strong> — no notes needed.
+                Each item recorded a quote from your original source, and the prompt hands those
+                back as the material to write from. Paste it into the same chat you generated the
+                course in and it will use your full notes instead, which is better.
+              </p>
+            )}
+
+            {mode === 'practice' &&
+              (gaps.untestedTerms.length > 0 ||
+                gaps.thinSections.length > 0 ||
+                gaps.gradableRatio < 0.5) && (
+                <div className="mb-2 rounded border border-border bg-bg px-3 py-2 text-sm text-text-2">
+                  <div className="mb-1 font-medium text-text">The prompt will prioritise:</div>
+                  <ul className="list-inside list-disc space-y-0.5">
+                    {gaps.untestedTerms.length > 0 && (
+                      <li>
+                        {plural(gaps.untestedTerms.length, 'term')} defined but never tested
+                        <span className="text-text-3">
+                          {' '}
+                          — {gaps.untestedTerms.slice(0, 4).join(', ')}
+                          {gaps.untestedTerms.length > 4 ? '…' : ''}
+                        </span>
+                      </li>
+                    )}
+                    {gaps.thinSections.length > 0 && (
+                      <li>
+                        {plural(gaps.thinSections.length, 'section')} with little that can be scored
+                        <span className="text-text-3">
+                          {' '}
+                          — {gaps.thinSections.slice(0, 3).map((x) => x.title).join(', ')}
+                          {gaps.thinSections.length > 3 ? '…' : ''}
+                        </span>
+                      </li>
+                    )}
+                    {gaps.gradableRatio < 0.5 && (
+                      <li>
+                        only {Math.round(gaps.gradableRatio * 100)}% of items are gradable (MCQ or
+                        flashcard)
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
             <button
               type="button"
               onClick={copyPrompt}

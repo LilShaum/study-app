@@ -50,10 +50,24 @@ your new notes and paste the returned JSON straight back. The paste is
 previewed (what gets added, where, what's skipped as a duplicate, which ids
 are renamed) before anything is committed.
 
+"More practice" is the second mode of the same dialog, for when you already
+know the existing questions. It needs no notes at all: every item recorded a
+`source_excerpt` from the original source, so the prompt hands those back,
+grouped by section, as the material to write new questions from. That
+reconstruction is lossy — anything the first pass skipped left no excerpt — so
+the prompt asks the model to prefer your original notes if you paste it into
+the chat that generated the course, and fall back to the excerpts otherwise.
+
+`src/lib/courseGaps.ts` works out where a course is weak — terms that are
+defined but never named by any MCQ or flashcard, sections with nothing
+scorable, a low gradable ratio — and the practice prompt names those as
+priorities, so a second round targets the gaps rather than producing more of
+the same.
+
 The prompt embeds `CLAUDE.md` via a `?raw` import, so the spec the app hands
 out can't drift from the format it parses — edit `CLAUDE.md` and both change.
 `src/lib/mergeFragment.ts` holds the merge logic: `planMerge` computes,
-`applyMerge` applies, both pure.
+`applyMerge` applies, both pure. Both modes merge through it.
 
 ## Auditing a generated course
 
