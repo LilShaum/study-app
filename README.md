@@ -55,6 +55,28 @@ out can't drift from the format it parses — edit `CLAUDE.md` and both change.
 `src/lib/mergeFragment.ts` holds the merge logic: `planMerge` computes,
 `applyMerge` applies, both pure.
 
+## Auditing a generated course
+
+`scripts/audit-course.mjs` checks a `.study.json` against the notes it claims
+to come from — the things the schema can't express:
+
+```
+npm run audit -- course.study.json source.txt
+# for slides: pdftotext -layout lecture.pdf source.txt
+```
+
+It verifies that every `source_excerpt` really appears in the source (the
+check that catches fabricated content), that MCQs honour the contract in
+`CLAUDE.md` (four options, an in-range 0-based `correct_index`, an
+index-aligned `distractor_rationale`, no "all of the above" filler), that ids
+are unique, that diagrams carry no scripts or event handlers, and that the
+metadata counts are true. Exit code is 1 on any hard failure, so it can gate a
+workflow. Dependency-free — it runs against a course file without installing
+the app.
+
+It checks the contract, not the truth of an answer: whether `correct_index`
+points at the genuinely correct option still needs a human.
+
 ## Data & compatibility
 
 Course data and study progress live in the browser's `localStorage`. This
