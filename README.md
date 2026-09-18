@@ -41,6 +41,15 @@ inferred from it) — that file is the source of truth. `CLAUDE.md` is a
 generates `.study.json` files from a student's notes, not instructions for
 working on this app.
 
+## Starting a course
+
+The app ships with no content and no assumption that you already have a
+`.study.json`. **New course** on the library page hands you the generator
+prompt — `CLAUDE.md` verbatim, via a `?raw` import, so it cannot drift from
+the format the app parses — to paste into an AI chat with your slides
+attached. Paste the JSON it returns straight back into the same dialog, or
+open a saved file if you kept one.
+
 ## Adding to a course
 
 "Add material" on a course page is a two-step, no-API-key flow: it copies a
