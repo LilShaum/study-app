@@ -41,7 +41,8 @@ describe('buildAddPrompt', () => {
     // the format the app parses. If the import silently resolved to nothing,
     // the prompt would still "work" but omit the whole contract — so assert
     // on distinctive spec content, not just a non-empty string.
-    expect(prompt).toContain('Rule zero');
+    expect(prompt).toContain('The two obligations');
+    expect(prompt).toContain('Build an inventory');
     expect(prompt).toContain('source_excerpt');
     expect(prompt).toContain('distractor_rationale');
     expect(prompt.length).toBeGreaterThan(2000);

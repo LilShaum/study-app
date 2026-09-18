@@ -22,14 +22,31 @@
  */
 import fs from 'node:fs';
 
-const [, , coursePath, sourcePath] = process.argv;
+const argv = process.argv.slice(2);
+const termsFlag = argv.indexOf('--terms');
+const termsPath = termsFlag === -1 ? null : argv[termsFlag + 1];
+const consumed = termsFlag === -1 ? new Set() : new Set([termsFlag, termsFlag + 1]);
+const positional = argv.filter((a, i) => !consumed.has(i) && !a.startsWith('--'));
+const [coursePath, sourcePath] = positional;
+
 if (!coursePath) {
-  console.error('usage: node scripts/audit-course.mjs <course.study.json> [source.txt]');
+  console.error('usage: node scripts/audit-course.mjs <course.study.json> [source.txt] [--terms terms.txt]');
   process.exit(2);
 }
 
 const course = JSON.parse(fs.readFileSync(coursePath, 'utf8'));
 const sourceRaw = sourcePath ? fs.readFileSync(sourcePath, 'utf8') : null;
+/* A terms file is the marking scheme for coverage: one concept per line,
+   "|" separating acceptable synonyms, "#" for comments. Without it we can
+   still check that definitions exist, but not that the RIGHT ones do. */
+const expectedTerms = termsPath
+  ? fs
+      .readFileSync(termsPath, 'utf8')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith('#'))
+      .map((l) => l.split('|').map((v) => v.trim()).filter(Boolean))
+  : null;
 
 /* Normalise both sides identically. Filtering words on only one side makes
    a verbatim quote unmatchable; mapping ×/·/⋅/* to a common token stops an
@@ -41,6 +58,11 @@ const norm = (s) =>
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
     .replace(/[×⋅·*]/g, ' x ')
+    // Sub/superscript digits carry meaning here (v₀, K₀.₅, IC₅₀). Fold them to
+    // ASCII before stripping punctuation, or "v₀" collapses to a bare "v" and
+    // matches anything containing the letter v.
+    .replace(/[₀-₉]/g, (d) => String('₀₁₂₃₄₅₆₇₈₉'.indexOf(d)))
+    .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (d) => String('⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(d)))
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 
@@ -125,6 +147,64 @@ check(
   `enough gradable items: ${graded.length}/${items.length} are MCQ or flashcard (only these are scored)`,
   warn,
 );
+
+/* ---- term coverage ----
+   The point of the generator's inventory pass: every piece of jargon in the
+   notes should end up with a definition. This is the check that catches a
+   course which is internally consistent but only covers a third of the
+   syllabus — the failure mode that looks fine until the exam. */
+const definitions = items.filter((i) => i.type === 'definition');
+if (expectedTerms) {
+  // A term counts as covered if a definition's `term` matches one of its
+  // accepted spellings, either way round — "Km" should match a definition
+  // titled "Km (Michaelis constant)".
+  const defTerms = definitions.map((d) => norm(d.term ?? ''));
+  // Match whole token sequences, not bare substrings. Padding both sides with
+  // spaces makes "km" match "km michaelis constant" but not "kinase", and a
+  // short variant like "ki" no longer matches every word containing those
+  // letters — a false pass here would report coverage that isn't there, which
+  // is worse than reporting none.
+  const phraseIn = (haystack, needle) => ` ${haystack} `.includes(` ${needle} `);
+  const covers = (variants) =>
+    variants.some((v) => {
+      const nv = norm(v);
+      if (!nv) return false;
+      return defTerms.some(
+        (dt) => dt === nv || phraseIn(dt, nv) || (dt.length >= 4 && phraseIn(nv, dt)),
+      );
+    });
+  const missing = expectedTerms.filter((variants) => !covers(variants));
+  const covered = expectedTerms.length - missing.length;
+  const pct = Math.round((covered / expectedTerms.length) * 100);
+  check(
+    missing.length === 0,
+    `every expected term has a definition — ${covered}/${expectedTerms.length} (${pct}%)${missing.length ? `\n      uncovered: ${missing.map((v) => v[0]).join(', ')}` : ''}`,
+  );
+} else {
+  warn.push('no --terms file given — skipped jargon-coverage checking');
+}
+
+/* ---- gradable coverage of the definitions ----
+   Definitions are read, never scored. A term that only ever appears as a
+   definition is shown to the student but never tested. */
+if (definitions.length) {
+  const gradableText = norm(
+    items
+      .filter((i) => i.type === 'mcq' || i.type === 'flashcard')
+      .map((i) => `${i.question ?? ''} ${i.front ?? ''} ${i.back ?? ''} ${(i.options ?? []).join(' ')} ${i.explanation ?? ''}`)
+      .join(' '),
+  );
+  const untested = definitions.filter((d) => {
+    const t = norm(d.term ?? '');
+    return t.length > 2 && !gradableText.includes(t);
+  });
+  const testedPct = Math.round(((definitions.length - untested.length) / definitions.length) * 100);
+  check(
+    untested.length <= Math.floor(definitions.length * 0.25),
+    `defined terms also appear in a gradable item — ${definitions.length - untested.length}/${definitions.length} (${testedPct}%)${untested.length ? `\n      never tested: ${untested.slice(0, 12).map((d) => d.term).join(', ')}${untested.length > 12 ? `, +${untested.length - 12} more` : ''}` : ''}`,
+    warn,
+  );
+}
 
 /* ---- diagrams ---- */
 for (const g of items.filter((i) => i.type === 'graphic')) {
