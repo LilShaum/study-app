@@ -100,16 +100,41 @@ if (SRC) {
     }
     return false;
   };
+  // Fallback for excerpts quoting a TABLE. A table row is not a sentence: the
+  // PDF text layer puts each cell far from its column header, so a faithful
+  // "Uncompetitive | ES complex only | Km: Decreases" reconstruction has no
+  // contiguous run in the source even though every word of it is real.
+  // Requiring almost every content word to appear somewhere still rejects a
+  // fabrication, which introduces words the source simply does not contain.
+  const WORD_COVERAGE = 0.9;
+  const wordsCovered = (text) => {
+    const words = norm(text).split(' ').filter((w) => w.length > 2);
+    if (words.length < 4) return 0;
+    const hits = words.filter((w) => SRC.includes(` ${w} `) || SRC.startsWith(`${w} `)).length;
+    return hits / words.length;
+  };
+
   // An excerpt may stitch two passages with an ellipsis; each half must trace.
   const grounded = (excerpt) => {
     const parts = String(excerpt).split(/\s*(?:\.\.\.|…)\s*/).filter((p) => p.trim());
     return parts.length > 0 && parts.every(groundedRun);
   };
-  const ungrounded = items.filter((i) => i.source_excerpt && !grounded(i.source_excerpt));
+
+  const notContiguous = items.filter((i) => i.source_excerpt && !grounded(i.source_excerpt));
+  const ungrounded = notContiguous.filter((i) => wordsCovered(i.source_excerpt) < WORD_COVERAGE);
+  const reconstructed = notContiguous.filter((i) => wordsCovered(i.source_excerpt) >= WORD_COVERAGE);
+
   check(
     ungrounded.length === 0,
     `every source_excerpt traces to the source${ungrounded.length ? ` — NOT FOUND (${ungrounded.length}): ${ungrounded.map((i) => i.id).join(', ')}` : ''}`,
   );
+  if (reconstructed.length) {
+    warn.push(
+      `${reconstructed.length} excerpt(s) are not a contiguous quote but every word appears in the source — typically a table row reassembled by hand. Worth eyeballing: ${reconstructed
+        .map((i) => i.id)
+        .join(', ')}`,
+    );
+  }
 } else {
   warn.push('no source file given — skipped the grounding check (pass one to catch fabricated content)');
 }
@@ -212,7 +237,9 @@ for (const g of items.filter((i) => i.type === 'graphic')) {
   check(!/<script|\son[a-z]+\s*=|<foreignObject|href\s*=\s*["']?\s*(https?:|javascript:)/i.test(svg), `${g.id}: no script, event handlers or external refs in svg`);
   check(/viewBox/i.test(svg), `${g.id}: svg has a viewBox`);
   check(!!String(g.alt_text ?? '').trim(), `${g.id}: has alt_text`);
-  check(!/\b(width|height)\s*=\s*["']?\d/.test(svg), `${g.id}: svg has no fixed pixel size (so it fills a phone screen)`, warn);
+  // (?<![-\w]) so `stroke-width="2"` isn't mistaken for a fixed canvas size —
+  // \b matches after the hyphen, which flagged every well-formed diagram.
+  check(!/(?<![-\w])(width|height)\s*=\s*["']?\d/.test(svg), `${g.id}: svg has no fixed pixel size (so it fills a phone screen)`, warn);
   check(/currentColor/i.test(svg), `${g.id}: svg uses currentColor (legible on the dark themes)`, warn);
 }
 
