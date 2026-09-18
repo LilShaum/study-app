@@ -1,0 +1,18 @@
+BIOL 210 - Lecture 3: Membrane Transport
+
+Learning objectives
+  Explain how osmosis differs from simple diffusion.
+  State what tonicity describes.
+
+Simple diffusion is the net movement of a solute down its concentration
+gradient, requiring no energy and no transport protein.
+
+Osmosis is the net movement of water across a semipermeable membrane from a
+region of low solute concentration to one of high solute concentration.
+
+Tonicity describes the relative solute concentration of two solutions
+separated by a membrane.
+
+  Mode                Requires ATP        Moves against gradient
+  Simple diffusion    No                  No
+  Active transport    Yes                 Yes

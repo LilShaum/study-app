@@ -46,7 +46,21 @@ const expectedTerms = termsPath
       .map((l) => l.trim())
       .filter((l) => l && !l.startsWith('#'))
       .map((l) => l.split('|').map((v) => v.trim()).filter(Boolean))
-  : null;
+  : // No marking scheme supplied — fall back to the inventory the generator
+    // declared in the file itself. That is self-attestation, so it cannot
+    // prove the list is complete; it can still prove the course failed to
+    // honour its own list, which is the more common failure.
+    // Deliberately null, not [], when there is nothing: an empty array is
+    // truthy and would divide by zero in the coverage percentage.
+    declaredTerms();
+
+function declaredTerms() {
+  const terms = (course.metadata?.inventory?.terms ?? [])
+    .map((t) => String(t).trim())
+    .filter(Boolean)
+    .map((t) => [t]);
+  return terms.length ? terms : null;
+}
 
 /* Normalise both sides identically. Filtering words on only one side makes
    a verbatim quote unmatchable; mapping ×/·/⋅/* to a common token stops an
@@ -179,34 +193,43 @@ check(
    course which is internally consistent but only covers a third of the
    syllabus — the failure mode that looks fine until the exam. */
 const definitions = items.filter((i) => i.type === 'definition');
-if (expectedTerms) {
+if (expectedTerms && expectedTerms.length) {
   // A term counts as covered if a definition's `term` matches one of its
   // accepted spellings, either way round — "Km" should match a definition
   // titled "Km (Michaelis constant)".
   const defTerms = definitions.map((d) => norm(d.term ?? ''));
-  // Match whole token sequences, not bare substrings. Padding both sides with
-  // spaces makes "km" match "km michaelis constant" but not "kinase", and a
-  // short variant like "ki" no longer matches every word containing those
-  // letters — a false pass here would report coverage that isn't there, which
-  // is worse than reporting none.
-  const phraseIn = (haystack, needle) => ` ${haystack} `.includes(` ${needle} `);
+  // Token-subset matching with plurals folded, mirroring src/lib/courseHealth.ts
+  // so the CLI and the in-app panel never disagree about the same course.
+  // Whole-phrase matching was too strict ("isozyme" vs a definition titled
+  // "Isozymes", "concerted model" vs "Concerted (MWC) model"); bare substring
+  // matching was too loose ("ki" inside "kinase"). Requiring every token of the
+  // wanted term to be present is right on both counts.
+  const tokens = (str) =>
+    new Set(
+      norm(str)
+        .split(' ')
+        .filter(Boolean)
+        .map((w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w)),
+    );
+  const defTokenSets = defTerms.map((t) => tokens(t));
   const covers = (variants) =>
     variants.some((v) => {
-      const nv = norm(v);
-      if (!nv) return false;
-      return defTerms.some(
-        (dt) => dt === nv || phraseIn(dt, nv) || (dt.length >= 4 && phraseIn(nv, dt)),
-      );
+      const want = tokens(v);
+      if (!want.size) return false;
+      return defTokenSets.some((have) => [...want].every((w) => have.has(w)));
     });
   const missing = expectedTerms.filter((variants) => !covers(variants));
   const covered = expectedTerms.length - missing.length;
   const pct = Math.round((covered / expectedTerms.length) * 100);
+  const origin = termsPath ? 'terms file' : "the course's own declared inventory";
   check(
     missing.length === 0,
-    `every expected term has a definition — ${covered}/${expectedTerms.length} (${pct}%)${missing.length ? `\n      uncovered: ${missing.map((v) => v[0]).join(', ')}` : ''}`,
+    `every expected term has a definition (${origin}) — ${covered}/${expectedTerms.length} (${pct}%)${missing.length ? `\n      uncovered: ${missing.map((v) => v[0]).join(', ')}` : ''}`,
   );
 } else {
-  warn.push('no --terms file given — skipped jargon-coverage checking');
+  warn.push(
+    'no --terms file given and the course declares no metadata.inventory.terms — skipped jargon-coverage checking',
+  );
 }
 
 /* ---- gradable coverage of the definitions ----

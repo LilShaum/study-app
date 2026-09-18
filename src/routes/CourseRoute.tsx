@@ -6,6 +6,7 @@ import { sortedSections } from '@/lib/sortedSections';
 import { toast } from '@/store/toast';
 import { Icon, type IconName } from '@/components/Icon';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
+import { CourseHealthPanel } from '@/components/CourseHealthPanel';
 import type { StudyMode } from '@/lib/buildSessionItems';
 
 const MODES: { mode: StudyMode; label: string; desc: string; icon: IconName }[] = [
@@ -74,6 +75,8 @@ export function CourseRoute() {
           More practice
         </button>
       </div>
+
+      <CourseHealthPanel course={course} />
 
       <h2 className="mb-3 mt-6 text-sm font-semibold uppercase tracking-wide text-text-3">
         Choose a Study Mode
