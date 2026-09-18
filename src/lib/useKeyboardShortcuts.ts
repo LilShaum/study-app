@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 /**
  * Binds a window-level keydown handler while `enabled`.
@@ -8,11 +8,16 @@ import { useEffect, useRef } from 'react';
  * would be worse than having no shortcuts at all.
  *
  * The handler is kept in a ref so callers can pass an inline closure without
- * rebinding the listener on every render.
+ * rebinding the listener on every render. The ref is updated in a layout
+ * effect rather than during render: writing to a ref while rendering is unsafe
+ * under concurrent rendering, and a layout effect still lands before the
+ * browser can deliver the next keydown.
  */
 export function useKeyboardShortcuts(handler: (e: KeyboardEvent) => void, enabled = true): void {
   const handlerRef = useRef(handler);
-  handlerRef.current = handler;
+  useLayoutEffect(() => {
+    handlerRef.current = handler;
+  });
 
   useEffect(() => {
     if (!enabled) return;

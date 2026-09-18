@@ -11,6 +11,8 @@ interface SessionState {
   score: { got: number; missed: number };
   activeSectionId: string | null;
   answeredIndices: Set<number>;
+  /** True once the student has advanced past the last item. */
+  finished: boolean;
 
   init: (courseId: string, course: Course, mode: StudyMode) => void;
   current: () => SessionItem | null;
@@ -22,6 +24,8 @@ interface SessionState {
   /** Records the current item's result exactly once per index, mirroring Session.record. */
   record: (got: boolean) => void;
   jumpToSection: (sectionId: string) => void;
+  /** Marks the session complete; cleared by init(). */
+  finish: () => void;
 }
 
 /** Ephemeral, in-memory only — an active study session is not persisted. */
@@ -33,6 +37,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   score: { got: 0, missed: 0 },
   activeSectionId: null,
   answeredIndices: new Set(),
+  finished: false,
 
   init: (courseId, course, mode) => {
     const missedIds = mode === 'missed' ? useProgressStore.getState().missedIds(courseId) : undefined;
@@ -45,6 +50,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       score: { got: 0, missed: 0 },
       activeSectionId: items[0]?._sectionId ?? null,
       answeredIndices: new Set(),
+      finished: false,
     });
   },
 
@@ -88,4 +94,6 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     const idx = get().items.findIndex((i) => i._sectionId === sectionId);
     if (idx >= 0) set({ index: idx, activeSectionId: sectionId });
   },
+
+  finish: () => set({ finished: true }),
 }));
