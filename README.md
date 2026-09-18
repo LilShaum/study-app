@@ -41,6 +41,20 @@ inferred from it) — that file is the source of truth. `CLAUDE.md` is a
 generates `.study.json` files from a student's notes, not instructions for
 working on this app.
 
+## Adding to a course
+
+"Add material" on a course page is a two-step, no-API-key flow: it copies a
+prompt preloaded with that course's section ids, taken item ids, tag
+vocabulary and already-covered prompts; you paste that into an AI chat with
+your new notes and paste the returned JSON straight back. The paste is
+previewed (what gets added, where, what's skipped as a duplicate, which ids
+are renamed) before anything is committed.
+
+The prompt embeds `CLAUDE.md` via a `?raw` import, so the spec the app hands
+out can't drift from the format it parses — edit `CLAUDE.md` and both change.
+`src/lib/mergeFragment.ts` holds the merge logic: `planMerge` computes,
+`applyMerge` applies, both pure.
+
 ## Data & compatibility
 
 Course data and study progress live in the browser's `localStorage`. This
@@ -60,3 +74,7 @@ so existing users don't lose their library.
 - Study sessions can't jump between sections; Browse can.
 - Course metadata (title, description, tags) isn't editable in-app — edit the
   `.study.json` and re-upload, or regenerate it.
+- Duplicate detection when adding material compares the item's leading text
+  (question / front / term / title) within the same item type. It catches
+  re-runs, not two genuinely different wordings of one fact.
+- No ESLint config, and most UI components have no test coverage.
