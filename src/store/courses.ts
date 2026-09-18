@@ -4,6 +4,7 @@ import type { Course, StudyItem } from '@/schema/course';
 import { parseCourseFile } from '@/schema/parseCourse';
 import { slugifyCourseId } from '@/lib/slugify';
 import { safeJSONStorage } from '@/lib/safeStorage';
+import { applyMerge, type MergePlan } from '@/lib/mergeFragment';
 
 interface CoursesState {
   courses: Record<string, Course>;
@@ -24,6 +25,8 @@ interface CoursesState {
   deleteItem: (courseId: string, sectionId: string, itemId: string) => { item: StudyItem; index: number } | null;
   /** Inserts an item (new item, or an undo restore), at the given index or the end. */
   insertItem: (courseId: string, sectionId: string, item: StudyItem, atIndex?: number) => void;
+  /** Appends a planned set of new items to an existing course. */
+  mergeIntoCourse: (courseId: string, plan: MergePlan) => void;
 
   /** Bulk-replace, used only by the one-time legacy-data migration. */
   _hydrateFromLegacy: (courses: Record<string, Course>) => void;
@@ -119,6 +122,14 @@ export const useCoursesStore = create<CoursesState>()(
             return { ...s, items };
           });
           return { courses: { ...state.courses, [courseId]: { ...course, sections } } };
+        });
+      },
+
+      mergeIntoCourse: (courseId, plan) => {
+        set((state) => {
+          const course = state.courses[courseId];
+          if (!course) return state;
+          return { courses: { ...state.courses, [courseId]: applyMerge(course, plan) } };
         });
       },
 
