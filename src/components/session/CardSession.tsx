@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
@@ -82,7 +82,6 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
 
 /** "quiz" / "flashcards" / "definitions" / "mixed" / "missed" — one item at a time. */
 export function CardSession({ courseId, course, mode }: CardSessionProps) {
-  const [finished, setFinished] = useState(false);
   const navigate = useNavigate();
   const init = useSessionStore((s) => s.init);
   const items = useSessionStore((s) => s.items);
@@ -95,20 +94,24 @@ export function CardSession({ courseId, course, mode }: CardSessionProps) {
   const next = useSessionStore((s) => s.next);
   const prev = useSessionStore((s) => s.prev);
   const record = useSessionStore((s) => s.record);
+  // `finished` lives in the session store rather than in local state: it
+  // describes the session, so init() clears it as part of starting one. Held
+  // locally it had to be reset from an effect, which meant a setState during
+  // an effect body and an extra render pass on every session start.
+  const finished = useSessionStore((s) => s.finished);
+  const finish = useSessionStore((s) => s.finish);
 
   useEffect(() => {
-    setFinished(false);
     init(courseId, course, mode);
   }, [courseId, course, mode, init]);
 
   const restart = () => {
     init(courseId, course, mode);
-    setFinished(false);
   };
 
   const handleNext = () => {
     if (next()) return;
-    setFinished(true);
+    finish();
   };
 
   // Session-level keys. The cards own their own shortcuts (1-4, Space, G/M,

@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { exportCourse } from '@/lib/exportCourse';
 import { sortedSections } from '@/lib/sortedSections';
 import { toast } from '@/store/toast';
 import { Icon, type IconName } from '@/components/Icon';
+import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
 import type { StudyMode } from '@/lib/buildSessionItems';
 
 const MODES: { mode: StudyMode; label: string; desc: string; icon: IconName }[] = [
@@ -19,6 +21,7 @@ const MODES: { mode: StudyMode; label: string; desc: string; icon: IconName }[] 
 export function CourseRoute() {
   const { id } = useParams<{ id: string }>();
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
+  const [adding, setAdding] = useState<AddMode | null>(null);
 
   if (!id) return <Navigate to="/" replace />;
   if (!course) {
@@ -54,6 +57,22 @@ export function CourseRoute() {
           <Icon name="download" size={14} />
           Export .study.json
         </button>
+        <button
+          type="button"
+          onClick={() => setAdding('material')}
+          className="inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
+        >
+          <Icon name="plus" size={14} />
+          Add material
+        </button>
+        <button
+          type="button"
+          onClick={() => setAdding('practice')}
+          className="inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
+        >
+          <Icon name="repeat" size={14} />
+          More practice
+        </button>
       </div>
 
       <h2 className="mb-3 mt-6 text-sm font-semibold uppercase tracking-wide text-text-3">
@@ -86,6 +105,15 @@ export function CourseRoute() {
           </li>
         ))}
       </ul>
+
+      {adding && (
+        <AddToCourseDialog
+          courseId={id}
+          course={course}
+          initialMode={adding}
+          onClose={() => setAdding(null)}
+        />
+      )}
     </div>
   );
 }

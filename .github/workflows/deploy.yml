@@ -36,6 +36,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Gate the deploy on the test suite. `npm run build` runs `tsc -b`, so
+      # type errors already fail the build — but without this step a red test
+      # suite still shipped to production.
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
       - name: Build (vite build → dist/)
         run: npm run build
 

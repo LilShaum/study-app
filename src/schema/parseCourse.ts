@@ -1,4 +1,5 @@
 import { CourseSchema, SCHEMA_VERSION, type Course } from './course';
+import { formatZodError } from './formatZodError';
 
 export type ParseCourseResult =
   | { ok: true; course: Course }
@@ -7,9 +8,11 @@ export type ParseCourseResult =
 /**
  * Parses and validates a `.study.json` file's contents.
  *
- * Mirrors the vanilla app's upload guard exactly (same two checks, same
- * message copy) rather than surfacing raw Zod issue paths, since this is
- * user-facing text shown in a toast after a file upload.
+ * Keeps the vanilla app's two up-front guards (so the common "wrong file
+ * entirely" and "wrong version" cases read the same as they always have),
+ * but surfaces Zod's issue paths for everything else — knowing it's
+ * `sections[1].items[3].correct_index` is the difference between a fixable
+ * error and a shrug.
  */
 export function parseCourse(raw: unknown): ParseCourseResult {
   if (
@@ -35,7 +38,10 @@ export function parseCourse(raw: unknown): ParseCourseResult {
 
   const result = CourseSchema.safeParse(raw);
   if (!result.success) {
-    return { ok: false, error: 'Could not parse the file. Make sure it is a valid .study.json course.' };
+    return {
+      ok: false,
+      error: `This isn't a valid .study.json course:\n${formatZodError(result.error)}`,
+    };
   }
 
   // Return the caller's own object (not Zod's parsed copy) so that export

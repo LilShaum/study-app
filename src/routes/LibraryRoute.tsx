@@ -4,6 +4,7 @@ import { useCoursesStore } from '@/store/courses';
 import { useProgressStore } from '@/store/progress';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
+import { NewCourseDialog } from '@/components/NewCourseDialog';
 
 /** "/" — the course library: upload, search/tag filter, open, and quietly-hidden delete-with-undo. */
 export function LibraryRoute() {
@@ -14,6 +15,7 @@ export function LibraryRoute() {
   const inputRef = useRef<HTMLInputElement>(null);
   const ids = Object.keys(courses);
 
+  const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
 
@@ -83,14 +85,24 @@ export function LibraryRoute() {
               : `${ids.length} course${ids.length !== 1 ? 's' : ''}`}
           </span>
         </div>
-        <button
-          type="button"
-          className="inline-flex items-center gap-1.5 rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
-          onClick={() => inputRef.current?.click()}
-        >
-          <Icon name="plus" size={14} />
-          Upload Course
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-accent-border hover:text-text"
+            onClick={() => inputRef.current?.click()}
+          >
+            <Icon name="download" size={14} />
+            Upload
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
+            onClick={() => setCreating(true)}
+          >
+            <Icon name="plus" size={14} />
+            New course
+          </button>
+        </div>
         <input
           ref={inputRef}
           type="file"
@@ -105,9 +117,20 @@ export function LibraryRoute() {
           <div className="mb-3 flex justify-center text-text-3">
             <Icon name="library" size={40} />
           </div>
-          No courses yet. Upload a{' '}
-          <code className="rounded bg-accent-light px-1 font-mono text-accent">.study.json</code> file
-          to get started.
+          <p>No courses yet.</p>
+          <p className="mx-auto mt-1 max-w-md text-sm">
+            A course is a{' '}
+            <code className="rounded bg-accent-light px-1 font-mono text-accent">.study.json</code>{' '}
+            file generated from your own notes. Start here and the app will give you the prompt.
+          </p>
+          <button
+            type="button"
+            onClick={() => setCreating(true)}
+            className="mt-4 inline-flex items-center gap-1.5 rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
+          >
+            <Icon name="plus" size={14} />
+            New course
+          </button>
         </div>
       ) : (
         <>
@@ -201,6 +224,8 @@ export function LibraryRoute() {
           )}
         </>
       )}
+
+      {creating && <NewCourseDialog onClose={() => setCreating(false)} />}
     </div>
   );
 }

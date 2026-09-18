@@ -9,6 +9,21 @@ const BASE = '/study-app/';
 
 export default defineConfig({
   base: BASE,
+  build: {
+    rollupOptions: {
+      output: {
+        // Split the dependencies out of the app chunk. Nothing is downloaded
+        // less often — the service worker precaches every chunk either way —
+        // but the vendor chunk keeps its content hash across a deploy that
+        // only touches app code, so returning users refetch the small chunk
+        // instead of the whole bundle.
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          vendor: ['zustand', 'zod', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast', 'clsx'],
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
