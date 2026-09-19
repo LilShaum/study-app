@@ -30,7 +30,12 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 22, not 20: jsdom's undici calls webidl.util.markAsUncloneable,
+          # which the runner's Node 20 does not have, so `npm test` dies with
+          # "is not a function" before a single test runs. This only surfaced
+          # once the test step was added to this workflow — the build itself
+          # is fine on 20, which is why it went unnoticed.
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
