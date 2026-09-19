@@ -243,6 +243,29 @@ const SECTIONS: HelpSection[] = [
     ),
   },
   {
+    id: 'organising',
+    title: 'Naming and tagging your courses',
+    body: (
+      <>
+        <p>
+          <strong>Edit details</strong> on a course page changes its title, course code, subject,
+          description and tags. The generator&rsquo;s title is whatever your slides were called,
+          which is rarely what you want to see in a list of twelve courses.
+        </p>
+        <p className="mt-2">
+          Tags are what the library filters by, and the useful ones — <em>week-9</em>, <em>exam</em>,{' '}
+          <em>shaky</em> — never come out of a lecture, so this is where they come from. The dialog
+          offers tags you already use elsewhere so you don&rsquo;t end up with both &ldquo;week
+          9&rdquo; and &ldquo;week-9&rdquo; splitting one filter in two.
+        </p>
+        <p className="mt-2 text-text-3">
+          Renaming is safe: a course is stored under an id fixed when you added it, and your
+          progress is keyed to that id, not to the title.
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'check',
     title: 'The course check panel',
     body: (

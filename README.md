@@ -192,8 +192,6 @@ so existing users don't lose their library.
 - Course ids are derived from `course_code` (falling back to `title`). A
   second course that slugs to the same id gets a suffixed id rather than
   overwriting, but the ids are still not human-chosen.
-- Course metadata (title, description, tags) isn't editable in-app — edit the
-  `.study.json` and re-upload, or regenerate it.
 - Duplicate detection when adding material compares the item's leading text
   (question / front / term / title) within the same item type. It catches
   re-runs, not two genuinely different wordings of one fact.
