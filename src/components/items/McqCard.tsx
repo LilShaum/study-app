@@ -1,32 +1,9 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useMemo, useState, type KeyboardEvent } from 'react';
 import type { McqItem } from '@/schema/course';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
+import { normalisedRationale } from '@/lib/mcqRationale';
 import { DifficultyBadge } from './DifficultyBadge';
 import { SourceNote } from './SourceNote';
-
-/**
- * Resolves the "why is this wrong" note for one option.
- *
- * Tolerates both shapes seen in the wild: one entry per option (preferred —
- * unambiguous, the correct option's slot is ignored) and one entry per *wrong*
- * option in option order. Guessing wrong here would attach a rationale to the
- * wrong answer, which is worse than showing nothing, hence the explicit
- * length check rather than a best-effort index.
- */
-function rationaleFor(item: McqItem, optionIndex: number): string | undefined {
-  const list = item.distractor_rationale;
-  const options = item.options ?? [];
-  if (!list?.length || optionIndex === item.correct_index) return undefined;
-
-  if (list.length === options.length) return list[optionIndex]?.trim() || undefined;
-
-  if (list.length === options.length - 1) {
-    const pos = optionIndex > item.correct_index ? optionIndex - 1 : optionIndex;
-    return list[pos]?.trim() || undefined;
-  }
-
-  return undefined;
-}
 
 interface McqCardProps {
   item: McqItem;
@@ -54,6 +31,8 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
    */
   const keyBroken =
     !Number.isInteger(item.correct_index) || item.correct_index < 0 || item.correct_index >= options.length;
+
+  const rationales = useMemo(() => normalisedRationale(item), [item]);
 
   const selectOption = (i: number) => {
     if (!revealed) setSelected(i);
@@ -131,7 +110,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
           } else if (isSelected) {
             stateClasses = 'border-accent bg-accent-light';
           }
-          const rationale = revealed ? rationaleFor(item, i) : undefined;
+          const rationale = revealed ? rationales?.[i] || undefined : undefined;
           return (
             <div key={i}>
               <button

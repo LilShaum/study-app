@@ -187,8 +187,6 @@ so existing users don't lose their library.
 
 - Sections can be reordered in a course file via `section.order`, but items
   within a section always display in array order.
-- The item edit form can change an MCQ's option text but not add or remove
-  options.
 - Course ids are derived from `course_code` (falling back to `title`). A
   second course that slugs to the same id gets a suffixed id rather than
   overwriting, but the ids are still not human-chosen.

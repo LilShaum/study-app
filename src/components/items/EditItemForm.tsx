@@ -1,5 +1,6 @@
-import type { FormEvent, ReactNode } from 'react';
-import type { Difficulty, StudyItem } from '@/schema/course';
+import { useState, type FormEvent, type ReactNode } from 'react';
+import type { Difficulty, McqItem, StudyItem } from '@/schema/course';
+import { normalisedRationale } from '@/lib/mcqRationale';
 
 interface EditItemFormProps {
   item: StudyItem;
@@ -19,7 +20,141 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function TypeFields({ item }: { item: StudyItem }) {
+const LETTERS = 'ABCDEFGH';
+const MAX_OPTIONS = LETTERS.length;
+/** The schema's floor: a one-option "question" isn't one. */
+const MIN_OPTIONS = 2;
+
+interface McqDraft {
+  options: string[];
+  correctIndex: number;
+  rationale: string[] | undefined;
+}
+
+function initialMcqDraft(item: McqItem): McqDraft {
+  return {
+    options: [...(item.options ?? [])],
+    correctIndex: item.correct_index ?? 0,
+    rationale: normalisedRationale(item),
+  };
+}
+
+/**
+ * The options of one MCQ, as an editable list.
+ *
+ * Adding and removing options is the reason this is controlled state rather
+ * than the uncontrolled inputs the rest of the form uses: a `defaultValue`
+ * doesn't follow a list that changes shape, so removing option B would have
+ * left C's text sitting in B's box.
+ *
+ * Removing an option moves two other things with it — the answer key and the
+ * per-option rationale — and leaving either behind is a silent corruption
+ * rather than a visible one: a stale key marks the wrong option right, and a
+ * stale rationale explains the wrong answer under the wrong option.
+ */
+function McqOptions({ draft, onChange }: { draft: McqDraft; onChange: (d: McqDraft) => void }) {
+  const { options, correctIndex, rationale } = draft;
+
+  const setOption = (i: number, value: string) => {
+    const next = options.slice();
+    next[i] = value;
+    onChange({ ...draft, options: next });
+  };
+
+  const addOption = () => {
+    if (options.length >= MAX_OPTIONS) return;
+    onChange({
+      ...draft,
+      options: [...options, ''],
+      rationale: rationale ? [...rationale, ''] : undefined,
+    });
+  };
+
+  const removeOption = (i: number) => {
+    if (options.length <= MIN_OPTIONS) return;
+    const nextOptions = options.filter((_, n) => n !== i);
+    // Removing the answer leaves no answer, so the key falls back to the
+    // first option and the student re-picks; removing anything before it just
+    // shifts it up.
+    const nextCorrect = i === correctIndex ? 0 : i < correctIndex ? correctIndex - 1 : correctIndex;
+    onChange({
+      options: nextOptions,
+      correctIndex: nextCorrect,
+      rationale: rationale ? rationale.filter((_, n) => n !== i) : undefined,
+    });
+  };
+
+  return (
+    <>
+      <div className="space-y-2">
+        {options.map((opt, i) => (
+          <div key={i} className="flex items-end gap-2">
+            <div className="min-w-0 flex-1">
+              <Field label={`Option ${LETTERS[i] ?? i + 1}`}>
+                <input
+                  value={opt}
+                  onChange={(e) => setOption(i, e.target.value)}
+                  className={inputClass}
+                  aria-label={`Option ${LETTERS[i] ?? i + 1}`}
+                />
+              </Field>
+            </div>
+            <button
+              type="button"
+              onClick={() => removeOption(i)}
+              disabled={options.length <= MIN_OPTIONS}
+              aria-label={`Remove option ${LETTERS[i] ?? i + 1}`}
+              title={options.length <= MIN_OPTIONS ? 'A question needs at least two options' : 'Remove this option'}
+              className="mb-1.5 rounded border border-border px-2 py-1.5 text-text-3 hover:text-text disabled:opacity-40"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={addOption}
+          disabled={options.length >= MAX_OPTIONS}
+          className="rounded border border-border px-3 py-1 text-sm text-text-2 hover:border-accent-border hover:text-text disabled:opacity-40"
+        >
+          + Add option
+        </button>
+        {options.length !== 4 && (
+          <span className="text-xs text-text-3">
+            {options.length} options — the generator&rsquo;s contract asks for four.
+          </span>
+        )}
+      </div>
+
+      <Field label="Correct answer">
+        <select
+          value={correctIndex}
+          onChange={(e) => onChange({ ...draft, correctIndex: Number(e.target.value) })}
+          className={inputClass}
+        >
+          {options.map((opt, i) => (
+            <option key={i} value={i}>
+              {LETTERS[i] ?? i + 1} — {opt.slice(0, 50)}
+            </option>
+          ))}
+        </select>
+      </Field>
+    </>
+  );
+}
+
+function TypeFields({
+  item,
+  mcqDraft,
+  onMcqChange,
+}: {
+  item: StudyItem;
+  mcqDraft: McqDraft;
+  onMcqChange: (d: McqDraft) => void;
+}) {
   switch (item.type) {
     case 'mcq':
       return (
@@ -27,25 +162,7 @@ function TypeFields({ item }: { item: StudyItem }) {
           <Field label="Question">
             <textarea name="question" defaultValue={item.question} rows={2} className={inputClass} />
           </Field>
-          {/* Driven by the item's own option count, not a hardcoded 4: the
-              schema allows any number >= 2, and reading back a fixed 4 silently
-              dropped a 5th option and padded 2-option questions with blanks. */}
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {(item.options ?? []).map((opt, i) => (
-              <Field key={i} label={`Option ${'ABCDEFGH'[i] ?? i + 1}`}>
-                <input name={`option_${i}`} defaultValue={opt} className={inputClass} />
-              </Field>
-            ))}
-          </div>
-          <Field label="Correct answer">
-            <select name="correct_index" defaultValue={item.correct_index} className={inputClass}>
-              {(item.options ?? []).map((opt, i) => (
-                <option key={i} value={i}>
-                  {'ABCD'[i]} — {opt.slice(0, 50)}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <McqOptions draft={mcqDraft} onChange={onMcqChange} />
           <Field label="Explanation">
             <textarea name="explanation" defaultValue={item.explanation} rows={2} className={inputClass} />
           </Field>
@@ -128,6 +245,10 @@ function TypeFields({ item }: { item: StudyItem }) {
 }
 
 export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
+  const [mcqDraft, setMcqDraft] = useState<McqDraft>(() =>
+    item.type === 'mcq' ? initialMcqDraft(item) : { options: [], correctIndex: 0, rationale: undefined },
+  );
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
@@ -141,18 +262,19 @@ export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
     let updated: StudyItem;
     switch (item.type) {
       case 'mcq': {
-        const options = (item.options ?? []).map((_, i) => str(`option_${i}`));
-        const submitted = Number(data.get('correct_index'));
+        const { options, correctIndex, rationale } = mcqDraft;
         updated = {
           ...item,
           question: str('question'),
           options,
           // Clamp so a stale/out-of-range index can't point past the options
           // and render "the answer is <blank>" on reveal.
-          correct_index: Number.isFinite(submitted)
-            ? Math.min(Math.max(submitted, 0), Math.max(options.length - 1, 0))
-            : 0,
+          correct_index: Math.min(Math.max(correctIndex, 0), Math.max(options.length - 1, 0)),
           explanation: str('explanation'),
+          // Written back index-aligned (the contract's shape) whatever shape
+          // it arrived in, since that is the only one that stays correct
+          // through an add or a remove.
+          ...(rationale ? { distractor_rationale: rationale } : {}),
         };
         break;
       }
@@ -196,7 +318,7 @@ export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-accent-border bg-surface p-5">
-      <TypeFields item={item} />
+      <TypeFields item={item} mcqDraft={mcqDraft} onMcqChange={setMcqDraft} />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Difficulty">
           <select name="difficulty" defaultValue={item.difficulty ?? ''} className={inputClass}>

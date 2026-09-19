@@ -142,6 +142,19 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     });
   }
 
+  // The generator's contract asks for exactly four options. Fewer is a
+  // weaker question rather than a broken one — a two-option MCQ is a coin
+  // flip — and it is now fixable in place, so it is worth saying.
+  const wrongOptionCount = mcqs.filter((m) => (m.options?.length ?? 0) !== 4);
+  if (wrongOptionCount.length) {
+    findings.push({
+      id: 'option-count',
+      severity: 'warning',
+      message: `${wrongOptionCount.length} question${wrongOptionCount.length === 1 ? ' has' : 's have'} something other than four options, which the generator's contract asks for. You can add or remove options in Browse.`,
+      items: wrongOptionCount.map((m) => m.id),
+    });
+  }
+
   const filler = mcqs.filter((m) => m.options?.some((o) => /^(all|none) of the above$/i.test(String(o).trim())));
   if (filler.length) {
     findings.push({

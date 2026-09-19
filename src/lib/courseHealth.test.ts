@@ -66,6 +66,15 @@ describe('analyseCourseHealth — structural problems', () => {
     expect(find(h, 'duplicate-prompts')).toBeUndefined();
   });
 
+  it('flags a question that does not have four options', () => {
+    const h = analyseCourseHealth(course([mcq('q1', 'A?', { options: ['a', 'b'] })]));
+    expect(find(h, 'option-count')).toMatchObject({ severity: 'warning', items: ['q1'] });
+  });
+
+  it('does not flag the contract\u2019s four options', () => {
+    expect(find(analyseCourseHealth(course([mcq('q1', 'A?')])), 'option-count')).toBeUndefined();
+  });
+
   it('flags a stale total_items claim', () => {
     const h = analyseCourseHealth(course([mcq('q1', 'A?')], { total_items: 99 }));
     expect(find(h, 'stale-total')?.message).toContain('99');
