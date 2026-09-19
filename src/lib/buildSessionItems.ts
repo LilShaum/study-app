@@ -22,8 +22,14 @@ export function buildSessionItems(
   course: Course,
   mode: StudyMode,
   missedIds?: ReadonlySet<string>,
+  /** Restrict the session to one section. Undefined studies the whole course. */
+  sectionId?: string,
 ): SessionItem[] {
-  let items: SessionItem[] = sortedSections(course).flatMap((section) =>
+  const sections = sectionId
+    ? sortedSections(course).filter((s) => s.id === sectionId)
+    : sortedSections(course);
+
+  let items: SessionItem[] = sections.flatMap((section) =>
     section.items.map((item) => ({
       ...item,
       _sectionTitle: section.title,

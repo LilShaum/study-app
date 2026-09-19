@@ -62,10 +62,18 @@ important on slide 4 until you have seen slide 40.
 
 ### Pass 2 — Build an inventory
 
-Go back through and write out (for your own use, not in the output) an
-inventory of everything the source contains. This is the step that makes
-coverage possible, and skipping it is the single biggest cause of a thin
-course. Capture:
+Go back through and write out an inventory of everything the source contains.
+This is the step that makes coverage possible, and skipping it is the single
+biggest cause of a thin course.
+
+**Part of this inventory goes into the output.** The term list becomes
+`metadata.inventory.terms` (see the output contract below), so the app can
+check your finished course against your own list and tell the student what
+you missed. Write that list honestly and completely — a short list does not
+make you look thorough, it makes the gaps invisible, which is the one failure
+a student cannot detect for themselves.
+
+Capture:
 
 - **Stated learning objectives.** Look for "By the end of this lecture you
   will…", "Learning goals", "You should be able to…", a summary slide, a
@@ -118,11 +126,39 @@ is covered. Pay particular attention to the term list: **every single term
 must have a definition item.** If something is uncovered, either write the
 item or satisfy yourself that the source genuinely says nothing about it.
 
-As a calibration check: a lecture with 10–12 slides of substantive content
-should generally produce **40–70 items**; a 40-slide deck **well over 100**.
-If your draft is far below that for a dense source, you have skipped content —
-go back to the inventory. If it is far below for a genuinely sparse source,
-that is correct.
+As a calibration check, count the distinct ideas in your Pass 2 inventory —
+terms, mechanisms, formulas, comparisons, caveats — and expect roughly **two
+to four items per idea**, since recall, application and recognition are
+different skills. Anchor on that, never on how many pages or words the source
+happens to be. If your draft is far below it, you have skipped content: go
+back to the inventory. If the inventory itself is genuinely short, a small
+course is the right answer.
+
+## Sources differ in shape, not in what you owe them
+
+The same four passes apply to a slide deck, a lecture transcript, a textbook
+chapter, a past paper or a photograph of handwritten notes. What changes is
+where the content hides, so read for these rather than for a format:
+
+- **Length is not density.** A transcript is many words carrying few ideas —
+  filler, asides, admin, the same point made three times. A slide deck is few
+  words carrying many ideas, most of them compressed to a fragment. Judge a
+  source by the ideas in your inventory, never by its word count. Terse
+  material is the case where under-generating is most tempting and most wrong.
+- **Emphasis takes whatever form the source has available.** Bold, boxes and
+  "key" labels in written material; "this will be on the exam", "the important
+  thing here", or simply spending five minutes on one point in a transcript;
+  summary boxes and chapter-end questions in a textbook. Spoken emphasis is at
+  least as strong a signal as typographic emphasis — treat it that way.
+- **The content may not be in the prose.** A slide's real content is often its
+  diagram, its table, or an equation with the explanation left unsaid. Read
+  figures and tables as content, not decoration.
+- **Terse does not mean less; verbose does not mean more.** One line stating a
+  formula is a definition, a symbol-by-symbol gloss and an applied question.
+  Four hundred words circling one idea is still one idea.
+- **Expand what is stated; never add what is not.** A fragment may be unpacked
+  into everything it implies *within the source's own content*. It may not be
+  completed from your own knowledge of the subject.
 
 ## Output contract
 
@@ -143,6 +179,10 @@ file must be valid JSON matching this shape exactly:
     "item_counts": {               // counts per type, all optional
       "mcq": number?, "flashcard": number?, "definition": number?,
       "example": number?, "graphic": number?
+    }?,
+    "inventory": {                 // your Pass 2 inventory — see below
+      "terms": string[],           // EVERY technical term you found
+      "objectives": string[]?      // stated learning objectives, verbatim
     }?
   },
   "sections": [

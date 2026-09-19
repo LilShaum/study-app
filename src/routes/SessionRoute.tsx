@@ -1,4 +1,4 @@
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { STUDY_MODES, type StudyMode } from '@/lib/buildSessionItems';
 import { BrowseSession } from '@/components/session/BrowseSession';
@@ -8,9 +8,18 @@ function isStudyMode(mode: string | undefined): mode is StudyMode {
   return !!mode && (STUDY_MODES as readonly string[]).includes(mode);
 }
 
-/** "/session/:id/:mode" — dispatches to the editable Browse feed or the one-at-a-time card flow. */
+/**
+ * "/session/:id/:mode" — dispatches to the editable Browse feed or the
+ * one-at-a-time card flow.
+ *
+ * `?section=<id>` scopes the session to a single section. It is a search param
+ * rather than a path segment so that every existing session link keeps working
+ * and means exactly what it did before.
+ */
 export function SessionRoute() {
   const { id, mode } = useParams<{ id: string; mode: string }>();
+  const [search] = useSearchParams();
+  const sectionId = search.get('section') ?? undefined;
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
 
   if (!id || !isStudyMode(mode)) return <Navigate to="/" replace />;
@@ -26,9 +35,13 @@ export function SessionRoute() {
     );
   }
 
+  // A section filter that matches nothing would strand the student in an empty
+  // session; treat an unknown id as "whole course" instead.
+  const scoped = sectionId && course.sections.some((s) => s.id === sectionId) ? sectionId : undefined;
+
   return mode === 'browse' ? (
     <BrowseSession courseId={id} course={course} />
   ) : (
-    <CardSession courseId={id} course={course} mode={mode} />
+    <CardSession courseId={id} course={course} mode={mode} sectionId={scoped} />
   );
 }

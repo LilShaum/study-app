@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "title": "Membrane Transport",
+    "course_code": "BIOL210",
+    "total_items": 6,
+    "item_counts": {
+      "definition": 3,
+      "mcq": 2,
+      "flashcard": 1
+    },
+    "inventory": {
+      "terms": [
+        "simple diffusion",
+        "osmosis",
+        "tonicity"
+      ]
+    }
+  },
+  "sections": [
+    {
+      "id": "transport",
+      "title": "Membrane Transport",
+      "order": 1,
+      "items": [
+        {
+          "id": "d1",
+          "type": "definition",
+          "term": "Simple diffusion",
+          "definition": "Net movement of a solute down its concentration gradient, needing no energy and no transport protein.",
+          "source_excerpt": "Simple diffusion is the net movement of a solute down its concentration gradient, requiring no energy and no transport protein."
+        },
+        {
+          "id": "d2",
+          "type": "definition",
+          "term": "Osmosis",
+          "definition": "Net movement of water across a semipermeable membrane toward higher solute concentration.",
+          "source_excerpt": "Osmosis is the net movement of water across a semipermeable membrane from a region of low solute concentration to one of high solute concentration."
+        },
+        {
+          "id": "d3",
+          "type": "definition",
+          "term": "Tonicity",
+          "definition": "The relative solute concentration of two solutions separated by a membrane.",
+          "source_excerpt": "Tonicity describes the relative solute concentration of two solutions separated by a membrane."
+        },
+        {
+          "id": "q1",
+          "type": "mcq",
+          "question": "What moves during osmosis?",
+          "options": [
+            "Water",
+            "Solute",
+            "ATP",
+            "Transport proteins"
+          ],
+          "correct_index": 0,
+          "explanation": "Osmosis is defined as the net movement of water, not of solute.",
+          "distractor_rationale": [
+            "",
+            "Confuses osmosis with diffusion of solute",
+            "ATP is not moved, it is spent",
+            "Proteins are channels, not cargo"
+          ],
+          "source_excerpt": "Osmosis is the net movement of water across a semipermeable membrane"
+        },
+        {
+          "id": "q2",
+          "type": "mcq",
+          "question": "Which mode requires ATP and moves solute against its gradient?",
+          "options": [
+            "Simple diffusion",
+            "Active transport",
+            "Osmosis",
+            "Facilitated diffusion"
+          ],
+          "correct_index": 1,
+          "explanation": "The table pairs active transport with both ATP use and movement against the gradient.",
+          "distractor_rationale": [
+            "Simple diffusion needs neither",
+            "",
+            "Osmosis moves water, not solute, and needs no ATP",
+            "Not listed in the table as requiring ATP"
+          ],
+          "source_excerpt": "Active transport | Requires ATP: Yes | Moves against gradient: Yes"
+        },
+        {
+          "id": "f1",
+          "type": "flashcard",
+          "front": "What does tonicity describe?",
+          "back": "The relative solute concentration of two solutions separated by a membrane.",
+          "source_excerpt": "Tonicity describes the relative solute concentration of two solutions separated by a membrane."
+        }
+      ]
+    }
+  ]
+}

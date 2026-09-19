@@ -98,6 +98,22 @@ export const ItemCountsSchema = z
   })
   .partial();
 
+/**
+ * The generator's own Pass 2 inventory, carried into the file.
+ *
+ * This is what makes coverage checkable without the original notes: the model
+ * declares what it found, and the app holds it to that list. It is
+ * self-attestation — a model could under-report to look complete — but a
+ * declared checklist the app can verify beats an undeclared one it cannot,
+ * and an honest list is the only way the student learns what was missed.
+ *
+ * Optional, so every course generated before this existed still loads.
+ */
+export const InventorySchema = z.looseObject({
+  terms: z.array(z.string()).optional(),
+  objectives: z.array(z.string()).optional(),
+});
+
 export const CourseMetadataSchema = z.looseObject({
   title: z.string(),
   course_code: z.string().optional(),
@@ -106,6 +122,7 @@ export const CourseMetadataSchema = z.looseObject({
   tags: z.array(z.string()).optional(),
   total_items: z.number().optional(),
   item_counts: ItemCountsSchema.optional(),
+  inventory: InventorySchema.optional(),
 });
 
 export const CourseSchema = z.looseObject({
@@ -115,6 +132,7 @@ export const CourseSchema = z.looseObject({
 });
 
 export type ItemCounts = z.infer<typeof ItemCountsSchema>;
+export type Inventory = z.infer<typeof InventorySchema>;
 export type CourseMetadata = z.infer<typeof CourseMetadataSchema>;
 export type Section = z.infer<typeof SectionSchema>;
 export type StudyItem = z.infer<typeof StudyItemSchema>;

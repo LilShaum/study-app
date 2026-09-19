@@ -78,6 +78,29 @@ out can't drift from the format it parses — edit `CLAUDE.md` and both change.
 `src/lib/mergeFragment.ts` holds the merge logic: `planMerge` computes,
 `applyMerge` applies, both pure. Both modes merge through it.
 
+## Sections
+
+Every section on the course page opens its own page: what it contains by type,
+its own accuracy, and study modes scoped to it. A scoped session is a search
+param — `#/session/:id/quiz?section=<id>` — so every existing session link
+still means what it did. Per-section progress needs no new storage: progress
+is already keyed per item id and a section knows its items, so the figures are
+a slice of the map that already exists.
+
+## Checking coverage
+
+Every course the generator produces declares its own inventory in
+`metadata.inventory.terms` — the term list it built while reading your notes.
+The course page shows what fraction of that list actually got a definition,
+names the ones that didn't, and flags structural faults (duplicate ids,
+misaligned answer explanations, terms that are defined but never tested).
+
+This is self-attestation: the app holds the generator to its own list, which
+proves a course failed its own checklist but cannot prove the checklist was
+complete. For that you need the source, which the app never sees — see below.
+`metadata.inventory` is optional, so courses generated before it existed still
+load and simply show no coverage figure.
+
 ## Auditing a generated course
 
 `scripts/audit-course.mjs` checks a `.study.json` against the notes it claims
@@ -97,6 +120,9 @@ are unique, that diagrams carry no scripts or event handlers, and that the
 metadata counts are true. Exit code is 1 on any hard failure, so it can gate a
 workflow. Dependency-free — it runs against a course file without installing
 the app.
+
+With no `--terms` file it falls back to the course's own
+`metadata.inventory.terms`, so the coverage check runs by default.
 
 `--terms` takes a marking scheme of the jargon the notes introduce — one
 concept per line, `|` separating acceptable synonyms, `#` for comments. The
@@ -126,7 +152,8 @@ so existing users don't lose their library.
 - Course ids are derived from `course_code` (falling back to `title`). A
   second course that slugs to the same id gets a suffixed id rather than
   overwriting, but the ids are still not human-chosen.
-- Study sessions can't jump between sections; Browse can.
+- Within a card session you can't jump between sections; Browse can, and a
+  section can now be studied on its own from its own page.
 - Course metadata (title, description, tags) isn't editable in-app — edit the
   `.study.json` and re-upload, or regenerate it.
 - Duplicate detection when adding material compares the item's leading text
