@@ -52,10 +52,12 @@ export function SectionRoute() {
   const modes = availableModes(section);
 
   const MODE_LINKS: { mode: string; label: string; icon: IconName; count: number }[] = [
+    { mode: 'learn', label: 'Learn', icon: 'target', count: modes.learn },
     { mode: 'quiz', label: 'Quiz', icon: 'help-circle', count: modes.quiz },
     { mode: 'flashcards', label: 'Flashcards', icon: 'layers', count: modes.flashcards },
     { mode: 'definitions', label: 'Definitions', icon: 'file-text', count: modes.definitions },
     { mode: 'mixed', label: 'Mixed', icon: 'shuffle', count: modes.mixed },
+    { mode: 'weakest', label: 'Weakest First', icon: 'bar-chart', count: modes.weakest },
   ];
 
   return (
@@ -94,10 +96,14 @@ export function SectionRoute() {
         </div>
       )}
 
-      <h2 className="mb-3 mt-6 text-sm font-semibold uppercase tracking-wide text-text-3">
+      <h2 className="mb-1 mt-6 text-sm font-semibold uppercase tracking-wide text-text-3">
         Study just this section
       </h2>
-      <div className="grid gap-3 sm:grid-cols-4">
+      <p className="mb-3 text-sm text-text-3">
+        Learn walks this section in teaching order: definitions and examples first, then flashcards,
+        then questions.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {MODE_LINKS.map((m) =>
           m.count > 0 ? (
             <Link

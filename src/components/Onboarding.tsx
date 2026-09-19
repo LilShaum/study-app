@@ -90,6 +90,11 @@ export function Onboarding() {
           )}
         </div>
 
+        <p className="mt-4 text-xs text-text-3">
+          Stuck at any point? The <span aria-hidden="true">?</span> button in the top bar explains
+          every mode and where your data lives.
+        </p>
+
         <div className="mt-5 flex justify-center gap-2">
           <button
             type="button"
