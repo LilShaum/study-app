@@ -141,6 +141,29 @@ complete. For that you need the source, which the app never sees — see below.
 `metadata.inventory` is optional, so courses generated before it existed still
 load and simply show no coverage figure.
 
+## Closing the loop on what the check finds
+
+`src/lib/buildFixPrompt.ts` turns the health check's own output into a repair
+job for the chat that generated the course: the declared terms that never got
+a definition, the terms defined but never tested, and every question with a
+fault a model can repair (broken answer key, misaligned rationale, missing
+explanation, filler options, wrong option count) reproduced in full.
+
+Two things make it more than "generate more":
+
+- **It asks for a judgement first.** The app can see that a listed term has no
+  definition; it cannot see whether the term deserved one — an inventory holds
+  every technical term in the notes, including passing mentions and topics the
+  lecturer ruled out. The prompt says in as many words that "not worth an item"
+  is a correct answer, and asks for a plain-text verdict list before the JSON.
+  Without that, the feature is a machine for turning a word list into filler.
+- **It returns additions and corrections, never a replacement course.**
+  Progress is keyed per item id, so a regenerated file would carry new ids and
+  zero every score. A fragment may carry `corrections`: whole items matched to
+  existing ones *by id* and replaced in place, keeping both the id (so progress
+  survives) and the position (so a Learn run doesn't reshuffle). A correction
+  for an id the course doesn't have is reported and dropped, never added.
+
 ## Auditing a generated course
 
 `scripts/audit-course.mjs` checks a `.study.json` against the notes it claims

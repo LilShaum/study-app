@@ -177,12 +177,12 @@ describe('parseFragment', () => {
 
   it('accepts a bare array of items, into the fallback section', () => {
     const r = parseFragment([mcq('a', 'Q?')], 'fallback');
-    expect(r.ok && r.fragment.sections[0].id).toBe('fallback');
+    expect(r.ok && r.fragment.sections?.[0].id).toBe('fallback');
   });
 
   it('accepts { items: [...] }', () => {
     const r = parseFragment({ items: [mcq('a', 'Q?')] }, 'fallback');
-    expect(r.ok && r.fragment.sections[0].items).toHaveLength(1);
+    expect(r.ok && r.fragment.sections?.[0].items).toHaveLength(1);
   });
 
   it('rejects a malformed item and names the field', () => {
@@ -197,5 +197,126 @@ describe('parseFragment', () => {
   it('rejects non-objects', () => {
     expect(parseFragment('nope', 's1').ok).toBe(false);
     expect(parseFragment(null, 's1').ok).toBe(false);
+  });
+});
+
+describe('planMerge — corrections', () => {
+  const broken = {
+    id: 'q_key',
+    type: 'mcq',
+    question: 'Broken?',
+    options: ['a', 'b', 'c', 'd'],
+    correct_index: 9,
+    explanation: '',
+  } as unknown as StudyItem;
+
+  const fixed = { ...broken, correct_index: 2, explanation: 'Because c.' } as StudyItem;
+
+  const withBroken = {
+    schema_version: '1.0',
+    metadata: { title: 'C' },
+    sections: [
+      { id: 's1', title: 'One', items: [mcq('a', 'First?'), broken] },
+      { id: 's2', title: 'Two', items: [mcq('b', 'Second?')] },
+    ],
+  } as unknown as Course;
+
+  it('matches a correction to the item it replaces and names what changes', () => {
+    const plan = planMerge(withBroken, { corrections: [fixed] });
+    expect(plan.totalCorrected).toBe(1);
+    expect(plan.corrections[0]).toMatchObject({ id: 'q_key', sectionId: 's1' });
+    expect(plan.corrections[0].changed.sort()).toEqual(['correct_index', 'explanation']);
+  });
+
+  it('replaces in place, keeping the id and the position', () => {
+    // The id is how progress is stored, and the position is what a Learn run
+    // walks — a fix should move neither.
+    const plan = planMerge(withBroken, { corrections: [fixed] });
+    const merged = applyMerge(withBroken, plan);
+    expect(merged.sections[0].items.map((i) => i.id)).toEqual(['a', 'q_key']);
+    const after = merged.sections[0].items[1] as Extract<StudyItem, { type: 'mcq' }>;
+    expect(after.correct_index).toBe(2);
+    expect(after.explanation).toBe('Because c.');
+  });
+
+  it('never adds an item for a correction whose id the course does not have', () => {
+    // A model that invents an id is hallucinating, not offering content.
+    const plan = planMerge(withBroken, {
+      corrections: [{ ...fixed, id: 'does_not_exist' } as StudyItem],
+    });
+    expect(plan.unmatchedCorrections).toEqual(['does_not_exist']);
+    expect(plan.totalCorrected).toBe(0);
+    expect(plan.totalAdded).toBe(0);
+    expect(applyMerge(withBroken, plan)).toEqual(withBroken);
+  });
+
+  it('ignores a correction identical to what is already there', () => {
+    const plan = planMerge(withBroken, { corrections: [broken] });
+    expect(plan.totalCorrected).toBe(0);
+  });
+
+  it('keeps the first when one paste corrects the same item twice', () => {
+    const plan = planMerge(withBroken, {
+      corrections: [fixed, { ...fixed, explanation: 'Second try.' } as StudyItem],
+    });
+    expect(plan.totalCorrected).toBe(1);
+    const merged = applyMerge(withBroken, plan);
+    const after = merged.sections[0].items[1] as Extract<StudyItem, { type: 'mcq' }>;
+    expect(after.explanation).toBe('Because c.');
+  });
+
+  it('does not let an addition steal the id of an item being corrected', () => {
+    const plan = planMerge(withBroken, {
+      sections: [{ id: 's1', items: [mcq('q_key', 'A different question?')] }],
+      corrections: [fixed],
+    });
+    expect(plan.renamedIds.q_key).toBeDefined();
+    expect(plan.totalCorrected).toBe(1);
+    const merged = applyMerge(withBroken, plan);
+    const ids = merged.sections.flatMap((s) => s.items).map((i) => i.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('applies additions and corrections from one paste together', () => {
+    const plan = planMerge(withBroken, {
+      sections: [{ id: 's2', items: [mcq('new1', 'Brand new?')] }],
+      corrections: [fixed],
+    });
+    expect([plan.totalAdded, plan.totalCorrected]).toEqual([1, 1]);
+    const merged = applyMerge(withBroken, plan);
+    expect(merged.sections[1].items.map((i) => i.id)).toEqual(['b', 'new1']);
+    expect((merged.sections[0].items[1] as Extract<StudyItem, { type: 'mcq' }>).correct_index).toBe(2);
+  });
+
+  it('leaves a course alone when a fragment carries only corrections that no-op', () => {
+    const plan = planMerge(withBroken, { corrections: [] as StudyItem[] });
+    expect(applyMerge(withBroken, plan)).toEqual(withBroken);
+  });
+});
+
+describe('parseFragment — corrections', () => {
+  it('accepts a fragment of corrections alone', () => {
+    const r = parseFragment(
+      { corrections: [{ id: 'q1', type: 'mcq', question: 'Q?', options: ['a', 'b', 'c', 'd'], correct_index: 1 }] },
+      's1',
+    );
+    expect(r.ok && r.fragment.corrections).toHaveLength(1);
+  });
+
+  it('accepts additions and corrections together', () => {
+    const r = parseFragment(
+      {
+        sections: [{ id: 's1', items: [{ id: 'n1', type: 'flashcard', front: 'F', back: 'B' }] }],
+        corrections: [{ id: 'q1', type: 'mcq', question: 'Q?', options: ['a', 'b', 'c', 'd'], correct_index: 1 }],
+      },
+      's1',
+    );
+    expect(r.ok && r.fragment.sections).toHaveLength(1);
+    expect(r.ok && r.fragment.corrections).toHaveLength(1);
+  });
+
+  it('rejects a fragment that carries neither', () => {
+    const r = parseFragment({ sections: [], corrections: [] }, 's1');
+    expect(r.ok).toBe(false);
   });
 });

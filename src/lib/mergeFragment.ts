@@ -12,8 +12,23 @@ export interface MergePlanSection {
   duplicates: { item: StudyItem; existingPrompt: string }[];
 }
 
+/** One existing item the paste would replace, kept under its own id. */
+export interface MergePlanCorrection {
+  id: string;
+  sectionId: string;
+  before: StudyItem;
+  after: StudyItem;
+  /** Top-level fields whose value actually differs, for the preview. */
+  changed: string[];
+}
+
 export interface MergePlan {
   sections: MergePlanSection[];
+  /** Fixes to existing items, applied in place under the same id. */
+  corrections: MergePlanCorrection[];
+  /** Correction ids this course doesn't have — reported, never applied. */
+  unmatchedCorrections: string[];
+  totalCorrected: number;
   /** Incoming id → the id it was given because the original was taken. */
   renamedIds: Record<string, string>;
   totalAdded: number;
@@ -25,6 +40,59 @@ export interface MergePlan {
 export interface MergeOptions {
   /** When false, items whose prompt already exists are added anyway. */
   skipDuplicates?: boolean;
+}
+
+/** Top-level fields that differ between the current item and its replacement. */
+function changedFields(before: StudyItem, after: StudyItem): string[] {
+  const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  keys.delete('id');
+  const b = before as unknown as Record<string, unknown>;
+  const a = after as unknown as Record<string, unknown>;
+  return [...keys].filter((k) => JSON.stringify(b[k]) !== JSON.stringify(a[k]));
+}
+
+/**
+ * Corrections to existing items, matched by id.
+ *
+ * Matching by id and keeping it is the whole point: progress is stored per
+ * item id, so a question whose answer key gets fixed keeps the history the
+ * student built on it. Replacing the course file wholesale — the obvious
+ * alternative when a generator hands back "the fixed version" — would give
+ * every item a new id and silently zero every score.
+ *
+ * An id the course doesn't have is reported rather than added. A model that
+ * invents one is more likely to be hallucinating than offering new content,
+ * and quietly adding it would be the one outcome nobody asked for.
+ */
+function planCorrections(course: Course, fragment: Fragment) {
+  const located = new Map<string, { item: StudyItem; sectionId: string }>();
+  for (const section of course.sections) {
+    for (const item of section.items) located.set(item.id, { item, sectionId: section.id });
+  }
+
+  const corrections: MergePlanCorrection[] = [];
+  const unmatched: string[] = [];
+  const seen = new Set<string>();
+
+  for (const after of fragment.corrections ?? []) {
+    const found = located.get(after.id);
+    if (!found) {
+      unmatched.push(after.id);
+      continue;
+    }
+    // A paste that corrects the same item twice keeps the first; applying
+    // both would make the preview a lie about the end state.
+    if (seen.has(after.id)) continue;
+    seen.add(after.id);
+
+    const changed = changedFields(found.item, after);
+    // A "correction" identical to what is already there is not a change.
+    if (changed.length === 0) continue;
+
+    corrections.push({ id: after.id, sectionId: found.sectionId, before: found.item, after, changed });
+  }
+
+  return { corrections, unmatched };
 }
 
 /**
@@ -44,6 +112,9 @@ export interface MergeOptions {
  *   you already have. Matching an existing item's prompt is skipped by
  *   default — near-certainly a re-run, and a duplicate is worse than a
  *   missing item because it double-counts in the score.
+ *
+ * A fragment may also carry `corrections`: replacements for existing items,
+ * matched and kept under their own ids. See `planCorrections`.
  */
 export function planMerge(course: Course, fragment: Fragment, options: MergeOptions = {}): MergePlan {
   const skipDuplicates = options.skipDuplicates ?? true;
@@ -58,7 +129,12 @@ export function planMerge(course: Course, fragment: Fragment, options: MergeOpti
   const countsByType: Record<string, number> = {};
   const sections: MergePlanSection[] = [];
 
-  for (const incoming of fragment.sections) {
+  const { corrections, unmatched } = planCorrections(course, fragment);
+  // An item being corrected keeps its id, so that id is not free for an
+  // addition to take.
+  for (const c of corrections) takenIds.add(c.id);
+
+  for (const incoming of fragment.sections ?? []) {
     const existing = course.sections.find((s) => s.id === incoming.id);
     const added: StudyItem[] = [];
     const duplicates: MergePlanSection['duplicates'] = [];
@@ -100,6 +176,9 @@ export function planMerge(course: Course, fragment: Fragment, options: MergeOpti
 
   return {
     sections,
+    corrections,
+    unmatchedCorrections: unmatched,
+    totalCorrected: corrections.length,
     renamedIds,
     totalAdded: sections.reduce((n, s) => n + s.added.length, 0),
     totalDuplicates: sections.reduce((n, s) => n + s.duplicates.length, 0),
@@ -116,11 +195,20 @@ export function planMerge(course: Course, fragment: Fragment, options: MergeOpti
  */
 export function applyMerge(course: Course, plan: MergePlan): Course {
   const byId = new Map(plan.sections.map((s) => [s.id, s]));
+  const corrected = new Map(plan.corrections.map((c) => [c.id, c.after]));
 
   const sections: Section[] = course.sections.map((section) => {
     const planned = byId.get(section.id);
-    if (!planned || planned.added.length === 0) return section;
-    return { ...section, items: [...section.items, ...planned.added] };
+    // Corrections replace in place, keeping the item's id AND its position:
+    // the id so its progress survives, the position so a Learn run doesn't
+    // silently reshuffle because a question was fixed.
+    const items = corrected.size
+      ? section.items.map((item) => corrected.get(item.id) ?? item)
+      : section.items;
+    if (!planned || planned.added.length === 0) {
+      return items === section.items ? section : { ...section, items };
+    }
+    return { ...section, items: [...items, ...planned.added] };
   });
 
   for (const planned of plan.sections) {

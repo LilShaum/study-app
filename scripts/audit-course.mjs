@@ -85,6 +85,32 @@ const norm = (s) =>
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 
+/* Token-subset matching with plurals folded, mirroring src/lib/termMatch.ts
+   so the CLI and the in-app panel never disagree about the same course.
+   Whole-phrase matching was too strict ("isozyme" vs a definition titled
+   "Isozymes", "concerted model" vs "Concerted (MWC) model"); bare substring
+   matching was too loose ("ki" inside "kinase"). Requiring every token of the
+   wanted term to be present is right on both counts. */
+const tokens = (str) =>
+  new Set(
+    norm(str)
+      .split(' ')
+      .filter(Boolean)
+      .map((w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w)),
+  );
+
+/* True when at least one of `texts` covers every token of `term`. Per text,
+   not against all of them joined: "is this term tested?" must mean "does one
+   question ask about it", or a long course marks nearly every term covered. */
+const someTextCoversTerm = (texts, term) => {
+  const want = tokens(term);
+  if (!want.size) return false;
+  return texts.some((text) => {
+    const have = tokens(text);
+    return [...want].every((w) => have.has(w));
+  });
+};
+
 const SRC = sourceRaw ? norm(sourceRaw) : null;
 
 const pass = [];
@@ -203,19 +229,6 @@ if (expectedTerms && expectedTerms.length) {
   // accepted spellings, either way round — "Km" should match a definition
   // titled "Km (Michaelis constant)".
   const defTerms = definitions.map((d) => norm(d.term ?? ''));
-  // Token-subset matching with plurals folded, mirroring src/lib/courseHealth.ts
-  // so the CLI and the in-app panel never disagree about the same course.
-  // Whole-phrase matching was too strict ("isozyme" vs a definition titled
-  // "Isozymes", "concerted model" vs "Concerted (MWC) model"); bare substring
-  // matching was too loose ("ki" inside "kinase"). Requiring every token of the
-  // wanted term to be present is right on both counts.
-  const tokens = (str) =>
-    new Set(
-      norm(str)
-        .split(' ')
-        .filter(Boolean)
-        .map((w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w)),
-    );
   const defTokenSets = defTerms.map((t) => tokens(t));
   const covers = (variants) =>
     variants.some((v) => {
@@ -241,16 +254,10 @@ if (expectedTerms && expectedTerms.length) {
    Definitions are read, never scored. A term that only ever appears as a
    definition is shown to the student but never tested. */
 if (definitions.length) {
-  const gradableText = norm(
-    items
-      .filter((i) => i.type === 'mcq' || i.type === 'flashcard')
-      .map((i) => `${i.question ?? ''} ${i.front ?? ''} ${i.back ?? ''} ${(i.options ?? []).join(' ')} ${i.explanation ?? ''}`)
-      .join(' '),
-  );
-  const untested = definitions.filter((d) => {
-    const t = norm(d.term ?? '');
-    return t.length > 2 && !gradableText.includes(t);
-  });
+  const gradableTexts = items
+    .filter((i) => i.type === 'mcq' || i.type === 'flashcard')
+    .map((i) => `${i.question ?? ''} ${i.front ?? ''} ${i.back ?? ''} ${(i.options ?? []).join(' ')} ${i.explanation ?? ''}`);
+  const untested = definitions.filter((d) => !someTextCoversTerm(gradableTexts, d.term ?? ''));
   const testedPct = Math.round(((definitions.length - untested.length) / definitions.length) * 100);
   check(
     untested.length <= Math.floor(definitions.length * 0.25),

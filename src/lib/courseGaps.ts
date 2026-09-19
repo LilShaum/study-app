@@ -1,5 +1,6 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { sortedSections } from './sortedSections';
+import { someTextCoversTerm } from './termMatch';
 
 export interface SectionGap {
   id: string;
@@ -20,12 +21,6 @@ export interface CourseGaps {
   /** Share of items that are MCQ or flashcard, 0-1. */
   gradableRatio: number;
 }
-
-const norm = (s: string) =>
-  s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
 
 /** The text a gradable item puts in front of the student. */
 function gradableText(item: StudyItem): string {
@@ -48,9 +43,13 @@ function gradableText(item: StudyItem): string {
  * never made to retrieve it, and it never counts toward their accuracy or
  * shows up in Review Missed.
  *
- * Matching is whole-phrase, not substring: " km " must appear as its own token
- * run, or a two-letter term would match half the course and the gap list would
- * silently come back empty.
+ * Matching is per-item and token-based (see termMatch). Whole-phrase matching
+ * was wrong in the common case: this generator titles definitions "Michaelis
+ * constant (Km)" and asks about them as "Km", so every term carrying a
+ * parenthetical was reported as never tested — in one real course, 13 of them,
+ * including Km itself in a section with eight questions about it. Over-
+ * reporting here is not harmless: these names are handed to an AI as work to
+ * do.
  */
 export function analyseCourseGaps(course: Course): CourseGaps {
   const sections = sortedSections(course);
@@ -60,15 +59,12 @@ export function analyseCourseGaps(course: Course): CourseGaps {
   for (const item of items) byType[item.type] = (byType[item.type] ?? 0) + 1;
 
   const gradable = items.filter((i) => i.type === 'mcq' || i.type === 'flashcard');
-  const haystack = ` ${norm(gradable.map(gradableText).join(' '))} `;
+  const gradableTexts = gradable.map(gradableText);
 
   const untestedTerms = items
     .filter((i): i is Extract<StudyItem, { type: 'definition' }> => i.type === 'definition')
     .map((d) => d.term)
-    .filter((term) => {
-      const t = norm(term ?? '');
-      return t.length > 1 && !haystack.includes(` ${t} `);
-    });
+    .filter((term) => !someTextCoversTerm(gradableTexts, term ?? ''));
 
   const thinSections = sections
     .map((s) => ({

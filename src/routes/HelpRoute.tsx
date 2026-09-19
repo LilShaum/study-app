@@ -229,10 +229,13 @@ const SECTIONS: HelpSection[] = [
           </li>
           <li>
             <strong>More practice</strong> — the notes have not changed, but you have run out of
-            questions or the course missed something. This prompt needs no notes at all: every item
-            carries a quote from your source, so the prompt reconstructs enough of the material for
-            an assistant to write more items against it, and it names the terms that were listed but
-            never defined so those get covered first.
+            questions. This prompt needs no notes at all: every item carries a quote from your
+            source, so the prompt reconstructs enough of the material for an assistant to write more
+            items against it.
+          </li>
+          <li>
+            <strong>Fix gaps</strong> — hands the course check&rsquo;s own findings back to the AI
+            that wrote the course. See below.
           </li>
         </ul>
         <p className="mt-2">
@@ -280,6 +283,29 @@ const SECTIONS: HelpSection[] = [
           Expand it and it also flags things that quietly make a course worse than it looks — two
           items sharing an id (so they share one score), an answer key pointing outside its options,
           explanations misaligned with their options, terms defined but never asked about.
+        </p>
+        <p className="mt-2">
+          Findings are only worth printing if you can do something about them, so the expanded panel
+          has a <strong>Send these to your AI to fix</strong> button. It builds a prompt carrying
+          exactly what the check found — the terms with no definition, the terms never tested, and
+          any question with a broken answer key, reproduced in full. Paste it into the chat that
+          generated the course, because your notes are still there.
+        </p>
+        <p className="mt-2">
+          The prompt asks for a <em>judgement</em> before content. The app can see that a listed
+          term never got a definition; it cannot see whether that term was ever worth one — the
+          inventory records every technical term in your notes, including ones mentioned once in
+          passing or explicitly ruled out of the exam. So the prompt tells the model that
+          &ldquo;not worth an item&rdquo; is a correct answer, and asks it to say which it skipped
+          and why before any JSON. You get that verdict list to read.
+        </p>
+        <p className="mt-2">
+          What comes back is <strong>additions and corrections, never a replacement course</strong>.
+          New items are merged; a fix to an existing question replaces it under the same id, which
+          is what keeps your score on that question. A regenerated course file would carry all-new
+          ids and silently wipe your progress, so the prompt tells the model not to send one. You
+          see the full plan — what is added, what is fixed and which fields change — before anything
+          is applied.
         </p>
         <p className="mt-2 text-text-3">
           Be clear about what this is: the app never sees your original notes, so it can only hold

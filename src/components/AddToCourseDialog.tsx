@@ -4,13 +4,14 @@ import { parseFragment } from '@/schema/fragment';
 import { planMerge, type MergePlan } from '@/lib/mergeFragment';
 import { buildAddPrompt } from '@/lib/buildAddPrompt';
 import { buildPractisePrompt } from '@/lib/buildPractisePrompt';
+import { buildFixPrompt, planFixes } from '@/lib/buildFixPrompt';
 import { analyseCourseGaps } from '@/lib/courseGaps';
 import { sortedSections } from '@/lib/sortedSections';
 import { useCoursesStore } from '@/store/courses';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
 
-export type AddMode = 'material' | 'practice';
+export type AddMode = 'material' | 'practice' | 'fix';
 
 interface AddToCourseDialogProps {
   courseId: string;
@@ -73,12 +74,18 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   }, [pasted, course, firstSectionId, skipDuplicates]);
 
   const plan = result && 'plan' in result ? result.plan : null;
-  const canAdd = !!plan && plan.totalAdded > 0;
+  const canApply = !!plan && plan.totalAdded + plan.totalCorrected > 0;
 
   const gaps = useMemo(() => analyseCourseGaps(course), [course]);
+  const fixes = useMemo(() => planFixes(course), [course]);
 
   const copyPrompt = async () => {
-    const prompt = mode === 'practice' ? buildPractisePrompt(course) : buildAddPrompt(course);
+    const prompt =
+      mode === 'fix'
+        ? buildFixPrompt(course)
+        : mode === 'practice'
+          ? buildPractisePrompt(course)
+          : buildAddPrompt(course);
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
@@ -102,11 +109,20 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
     if (!plan) return;
     mergeIntoCourse(courseId, plan);
     const renamed = Object.keys(plan.renamedIds).length;
+    const parts: string[] = [];
+    if (plan.totalAdded) parts.push(`Added ${plural(plan.totalAdded, 'item')}`);
+    if (plan.totalCorrected) parts.push(`fixed ${plural(plan.totalCorrected, 'item')}`);
     toast(
-      `Added ${plural(plan.totalAdded, 'item')}.${renamed ? ` ${plural(renamed, 'id')} renamed to avoid a clash.` : ''}`,
+      `${parts.join(', ')}.${renamed ? ` ${plural(renamed, 'id')} renamed to avoid a clash.` : ''}`,
       { type: 'success' },
     );
     onClose();
+  };
+
+  const MODE_TITLES: Record<AddMode, string> = {
+    material: 'Add material to this course',
+    practice: 'More practice on this course',
+    fix: 'Fix what the check found',
   };
 
   return (
@@ -114,13 +130,11 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
       role="dialog"
       aria-modal="true"
-      aria-label={`${mode === 'practice' ? 'More practice on' : 'Add material to'} ${course.metadata.title}`}
+      aria-label={`${MODE_TITLES[mode]} — ${course.metadata.title}`}
     >
       <div className="my-8 w-full max-w-2xl rounded-lg border border-border bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="font-semibold text-text">
-            {mode === 'practice' ? 'More practice on this course' : 'Add material to this course'}
-          </h2>
+          <h2 className="font-semibold text-text">{MODE_TITLES[mode]}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -136,6 +150,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             [
               ['material', 'New material'],
               ['practice', 'More practice'],
+              ['fix', 'Fix gaps'],
             ] as const
           ).map(([value, label]) => (
             <button
@@ -170,6 +185,15 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 return JSON. The prompt already tells it which sections, item ids and tags this
                 course uses, so it won&apos;t duplicate or collide with what you have.
               </p>
+            ) : mode === 'fix' ? (
+              <p className="mb-2 text-sm text-text-2">
+                Hands the check&apos;s findings back to the AI that wrote this course.{' '}
+                <strong>Paste it into that same chat</strong> — your original notes are still there,
+                and they are the only thing that can judge whether a missing term actually mattered.
+                The prompt asks for that judgement first: it is told that &ldquo;not worth an
+                item&rdquo; is a correct answer, so a term your notes only mention in passing gets
+                skipped with a reason rather than padded out.
+              </p>
             ) : (
               <p className="mb-2 text-sm text-text-2">
                 For when you already know the existing questions. This prompt asks for{' '}
@@ -179,6 +203,45 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 course in and it will use your full notes instead, which is better.
               </p>
             )}
+
+            {mode === 'fix' &&
+              (fixes.empty ? (
+                <div className="mb-2 rounded border border-border bg-bg px-3 py-2 text-sm text-text-2">
+                  The check found nothing to fix — every term the generator listed has a definition,
+                  every definition is tested somewhere, and no question has a broken answer key. The
+                  prompt would be asking for nothing.
+                </div>
+              ) : (
+                <div className="mb-2 rounded border border-border bg-bg px-3 py-2 text-sm text-text-2">
+                  <div className="mb-1 font-medium text-text">The prompt will ask it to:</div>
+                  <ul className="list-inside list-disc space-y-0.5">
+                    {fixes.missingTerms.length > 0 && (
+                      <li>
+                        judge and, where worth it, define{' '}
+                        {plural(fixes.missingTerms.length, 'listed term')} that never got a
+                        definition
+                        <span className="text-text-3">
+                          {' '}
+                          — {fixes.missingTerms.slice(0, 4).join(', ')}
+                          {fixes.missingTerms.length > 4 ? '…' : ''}
+                        </span>
+                      </li>
+                    )}
+                    {fixes.untestedTerms.length > 0 && (
+                      <li>
+                        write questions for {plural(fixes.untestedTerms.length, 'term')} that are
+                        defined but never tested
+                      </li>
+                    )}
+                    {fixes.faultyItems.length > 0 && (
+                      <li>
+                        repair {plural(fixes.faultyItems.length, 'question')} with a broken answer
+                        key, a misaligned explanation or the wrong number of options
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              ))}
 
             {mode === 'practice' &&
               (gaps.untestedTerms.length > 0 ||
@@ -255,14 +318,14 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
           {plan && (
             <div className="rounded border border-border bg-bg px-3 py-2.5 text-sm">
-              {plan.totalAdded === 0 ? (
+              {plan.totalAdded === 0 && plan.totalCorrected === 0 ? (
                 <div className="text-text-2">
                   Nothing new to add
                   {plan.totalDuplicates > 0
                     ? ` — all ${plural(plan.totalDuplicates, 'item')} already exist in this course.`
                     : '.'}
                 </div>
-              ) : (
+              ) : plan.totalAdded === 0 ? null : (
                 <>
                   <div className="font-medium text-text">
                     Adding {plural(plan.totalAdded, 'item')}
@@ -289,6 +352,37 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                       ))}
                   </ul>
                 </>
+              )}
+
+              {plan.totalCorrected > 0 && (
+                <div className={plan.totalAdded > 0 ? 'mt-2.5 border-t border-border pt-2' : ''}>
+                  <div className="font-medium text-text">
+                    Fixing {plural(plan.totalCorrected, 'existing item')} in place
+                  </div>
+                  <ul className="mt-1.5 space-y-0.5 text-text-2">
+                    {plan.corrections.slice(0, 8).map((c) => (
+                      <li key={c.id}>
+                        → <span className="font-mono text-xs">{c.id}</span>
+                        <span className="text-text-3"> — changes {c.changed.join(', ')}</span>
+                      </li>
+                    ))}
+                    {plan.corrections.length > 8 && (
+                      <li className="text-text-3">+{plan.corrections.length - 8} more</li>
+                    )}
+                  </ul>
+                  <div className="mt-1 text-xs text-text-3">
+                    Each keeps its id, so your progress on it is kept too.
+                  </div>
+                </div>
+              )}
+
+              {plan.unmatchedCorrections.length > 0 && (
+                <div className="mt-1.5 text-text-3">
+                  Ignoring {plural(plan.unmatchedCorrections.length, 'correction')} for{' '}
+                  {plan.unmatchedCorrections.length === 1 ? 'an id' : 'ids'} this course
+                  doesn&rsquo;t have ({plan.unmatchedCorrections.slice(0, 3).join(', ')}
+                  {plan.unmatchedCorrections.length > 3 ? '…' : ''}).
+                </div>
               )}
 
               {plan.totalDuplicates > 0 && plan.totalAdded > 0 && (
@@ -328,10 +422,17 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
           <button
             type="button"
             onClick={confirm}
-            disabled={!canAdd}
+            disabled={!canApply}
             className="rounded bg-accent px-3 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {plan && plan.totalAdded > 0 ? `Add ${plural(plan.totalAdded, 'item')}` : 'Add items'}
+            {plan && (plan.totalAdded > 0 || plan.totalCorrected > 0)
+              ? [
+                  plan.totalAdded > 0 ? `Add ${plural(plan.totalAdded, 'item')}` : null,
+                  plan.totalCorrected > 0 ? `fix ${plural(plan.totalCorrected, 'item')}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(' & ')
+              : 'Apply'}
           </button>
         </div>
       </div>

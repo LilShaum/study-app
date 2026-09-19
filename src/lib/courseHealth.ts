@@ -1,5 +1,6 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { analyseCourseGaps, type CourseGaps } from './courseGaps';
+import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 
 export type HealthSeverity = 'problem' | 'warning';
 
@@ -19,48 +20,6 @@ export interface CourseHealth {
   gaps: CourseGaps;
   /** Terms the generator declared but never defined. Null when it declared none. */
   declaredTermCoverage: { covered: number; total: number; missing: string[] } | null;
-}
-
-const norm = (s: string) =>
-  s
-    .toLowerCase()
-    // Fold accents to ASCII, or "Némethy" splits into two tokens and will
-    // never match a definition titled "Nemethy".
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[‐-―−]/g, '-')
-    // Sub/superscript digits carry meaning (v₀, K₀.₅, IC₅₀); fold them to
-    // ASCII before stripping punctuation, or "v₀" collapses to a bare "v".
-    .replace(/[₀-₉]/g, (d) => String('₀₁₂₃₄₅₆₇₈₉'.indexOf(d)))
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
-
-/**
- * Significant tokens of a term, with plurals folded.
- *
- * Matching declared terms to definition titles by whole phrase is too strict
- * in both the ways that actually occur: a generator declares "isozyme" and
- * titles the definition "Isozymes", or declares "concerted model" and titles
- * it "Concerted (MWC) model". Both are covered; whole-phrase matching calls
- * them missing, and telling a student a term is absent when it is present is
- * the one error this panel must not make.
- *
- * Kept identical to the matcher in scripts/audit-course.mjs so the CLI and
- * this panel never disagree about the same course.
- */
-function tokens(s: string): Set<string> {
-  return new Set(
-    norm(s)
-      .split(' ')
-      .filter(Boolean)
-      .map((w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w)),
-  );
-}
-
-/** True when every token of the wanted term appears in the candidate. */
-function coversTokens(have: Set<string>, want: Set<string>): boolean {
-  for (const w of want) if (!have.has(w)) return false;
-  return true;
 }
 
 function promptOf(item: StudyItem): string {
@@ -169,7 +128,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
   const seen = new Map<string, string>();
   const dupPrompts: string[] = [];
   for (const item of items) {
-    const key = `${item.type}:${norm(promptOf(item) ?? '')}`;
+    const key = `${item.type}:${normaliseTerm(promptOf(item) ?? '')}`;
     if (seen.has(key)) dupPrompts.push(item.id);
     else seen.set(key, item.id);
   }
@@ -211,9 +170,9 @@ export function analyseCourseHealth(course: Course): CourseHealth {
   if (declared && declared.length) {
     const defined = items
       .filter((i): i is Extract<StudyItem, { type: 'definition' }> => i.type === 'definition')
-      .map((d) => tokens(d.term ?? ''));
+      .map((d) => termTokens(d.term ?? ''));
     const missing = declared.filter((term) => {
-      const want = tokens(term);
+      const want = termTokens(term);
       if (!want.size) return false;
       return !defined.some((have) => coversTokens(have, want));
     });

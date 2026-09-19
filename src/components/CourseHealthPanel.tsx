@@ -5,6 +5,8 @@ import { Icon } from './Icon';
 
 interface CourseHealthPanelProps {
   course: Course;
+  /** Opens the "fix what the check found" prompt. Omitted, the offer is hidden. */
+  onFix?: () => void;
 }
 
 /**
@@ -16,7 +18,7 @@ interface CourseHealthPanelProps {
  * closest the app can get to "did it cover my whole lecture?" without the
  * lecture.
  */
-export function CourseHealthPanel({ course }: CourseHealthPanelProps) {
+export function CourseHealthPanel({ course, onFix }: CourseHealthPanelProps) {
   const health = useMemo(() => analyseCourseHealth(course), [course]);
   const [open, setOpen] = useState(false);
 
@@ -69,8 +71,7 @@ export function CourseHealthPanel({ course }: CourseHealthPanelProps) {
           {coverage && coverage.missing.length > 0 && (
             <p className="text-text-2">
               The generator listed these terms as being in your notes but never defined them:{' '}
-              <span className="text-text">{coverage.missing.join(', ')}</span>. &ldquo;More
-              practice&rdquo; will prioritise them.
+              <span className="text-text">{coverage.missing.join(', ')}</span>.
             </p>
           )}
           {/* The declared-terms finding is already spelled out above with the
@@ -84,6 +85,21 @@ export function CourseHealthPanel({ course }: CourseHealthPanelProps) {
               </div>
             ))}
           {clean && <p className="text-text-2">No structural problems found.</p>}
+
+          {/* The findings above are only worth printing if something can be
+              done about them. This hands them back to the chat that wrote the
+              course — which, unlike the app, can see the notes and judge
+              whether a missing term was ever worth an item. */}
+          {onFix && !clean && (
+            <button
+              type="button"
+              onClick={onFix}
+              className="mt-1 inline-flex items-center gap-1.5 rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
+            >
+              <Icon name="clipboard" size={14} />
+              Send these to your AI to fix
+            </button>
+          )}
           <p className="pt-1 text-xs text-text-3">
             Checked without your original notes — the app can only hold the generator to the term
             list it declared. To verify every item really traces back to your source, run{' '}

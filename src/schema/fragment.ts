@@ -22,9 +22,23 @@ export const FragmentSectionSchema = z.looseObject({
   items: z.array(StudyItemSchema),
 });
 
-export const FragmentSchema = z.looseObject({
-  sections: z.array(FragmentSectionSchema).min(1),
-});
+/**
+ * `sections` adds items; `corrections` replaces existing ones by id.
+ *
+ * Both are optional because the two follow-up prompts produce different
+ * mixes: filling a coverage gap is pure addition, fixing a broken answer key
+ * is pure correction, and the "fix what the check found" prompt returns
+ * whichever of the two the course actually needs. At least one must be
+ * present, which the refinement enforces.
+ */
+export const FragmentSchema = z
+  .looseObject({
+    sections: z.array(FragmentSectionSchema).optional(),
+    corrections: z.array(StudyItemSchema).optional(),
+  })
+  .refine((f) => (f.sections?.length ?? 0) > 0 || (f.corrections?.length ?? 0) > 0, {
+    message: 'Expected at least one section of items, or at least one correction.',
+  });
 
 export type FragmentSection = z.infer<typeof FragmentSectionSchema>;
 export type Fragment = z.infer<typeof FragmentSchema>;
@@ -71,7 +85,7 @@ export function parseFragment(raw: unknown, fallbackSectionId: string): ParseFra
     return { ok: true, fragment: { sections: asCourse.data.sections } };
   }
 
-  // (1) The fragment shape.
+  // (1) The fragment shape — items to add, corrections to apply, or both.
   const asFragment = FragmentSchema.safeParse(raw);
   if (asFragment.success) {
     return { ok: true, fragment: asFragment.data };

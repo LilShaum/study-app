@@ -244,7 +244,7 @@ export function CourseRoute() {
         </button>
       </div>
 
-      <CourseHealthPanel course={course} />
+      <CourseHealthPanel course={course} onFix={() => setAdding('fix')} />
 
       {resumable && (
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-accent-border bg-accent-light p-4">
