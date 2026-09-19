@@ -2,6 +2,7 @@ import { useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { useProgressStore } from '@/store/progress';
+import { useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
@@ -62,14 +63,17 @@ export function LibraryRoute() {
   const handleDelete = (id: string, title: string) => {
     const courseSnapshot = courses[id];
     const progressSnapshot = useProgressStore.getState().getProgress(id);
+    const bookmarkSnapshot = useResumeStore.getState().getBookmark(id);
     removeCourse(id);
     useProgressStore.getState().removeCourseProgress(id);
+    useResumeStore.getState().clear(id);
     toast(`"${title}" removed from library.`, {
       type: 'info',
       actionLabel: 'Undo',
       onAction: () => {
         updateCourse(id, courseSnapshot);
         useProgressStore.setState((s) => ({ byCourse: { ...s.byCourse, [id]: progressSnapshot } }));
+        useResumeStore.getState().restore(id, bookmarkSnapshot);
       },
     });
   };

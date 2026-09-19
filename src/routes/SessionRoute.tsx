@@ -12,14 +12,18 @@ function isStudyMode(mode: string | undefined): mode is StudyMode {
  * "/session/:id/:mode" — dispatches to the editable Browse feed or the
  * one-at-a-time card flow.
  *
- * `?section=<id>` scopes the session to a single section. It is a search param
- * rather than a path segment so that every existing session link keeps working
- * and means exactly what it did before.
+ * `?section=<id>` scopes the session to a single section, and `?resume=1`
+ * starts from the course's saved bookmark. Both are search params rather than
+ * path segments so that every existing session link keeps working and means
+ * exactly what it did before.
  */
 export function SessionRoute() {
   const { id, mode } = useParams<{ id: string; mode: string }>();
   const [search] = useSearchParams();
   const sectionId = search.get('section') ?? undefined;
+  // "?resume=1" is what the course page's Continue card adds; opening a mode
+  // from its own tile deliberately starts fresh.
+  const resume = search.get('resume') === '1';
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
 
   if (!id || !isStudyMode(mode)) return <Navigate to="/" replace />;
@@ -42,6 +46,6 @@ export function SessionRoute() {
   return mode === 'browse' ? (
     <BrowseSession courseId={id} course={course} />
   ) : (
-    <CardSession courseId={id} course={course} mode={mode} sectionId={scoped} />
+    <CardSession courseId={id} course={course} mode={mode} sectionId={scoped} resume={resume} />
   );
 }

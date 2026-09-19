@@ -5,6 +5,7 @@ import { exportCourse } from '@/lib/exportCourse';
 import { sortedSections } from '@/lib/sortedSections';
 import { sectionStats } from '@/lib/sectionStats';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
+import { useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon, type IconName } from '@/components/Icon';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
@@ -90,11 +91,38 @@ const MODE_GROUPS: { heading: string; blurb: string; modes: ModeCard[] }[] = [
   },
 ];
 
+const GRID_COLS: Record<number, string> = {
+  1: '',
+  2: 'sm:grid-cols-2',
+  3: 'sm:grid-cols-3',
+  4: 'sm:grid-cols-2 lg:grid-cols-4',
+};
+
+const MODE_LABELS: Record<string, string> = Object.fromEntries(
+  MODE_GROUPS.flatMap((g) => g.modes.map((m) => [m.mode, m.label])),
+);
+
+/** "5 minutes ago" — precise enough to tell you whether this is today's work. */
+function ago(ts: number): string {
+  const mins = Math.max(0, Math.round((Date.now() - ts) / 60000));
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  const days = Math.round(hours / 24);
+  return `${days} day${days === 1 ? '' : 's'} ago`;
+}
+
 /** "/study/:id" — course overview + mode picker. */
 export function CourseRoute() {
   const { id } = useParams<{ id: string }>();
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
   const [adding, setAdding] = useState<AddMode | null>(null);
+  // Indexing straight into the map keeps the selector's return reference
+  // stable — a getter that built an object would change the snapshot on every
+  // store read (see EMPTY_PROGRESS for the render loop that causes).
+  const bookmark = useResumeStore((s) => (id ? s.byCourse[id] : undefined));
+  const clearBookmark = useResumeStore((s) => s.clear);
   const progress = useProgressStore((s) => (id ? s.getProgress(id) : EMPTY_PROGRESS));
 
   const counts = useMemo<Counts>(() => {
@@ -116,6 +144,19 @@ export function CourseRoute() {
       }).length,
     };
   }, [course, progress]);
+
+  // A bookmark outlives the item it points at — the item can be edited away,
+  // the section deleted — so it is only offered when it still resolves.
+  const resumable =
+    bookmark &&
+    course &&
+    course.sections.some(
+      (s) =>
+        (bookmark.sectionId === null || s.id === bookmark.sectionId) &&
+        s.items.some((i) => i.id === bookmark.itemId),
+    )
+      ? bookmark
+      : null;
 
   if (!id) return <Navigate to="/" replace />;
   if (!course) {
@@ -180,6 +221,45 @@ export function CourseRoute() {
 
       <CourseHealthPanel course={course} />
 
+      {resumable && (
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-accent-border bg-accent-light p-4">
+          <span className="text-accent">
+            <Icon name="repeat" size={20} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-medium text-text">
+              Continue {MODE_LABELS[resumable.mode] ?? resumable.mode}
+              {resumable.sectionId && (
+                <span className="font-normal text-text-2">
+                  {' '}
+                  — {course.sections.find((s) => s.id === resumable.sectionId)?.title}
+                </span>
+              )}
+            </span>
+            <span className="block text-sm text-text-2">
+              You stopped at item {resumable.index + 1} of {resumable.total}, {ago(resumable.updatedAt)}.
+            </span>
+          </span>
+          <Link
+            to={`/session/${id}/${resumable.mode}?resume=1${
+              resumable.sectionId ? `&section=${encodeURIComponent(resumable.sectionId)}` : ''
+            }`}
+            className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+          >
+            Continue
+          </Link>
+          <button
+            type="button"
+            onClick={() => clearBookmark(id)}
+            aria-label="Forget where I left off"
+            title="Forget where I left off"
+            className="text-text-3 hover:text-text"
+          >
+            <Icon name="x" size={16} />
+          </button>
+        </div>
+      )}
+
       <h2 className="mb-1 mt-6 text-sm font-semibold uppercase tracking-wide text-text-3">
         Choose a Study Mode
       </h2>
@@ -198,9 +278,10 @@ export function CourseRoute() {
               <div className="text-sm font-medium text-text">{group.heading}</div>
               <div className="text-xs text-text-3">{group.blurb}</div>
             </div>
-            <div
-              className={`grid gap-3 ${group.modes.length === 1 ? '' : 'sm:grid-cols-2 lg:grid-cols-4'}`}
-            >
+            {/* Columns follow the group's size. A two-card group laid out on a
+                four-column grid left each card a quarter of the row, which was
+                narrow enough to break "Weakest First" across two lines. */}
+            <div className={`grid gap-3 ${GRID_COLS[Math.min(group.modes.length, 4)]}`}>
               {group.modes.map((m) => {
                 const n = m.count(counts);
                 return (

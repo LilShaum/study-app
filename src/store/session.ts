@@ -13,8 +13,10 @@ interface SessionState {
   answeredIndices: Set<number>;
   /** True once the student has advanced past the last item. */
   finished: boolean;
+  /** True when this session started from a saved bookmark rather than item 1. */
+  resumed: boolean;
 
-  init: (courseId: string, course: Course, mode: StudyMode, sectionId?: string) => void;
+  init: (courseId: string, course: Course, mode: StudyMode, sectionId?: string, resumeItemId?: string) => void;
   /** The section this session is scoped to, or null for the whole course. */
   sectionId: string | null;
   current: () => SessionItem | null;
@@ -40,23 +42,31 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   activeSectionId: null,
   answeredIndices: new Set(),
   finished: false,
+  resumed: false,
   sectionId: null,
 
-  init: (courseId, course, mode, sectionId) => {
+  init: (courseId, course, mode, sectionId, resumeItemId) => {
     const progressStore = useProgressStore.getState();
     const missedIds = mode === 'missed' ? progressStore.missedIds(courseId) : undefined;
     // Weakest-first ranks by the student's own history, so it is the one mode
     // that needs the full per-item record rather than a set of ids.
     const progress = mode === 'weakest' ? progressStore.getProgress(courseId) : undefined;
     const items = buildSessionItems(course, mode, { missedIds, sectionId, progress });
+    // Resume by id, not position: Mixed and Review Missed reshuffle each start
+    // and Weakest First reorders as accuracy changes, so a saved index would
+    // land on a different item. An id the list no longer holds (the item was
+    // edited away, or the mode now filters it out) falls back to the start.
+    const resumeIndex = resumeItemId ? items.findIndex((i) => i.id === resumeItemId) : -1;
+    const index = resumeIndex >= 0 ? resumeIndex : 0;
     set({
       courseId,
       mode,
       sectionId: sectionId ?? null,
       items,
-      index: 0,
+      index,
+      resumed: resumeIndex >= 0,
       score: { got: 0, missed: 0 },
-      activeSectionId: items[0]?._sectionId ?? null,
+      activeSectionId: items[index]?._sectionId ?? null,
       answeredIndices: new Set(),
       finished: false,
     });
