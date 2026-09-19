@@ -8,8 +8,12 @@ import { buildFixPrompt, planFixes } from '@/lib/buildFixPrompt';
 import { analyseCourseGaps } from '@/lib/courseGaps';
 import { sortedSections } from '@/lib/sortedSections';
 import { useCoursesStore } from '@/store/courses';
+import { persisted } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
+
+const STORAGE_FULL =
+  "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
 
 export type AddMode = 'material' | 'practice' | 'fix';
 
@@ -107,7 +111,12 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
   const confirm = () => {
     if (!plan) return;
-    mergeIntoCourse(courseId, plan);
+    const { ok } = persisted(() => mergeIntoCourse(courseId, plan));
+    if (!ok) {
+      toast(STORAGE_FULL, { type: 'error', duration: 12000 });
+      onClose();
+      return;
+    }
     const renamed = Object.keys(plan.renamedIds).length;
     const parts: string[] = [];
     if (plan.totalAdded) parts.push(`Added ${plural(plan.totalAdded, 'item')}`);

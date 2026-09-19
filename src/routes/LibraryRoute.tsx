@@ -3,9 +3,13 @@ import { Link } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { useProgressStore } from '@/store/progress';
 import { useResumeStore } from '@/store/resume';
+import { beginWriteCheck, writesLanded } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
+
+const STORAGE_FULL =
+  "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
 
 /** "/" — the course library: upload, search/tag filter, open, and quietly-hidden delete-with-undo. */
 export function LibraryRoute() {
@@ -52,11 +56,22 @@ export function LibraryRoute() {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    const result = await importCourse(file);
-    if (result.ok) {
-      toast(`"${result.course.metadata.title || 'Course'}" uploaded.`, { type: 'success' });
+    // The upload has to report on the WRITE, not just the parse: with storage
+    // full the course lands in memory, shows in the library, and is gone on
+    // the next reload. Saying "uploaded" then is simply untrue.
+    beginWriteCheck();
+    const imported = await importCourse(file);
+    // Read AFTER the await: importCourse reads the file first, so the write
+    // it triggers has not happened by the time the call returns.
+    const ok = writesLanded();
+    if (!imported.ok) {
+      toast(imported.error, { type: 'error' });
+      return;
+    }
+    if (ok) {
+      toast(`"${imported.course.metadata.title || 'Course'}" uploaded.`, { type: 'success' });
     } else {
-      toast(result.error, { type: 'error' });
+      toast(STORAGE_FULL, { type: 'error', duration: 12000 });
     }
   };
 

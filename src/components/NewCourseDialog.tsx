@@ -4,8 +4,12 @@ import type { Course } from '@/schema/course';
 import { parseCourse } from '@/schema/parseCourse';
 import { buildNewCoursePrompt } from '@/lib/buildNewCoursePrompt';
 import { useCoursesStore } from '@/store/courses';
+import { beginWriteCheck, persisted, writesLanded } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
+
+const STORAGE_FULL =
+  "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
 
 interface NewCourseDialogProps {
   onClose: () => void;
@@ -83,23 +87,28 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
     }
   };
 
-  const openCourse = (id: string, title: string) => {
-    toast(`"${title || 'Course'}" added.`, { type: 'success' });
+  const openCourse = (id: string, title: string, saved: boolean) => {
+    // Never announce a save that didn't happen — see safeStorage.persisted.
+    if (saved) toast(`"${title || 'Course'}" added.`, { type: 'success' });
+    else toast(STORAGE_FULL, { type: 'error', duration: 12000 });
     onClose();
     navigate(`/study/${id}`);
   };
 
   const confirmPaste = () => {
     if (!course) return;
-    openCourse(addCourse(course), course.metadata.title);
+    const { result: id, ok } = persisted(() => addCourse(course));
+    openCourse(id, course.metadata.title, ok);
   };
 
   const handleFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
+    beginWriteCheck();
     const imported = await importCourse(file);
-    if (imported.ok) openCourse(imported.id, imported.course.metadata.title);
+    const ok = writesLanded();
+    if (imported.ok) openCourse(imported.id, imported.course.metadata.title, ok);
     else toast(imported.error, { type: 'error' });
   };
 

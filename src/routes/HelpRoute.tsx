@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon, type IconName } from '@/components/Icon';
 import { useOnboardingStore } from '@/store/onboarding';
+import { storageUsage } from '@/lib/safeStorage';
 
 interface HelpSection {
   id: string;
@@ -364,10 +365,40 @@ const SECTIONS: HelpSection[] = [
           Deleting a course from the library can be undone from the toast that appears — but only
           until it fades.
         </p>
+        <div className="mt-2">
+          <StorageUsage />
+        </div>
+        <p className="mt-2 text-text-3">
+          If that budget does run out, the app says so rather than pretending: an upload, a merge or
+          an edit that could not be written reports itself as unsaved instead of showing a success
+          message you would only catch out on the next reload.
+        </p>
       </>
     ),
   },
 ];
+
+/**
+ * How much of the browser's storage budget the courses are using.
+ *
+ * Worth showing because the failure is abrupt and invisible: the budget is
+ * about 5MB, a diagram-heavy course is around 100KB, and the first sign of
+ * trouble is a save that doesn't happen. A number here means a student can
+ * see it coming and export something before that.
+ */
+function StorageUsage() {
+  const usage = storageUsage();
+  if (!usage) return null;
+  const pct = Math.min(100, Math.round((usage.used / usage.limit) * 100));
+  const tight = pct >= 80;
+  return (
+    <p className={tight ? 'text-warning' : 'text-text-3'}>
+      Your courses and progress are using about {Math.round(usage.used / 1024)} KB of the roughly{' '}
+      {Math.round(usage.limit / 1024 / 1024)} MB this browser allows ({pct}%)
+      {tight ? ' — export a finished course and remove it before it runs out.' : '.'}
+    </p>
+  );
+}
 
 /** Brings back the first-launch welcome, which is otherwise unreachable. */
 function ReplayWelcome() {

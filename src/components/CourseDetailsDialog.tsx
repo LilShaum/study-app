@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from 'react';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
+import { persisted } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
 
@@ -87,8 +88,13 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
     if (finalTags.length) metadata.tags = finalTags;
     else delete (metadata as Record<string, unknown>).tags;
 
-    updateCourse(courseId, { ...course, metadata });
-    toast('Course details saved.', { type: 'success' });
+    const { ok } = persisted(() => updateCourse(courseId, { ...course, metadata }));
+    toast(
+      ok
+        ? 'Course details saved.'
+        : "Browser storage is full, so this wasn't saved. Export a course you've finished and remove it, then try again.",
+      { type: ok ? 'success' : 'error', duration: ok ? undefined : 12000 },
+    );
     onClose();
   };
 

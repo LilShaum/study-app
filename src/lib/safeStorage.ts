@@ -23,6 +23,64 @@ export function setStorageFailureHandler(handler: (message: string) => void): vo
   onWriteFailure = handler;
 }
 
+/** Flipped by every failed write; read and cleared by `persisted()`. */
+let writeFailedSinceCheck = false;
+
+/**
+ * Runs an action and reports whether everything it wrote actually landed.
+ *
+ * This exists because of what a silent failure looked like: with storage
+ * full, uploading a course showed the course in the library, showed a
+ * SUCCESS toast, and lost it on the next reload. The store had updated in
+ * memory and the write underneath it had thrown — and the one-per-session
+ * warning had already been spent on something else, so nothing said a word.
+ *
+ * zustand's persist middleware writes synchronously inside `set()`, so an
+ * action's writes have all been attempted by the time it returns and this
+ * flag is accurate for the action just run.
+ */
+export function persisted<T>(action: () => T): { result: T; ok: boolean } {
+  beginWriteCheck();
+  const result = action();
+  return { result, ok: writesLanded() };
+}
+
+/**
+ * The same check around an `await`.
+ *
+ * `persisted()` cannot wrap an async action: the function returns its promise
+ * immediately and the write happens later, so the flag would be read before
+ * the write was even attempted. Callers that await must bracket the awaited
+ * call with these two instead.
+ */
+export function beginWriteCheck(): void {
+  writeFailedSinceCheck = false;
+}
+
+/** True when nothing failed to write since `beginWriteCheck()`. Clears the flag. */
+export function writesLanded(): boolean {
+  const ok = !writeFailedSinceCheck;
+  writeFailedSinceCheck = false;
+  return ok;
+}
+
+/** Bytes currently held in localStorage, and the usual browser ceiling. */
+export function storageUsage(): { used: number; limit: number } | null {
+  try {
+    let used = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key === null) continue;
+      used += key.length + (localStorage.getItem(key)?.length ?? 0);
+    }
+    // Browsers don't expose the localStorage cap; 5MB is the near-universal
+    // value and is only ever used here to give the number a scale.
+    return { used: used * 2, limit: 5 * 1024 * 1024 };
+  } catch {
+    return null;
+  }
+}
+
 const safeLocalStorage: Storage = {
   get length() {
     try {
@@ -49,8 +107,10 @@ const safeLocalStorage: Storage = {
     try {
       localStorage.setItem(name, value);
     } catch {
-      // Warn once per session — a failing write usually keeps failing, and a
-      // toast per keystroke would be worse than the problem.
+      writeFailedSinceCheck = true;
+      // The ambient warning stays once-per-session — a failing write usually
+      // keeps failing and a toast per keystroke would be worse than the
+      // problem. Callers that need to know about THEIR write use persisted().
       if (!quotaWarned) {
         quotaWarned = true;
         onWriteFailure?.(
