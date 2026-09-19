@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
-import type { Course } from '@/schema/course';
-import type { StudyMode } from '@/lib/buildSessionItems';
+import type { Course, StudyItem } from '@/schema/course';
+import { LEARN_STAGES, learnStageIndex, type StudyMode } from '@/lib/buildSessionItems';
 import { useSessionStore } from '@/store/session';
 import { Icon } from '@/components/Icon';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
+type StudyItemType = StudyItem['type'];
 
 interface CardSessionProps {
   courseId: string;
@@ -18,6 +19,8 @@ interface CardSessionProps {
 }
 
 const MODE_LABELS: Record<CardMode, string> = {
+  learn: 'Learn',
+  weakest: 'Weakest First',
   quiz: 'Quiz',
   flashcards: 'Flashcards',
   definitions: 'Definitions',
@@ -35,7 +38,18 @@ const NAV_HINTS: KeyHint[] = [
   { keys: ['Esc'], label: 'back' },
 ];
 
+const ALL_CARD_KEYS: KeyHint[] = [
+  { keys: ['1', '–', '4'], label: 'select' },
+  { keys: ['Space'], label: 'flip' },
+  { keys: ['Enter'], label: 'check / next' },
+  { keys: ['G'], label: 'got' },
+  { keys: ['M'], label: 'missed' },
+  ...NAV_HINTS,
+];
+
 const KEY_HINTS: Record<CardMode, KeyHint[]> = {
+  learn: ALL_CARD_KEYS,
+  weakest: ALL_CARD_KEYS,
   quiz: [
     { keys: ['1', '–', '4'], label: 'select' },
     { keys: ['Enter'], label: 'check / next' },
@@ -65,6 +79,11 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
 };
 
 const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
+  learn: { title: 'Nothing to learn yet', text: 'This course has no items to walk through.' },
+  weakest: {
+    title: 'Nothing to rank',
+    text: 'Weakest First orders the questions and flashcards you can be scored on, and this course has none yet.',
+  },
   quiz: { title: 'No MCQ items', text: "This course doesn't have any MCQ items yet. Try Browse or Mixed mode." },
   flashcards: {
     title: 'No Flashcard items',
@@ -82,7 +101,41 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
   },
 };
 
-/** "quiz" / "flashcards" / "definitions" / "mixed" / "missed" — one item at a time. */
+/**
+ * Where you are in the taught sequence.
+ *
+ * Learn mode reorders content the student already has, so without this the
+ * only visible difference from Mixed is that the cards happen to arrive in a
+ * better order. Naming the stage is what makes the sequence teachable.
+ */
+function LearnStageBanner({ item }: { item: { type: StudyItemType; _sectionTitle: string } }) {
+  const stage = learnStageIndex(item.type);
+  if (stage < 0) return null;
+  const { label, hint } = LEARN_STAGES[stage];
+
+  return (
+    <div className="mb-4 rounded-lg border border-border bg-surface px-4 py-2.5">
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium text-text">
+          Step {stage + 1} of {LEARN_STAGES.length} · {label}
+        </span>
+        <span className="ml-auto flex gap-1" aria-hidden="true">
+          {LEARN_STAGES.map((s, i) => (
+            <span
+              key={s.key}
+              className={`h-1.5 w-6 rounded-full ${i <= stage ? 'bg-accent' : 'bg-border'}`}
+            />
+          ))}
+        </span>
+      </div>
+      <div className="mt-0.5 text-xs text-text-3">
+        {hint} · {item._sectionTitle}
+      </div>
+    </div>
+  );
+}
+
+/** Every mode except Browse — one item at a time. */
 export function CardSession({ courseId, course, mode, sectionId }: CardSessionProps) {
   const navigate = useNavigate();
   const init = useSessionStore((s) => s.init);
@@ -223,6 +276,13 @@ export function CardSession({ courseId, course, mode, sectionId }: CardSessionPr
           {index + 1} / {items.length}
         </div>
       </div>
+
+      {mode === 'learn' && current && <LearnStageBanner item={current} />}
+      {mode === 'weakest' && (
+        <p className="mb-4 text-xs text-text-3">
+          Ordered by your own accuracy — shakiest first, then anything you haven&rsquo;t seen yet.
+        </p>
+      )}
 
       {current && (
         <ItemRenderer

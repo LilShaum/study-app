@@ -78,6 +78,36 @@ out can't drift from the format it parses — edit `CLAUDE.md` and both change.
 `src/lib/mergeFragment.ts` holds the merge logic: `planMerge` computes,
 `applyMerge` applies, both pure. Both modes merge through it.
 
+## Study modes
+
+Eight modes, all built from the items the course already contains — nothing
+calls a model at study time. Six are filters over one item type or all of
+them (Quiz, Flashcards, Definitions, Mixed, Browse, Review Missed); two are
+orderings, which is the more useful idea:
+
+- **Learn** sequences a section the way it would be taught — definitions and
+  worked examples first, then flashcards, then MCQs — and finishes one section
+  before starting the next. It drops nothing, so the course page's Learn tile
+  always shows the full item count, and a banner names the stage you are in
+  (`LEARN_STAGES` in `src/lib/buildSessionItems.ts` is the single definition
+  of that sequence; the banner reads it).
+- **Weakest First** ranks the gradable items by your own accuracy. It is not
+  Review Missed with a different name: Review Missed is the binary filter
+  `missed > got`, which silently drops an item you get right three times in
+  five — exactly the item most likely to cost marks. Never-attempted items
+  sort between what you fail and what you have nailed, which also means the
+  mode is never empty on a fresh course.
+
+Only MCQs and flashcards are scored; definitions, examples and diagrams are
+read, so they never move an accuracy figure. `#/study/:id/diagrams` collects
+every diagram in a course onto one page, grouped by section — the link appears
+on the course page only when the course actually has diagrams.
+
+`#/help` documents all of this in the app, including the things that are not
+discoverable by clicking: what the two add-to-course prompts differ on, what
+the course check panel can and cannot verify, the keyboard shortcuts, and
+where the data lives.
+
 ## Sections
 
 Every section on the course page opens its own page: what it contains by type,

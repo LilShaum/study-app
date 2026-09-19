@@ -43,8 +43,12 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   sectionId: null,
 
   init: (courseId, course, mode, sectionId) => {
-    const missedIds = mode === 'missed' ? useProgressStore.getState().missedIds(courseId) : undefined;
-    const items = buildSessionItems(course, mode, missedIds, sectionId);
+    const progressStore = useProgressStore.getState();
+    const missedIds = mode === 'missed' ? progressStore.missedIds(courseId) : undefined;
+    // Weakest-first ranks by the student's own history, so it is the one mode
+    // that needs the full per-item record rather than a set of ids.
+    const progress = mode === 'weakest' ? progressStore.getProgress(courseId) : undefined;
+    const items = buildSessionItems(course, mode, { missedIds, sectionId, progress });
     set({
       courseId,
       mode,

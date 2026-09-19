@@ -58,17 +58,22 @@ export function sectionStats(section: Section, progress: Record<string, ItemResu
 
 /** Which study modes have anything to serve in this section. */
 export function availableModes(section: Section): {
+  learn: number;
   quiz: number;
   flashcards: number;
   definitions: number;
   mixed: number;
+  weakest: number;
 } {
   const count = (type: string) => section.items.filter((i) => i.type === type).length;
   return {
+    learn: section.items.length,
     quiz: count('mcq'),
     flashcards: count('flashcard'),
     definitions: count('definition'),
     mixed: section.items.length,
+    // Weakest First only ranks what can be scored.
+    weakest: section.items.filter(isGradable).length,
   };
 }
 

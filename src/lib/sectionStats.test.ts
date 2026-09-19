@@ -46,7 +46,7 @@ describe('sectionStats', () => {
 
 describe('availableModes', () => {
   it('reports what each mode would actually serve', () => {
-    expect(availableModes(s1)).toEqual({ quiz: 1, flashcards: 1, definitions: 1, mixed: 3 });
+    expect(availableModes(s1)).toEqual({ learn: 3, quiz: 1, flashcards: 1, definitions: 1, mixed: 3, weakest: 2 });
   });
 
   it('reports zero for a mode with nothing in this section', () => {
@@ -69,29 +69,29 @@ describe('buildSessionItems — section scoping', () => {
   });
 
   it('serves only the named section', () => {
-    const items = buildSessionItems(course, 'mixed', undefined, 's1');
+    const items = buildSessionItems(course, 'mixed', { sectionId: 's1' });
     expect(items).toHaveLength(3);
     expect(items.every((i) => i._sectionId === 's1')).toBe(true);
   });
 
   it('applies the mode filter within the section', () => {
-    expect(buildSessionItems(course, 'quiz', undefined, 's1').map((i) => i.id)).toEqual(['a1']);
-    expect(buildSessionItems(course, 'definitions', undefined, 's2').map((i) => i.id)).toEqual(['b2']);
+    expect(buildSessionItems(course, 'quiz', { sectionId: 's1' }).map((i) => i.id)).toEqual(['a1']);
+    expect(buildSessionItems(course, 'definitions', { sectionId: 's2' }).map((i) => i.id)).toEqual(['b2']);
   });
 
   it('returns nothing for a mode the section cannot fill', () => {
     // s2 has no flashcards; an empty list is what drives the empty state.
-    expect(buildSessionItems(course, 'flashcards', undefined, 's2')).toHaveLength(0);
+    expect(buildSessionItems(course, 'flashcards', { sectionId: 's2' })).toHaveLength(0);
   });
 
   it('scopes Review Missed to the section too', () => {
     const missed = new Set(['a1', 'b1']);
-    expect(buildSessionItems(course, 'missed', missed, 's1').map((i) => i.id)).toEqual(['a1']);
+    expect(buildSessionItems(course, 'missed', { missedIds: missed, sectionId: 's1' }).map((i) => i.id)).toEqual(['a1']);
   });
 
   it('returns nothing for an unknown section id', () => {
     // SessionRoute guards against this before it gets here, but the builder
     // should not silently fall back to the whole course.
-    expect(buildSessionItems(course, 'mixed', undefined, 'nope')).toHaveLength(0);
+    expect(buildSessionItems(course, 'mixed', { sectionId: 'nope' })).toHaveLength(0);
   });
 });

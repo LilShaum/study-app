@@ -4,6 +4,7 @@ import { ThemePicker } from '@/components/ThemePicker';
 import { DarkModeToggle } from '@/components/DarkModeToggle';
 import { Toaster } from '@/components/Toaster';
 import { Onboarding } from '@/components/Onboarding';
+import { Icon } from '@/components/Icon';
 
 export function RootLayout() {
   return (
@@ -14,6 +15,14 @@ export function RootLayout() {
           Arborous
         </Link>
         <div className="ml-auto flex items-center gap-2">
+          <Link
+            to="/help"
+            aria-label="Help"
+            title="How Arborous works"
+            className="flex h-8 w-8 items-center justify-center rounded border border-border text-text-2 hover:border-accent-border hover:text-text"
+          >
+            <Icon name="help-circle" size={16} />
+          </Link>
           <ThemePicker />
           <DarkModeToggle />
         </div>
