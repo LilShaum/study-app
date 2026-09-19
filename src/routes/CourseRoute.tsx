@@ -10,6 +10,7 @@ import { toast } from '@/store/toast';
 import { Icon, type IconName } from '@/components/Icon';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
+import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
 import type { StudyMode } from '@/lib/buildSessionItems';
 
 interface ModeCard {
@@ -118,6 +119,7 @@ export function CourseRoute() {
   const { id } = useParams<{ id: string }>();
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
   const [adding, setAdding] = useState<AddMode | null>(null);
+  const [editingDetails, setEditingDetails] = useState(false);
   // Indexing straight into the map keeps the selector's return reference
   // stable — a getter that built an object would change the snapshot on every
   // store read (see EMPTY_PROGRESS for the render loop that causes).
@@ -177,6 +179,21 @@ export function CourseRoute() {
       </Link>
       <h1 className="mt-2 text-2xl font-semibold text-text">{course.metadata.title}</h1>
       {course.metadata.description && <p className="mt-1 text-text-2">{course.metadata.description}</p>}
+      {(course.metadata.course_code || course.metadata.subject || course.metadata.tags?.length) && (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+          {course.metadata.course_code && (
+            <span className="font-medium uppercase tracking-wide text-text-3">
+              {course.metadata.course_code}
+            </span>
+          )}
+          {course.metadata.subject && <span className="text-text-3">{course.metadata.subject}</span>}
+          {course.metadata.tags?.map((tag) => (
+            <span key={tag} className="rounded-full bg-accent-light px-2 py-0.5 text-accent">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="mt-2 flex flex-wrap items-center gap-4">
         <Link to={`/study/${id}/progress`} className="text-sm text-accent hover:underline">
           View progress →
@@ -201,6 +218,14 @@ export function CourseRoute() {
             Diagrams ({counts.graphic})
           </Link>
         )}
+        <button
+          type="button"
+          onClick={() => setEditingDetails(true)}
+          className="inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
+        >
+          <Icon name="edit" size={14} />
+          Edit details
+        </button>
         <button
           type="button"
           onClick={() => setAdding('material')}
@@ -353,6 +378,10 @@ export function CourseRoute() {
           );
         })}
       </ul>
+
+      {editingDetails && (
+        <CourseDetailsDialog courseId={id} course={course} onClose={() => setEditingDetails(false)} />
+      )}
 
       {adding && (
         <AddToCourseDialog
