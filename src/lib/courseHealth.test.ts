@@ -124,6 +124,16 @@ describe('analyseCourseHealth — coverage against the declared inventory', () =
     expect(h.declaredTermCoverage?.missing).toEqual([]);
   });
 
+  it('folds accents so a transliterated term still matches', () => {
+    // Real case: the transcript said "Némethy", the generator wrote
+    // "Nemethy". Stripping the accent instead of folding it split the word
+    // into two tokens and reported a covered term as missing.
+    const h = analyseCourseHealth(
+      withInventory([def('d1', 'Koshland-Nemethy-Filmer')], ['Koshland–Némethy–Filmer']),
+    );
+    expect(h.declaredTermCoverage?.missing).toEqual([]);
+  });
+
   it('does not count a substring collision as coverage', () => {
     // "Ki" must not be satisfied by a definition of "kinase" — a false pass
     // here would report coverage the course does not have.

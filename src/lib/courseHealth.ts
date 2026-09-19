@@ -24,6 +24,10 @@ export interface CourseHealth {
 const norm = (s: string) =>
   s
     .toLowerCase()
+    // Fold accents to ASCII, or "Némethy" splits into two tokens and will
+    // never match a definition titled "Nemethy".
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[‐-―−]/g, '-')
     // Sub/superscript digits carry meaning (v₀, K₀.₅, IC₅₀); fold them to
     // ASCII before stripping punctuation, or "v₀" collapses to a bare "v".

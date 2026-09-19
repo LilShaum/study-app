@@ -68,6 +68,11 @@ function declaredTerms() {
 const norm = (s) =>
   String(s)
     .toLowerCase()
+    // Fold accents to ASCII. Stripping them instead splits a word in two
+    // ("Némethy" -> "n methy"), so a quote that transliterates the accent
+    // away reads as a fabrication.
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[‐-―−]/g, '-')
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
