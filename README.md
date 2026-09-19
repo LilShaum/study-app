@@ -193,4 +193,9 @@ so existing users don't lose their library.
 - Duplicate detection when adding material compares the item's leading text
   (question / front / term / title) within the same item type. It catches
   re-runs, not two genuinely different wordings of one fact.
-- No ESLint config, and most UI components have no test coverage.
+- Test coverage is uneven: the pure logic (session building, merging,
+  parsing, health, the auditor) is covered, and so are the components where a
+  bug is silent rather than visible — the MCQ card's grading, the item edit
+  form's option/answer-key/rationale bookkeeping, the course-details dialog.
+  The session flow itself (`CardSession`, `BrowseSession`) and the
+  add-material dialogs are exercised by hand in a browser, not by tests.
