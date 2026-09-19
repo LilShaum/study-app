@@ -42,6 +42,19 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
   const [revealed, setRevealed] = useState(false);
   const options = item.options ?? [];
 
+  /**
+   * A `correct_index` that points outside the options — the fault the health
+   * panel calls "answer index pointing outside its options".
+   *
+   * Left unhandled this is worse than a missing question: no option can ever
+   * equal correct_index, so the card marked every answer wrong, recorded a
+   * miss against the student, and printed "the answer is" followed by
+   * nothing. A broken key is the course's fault, so the card says so and
+   * scores nothing.
+   */
+  const keyBroken =
+    !Number.isInteger(item.correct_index) || item.correct_index < 0 || item.correct_index >= options.length;
+
   const selectOption = (i: number) => {
     if (!revealed) setSelected(i);
   };
@@ -64,7 +77,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
   const check = () => {
     if (selected < 0 || revealed) return;
     setRevealed(true);
-    onAnswered?.(selected === item.correct_index);
+    if (!keyBroken) onAnswered?.(selected === item.correct_index);
   };
 
   // 1-9 picks an option, Enter checks, then Enter advances. Matches the
@@ -109,7 +122,10 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
           const isSelected = i === selected;
           const isCorrectOpt = i === item.correct_index;
           let stateClasses = 'border-border hover:border-accent-border';
-          if (revealed) {
+          if (revealed && keyBroken) {
+            // Nothing is known to be right, so colour nothing.
+            if (isSelected) stateClasses = 'border-accent-border';
+          } else if (revealed) {
             if (isCorrectOpt) stateClasses = 'border-success bg-success-bg text-success';
             else if (isSelected) stateClasses = 'border-error bg-error-bg text-error';
           } else if (isSelected) {
@@ -154,9 +170,17 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
         </button>
       ) : (
         <div className="mt-4">
-          <div className={`font-medium ${correct ? 'text-success' : 'text-error'}`}>
-            {correct ? '✓ Correct!' : `✗ Incorrect — the answer is ${options[item.correct_index] ?? ''}`}
-          </div>
+          {keyBroken ? (
+            <div className="font-medium text-warning">
+              This question&rsquo;s answer key points outside its {options.length} option
+              {options.length === 1 ? '' : 's'}, so none of them can be marked correct. Your answer
+              wasn&rsquo;t scored — the fault is in the course file, not your answer.
+            </div>
+          ) : (
+            <div className={`font-medium ${correct ? 'text-success' : 'text-error'}`}>
+              {correct ? '✓ Correct!' : `✗ Incorrect — the answer is ${options[item.correct_index] ?? ''}`}
+            </div>
+          )}
           {item.explanation && <div className="mt-1 text-sm text-text-2">{item.explanation}</div>}
           {onNext && (
             <button type="button" onClick={onNext} className="mt-3 text-sm text-text-2 hover:text-text">

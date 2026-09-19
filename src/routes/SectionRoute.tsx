@@ -96,51 +96,66 @@ export function SectionRoute() {
         </div>
       )}
 
-      <h2 className="mb-1 mt-6 text-sm font-semibold uppercase tracking-wide text-text-3">
-        Study just this section
-      </h2>
-      <p className="mb-3 text-sm text-text-3">
-        Learn walks this section in teaching order: definitions and examples first, then flashcards,
-        then questions.
-      </p>
-      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {MODE_LINKS.map((m) =>
-          m.count > 0 ? (
-            <Link
-              key={m.mode}
-              to={`/session/${id}/${m.mode}?section=${encodeURIComponent(section.id)}`}
-              className="rounded-lg border border-border bg-surface p-4 transition-colors hover:border-accent-border"
-            >
-              <span className="mb-2 block text-accent">
-                <Icon name={m.icon} size={20} />
-              </span>
-              <div className="font-medium text-text">{m.label}</div>
-              <div className="text-sm text-text-3">{plural(m.count, 'item')}</div>
-            </Link>
-          ) : (
-            <div
-              key={m.mode}
-              aria-disabled="true"
-              className="rounded-lg border border-dashed border-border p-4 opacity-50"
-            >
-              <span className="mb-2 block text-text-3">
-                <Icon name={m.icon} size={20} />
-              </span>
-              <div className="font-medium text-text-2">{m.label}</div>
-              <div className="text-sm text-text-3">none here</div>
-            </div>
-          ),
-        )}
-      </div>
+      {stats.total === 0 ? (
+        // Six greyed-out "none here" tiles told an empty section's story six
+        // times over; one line says it once.
+        <p className="mt-6 rounded-lg border border-dashed border-border p-5 text-sm text-text-2">
+          This section is empty — the generator created it but put no items in it. &ldquo;More
+          practice&rdquo; on the course page can fill it, or you can add items yourself in Browse.
+        </p>
+      ) : (
+        <>
+          <h2 className="mb-1 mt-6 text-sm font-semibold uppercase tracking-wide text-text-3">
+            Study just this section
+          </h2>
+          <p className="mb-3 text-sm text-text-3">
+            Learn walks this section in teaching order: definitions and examples first, then
+            flashcards, then questions.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {MODE_LINKS.map((m) =>
+              m.count > 0 ? (
+                <Link
+                  key={m.mode}
+                  to={`/session/${id}/${m.mode}?section=${encodeURIComponent(section.id)}`}
+                  className="rounded-lg border border-border bg-surface p-4 transition-colors hover:border-accent-border"
+                >
+                  <span className="mb-2 block text-accent">
+                    <Icon name={m.icon} size={20} />
+                  </span>
+                  <div className="font-medium text-text">{m.label}</div>
+                  <div className="text-sm text-text-3">{plural(m.count, 'item')}</div>
+                </Link>
+              ) : (
+                <div
+                  key={m.mode}
+                  aria-disabled="true"
+                  className="rounded-lg border border-dashed border-border p-4 opacity-50"
+                >
+                  <span className="mb-2 block text-text-3">
+                    <Icon name={m.icon} size={20} />
+                  </span>
+                  <div className="font-medium text-text-2">{m.label}</div>
+                  <div className="text-sm text-text-3">none here</div>
+                </div>
+              ),
+            )}
+          </div>
+        </>
+      )}
 
-      <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-3">
-        Everything in this section
-      </h2>
-      <div className="space-y-4">
-        {section.items.map((item) => (
-          <ItemRenderer key={item.id} item={item} />
-        ))}
-      </div>
+      {stats.total > 0 && (
+        <>
+          <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-3">
+            Everything in this section
+          </h2>
+          <div className="space-y-4">
+            {section.items.map((item) => (
+              <ItemRenderer key={item.id} item={item} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

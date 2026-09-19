@@ -4,6 +4,7 @@ import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course, StudyItem } from '@/schema/course';
 import { LEARN_STAGES, learnStageIndex, type StudyMode } from '@/lib/buildSessionItems';
 import { useSessionStore } from '@/store/session';
+import { useResumeStore } from '@/store/resume';
 import { Icon } from '@/components/Icon';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 
@@ -16,6 +17,8 @@ interface CardSessionProps {
   mode: CardMode;
   /** Scope the session to one section; undefined studies the whole course. */
   sectionId?: string;
+  /** Start from the saved bookmark for this course rather than at item 1. */
+  resume?: boolean;
 }
 
 const MODE_LABELS: Record<CardMode, string> = {
@@ -136,7 +139,7 @@ function LearnStageBanner({ item }: { item: { type: StudyItemType; _sectionTitle
 }
 
 /** Every mode except Browse — one item at a time. */
-export function CardSession({ courseId, course, mode, sectionId }: CardSessionProps) {
+export function CardSession({ courseId, course, mode, sectionId, resume = false }: CardSessionProps) {
   const navigate = useNavigate();
   const init = useSessionStore((s) => s.init);
   const items = useSessionStore((s) => s.items);
@@ -155,17 +158,44 @@ export function CardSession({ courseId, course, mode, sectionId }: CardSessionPr
   // an effect body and an extra render pass on every session start.
   const finished = useSessionStore((s) => s.finished);
   const finish = useSessionStore((s) => s.finish);
+  const resumed = useSessionStore((s) => s.resumed);
 
   useEffect(() => {
-    init(courseId, course, mode, sectionId);
-  }, [courseId, course, mode, sectionId, init]);
+    // Read the bookmark rather than subscribing to it: this session writes one
+    // on every card, and a subscription would re-run this effect and restart
+    // the session each time.
+    const bookmark = resume ? useResumeStore.getState().getBookmark(courseId) : null;
+    const usable =
+      bookmark && bookmark.mode === mode && (bookmark.sectionId ?? undefined) === sectionId
+        ? bookmark.itemId
+        : undefined;
+    init(courseId, course, mode, sectionId, usable);
+  }, [courseId, course, mode, sectionId, resume, init]);
+
+  // Remember where you are, so closing the tab 60 cards into a 151-card
+  // session doesn't mean starting again. Item 1 is not worth remembering —
+  // that is just "you opened it" — so the bookmark starts once you've moved.
+  useEffect(() => {
+    if (finished || !current || index === 0) return;
+    useResumeStore.getState().save(courseId, {
+      mode,
+      sectionId: sectionId ?? null,
+      itemId: current.id,
+      index,
+      total,
+      updatedAt: Date.now(),
+    });
+  }, [courseId, mode, sectionId, index, current, total, finished]);
 
   const restart = () => {
+    useResumeStore.getState().clear(courseId);
     init(courseId, course, mode, sectionId);
   };
 
   const handleNext = () => {
     if (next()) return;
+    // Finishing is the one clean end: there is nothing left to come back to.
+    useResumeStore.getState().clear(courseId);
     finish();
   };
 
@@ -276,6 +306,15 @@ export function CardSession({ courseId, course, mode, sectionId }: CardSessionPr
           {index + 1} / {items.length}
         </div>
       </div>
+
+      {resumed && (
+        <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-surface px-4 py-2 text-sm">
+          <span className="text-text-2">Picked up where you left off.</span>
+          <button type="button" onClick={restart} className="text-accent hover:underline">
+            Start from the beginning
+          </button>
+        </div>
+      )}
 
       {mode === 'learn' && current && <LearnStageBanner item={current} />}
       {mode === 'weakest' && (

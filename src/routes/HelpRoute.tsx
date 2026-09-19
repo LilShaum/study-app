@@ -131,6 +131,29 @@ const SECTIONS: HelpSection[] = [
     ),
   },
   {
+    id: 'resume',
+    title: 'Picking up where you left off',
+    body: (
+      <>
+        <p>
+          Once you are a few cards into a session, Arborous remembers where you are. Leave, close
+          the tab, come back tomorrow — a <strong>Continue</strong> bar appears at the top of that
+          course, naming the mode and how far in you got.
+        </p>
+        <p className="mt-2">
+          Opening a mode from its own tile always starts fresh, so Continue is the only thing that
+          resumes and you are never dropped somewhere you didn&rsquo;t ask to be. Finishing a
+          session clears it, and the × on the bar forgets it deliberately.
+        </p>
+        <p className="mt-2 text-text-3">
+          It remembers the <em>item</em>, not the position, so it still lands on the right card in
+          the modes that reshuffle (Mixed, Review Missed) or reorder as your accuracy changes
+          (Weakest First). The cards after it are ordered freshly.
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'sections',
     title: 'Studying one section at a time',
     body: (
