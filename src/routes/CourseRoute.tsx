@@ -195,7 +195,7 @@ export function CourseRoute() {
         </div>
       )}
       <div className="mt-2 flex flex-wrap items-center gap-4">
-        <Link to={`/study/${id}/progress`} className="text-sm text-accent hover:underline">
+        <Link to={`/study/${id}/progress`} className="tap-safe inline-flex items-center text-sm text-accent hover:underline">
           View progress →
         </Link>
         <button
@@ -204,7 +204,7 @@ export function CourseRoute() {
             exportCourse(id, course);
             toast('Course exported.', { type: 'success' });
           }}
-          className="inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
+          className="tap-safe inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
         >
           <Icon name="download" size={14} />
           Export .study.json
@@ -212,7 +212,7 @@ export function CourseRoute() {
         {counts.graphic > 0 && (
           <Link
             to={`/study/${id}/diagrams`}
-            className="inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
+            className="tap-safe inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
           >
             <Icon name="layers" size={14} />
             Diagrams ({counts.graphic})
@@ -221,7 +221,7 @@ export function CourseRoute() {
         <button
           type="button"
           onClick={() => setEditingDetails(true)}
-          className="inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
+          className="tap-safe inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
         >
           <Icon name="edit" size={14} />
           Edit details
@@ -229,7 +229,7 @@ export function CourseRoute() {
         <button
           type="button"
           onClick={() => setAdding('material')}
-          className="inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
+          className="tap-safe inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
         >
           <Icon name="plus" size={14} />
           Add material
@@ -237,7 +237,7 @@ export function CourseRoute() {
         <button
           type="button"
           onClick={() => setAdding('practice')}
-          className="inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
+          className="tap-safe inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
         >
           <Icon name="repeat" size={14} />
           More practice
@@ -278,7 +278,7 @@ export function CourseRoute() {
             onClick={() => clearBookmark(id)}
             aria-label="Forget where I left off"
             title="Forget where I left off"
-            className="text-text-3 hover:text-text"
+            className="tap-safe flex w-10 items-center justify-center text-text-3 hover:text-text"
           >
             <Icon name="x" size={16} />
           </button>

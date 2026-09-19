@@ -42,6 +42,33 @@
 }
 
 @layer components {
+  /* ---- display cutouts ----
+     index.html opts into the cutout area with `viewport-fit=cover`, which is
+     what lets the themed background reach the screen edges. The cost is that
+     the app must inset its own chrome, or on a notched phone in the installed
+     PWA the header sits under the notch and the toast sits under the home
+     indicator. These are 0px on every device without a cutout, so they cost
+     nothing elsewhere. */
+  .app-shell {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  .app-header {
+    padding-top: env(safe-area-inset-top);
+  }
+  .app-toast-viewport {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* A finger is not a cursor: on a touch device give small controls a
+     40px-high hit area without changing how they look on a desktop, where a
+     20px text link is perfectly clickable. */
+  @media (pointer: coarse) {
+    .tap-safe {
+      min-height: 40px;
+    }
+  }
+
   /* Flashcard 3D flip. Tailwind v3 ships no utilities for perspective,
      transform-style or backface-visibility, so these are hand-rolled.
      The reduced-motion block below neutralises the transition. */

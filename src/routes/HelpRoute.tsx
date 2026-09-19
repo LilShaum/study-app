@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon, type IconName } from '@/components/Icon';
+import { useOnboardingStore } from '@/store/onboarding';
 
 interface HelpSection {
   id: string;
@@ -353,6 +354,12 @@ const SECTIONS: HelpSection[] = [
           Arborous also installs as an app and works offline. On iOS: Share → Add to Home Screen. On
           Android and desktop Chrome: the install icon in the address bar, or the ⋮ menu.
         </p>
+        <p className="mt-2 text-text-3">
+          One iOS quirk worth knowing: a Home Screen app gets its own storage, separate from Safari.
+          If you added courses in Safari and then installed, the installed app starts empty — your
+          courses are still in Safari. Export them there and upload them in the installed app, or
+          just use whichever one already has them.
+        </p>
         <p className="mt-2">
           Deleting a course from the library can be undone from the toast that appears — but only
           until it fades.
@@ -361,6 +368,21 @@ const SECTIONS: HelpSection[] = [
     ),
   },
 ];
+
+/** Brings back the first-launch welcome, which is otherwise unreachable. */
+function ReplayWelcome() {
+  const reset = useOnboardingStore((s) => s.reset);
+  return (
+    <button
+      type="button"
+      onClick={reset}
+      className="tap-safe inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-accent-border hover:text-text"
+    >
+      <Icon name="bulb" size={14} />
+      Show the welcome screen again
+    </button>
+  );
+}
 
 /** "/help" — what the app does, including the parts that aren't obvious. */
 export function HelpRoute() {
@@ -374,6 +396,10 @@ export function HelpRoute() {
         You bring the notes and generate a course from them; the app turns that course into practice
         and keeps score.
       </p>
+
+      <div className="mt-4">
+        <ReplayWelcome />
+      </div>
 
       <nav className="mt-5 flex flex-wrap gap-2" aria-label="Help topics">
         {SECTIONS.map((s) => (

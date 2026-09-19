@@ -8,9 +8,9 @@ import { Icon } from '@/components/Icon';
 
 export function RootLayout() {
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
+    <div className="app-shell flex min-h-screen flex-col bg-bg">
       <ThemeEffect />
-      <header className="flex h-header shrink-0 items-center gap-3 border-b border-border bg-surface px-4">
+      <header className="app-header flex min-h-header shrink-0 items-center gap-3 border-b border-border bg-surface px-4">
         <Link to="/" className="text-lg font-semibold text-accent">
           Arborous
         </Link>
@@ -19,7 +19,7 @@ export function RootLayout() {
             to="/help"
             aria-label="Help"
             title="How Arborous works"
-            className="flex h-8 w-8 items-center justify-center rounded border border-border text-text-2 hover:border-accent-border hover:text-text"
+            className="tap-safe flex h-8 w-8 items-center justify-center rounded border border-border text-text-2 hover:border-accent-border hover:text-text"
           >
             <Icon name="help-circle" size={16} />
           </Link>
