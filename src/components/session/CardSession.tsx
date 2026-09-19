@@ -13,6 +13,8 @@ interface CardSessionProps {
   courseId: string;
   course: Course;
   mode: CardMode;
+  /** Scope the session to one section; undefined studies the whole course. */
+  sectionId?: string;
 }
 
 const MODE_LABELS: Record<CardMode, string> = {
@@ -81,7 +83,7 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
 };
 
 /** "quiz" / "flashcards" / "definitions" / "mixed" / "missed" — one item at a time. */
-export function CardSession({ courseId, course, mode }: CardSessionProps) {
+export function CardSession({ courseId, course, mode, sectionId }: CardSessionProps) {
   const navigate = useNavigate();
   const init = useSessionStore((s) => s.init);
   const items = useSessionStore((s) => s.items);
@@ -102,11 +104,11 @@ export function CardSession({ courseId, course, mode }: CardSessionProps) {
   const finish = useSessionStore((s) => s.finish);
 
   useEffect(() => {
-    init(courseId, course, mode);
-  }, [courseId, course, mode, init]);
+    init(courseId, course, mode, sectionId);
+  }, [courseId, course, mode, sectionId, init]);
 
   const restart = () => {
-    init(courseId, course, mode);
+    init(courseId, course, mode, sectionId);
   };
 
   const handleNext = () => {

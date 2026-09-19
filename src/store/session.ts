@@ -14,7 +14,9 @@ interface SessionState {
   /** True once the student has advanced past the last item. */
   finished: boolean;
 
-  init: (courseId: string, course: Course, mode: StudyMode) => void;
+  init: (courseId: string, course: Course, mode: StudyMode, sectionId?: string) => void;
+  /** The section this session is scoped to, or null for the whole course. */
+  sectionId: string | null;
   current: () => SessionItem | null;
   total: () => number;
   hasNext: () => boolean;
@@ -38,13 +40,15 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   activeSectionId: null,
   answeredIndices: new Set(),
   finished: false,
+  sectionId: null,
 
-  init: (courseId, course, mode) => {
+  init: (courseId, course, mode, sectionId) => {
     const missedIds = mode === 'missed' ? useProgressStore.getState().missedIds(courseId) : undefined;
-    const items = buildSessionItems(course, mode, missedIds);
+    const items = buildSessionItems(course, mode, missedIds, sectionId);
     set({
       courseId,
       mode,
+      sectionId: sectionId ?? null,
       items,
       index: 0,
       score: { got: 0, missed: 0 },

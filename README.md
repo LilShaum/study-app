@@ -78,6 +78,15 @@ out can't drift from the format it parses — edit `CLAUDE.md` and both change.
 `src/lib/mergeFragment.ts` holds the merge logic: `planMerge` computes,
 `applyMerge` applies, both pure. Both modes merge through it.
 
+## Sections
+
+Every section on the course page opens its own page: what it contains by type,
+its own accuracy, and study modes scoped to it. A scoped session is a search
+param — `#/session/:id/quiz?section=<id>` — so every existing session link
+still means what it did. Per-section progress needs no new storage: progress
+is already keyed per item id and a section knows its items, so the figures are
+a slice of the map that already exists.
+
 ## Checking coverage
 
 Every course the generator produces declares its own inventory in
@@ -143,7 +152,8 @@ so existing users don't lose their library.
 - Course ids are derived from `course_code` (falling back to `title`). A
   second course that slugs to the same id gets a suffixed id rather than
   overwriting, but the ids are still not human-chosen.
-- Study sessions can't jump between sections; Browse can.
+- Within a card session you can't jump between sections; Browse can, and a
+  section can now be studied on its own from its own page.
 - Course metadata (title, description, tags) isn't editable in-app — edit the
   `.study.json` and re-upload, or regenerate it.
 - Duplicate detection when adding material compares the item's leading text

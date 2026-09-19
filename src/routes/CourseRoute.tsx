@@ -3,6 +3,8 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { exportCourse } from '@/lib/exportCourse';
 import { sortedSections } from '@/lib/sortedSections';
+import { sectionStats } from '@/lib/sectionStats';
+import { useProgressStore } from '@/store/progress';
 import { toast } from '@/store/toast';
 import { Icon, type IconName } from '@/components/Icon';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
@@ -23,6 +25,7 @@ export function CourseRoute() {
   const { id } = useParams<{ id: string }>();
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
   const [adding, setAdding] = useState<AddMode | null>(null);
+  const progress = useProgressStore((s) => (id ? s.getProgress(id) : {}));
 
   if (!id) return <Navigate to="/" replace />;
   if (!course) {
@@ -101,12 +104,44 @@ export function CourseRoute() {
         Sections ({course.sections.length})
       </h2>
       <ul className="space-y-2">
-        {sortedSections(course).map((section) => (
-          <li key={section.id} className="rounded border border-border bg-surface px-4 py-2">
-            <div className="font-medium text-text">{section.title}</div>
-            <div className="text-sm text-text-3">{section.items.length} items</div>
-          </li>
-        ))}
+        {sortedSections(course).map((section) => {
+          const stats = sectionStats(section, progress);
+          return (
+            <li key={section.id}>
+              <Link
+                to={`/study/${id}/section/${encodeURIComponent(section.id)}`}
+                className="flex items-center gap-3 rounded border border-border bg-surface px-4 py-2.5 transition-colors hover:border-accent-border"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium text-text">{section.title}</span>
+                  <span className="block text-sm text-text-3">
+                    {section.items.length} item{section.items.length === 1 ? '' : 's'}
+                    {stats.accuracy !== null && (
+                      <>
+                        {' · '}
+                        <span
+                          className={
+                            stats.accuracy >= 80
+                              ? 'text-success'
+                              : stats.accuracy >= 50
+                                ? 'text-warning'
+                                : 'text-error'
+                          }
+                        >
+                          {stats.accuracy}%
+                        </span>
+                        <span className="text-text-3"> over {stats.studied} studied</span>
+                      </>
+                    )}
+                  </span>
+                </span>
+                <span className="text-text-3" aria-hidden="true">
+                  →
+                </span>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
 
       {adding && (
