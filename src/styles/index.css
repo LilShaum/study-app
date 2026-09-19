@@ -19,6 +19,13 @@
   body {
     @apply bg-bg text-text font-sans antialiased;
     line-height: 1.6;
+    /* A single unbroken token — a long chemical or anatomical name, a formula,
+       a pasted URL — otherwise widens the page rather than wrapping, and the
+       result on a phone is a sideways scroll on every screen that item appears
+       on. `anywhere` rather than `break-word` because only `anywhere` also
+       shrinks a flex/grid item's min-content width, which is where the
+       overflow actually came from. Inherited, so this covers every card. */
+    overflow-wrap: anywhere;
   }
 }
 
