@@ -27,6 +27,18 @@
        overflow actually came from. Inherited, so this covers every card. */
     overflow-wrap: anywhere;
   }
+  /* …but a control's own label is never long content, and breaking one
+     mid-word ("Upl/oad") is worse than the overflow the rule above prevents:
+     `anywhere` lets a flex item shrink below its longest word, which is
+     exactly what squeezed the library's header buttons. Content still wraps;
+     labels wrap between words or not at all. */
+  button,
+  select,
+  option,
+  kbd,
+  th {
+    overflow-wrap: normal;
+  }
 }
 
 @layer components {

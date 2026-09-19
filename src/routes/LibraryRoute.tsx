@@ -80,10 +80,13 @@ export function LibraryRoute() {
 
   return (
     <div className="mx-auto max-w-4xl p-6">
-      <div className="mb-6 flex items-center justify-between">
+      {/* Wraps rather than squeezing: at 390px the title, the count and two
+          buttons do not fit on one line, and a row that cannot wrap shrinks
+          its children instead. */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div className="flex items-baseline gap-3">
           <h1 className="text-2xl font-semibold text-text">My Courses</h1>
-          <span className="text-sm text-text-3">
+          <span className="whitespace-nowrap text-sm text-text-3">
             {isFiltering
               ? `${filteredIds.length} of ${ids.length} course${ids.length !== 1 ? 's' : ''}`
               : `${ids.length} course${ids.length !== 1 ? 's' : ''}`}
@@ -92,7 +95,7 @@ export function LibraryRoute() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-accent-border hover:text-text"
+            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-accent-border hover:text-text"
             onClick={() => inputRef.current?.click()}
           >
             <Icon name="download" size={14} />
@@ -100,7 +103,7 @@ export function LibraryRoute() {
           </button>
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
+            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
             onClick={() => setCreating(true)}
           >
             <Icon name="plus" size={14} />
