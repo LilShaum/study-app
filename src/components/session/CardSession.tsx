@@ -7,6 +7,7 @@ import { useSessionStore } from '@/store/session';
 import { useResumeStore } from '@/store/resume';
 import { Icon } from '@/components/Icon';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
+import { SectionJump } from './SectionJump';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
 type StudyItemType = StudyItem['type'];
@@ -159,6 +160,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
   const finished = useSessionStore((s) => s.finished);
   const finish = useSessionStore((s) => s.finish);
   const resumed = useSessionStore((s) => s.resumed);
+  const activeSectionId = useSessionStore((s) => s.activeSectionId);
+  const jumpToSection = useSessionStore((s) => s.jumpToSection);
 
   useEffect(() => {
     // Read the bookmark rather than subscribing to it: this session writes one
@@ -306,6 +309,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           {index + 1} / {items.length}
         </div>
       </div>
+
+      <SectionJump items={items} mode={mode} activeSectionId={activeSectionId} onJump={jumpToSection} />
 
       {resumed && (
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-surface px-4 py-2 text-sm">

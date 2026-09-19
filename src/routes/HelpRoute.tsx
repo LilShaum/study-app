@@ -167,6 +167,11 @@ const SECTIONS: HelpSection[] = [
           On a 150-item course that is usually what you want: &ldquo;study everything or
           nothing&rdquo; is the wrong choice when you already know which two topics are weak.
         </p>
+        <p className="mt-2">
+          Inside a whole-course session there is a section dropdown above the card, showing which
+          section you are in and jumping to any other. It is absent in Mixed, Weakest First and
+          Review Missed, where the items are deliberately not in section order.
+        </p>
       </>
     ),
   },
