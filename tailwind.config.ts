@@ -15,8 +15,14 @@ export default {
       colors: {
         bg: 'var(--color-bg)',
         surface: 'var(--color-surface)',
+        // A card that outranks its neighbours, and an inset well. Without
+        // these there was one surface and therefore no visual hierarchy.
+        'surface-raised': 'var(--color-surface-raised)',
+        'surface-sunken': 'var(--color-surface-sunken)',
         border: 'var(--color-border)',
         'border-light': 'var(--color-border-light)',
+        // For the outline of a control, which needs 3:1 (WCAG 1.4.11).
+        'border-strong': 'var(--color-border-strong)',
 
         text: 'var(--color-text)',
         'text-2': 'var(--color-text-2)',
@@ -48,7 +54,19 @@ export default {
       },
       fontFamily: {
         sans: 'var(--font)',
+        display: 'var(--font-display)',
         mono: 'var(--font-mono)',
+      },
+      fontSize: {
+        // A real scale, replacing a page built almost entirely from 14px and
+        // 12px. Line heights are part of the token: a display size set solid
+        // and body text set open is most of what makes a page read well.
+        micro: ['var(--text-micro)', { lineHeight: '1.4' }],
+        small: ['var(--text-small)', { lineHeight: '1.55' }],
+        body: ['var(--text-body)', { lineHeight: '1.65' }],
+        heading: ['var(--text-heading)', { lineHeight: '1.4', letterSpacing: '-0.005em' }],
+        title: ['var(--text-title)', { lineHeight: '1.25', letterSpacing: '-0.012em' }],
+        display: ['var(--text-display)', { lineHeight: '1.12', letterSpacing: '-0.02em' }],
       },
       borderRadius: {
         DEFAULT: 'var(--radius)',

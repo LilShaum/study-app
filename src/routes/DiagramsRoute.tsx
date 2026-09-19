@@ -48,7 +48,7 @@ export function DiagramsRoute() {
       <Link to={`/study/${id}`} className="text-sm text-text-2 hover:text-text">
         ← {course.metadata.title}
       </Link>
-      <h1 className="mt-2 text-2xl font-semibold text-text">Diagrams</h1>
+      <h1 className="mt-3 font-display text-display font-semibold text-text">Diagrams</h1>
 
       {total === 0 ? (
         <div className="mt-6 rounded-lg border border-border bg-surface p-6 text-center">
@@ -64,7 +64,7 @@ export function DiagramsRoute() {
         </div>
       ) : (
         <>
-          <p className="mt-1 text-text-2">
+          <p className="mt-2 text-body text-text-2">
             {total} diagram{total === 1 ? '' : 's'} across {groups.length} section
             {groups.length === 1 ? '' : 's'}.
           </p>

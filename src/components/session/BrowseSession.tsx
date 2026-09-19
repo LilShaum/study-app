@@ -54,7 +54,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
         </Link>
         <span className="rounded-full bg-accent-light px-2.5 py-0.5 text-xs font-medium text-accent">Browse</span>
       </div>
-      <h1 className="mb-6 text-2xl font-semibold text-text">{course.metadata.title}</h1>
+      <h1 className="mb-6 font-display text-display font-semibold text-text">{course.metadata.title}</h1>
 
       {hasNav && (
         <nav
@@ -111,7 +111,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
               }}
               className="mb-10 scroll-mt-20"
             >
-              <h2 className="text-lg font-semibold text-text">{section.title}</h2>
+              <h2 className="font-display text-title font-semibold text-text">{section.title}</h2>
               {section.description && <p className="mt-1 text-sm text-text-2">{section.description}</p>}
               <div className="mt-4 space-y-4">
                 {section.items.map((item) => (

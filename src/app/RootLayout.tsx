@@ -11,7 +11,7 @@ export function RootLayout() {
     <div className="app-shell flex min-h-screen flex-col bg-bg">
       <ThemeEffect />
       <header className="app-header flex min-h-header shrink-0 items-center gap-3 border-b border-border bg-surface px-4">
-        <Link to="/" className="text-lg font-semibold text-accent">
+        <Link to="/" className="font-display text-heading font-semibold tracking-tight text-accent">
           Arborous
         </Link>
         <div className="ml-auto flex items-center gap-2">

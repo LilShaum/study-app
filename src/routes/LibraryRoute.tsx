@@ -100,8 +100,8 @@ export function LibraryRoute() {
           its children instead. */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl font-semibold text-text">My Courses</h1>
-          <span className="whitespace-nowrap text-sm text-text-3">
+          <h1 className="font-display text-display font-semibold text-text">My courses</h1>
+          <span className="whitespace-nowrap text-small text-text-3">
             {isFiltering
               ? `${filteredIds.length} of ${ids.length} course${ids.length !== 1 ? 's' : ''}`
               : `${ids.length} course${ids.length !== 1 ? 's' : ''}`}
@@ -209,12 +209,12 @@ export function LibraryRoute() {
                       className="block rounded-lg border border-border bg-surface p-4 shadow transition-colors hover:border-accent-border"
                     >
                       {course.metadata.course_code && (
-                        <div className="text-xs font-medium uppercase tracking-wide text-text-3">
+                        <div className="text-micro font-medium uppercase tracking-wider text-text-3">
                           {course.metadata.course_code}
                         </div>
                       )}
-                      <div className="pr-6 font-semibold text-text">{course.metadata.title}</div>
-                      <div className="mt-1 text-sm text-text-2">
+                      <div className="pr-6 font-display text-heading font-semibold leading-snug text-text">{course.metadata.title}</div>
+                      <div className="mt-1.5 text-small text-text-2">
                         {course.sections.length} section{course.sections.length !== 1 ? 's' : ''}
                       </div>
                       {course.metadata.tags && course.metadata.tags.length > 0 && (

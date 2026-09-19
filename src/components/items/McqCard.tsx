@@ -89,7 +89,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
         Multiple Choice
         <DifficultyBadge difficulty={item.difficulty} />
       </div>
-      <div className="mb-4 text-lg text-text">{item.question}</div>
+      <div className="mb-4 text-heading text-text">{item.question}</div>
 
       <div
         role="radiogroup"
@@ -100,7 +100,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
         {options.map((opt, i) => {
           const isSelected = i === selected;
           const isCorrectOpt = i === item.correct_index;
-          let stateClasses = 'border-border hover:border-accent-border';
+          let stateClasses = 'border-border-strong hover:border-accent-border';
           if (revealed && keyBroken) {
             // Nothing is known to be right, so colour nothing.
             if (isSelected) stateClasses = 'border-accent-border';
@@ -120,7 +120,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
                 tabIndex={isSelected || (selected < 0 && i === 0) ? 0 : -1}
                 disabled={revealed}
                 onClick={() => selectOption(i)}
-                className={`flex w-full items-center gap-3 rounded border px-3 py-2 text-left text-sm text-text transition-colors disabled:cursor-default ${stateClasses}`}
+                className={`flex w-full items-center gap-3 rounded border px-3.5 py-2.5 text-left text-small text-text transition-colors disabled:cursor-default ${stateClasses}`}
               >
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold">
                   {'ABCD'[i] ?? i + 1}

@@ -50,13 +50,13 @@ export function DefinitionCard({
         Definition
         <DifficultyBadge difficulty={item.difficulty} />
       </div>
-      <div className="text-lg font-medium text-text">{item.term}</div>
+      <div className="font-display text-heading font-semibold text-text">{item.term}</div>
 
       {revealMode && !revealed && <div className="mt-1 text-sm text-accent">Click to reveal definition →</div>}
 
       {revealed && (
         <div className="mt-2">
-          <div className="text-text">{item.definition}</div>
+          <div className="text-body text-text">{item.definition}</div>
           {item.example_sentence && (
             <div className="mt-2 text-sm italic text-text-2">&ldquo;{item.example_sentence}&rdquo;</div>
           )}
