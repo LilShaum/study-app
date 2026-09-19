@@ -108,6 +108,16 @@ discoverable by clicking: what the two add-to-course prompts differ on, what
 the course check panel can and cannot verify, the keyboard shortcuts, and
 where the data lives.
 
+## Resuming
+
+`src/store/resume.ts` keeps one bookmark per course — mode, section, item —
+and the course page offers a Continue bar. It stores an *item id*, not a
+position, because a position would be wrong for half the modes: Mixed and
+Review Missed reshuffle on every start and Weakest First reorders as accuracy
+changes. An id also survives the course being edited around it; when it no
+longer resolves, the session starts at the beginning. Opening a mode from its
+own tile always starts fresh, so resuming only ever happens when asked for.
+
 ## Sections
 
 Every section on the course page opens its own page: what it contains by type,
