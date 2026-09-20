@@ -45,17 +45,22 @@ export function RootLayout() {
           the way a page is trimmed rather than pasted down. */}
       <header className="app-header page-block shrink-0">
         <div className="flex min-h-header items-end justify-between gap-4 pb-2">
+          {/* shrink-0 and whitespace-nowrap are both load-bearing. Without
+              them a long location on the right squeezed this side until the
+              wordmark wrapped, leaving a lone "s" on a second line and
+              pushing the whole page down. The work's name is fixed
+              furniture; it is the location that gives way. */}
           <Link
             to="/"
-            className="mark flex items-center gap-2 text-text hover:text-accent"
+            className="mark flex shrink-0 items-center gap-2 whitespace-nowrap text-text hover:text-accent"
             aria-label="Arborous — back to the library"
           >
             <Sprig size={20} />
             Arborous
           </Link>
-          {/* Truncates rather than wraps: a running head that grows to two
-              lines pushes the whole page down as you navigate. */}
-          <span className="mark min-w-0 truncate text-text-3">{here}</span>
+          {/* Capped well short of the full width so it clips before it can
+              crowd the wordmark, rather than at the moment they collide. */}
+          <span className="mark min-w-0 max-w-[50%] truncate text-text-3">{here}</span>
         </div>
         <div className="rule-oxford" />
       </header>

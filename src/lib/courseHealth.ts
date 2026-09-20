@@ -142,6 +142,29 @@ export function analyseCourseHealth(course: Course): CourseHealth {
   }
 
   /* ---- metadata honesty ---- */
+  // The running head carries the course code, because on a course page the
+  // course's own title is already set large under the tree and a second copy
+  // of it in the head says nothing. Without a code the head falls back to
+  // that title, which on a phone is long enough to be clipped to "…". The
+  // generator can only supply a code the source actually states, so when the
+  // slides never name the unit this is the one thing worth asking a person.
+  // Only worth raising when the fallback actually misbehaves. A code is
+  // optional in the schema and plenty of courses have none; nagging every
+  // one of them is noise. A title this long is the case that gets clipped.
+  // Measured, not guessed: at 390px the location slot is 175px wide, and in
+  // the letterspaced capitals the head is set in that holds 13 of the widest
+  // glyphs and around 20 average ones. A 28-character title clips.
+  const HEAD_FITS = 20;
+  const codeless = !String(course.metadata.course_code ?? '').trim();
+  if (codeless && course.metadata.title.length > HEAD_FITS) {
+    findings.push({
+      id: 'no-course-code',
+      severity: 'warning',
+      message:
+        'No course code is set, so the top bar falls back to this long title and clips it. Add one under Edit details — e.g. BIOL 365.',
+    });
+  }
+
   if (course.metadata.total_items !== undefined && course.metadata.total_items !== items.length) {
     findings.push({
       id: 'stale-total',

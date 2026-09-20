@@ -332,15 +332,16 @@ export function CourseTree({
     // Normalised length, so one dash rule can draw on a path of any size
     // without knowing how long it is.
     pathLength: animate && !limb.solid ? 1 : undefined,
-    // Only the MAIN branches are targets.
+    // Only a section's MAIN LINE is a target.
     //
-    // Twigs outnumber branches five to one and thread through their
-    // neighbours' crowns, so sampling them made the answer change every few
-    // pixels of travel — and a twig is not a place you can go anyway: every
-    // limb of a section leads to the same section. Aiming at the branch is
-    // what a person means, and the generator already knows which limbs
-    // those are.
-    'data-section': tracking && limb.kind === 'branch' ? limb.sectionId : undefined,
+    // Filtering on kind was not enough and this is why: kind comes from
+    // depth, so a section's depth-3 limb and all its depth-2 children are
+    // every one of them `branch`. Nine strokes fanning across the crown,
+    // all sampled, made a section's target a wide ragged region that
+    // overlapped its neighbours' — which is exactly the complaint that
+    // aiming at one branch lands two over. The generator now marks the
+    // unbroken leader chain, so a section is one stroke to point at.
+    'data-section': tracking && limb.spine && limb.kind !== 'leaf' ? limb.sectionId : undefined,
     opacity: active && !isStructural(limb) && limb.sectionId !== active ? 0.4 : undefined,
   });
 
