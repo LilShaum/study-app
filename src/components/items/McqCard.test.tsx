@@ -16,7 +16,7 @@ const item = (extra: Partial<McqItem> = {}): McqItem =>
 
 const answer = (optionText: string) => {
   fireEvent.click(screen.getByText(optionText));
-  fireEvent.click(screen.getByRole('button', { name: 'Check Answer' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Check answer' }));
 };
 
 afterEach(cleanup);

@@ -75,7 +75,7 @@ export function DiagramsRoute() {
                 <a
                   key={g.id}
                   href={`#diagrams-${encodeURIComponent(g.id)}`}
-                  className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-text-2 hover:border-accent-border hover:text-text"
+                  className="rounded border border-border bg-surface px-3 py-1 text-xs text-text-2 hover:border-border-strong hover:text-text"
                 >
                   {g.title} ({g.diagrams.length})
                 </a>

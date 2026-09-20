@@ -116,7 +116,7 @@ const SECTIONS: HelpSection[] = [
               <span>
                 <span className="font-medium text-text">{m.name}</span>
                 {m.scored ? (
-                  <span className="ml-2 rounded-full bg-accent-light px-2 py-0.5 text-[11px] font-medium text-accent">
+                  <span className="ml-2 rounded border border-border px-2 py-0.5 text-[11px] font-medium text-text-2">
                     scored
                   </span>
                 ) : (
@@ -407,7 +407,7 @@ function ReplayWelcome() {
     <button
       type="button"
       onClick={reset}
-      className="tap-safe inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-accent-border hover:text-text"
+      className="tap-safe inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-border-strong hover:text-text"
     >
       <Icon name="bulb" size={14} />
       Show the welcome screen again
@@ -437,7 +437,7 @@ export function HelpRoute() {
           <a
             key={s.id}
             href={`#${s.id}`}
-            className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-text-2 hover:border-accent-border hover:text-text"
+            className="rounded border border-border bg-surface px-3 py-1 text-xs text-text-2 hover:border-border-strong hover:text-text"
           >
             {s.title}
           </a>

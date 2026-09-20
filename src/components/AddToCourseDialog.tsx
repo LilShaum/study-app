@@ -291,7 +291,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             <button
               type="button"
               onClick={copyPrompt}
-              className="inline-flex items-center gap-1.5 rounded border border-border bg-bg px-3 py-1.5 text-sm text-text hover:border-accent-border"
+              className="inline-flex items-center gap-1.5 rounded border border-border bg-bg px-3 py-1.5 text-sm text-text hover:border-border-strong"
             >
               <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
               {copied ? 'Prompt copied' : 'Copy prompt'}

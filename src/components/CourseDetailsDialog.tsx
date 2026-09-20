@@ -160,7 +160,7 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1 rounded-full border border-accent-border bg-accent-light px-2.5 py-1 text-xs text-accent"
+                    className="inline-flex items-center gap-1 rounded border border-border-strong px-2.5 py-1 text-xs text-text-2"
                   >
                     {tag}
                     <button
@@ -191,7 +191,7 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
                     key={tag}
                     type="button"
                     onClick={() => addTag(tag)}
-                    className="rounded-full border border-border px-2 py-0.5 text-text-2 hover:border-accent-border hover:text-text"
+                    className="rounded border border-border px-2 py-0.5 text-text-2 hover:border-border-strong hover:text-text"
                   >
                     + {tag}
                   </button>

@@ -64,7 +64,7 @@ export function DefinitionCard({
             <div className="mt-2 flex flex-wrap gap-1.5 text-sm text-text-2">
               <span>Related:</span>
               {item.related_terms.map((t) => (
-                <span key={t} className="rounded bg-accent-light px-1.5 py-0.5 text-accent">
+                <span key={t} className="rounded border border-border px-1.5 py-0.5 text-text-3">
                   {t}
                 </span>
               ))}

@@ -1,19 +1,38 @@
 import { useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
-import { useProgressStore } from '@/store/progress';
+import type { Course } from '@/schema/course';
+import type { ItemResult } from '@/store/progress';
+import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { useResumeStore } from '@/store/resume';
 import { beginWriteCheck, writesLanded } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
+import { CourseTree } from '@/components/CourseTree';
+import { sectionStats } from '@/lib/sectionStats';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
 
+/** A course's totals, aggregated from the same per-section figures the course page uses. */
+function courseTotals(course: Course, progress: Record<string, ItemResult>) {
+  let total = 0;
+  let got = 0;
+  let attempts = 0;
+  for (const section of course.sections) {
+    const stats = sectionStats(section, progress);
+    total += stats.total;
+    got += stats.got;
+    attempts += stats.got + stats.missed;
+  }
+  return { total, accuracy: attempts > 0 ? Math.round((got / attempts) * 100) : null };
+}
+
 /** "/" — the course library: upload, search/tag filter, open, and quietly-hidden delete-with-undo. */
 export function LibraryRoute() {
   const courses = useCoursesStore((s) => s.courses);
+  const allProgress = useProgressStore((s) => s.byCourse);
   const importCourse = useCoursesStore((s) => s.importCourse);
   const removeCourse = useCoursesStore((s) => s.removeCourse);
   const updateCourse = useCoursesStore((s) => s.updateCourse);
@@ -110,7 +129,7 @@ export function LibraryRoute() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-accent-border hover:text-text"
+            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-border-strong hover:text-text"
             onClick={() => inputRef.current?.click()}
           >
             <Icon name="download" size={14} />
@@ -180,10 +199,10 @@ export function LibraryRoute() {
                       type="button"
                       onClick={() => toggleTag(tag)}
                       aria-pressed={active}
-                      className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                      className={`rounded border px-2.5 py-1 text-xs transition-colors ${
                         active
                           ? 'border-accent bg-accent text-white'
-                          : 'border-border text-text-2 hover:border-accent-border'
+                          : 'border-border text-text-2 hover:border-border-strong'
                       }`}
                     >
                       {tag}
@@ -202,30 +221,35 @@ export function LibraryRoute() {
             <ul className="grid gap-3 sm:grid-cols-2">
               {filteredIds.map((id) => {
                 const course = courses[id];
+                const stats = courseTotals(course, allProgress[id] ?? EMPTY_PROGRESS);
                 return (
                   <li key={id} className="group relative">
                     <Link
                       to={`/study/${id}`}
-                      className="block rounded-lg border border-border bg-surface p-4 shadow transition-colors hover:border-accent-border"
+                      className="flex items-center gap-4 rounded border border-border bg-surface p-4 shadow transition-colors hover:border-border-strong"
                     >
-                      {course.metadata.course_code && (
-                        <div className="text-micro font-medium uppercase tracking-wider text-text-3">
-                          {course.metadata.course_code}
-                        </div>
-                      )}
-                      <div className="pr-6 font-display text-heading font-semibold leading-snug text-text">{course.metadata.title}</div>
-                      <div className="mt-1.5 text-small text-text-2">
-                        {course.sections.length} section{course.sections.length !== 1 ? 's' : ''}
-                      </div>
-                      {course.metadata.tags && course.metadata.tags.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {course.metadata.tags.map((tag) => (
-                            <span key={tag} className="rounded bg-accent-light px-1.5 py-0.5 text-xs text-accent">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      <CourseTree
+                        courseId={id}
+                        course={course}
+                        progress={allProgress[id] ?? EMPTY_PROGRESS}
+                        className="h-20"
+                        on="card"
+                      />
+                      <span className="min-w-0 flex-1">
+                        {course.metadata.course_code && (
+                          <span className="block text-micro font-medium uppercase tracking-wider text-text-3">
+                            {course.metadata.course_code}
+                          </span>
+                        )}
+                        <span className="block pr-6 font-display text-heading font-semibold leading-snug text-text">
+                          {course.metadata.title}
+                        </span>
+                        <span className="mt-1.5 block text-small text-text-2">
+                          {stats.total} item{stats.total !== 1 ? 's' : ''} · {course.sections.length} section
+                          {course.sections.length !== 1 ? 's' : ''}
+                          {stats.accuracy !== null && <> · {stats.accuracy}%</>}
+                        </span>
+                      </span>
                     </Link>
                     <button
                       type="button"

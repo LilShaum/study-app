@@ -100,7 +100,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
         {options.map((opt, i) => {
           const isSelected = i === selected;
           const isCorrectOpt = i === item.correct_index;
-          let stateClasses = 'border-border-strong hover:border-accent-border';
+          let stateClasses = 'border-border-strong hover:border-border-strong';
           if (revealed && keyBroken) {
             // Nothing is known to be right, so colour nothing.
             if (isSelected) stateClasses = 'border-accent-border';
@@ -143,9 +143,9 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
           type="button"
           disabled={selected < 0}
           onClick={check}
-          className="mt-4 rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-4 rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-text-3"
         >
-          Check Answer
+          Check answer
         </button>
       ) : (
         <div className="mt-4">

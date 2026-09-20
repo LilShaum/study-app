@@ -8,6 +8,7 @@ import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon, type IconName } from '@/components/Icon';
+import { CourseTree } from '@/components/CourseTree';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
 import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
@@ -16,7 +17,7 @@ import type { StudyMode } from '@/lib/buildSessionItems';
 interface ModeCard {
   mode: StudyMode;
   label: string;
-  desc: string;
+  desc?: string;
   icon: IconName;
   /** How many items this mode would serve, for the count under the label. */
   count: (c: Counts) => number;
@@ -30,77 +31,42 @@ interface Counts {
   graphic: number;
   gradable: number;
   missed: number;
+  accuracy: number | null;
 }
 
 /**
- * Grouped by what the student is trying to do, not by item type.
+ * Learn leads, because it is the one mode that is a course rather than a
+ * filter. It gets the whole width; the rest share a grid of identical tiles.
  *
- * The flat six-tile grid this replaces made every mode look like an
- * alternative to every other, which is why Learn had nowhere to go: it isn't
- * a filter, it's the order you'd work through a section in.
+ * The page used to group these under four headings — Learn, Practise, Review,
+ * Browse — which put a heading above a single button and stacked "Study" over
+ * "Learn" over "Learn". Six tiles do not need to be sorted into named bins.
  */
-const MODE_GROUPS: { heading: string; blurb: string; modes: ModeCard[] }[] = [
-  {
-    heading: 'Learn it',
-    blurb: 'Meet the material in teaching order — no AI needed, this is your own course resequenced.',
-    modes: [
-      {
-        mode: 'learn',
-        label: 'Learn',
-        desc: 'Definitions and examples, then flashcards, then questions — one section at a time',
-        icon: 'target',
-        count: (c) => c.total,
-      },
-    ],
-  },
-  {
-    heading: 'Practise it',
-    blurb: 'Drill one kind of item, or take the lot.',
-    modes: [
-      { mode: 'quiz', label: 'Quiz', desc: 'MCQs one at a time', icon: 'help-circle', count: (c) => c.mcq },
-      { mode: 'flashcards', label: 'Flashcards', desc: 'Flip & track recall', icon: 'layers', count: (c) => c.flashcard },
-      { mode: 'definitions', label: 'Definitions', desc: 'Term → reveal', icon: 'file-text', count: (c) => c.definition },
-      { mode: 'mixed', label: 'Mixed', desc: 'All types, shuffled', icon: 'shuffle', count: (c) => c.total },
-    ],
-  },
-  {
-    heading: 'Fix what is weak',
-    blurb: 'Both read the score you have built up; only MCQs and flashcards are scored.',
-    modes: [
-      {
-        mode: 'weakest',
-        label: 'Weakest First',
-        desc: 'Ranked by your accuracy, shakiest first',
-        icon: 'bar-chart',
-        count: (c) => c.gradable,
-      },
-      {
-        mode: 'missed',
-        label: 'Review Missed',
-        desc: 'Only what you get wrong more than right',
-        icon: 'repeat',
-        count: (c) => c.missed,
-      },
-    ],
-  },
-  {
-    heading: 'Read and edit it',
-    blurb: 'The whole course as a feed — this is where you change or delete an item.',
-    modes: [
-      { mode: 'browse', label: 'Browse', desc: 'Read all content in order, edit anything', icon: 'book-open', count: (c) => c.total },
-    ],
-  },
-];
-
-const GRID_COLS: Record<number, string> = {
-  1: '',
-  2: 'sm:grid-cols-2',
-  3: 'sm:grid-cols-3',
-  4: 'sm:grid-cols-2 lg:grid-cols-4',
+const LEARN: ModeCard = {
+  mode: 'learn',
+  label: 'Learn',
+  desc: 'Definitions, then flashcards, then questions',
+  icon: 'target',
+  count: (c) => c.total,
 };
 
+/**
+ * Label and count, nothing else. These carried a line of description each,
+ * which left every tile a different height — two lines here, one there, three
+ * where the text wrapped — and the grid read as ragged rather than as a set.
+ * Six labels this plain do not need captioning.
+ */
+const PRACTICE: ModeCard[] = [
+  { mode: 'quiz', label: 'Quiz', icon: 'help-circle', count: (c) => c.mcq },
+  { mode: 'flashcards', label: 'Flashcards', icon: 'layers', count: (c) => c.flashcard },
+  { mode: 'definitions', label: 'Definitions', icon: 'file-text', count: (c) => c.definition },
+  { mode: 'mixed', label: 'Mixed', icon: 'shuffle', count: (c) => c.total },
+  { mode: 'weakest', label: 'Weakest first', icon: 'bar-chart', count: (c) => c.gradable },
+  { mode: 'missed', label: 'Review missed', icon: 'repeat', count: (c) => c.missed },
+];
+
 const MODE_LABELS: Record<string, string> = Object.fromEntries(
-  MODE_GROUPS.flatMap((g) => g.modes.map((m) => [m.mode, m.label])),
+  [LEARN, ...PRACTICE, { mode: 'browse', label: 'Browse' }].map((m) => [m.mode, m.label]),
 );
 
 /** "5 minutes ago" — precise enough to tell you whether this is today's work. */
@@ -112,6 +78,27 @@ function ago(ts: number): string {
   if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
   const days = Math.round(hours / 24);
   return `${days} day${days === 1 ? '' : 's'} ago`;
+}
+
+/** The small ink links under the header: things you do to a course, not with it. */
+function ToolLink({ children, ...rest }: React.ComponentProps<typeof Link>) {
+  return (
+    <Link {...rest} className="tap-safe inline-flex items-center gap-1.5 text-text-2 hover:text-text">
+      {children}
+    </Link>
+  );
+}
+
+function ToolButton({ children, ...rest }: React.ComponentProps<'button'>) {
+  return (
+    <button
+      {...rest}
+      type="button"
+      className="tap-safe inline-flex items-center gap-1.5 text-text-2 hover:text-text"
+    >
+      {children}
+    </button>
+  );
 }
 
 /** "/study/:id" — course overview + mode picker. */
@@ -131,6 +118,14 @@ export function CourseRoute() {
     const items = course?.sections.flatMap((s) => s.items) ?? [];
     const byType = (type: string) => items.filter((i) => i.type === type).length;
     const gradableIds = items.filter((i) => i.type === 'mcq' || i.type === 'flashcard').map((i) => i.id);
+    let got = 0;
+    let attempts = 0;
+    for (const itemId of gradableIds) {
+      const r = progress[itemId];
+      if (!r) continue;
+      got += r.got;
+      attempts += r.got + r.missed;
+    }
     return {
       total: items.length,
       mcq: byType('mcq'),
@@ -144,6 +139,7 @@ export function CourseRoute() {
         const r = progress[itemId];
         return r && r.missed > r.got;
       }).length,
+      accuracy: attempts > 0 ? Math.round((got / attempts) * 100) : null,
     };
   }, [course, progress]);
 
@@ -172,99 +168,54 @@ export function CourseRoute() {
     );
   }
 
+  // Code and subject only. The tags went here too, and a course with seven of
+  // them put two wrapped lines of shouting capitals above its own title.
+  const meta = [course.metadata.course_code, course.metadata.subject].filter(Boolean);
+
   return (
     <div className="mx-auto max-w-4xl p-6">
       <Link to="/" className="text-sm text-text-2 hover:text-text">
         ← Library
       </Link>
-      <h1 className="mt-3 font-display text-display font-semibold text-text">{course.metadata.title}</h1>
-      {course.metadata.description && (
-        <p className="mt-2 max-w-prose text-body text-text-2">{course.metadata.description}</p>
-      )}
-      {(course.metadata.course_code || course.metadata.subject || course.metadata.tags?.length) && (
-        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-          {course.metadata.course_code && (
-            <span className="font-medium uppercase tracking-wide text-text-3">
-              {course.metadata.course_code}
-            </span>
+
+      {/* Column on a phone: beside the tree the title had a third of the width
+          and broke over four lines. */}
+      <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:gap-8">
+        <CourseTree courseId={id} course={course} progress={progress} className="h-24 sm:h-44" />
+        <div className="min-w-0 flex-1">
+          {meta.length > 0 && (
+            <p className="text-micro uppercase tracking-wider text-text-3">{meta.join(' · ')}</p>
           )}
-          {course.metadata.subject && <span className="text-text-3">{course.metadata.subject}</span>}
-          {course.metadata.tags?.map((tag) => (
-            <span key={tag} className="rounded-full bg-accent-light px-2 py-0.5 text-accent">
-              {tag}
-            </span>
-          ))}
+          <h1 className="mt-1 font-display text-display font-semibold text-text">{course.metadata.title}</h1>
+          {course.metadata.description && (
+            <p className="mt-2 line-clamp-3 max-w-prose text-small text-text-2 sm:line-clamp-none">
+              {course.metadata.description}
+            </p>
+          )}
+          <p className="mt-3 text-small text-text-2">
+            {counts.total} item{counts.total === 1 ? '' : 's'} · {course.sections.length} section
+            {course.sections.length === 1 ? '' : 's'}
+            {counts.accuracy !== null && <> · {counts.accuracy}% correct</>}
+          </p>
         </div>
-      )}
-      <div className="mt-2 flex flex-wrap items-center gap-4">
-        <Link to={`/study/${id}/progress`} className="tap-safe inline-flex items-center text-sm text-accent hover:underline">
-          View progress →
-        </Link>
-        <button
-          type="button"
-          onClick={() => {
-            exportCourse(id, course);
-            toast('Course exported.', { type: 'success' });
-          }}
-          className="tap-safe inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
-        >
-          <Icon name="download" size={14} />
-          Export .study.json
-        </button>
-        {counts.graphic > 0 && (
-          <Link
-            to={`/study/${id}/diagrams`}
-            className="tap-safe inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
-          >
-            <Icon name="layers" size={14} />
-            Diagrams ({counts.graphic})
-          </Link>
-        )}
-        <button
-          type="button"
-          onClick={() => setEditingDetails(true)}
-          className="tap-safe inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
-        >
-          <Icon name="edit" size={14} />
-          Edit details
-        </button>
-        <button
-          type="button"
-          onClick={() => setAdding('material')}
-          className="tap-safe inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
-        >
-          <Icon name="plus" size={14} />
-          Add material
-        </button>
-        <button
-          type="button"
-          onClick={() => setAdding('practice')}
-          className="tap-safe inline-flex items-center gap-1.5 text-sm text-text-2 hover:text-text"
-        >
-          <Icon name="repeat" size={14} />
-          More practice
-        </button>
       </div>
 
       <CourseHealthPanel course={course} onFix={() => setAdding('fix')} />
 
       {resumable && (
-        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-accent-border bg-accent-light p-4">
-          <span className="text-accent">
-            <Icon name="repeat" size={20} />
-          </span>
+        <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded border border-accent-border bg-accent-light p-4">
           <span className="min-w-0 flex-1">
             <span className="block font-medium text-text">
-              Continue {MODE_LABELS[resumable.mode] ?? resumable.mode}
+              {MODE_LABELS[resumable.mode] ?? resumable.mode}
               {resumable.sectionId && (
                 <span className="font-normal text-text-2">
-                  {' '}
-                  — {course.sections.find((s) => s.id === resumable.sectionId)?.title}
+                  {' — '}
+                  {course.sections.find((s) => s.id === resumable.sectionId)?.title}
                 </span>
               )}
             </span>
-            <span className="block text-sm text-text-2">
-              You stopped at item {resumable.index + 1} of {resumable.total}, {ago(resumable.updatedAt)}.
+            <span className="block text-small text-text-2">
+              Item {resumable.index + 1} of {resumable.total}, {ago(resumable.updatedAt)}.
             </span>
           </span>
           <Link
@@ -287,61 +238,83 @@ export function CourseRoute() {
         </div>
       )}
 
-      <h2 className="mb-1 mt-10 font-display text-title font-semibold text-text">Choose a study mode</h2>
-      <p className="mb-5 text-small text-text-3">
-        New here?{' '}
-        <Link to="/help" className="text-accent hover:underline">
-          What each mode does
-        </Link>
-        .
-      </p>
+      <Link
+        to={`/session/${id}/${LEARN.mode}`}
+        className="mt-8 block rounded border border-border-strong bg-surface-raised px-5 py-4 shadow transition-colors hover:bg-surface"
+      >
+        {/* The name and the count stay on one line at every width; only the
+            description moves under them, so the tile never goes lopsided. */}
+        <span className="flex items-center gap-4">
+          <span className="shrink-0 text-text">
+            <Icon name={LEARN.icon} size={24} />
+          </span>
+          <span className="min-w-0 flex-1 font-display text-heading font-semibold text-text">
+            {LEARN.label}
+          </span>
+          <span className="shrink-0 whitespace-nowrap text-micro text-text-3">
+            {LEARN.count(counts)} items
+          </span>
+        </span>
+        <span className="mt-1 block text-small text-text-2 sm:pl-10">{LEARN.desc}</span>
+      </Link>
 
-      <div className="space-y-6">
-        {MODE_GROUPS.map((group) => (
-          <div key={group.heading}>
-            <div className="mb-2.5">
-              <div className="font-display text-heading font-semibold text-text">{group.heading}</div>
-              <div className="text-small text-text-3">{group.blurb}</div>
-            </div>
-            {/* Columns follow the group's size. A two-card group laid out on a
-                four-column grid left each card a quarter of the row, which was
-                narrow enough to break "Weakest First" across two lines. */}
-            <div className={`grid gap-3 ${GRID_COLS[Math.min(group.modes.length, 4)]}`}>
-              {group.modes.map((m) => {
-                const n = m.count(counts);
-                return (
-                  <Link
-                    key={m.mode}
-                    to={`/session/${id}/${m.mode}`}
-                    className={`flex gap-3 rounded-lg border p-4 transition-colors hover:border-accent-border ${
-                      group.modes.length === 1
-                        ? 'border-accent-border/60 bg-surface-raised shadow'
-                        : 'border-border bg-surface'
-                    }`}
-                  >
-                    <span className="mt-0.5 shrink-0 text-accent">
-                      <Icon name={m.icon} size={22} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block font-semibold text-text">
-                        {m.label}
-                        <span className="ml-2 whitespace-nowrap text-micro font-normal text-text-3">
-                          {n} item{n === 1 ? '' : 's'}
-                        </span>
-                      </span>
-                      <span className="block text-small text-text-2">{m.desc}</span>
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {PRACTICE.map((m) => (
+          <Link
+            key={m.mode}
+            to={`/session/${id}/${m.mode}`}
+            className="flex items-center gap-3 rounded border border-border bg-surface px-4 py-3 transition-colors hover:border-border-strong"
+          >
+            <span className="shrink-0 text-text-3">
+              <Icon name={m.icon} size={18} />
+            </span>
+            <span className="min-w-0 flex-1 font-medium text-text">{m.label}</span>
+            <span className="shrink-0 whitespace-nowrap text-micro text-text-3">
+              {m.count(counts)} items
+            </span>
+          </Link>
         ))}
       </div>
 
-      <h2 className="mb-3 mt-10 font-display text-title font-semibold text-text">
-        Sections <span className="font-sans text-heading font-normal text-text-3">{course.sections.length}</span>
-      </h2>
+      <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-border pt-3 text-small">
+        <ToolLink to={`/study/${id}/progress`}>
+          <Icon name="bar-chart" size={14} />
+          Progress
+        </ToolLink>
+        <ToolLink to={`/session/${id}/browse`}>
+          <Icon name="book-open" size={14} />
+          Browse and edit
+        </ToolLink>
+        {counts.graphic > 0 && (
+          <ToolLink to={`/study/${id}/diagrams`}>
+            <Icon name="layers" size={14} />
+            Diagrams ({counts.graphic})
+          </ToolLink>
+        )}
+        <ToolButton onClick={() => setAdding('material')}>
+          <Icon name="plus" size={14} />
+          Add material
+        </ToolButton>
+        <ToolButton onClick={() => setAdding('practice')}>
+          <Icon name="repeat" size={14} />
+          More practice
+        </ToolButton>
+        <ToolButton onClick={() => setEditingDetails(true)}>
+          <Icon name="edit" size={14} />
+          Edit details
+        </ToolButton>
+        <ToolButton
+          onClick={() => {
+            exportCourse(id, course);
+            toast('Course exported.', { type: 'success' });
+          }}
+        >
+          <Icon name="download" size={14} />
+          Export
+        </ToolButton>
+      </div>
+
+      <h2 className="mb-3 mt-10 font-display text-title font-semibold text-text">Sections</h2>
       <ul className="space-y-2">
         {sortedSections(course).map((section) => {
           const stats = sectionStats(section, progress);
@@ -349,7 +322,7 @@ export function CourseRoute() {
             <li key={section.id}>
               <Link
                 to={`/study/${id}/section/${encodeURIComponent(section.id)}`}
-                className="flex items-center gap-3 rounded border border-border bg-surface px-4 py-2.5 transition-colors hover:border-accent-border"
+                className="flex items-center gap-3 rounded border border-border bg-surface px-4 py-2.5 transition-colors hover:border-border-strong"
               >
                 <span className="min-w-0 flex-1">
                   <span className="block text-body font-medium text-text">{section.title}</span>

@@ -118,7 +118,7 @@ export function SectionRoute() {
                 <Link
                   key={m.mode}
                   to={`/session/${id}/${m.mode}?section=${encodeURIComponent(section.id)}`}
-                  className="rounded-lg border border-border bg-surface p-4 transition-colors hover:border-accent-border"
+                  className="rounded-lg border border-border bg-surface p-4 transition-colors hover:border-border-strong"
                 >
                   <span className="mb-2 block text-accent">
                     <Icon name={m.icon} size={20} />

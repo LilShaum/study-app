@@ -289,7 +289,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         <Link to={`/study/${courseId}`} className="text-sm text-text-2 hover:text-text">
           ← Back
         </Link>
-        <span className="rounded-full bg-accent-light px-2.5 py-0.5 text-xs font-medium text-accent">
+        <span className="rounded border border-border px-2.5 py-0.5 text-xs font-medium text-text-2">
           {MODE_LABELS[mode]}
         </span>
         <div className="flex gap-3 text-sm">

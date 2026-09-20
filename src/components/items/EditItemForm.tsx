@@ -118,7 +118,7 @@ function McqOptions({ draft, onChange }: { draft: McqDraft; onChange: (d: McqDra
           type="button"
           onClick={addOption}
           disabled={options.length >= MAX_OPTIONS}
-          className="rounded border border-border px-3 py-1 text-sm text-text-2 hover:border-accent-border hover:text-text disabled:opacity-40"
+          className="rounded border border-border px-3 py-1 text-sm text-text-2 hover:border-border-strong hover:text-text disabled:opacity-40"
         >
           + Add option
         </button>
