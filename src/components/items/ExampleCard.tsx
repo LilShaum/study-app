@@ -1,11 +1,12 @@
 import type { ExampleItem } from '@/schema/course';
 import { Icon } from '@/components/Icon';
 import { DifficultyBadge } from './DifficultyBadge';
+import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
 
-export function ExampleCard({ item }: { item: ExampleItem }) {
+export function ExampleCard({ item, frame = 'card' }: { item: ExampleItem; frame?: ItemFrame }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-5 shadow">
+    <div className={FRAME[frame]}>
       <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-text-3">
         <Icon name="clipboard" size={13} />
         Worked Example

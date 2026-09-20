@@ -180,12 +180,7 @@ export function CourseRoute() {
       {/* Column on a phone: beside the tree the title had a third of the width
           and broke over four lines. */}
       <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:gap-8">
-        {/* Not `interactive` yet. Limb-clicking is built and tested, but with
-            eleven crowns interleaved the nearest limb to a given pixel is the
-            wrong section 40% of the time — measured over 1737 probes — and a
-            navigation control that misroutes two clicks in five is worse than
-            none. See CourseTree for the two approaches tried. */}
-        <CourseTree courseId={id} course={course} progress={progress} className="h-24 sm:h-44" />
+        <CourseTree courseId={id} course={course} progress={progress} className="h-24 sm:h-44" interactive />
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-display font-semibold text-text">{course.metadata.title}</h1>
           {course.metadata.description && (
@@ -336,10 +331,10 @@ export function CourseRoute() {
         </ToolButton>
       </div>
 
-      <h2 className="mb-3 mt-10 font-display text-title font-semibold text-text">Sections</h2>
+      <h2 className="mb-3 mt-10 border-b-2 border-border-strong pb-1 font-display text-title font-semibold text-text">Sections</h2>
       {/* A list on paper is ruled rows, not eleven stacked boxes each with its
           own border and fill. */}
-      <ul className="divide-y divide-border border-y border-border">
+      <ul className="divide-y divide-border border-b border-border">
         {sortedSections(course).map((section) => {
           const stats = sectionStats(section, progress);
           return (
