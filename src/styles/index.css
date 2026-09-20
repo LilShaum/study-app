@@ -37,7 +37,19 @@
   body {
     /* A book is set entirely in its text face. Fraunces carries an optical
        size axis (9–144), so at body size it is a text cut, not the display
-       cut shrunk down; controls stay on the system stack further down. */
+       cut shrunk down; controls stay on the system stack further down.
+
+       The subset carries four axes: opsz 9–144, wght 100–900, SOFT 0–100
+       (default 0) and WONK 0–1 (default 1). WONK is what gives this face
+       its characteristic letterforms — the swashed ampersand above all,
+       and the single-storey g — and it is ON by default, which is why it
+       has never been set here.
+
+       That is a trap: `font-variation-settings` is all-or-nothing, so the
+       moment anything sets it without naming WONK, the axis snaps to 0 and
+       the ampersand quietly turns into an ordinary one. If you need to set
+       an axis, set 'WONK' 1 alongside it. Same for `font-optical-sizing:
+       auto` below, which stops applying if opsz is set that way. */
     @apply bg-bg text-text font-display antialiased;
     font-optical-sizing: auto;
     font-size: var(--text-body);
@@ -189,6 +201,37 @@
     box-shadow: 0 0 0 0 var(--color-text);
   }
 
+  /* The two verdicts on a cue card. The colour is the ink and the rule,
+     never a fill: a solid green and a solid red button side by side is the
+     one place left in the app that looked like a web form, and on a page
+     this pale a pair of painted blocks is the loudest thing on the screen
+     by a wide margin. */
+  .press-yes {
+    color: var(--color-success);
+    border-color: var(--color-success);
+    box-shadow: 0 2px 0 0 var(--color-success);
+  }
+  .press-yes:hover:not(:disabled) {
+    color: var(--color-success-hover);
+    border-color: var(--color-success-hover);
+    box-shadow: 0 2px 0 0 var(--color-success-hover);
+  }
+  .press-no {
+    color: var(--color-error);
+    border-color: var(--color-error);
+    box-shadow: 0 2px 0 0 var(--color-error);
+  }
+  .press-no:hover:not(:disabled) {
+    color: var(--color-error-hover);
+    border-color: var(--color-error-hover);
+    box-shadow: 0 2px 0 0 var(--color-error-hover);
+  }
+  .press-yes:active:not(:disabled),
+  .press-no:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 0 0 0 currentColor;
+  }
+
   /* A word that acts, with no box at all — for the third-rank actions that
      would otherwise crowd a page with rules. */
   .press-quiet {
@@ -294,7 +337,11 @@
      which renders as squares, and sat on the baseline of the row it is in. */
   .leaders {
     flex: 1 1 auto;
-    min-width: 1.5rem;
+    /* Collapses to nothing rather than holding a floor: a long entry title
+       that wraps leaves a sliver of room, and a 1.5rem floor turned the
+       leaders into three stranded dots that read as a truncation ellipsis.
+       No room means no leaders, which is what a typesetter would do. */
+    min-width: 0;
     height: 1em;
     background-image: radial-gradient(circle, var(--color-text-3) 0.9px, transparent 1.1px);
     background-position: left bottom;
