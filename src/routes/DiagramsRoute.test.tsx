@@ -55,6 +55,26 @@ describe('DiagramsRoute', () => {
     expect(titles).toEqual(['Bilayer diagram', 'Sodium pump diagram']);
   });
 
+  it('numbers the plates straight through the course', () => {
+    useCoursesStore.setState({ courses: { cell_biology: course } });
+    renderDiagrams();
+    // The number IS the plate's name, so it never restarts per section.
+    const plates = screen.getAllByText(/^Plate [IVXLC]+$/).map((el) => el.textContent);
+    expect(plates).toEqual([...new Set(plates)]);
+    expect(plates[0]).toBe('Plate I');
+  });
+
+  it('jumps to a section without leaving the page', () => {
+    useCoursesStore.setState({ courses: { cell_biology: course } });
+    renderDiagrams();
+    const nav = screen.queryByRole('navigation', { name: 'Jump to section' });
+    if (!nav) return; // one section: no jump control to check
+    // An `<a href="#plate-x">` here rewrites the hash route and throws the
+    // reader back to the library — the bug this page shipped with.
+    expect(nav.querySelectorAll('a')).toHaveLength(0);
+    expect(nav.querySelectorAll('button').length).toBeGreaterThan(0);
+  });
+
   it('leaves out sections that have no diagram', () => {
     useCoursesStore.setState({ courses: { cell_biology: course } });
     renderDiagrams();
