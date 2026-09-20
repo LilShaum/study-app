@@ -65,8 +65,10 @@ export function SectionRoute() {
       <Link to={`/study/${id}`} className="text-sm text-text-2 hover:text-text">
         ← {course.metadata.title}
       </Link>
-      <h1 className="mt-2 text-2xl font-semibold text-text">{section.title}</h1>
-      {section.description && <p className="mt-1 text-text-2">{section.description}</p>}
+      <h1 className="mt-3 font-display text-display font-semibold text-text">{section.title}</h1>
+      {section.description && (
+        <p className="mt-2 max-w-prose text-body text-text-2">{section.description}</p>
+      )}
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-2">
         <span>{plural(stats.total, 'item')}</span>
@@ -105,9 +107,7 @@ export function SectionRoute() {
         </p>
       ) : (
         <>
-          <h2 className="mb-1 mt-6 text-sm font-semibold uppercase tracking-wide text-text-3">
-            Study just this section
-          </h2>
+          <h2 className="mb-1 mt-8 font-display text-title font-semibold text-text">Study just this section</h2>
           <p className="mb-3 text-sm text-text-3">
             Learn walks this section in teaching order: definitions and examples first, then
             flashcards, then questions.
@@ -118,7 +118,7 @@ export function SectionRoute() {
                 <Link
                   key={m.mode}
                   to={`/session/${id}/${m.mode}?section=${encodeURIComponent(section.id)}`}
-                  className="rounded-lg border border-border bg-surface p-4 transition-colors hover:border-accent-border"
+                  className="rounded-lg border border-border bg-surface p-4 transition-colors hover:border-border-strong"
                 >
                   <span className="mb-2 block text-accent">
                     <Icon name={m.icon} size={20} />
@@ -146,9 +146,7 @@ export function SectionRoute() {
 
       {stats.total > 0 && (
         <>
-          <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-3">
-            Everything in this section
-          </h2>
+          <h2 className="mb-4 mt-10 font-display text-title font-semibold text-text">Everything in this section</h2>
           <div className="space-y-4">
             {section.items.map((item) => (
               <ItemRenderer key={item.id} item={item} />

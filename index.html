@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description" content="Arborous — grow your knowledge with flashcards, MCQs, definitions and diagrams" />
-  <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#818cf8" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#e2e0d5" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#15171a" media="(prefers-color-scheme: dark)" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Arborous" />
@@ -23,7 +23,6 @@
         var raw = localStorage.getItem('arborous:theme');
         var state = raw ? JSON.parse(raw).state : null;
         if (state && state.mode) document.documentElement.setAttribute('data-theme', state.mode);
-        if (state && state.tree) document.documentElement.setAttribute('data-tree', state.tree);
       } catch (e) { /* localStorage unavailable — fall back to system default */ }
     })();
   </script>

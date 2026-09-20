@@ -2,7 +2,7 @@ import type { Course } from '@/schema/course';
 import type { ItemResult } from './progress';
 import { useCoursesStore } from './courses';
 import { useProgressStore } from './progress';
-import { useThemeStore, type ThemeMode, type TreeName } from './theme';
+import { useThemeStore, type ThemeMode } from './theme';
 import { useOnboardingStore } from './onboarding';
 
 const MIGRATED_KEY = 'arborous:migrated';
@@ -48,14 +48,10 @@ export function runLegacyMigration(): void {
       useProgressStore.getState()._hydrateFromLegacy(legacyProgress);
     }
 
+    // The legacy tree choice is deliberately not carried over: it selected
+    // one of four palettes that no longer exist. Light/dark still applies.
     const legacyMode = localStorage.getItem(LEGACY_KEYS.themeMode) as ThemeMode | null;
-    const legacyTree = localStorage.getItem(LEGACY_KEYS.themeTree) as TreeName | null;
-    if (legacyMode || legacyTree) {
-      useThemeStore.setState((state) => ({
-        mode: legacyMode ?? state.mode,
-        tree: legacyTree ?? state.tree,
-      }));
-    }
+    if (legacyMode) useThemeStore.setState({ mode: legacyMode });
 
     if (localStorage.getItem(LEGACY_KEYS.onboarded)) {
       useOnboardingStore.getState().complete();

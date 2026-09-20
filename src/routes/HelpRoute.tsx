@@ -116,7 +116,7 @@ const SECTIONS: HelpSection[] = [
               <span>
                 <span className="font-medium text-text">{m.name}</span>
                 {m.scored ? (
-                  <span className="ml-2 rounded-full bg-accent-light px-2 py-0.5 text-[11px] font-medium text-accent">
+                  <span className="ml-2 rounded border border-border px-2 py-0.5 text-[11px] font-medium text-text-2">
                     scored
                   </span>
                 ) : (
@@ -407,7 +407,7 @@ function ReplayWelcome() {
     <button
       type="button"
       onClick={reset}
-      className="tap-safe inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-accent-border hover:text-text"
+      className="tap-safe inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-border-strong hover:text-text"
     >
       <Icon name="bulb" size={14} />
       Show the welcome screen again
@@ -422,8 +422,8 @@ export function HelpRoute() {
       <Link to="/" className="text-sm text-text-2 hover:text-text">
         ← Library
       </Link>
-      <h1 className="mt-2 text-2xl font-semibold text-text">How Arborous works</h1>
-      <p className="mt-1 text-text-2">
+      <h1 className="mt-3 font-display text-display font-semibold text-text">How Arborous works</h1>
+      <p className="mt-2 max-w-prose text-body text-text-2">
         You bring the notes and generate a course from them; the app turns that course into practice
         and keeps score.
       </p>
@@ -437,7 +437,7 @@ export function HelpRoute() {
           <a
             key={s.id}
             href={`#${s.id}`}
-            className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-text-2 hover:border-accent-border hover:text-text"
+            className="rounded border border-border bg-surface px-3 py-1 text-xs text-text-2 hover:border-border-strong hover:text-text"
           >
             {s.title}
           </a>
@@ -447,8 +447,8 @@ export function HelpRoute() {
       <div className="mt-6 space-y-6">
         {SECTIONS.map((s) => (
           <section key={s.id} id={s.id} className="scroll-mt-20 rounded-lg border border-border bg-surface p-5">
-            <h2 className="mb-2 text-lg font-semibold text-text">{s.title}</h2>
-            <div className="space-y-1 text-sm text-text-2">{s.body}</div>
+            <h2 className="mb-2 font-display text-heading font-semibold text-text">{s.title}</h2>
+            <div className="space-y-1 text-small text-text-2">{s.body}</div>
           </section>
         ))}
       </div>

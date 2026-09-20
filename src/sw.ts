@@ -1,4 +1,5 @@
 /// <reference lib="webworker" />
+/// <reference types="vite/client" />
 
 // injectManifest source — see tsconfig.sw.json for this file's (WebWorker,
 // not DOM) type scope. vite-plugin-pwa replaces self.__WB_MANIFEST below
@@ -24,6 +25,26 @@ import { NetworkFirst } from 'workbox-strategies';
 declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<{ url: string; revision: string | null }>;
 };
+
+/**
+ * The commit this worker was built from, stamped in at build time.
+ *
+ * It exists to be read back OFF THE LIVE SITE. The deploy job used to check
+ * that sw.js returned 200, which a stale CDN answers just as happily as a
+ * fresh one — so a deploy could report success while the old app carried on
+ * being served. Grepping the live file for the SHA is the only check that
+ * distinguishes the two.
+ *
+ * It also guarantees the worker's own bytes change on every deploy, which is
+ * the single signal a browser uses to decide whether to reinstall it.
+ */
+const BUILD_SHA = import.meta.env.VITE_BUILD_SHA ?? 'dev';
+
+// Logged rather than merely declared: an exported constant nothing reads is
+// tree-shaken out of the bundle, which is exactly what happened the first
+// time — the stamp was in the source and absent from the shipped worker, so
+// the check it exists for would have passed on any build at all.
+console.info(`arborous service worker ${BUILD_SHA}`);
 
 // Derived from the registration rather than hardcoded, so it stays correct if
 // the app is ever served from a different path.

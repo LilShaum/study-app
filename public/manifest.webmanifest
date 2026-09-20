@@ -5,8 +5,8 @@
   "start_url": "/study-app/",
   "scope": "/study-app/",
   "display": "standalone",
-  "background_color": "#f8f9fb",
-  "theme_color": "#4f46e5",
+  "background_color": "#e2e0d5",
+  "theme_color": "#e2e0d5",
   "icons": [
     {
       "src": "icons/icon.svg",

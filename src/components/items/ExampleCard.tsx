@@ -11,7 +11,7 @@ export function ExampleCard({ item }: { item: ExampleItem }) {
         Worked Example
         <DifficultyBadge difficulty={item.difficulty} />
       </div>
-      <div className="text-lg font-medium text-text">{item.title}</div>
+      <div className="font-display text-heading font-semibold text-text">{item.title}</div>
       {item.context && <div className="mt-1 text-sm text-text-2">{item.context}</div>}
 
       {item.steps && item.steps.length > 0 && (

@@ -9,15 +9,19 @@ deployed to GitHub Pages.
 ```
 npm install
 npm run dev        # http://localhost:5173/study-app/
-npm run build       # production build to dist/
+npm run build      # production build to dist/
 npm run typecheck
+npm test           # vitest
+npm run lint
+npm run shots      # screenshots every route, populated and brand-new,
+                   # phone and desktop — needs a build first
 ```
 
 ## Stack
 
-React 18 + TypeScript + Vite, Tailwind CSS, Radix UI primitives, Zustand for
-state, React Router v6 (`createHashRouter` — required for GitHub Pages'
-static hosting), Zod for validating `.study.json` files.
+React 18 + TypeScript + Vite, Tailwind CSS, Radix UI for the toast layer,
+Zustand for state, React Router v7 (`createHashRouter` — required for GitHub
+Pages' static hosting), Zod for validating `.study.json` files.
 
 ## Project layout
 
@@ -26,12 +30,28 @@ src/
   app/          root layout, error boundary
   routes/       one component per route
   components/   item cards (MCQ/flashcard/definition/example/graphic),
-                theme picker, toaster
-  store/        Zustand stores — courses, progress, theme, session, onboarding
+                the course tree, the app mark, dialogs, toaster
+  store/        Zustand stores — courses, progress, theme, resume, onboarding
   schema/       Zod schema + parser for the .study.json format
-  lib/          small pure helpers (slugify, shuffle, session building)
+  lib/          small pure helpers (slugify, shuffle, session building,
+                growTree — the per-course drawing)
+  styles/       design tokens (theme.css) and the rules that use them
   sw.ts         service worker source (vite-plugin-pwa, injectManifest)
 ```
+
+## Look
+
+One identity, two modes: cool ink on warm laid paper, light and dark, with a
+single indigo accent. `src/styles/theme.css` holds every colour in the app —
+`src/styles/contrast.test.ts` asserts each pair meets WCAG AA in both modes,
+and `node scripts/contrast-report.mjs` prints the table while tuning.
+
+Every course grows its own tree, seeded from the course itself: a limb per
+section, foliage for what has been studied, so a section you have never
+opened is a bare branch. `src/lib/growTree.ts` states the construction rules
+it holds to. `scripts/make-icons.mjs` draws the app icon from the same hand
+and writes `src/lib/sprigMark.ts`, so the header mark and the home-screen
+icon cannot drift apart.
 
 ## The `.study.json` format
 

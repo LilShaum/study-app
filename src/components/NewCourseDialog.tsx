@@ -152,7 +152,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
             <button
               type="button"
               onClick={copyPrompt}
-              className="inline-flex items-center gap-1.5 rounded border border-border bg-bg px-3 py-1.5 text-sm text-text hover:border-accent-border"
+              className="inline-flex items-center gap-1.5 rounded border border-border bg-bg px-3 py-1.5 text-sm text-text hover:border-border-strong"
             >
               <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
               {copied ? 'Prompt copied' : 'Copy generator prompt'}
@@ -170,7 +170,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
                 rows={8}
                 spellCheck={false}
                 placeholder={'{\n  "schema_version": "1.0",\n  "metadata": { … },\n  "sections": [ … ]\n}'}
-                className="w-full rounded border border-border bg-bg px-2.5 py-2 font-mono text-xs text-text focus:border-accent focus:outline-none"
+                className="w-full rounded border border-border bg-bg px-2.5 py-2 font-mono text-xs text-text focus:border-accent"
               />
             </label>
             <div className="mt-2 text-sm text-text-3">

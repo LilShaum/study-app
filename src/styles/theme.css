@@ -1,51 +1,113 @@
 /* ============================================================
-   THEME TOKENS — ported verbatim from the vanilla app's styles.css.
-   These custom properties are the single source of truth for color;
-   Tailwind's semantic classes (bg-surface, text-text-2, ...) just
-   reference them (see tailwind.config.ts), so every utility responds
-   automatically to [data-theme] and [data-tree] on <html>.
+   THEME TOKENS — one identity, two modes.
+
+   Arborous is a botanical plate: cool ink printed on laid paper.
+   Warm grey-green stock, blue-black line work, and a single indigo
+   accent used sparingly. Dark mode is the same plate pulled on dark
+   stock, not an inverted website.
+
+   This replaced four tree "themes" (Winter, Banyan, Fig, Default).
+   They were four palettes competing for attention, and the trees they
+   were named after could not be told apart anyway — a line drawing with
+   no colour has only silhouette to work with, which cannot carry a
+   species. Two palettes get the care that eight could not, and the
+   variety now comes from the courses themselves: every course grows its
+   own tree, seeded from the course.
+
+   The ink is deliberately cool against warm paper. A first pass had warm
+   cream under warm brown ink with a terracotta accent, which is the
+   palette generated interfaces land on by reflex — recognisably a
+   default rather than a decision, and flat besides, since warm on warm
+   gives the ink nothing to push against.
+
+   Rules that hold in both modes:
+
+   1. FOUR SURFACE LEVELS. `bg` is the paper, `surface` is a card laid on
+      it, `surface-raised` outranks its neighbours, `surface-sunken` is an
+      inset well. One surface token was why every block in the app
+      rendered as the same object.
+   2. A hairline between two surfaces is decorative; the outline of a
+      CONTROL carries meaning and needs 3:1 (WCAG 1.4.11). Hence
+      `border` and `border-strong`.
+   3. EVERY PAIR MEETS WCAG AA. src/styles/contrast.test.ts asserts it for
+      both modes; `node scripts/contrast-report.mjs` prints the table
+      while tuning.
    ============================================================ */
 
 :root {
-  --color-bg: #f8f9fb;
-  --color-surface: #ffffff;
-  --color-border: #e4e7ec;
-  --color-border-light: #f0f2f5;
+  /* ---- the paper ---- */
+  --color-bg: #e2e0d5;
+  --color-surface: #f2f1e9;
+  --color-surface-raised: #fafaf4;
+  --color-surface-sunken: #d2cfc1;
 
-  --color-text: #111827;
-  --color-text-2: #4b5563;
-  --color-text-3: #9ca3af;
+  --color-border: #c4c1b1;
+  --color-border-light: #d5d2c4;
+  --color-border-strong: #6f6d5f;
 
-  --color-accent: #4f46e5;
-  --color-accent-hover: #4338ca;
-  --color-accent-light: #eef2ff;
-  --color-accent-border: #c7d2fe;
+  /* ---- the ink ---- */
+  --color-text: #1b1d1f;
+  --color-text-2: #45484b;
+  --color-text-3: #585c5f;
 
-  --color-success: #059669;
-  --color-success-hover: #047857;
-  --color-success-bg: #ecfdf5;
-  --color-error: #dc2626;
-  --color-error-hover: #b91c1c;
-  --color-error-bg: #fef2f2;
-  --color-warning: #d97706;
-  --color-warning-bg: #fffbeb;
+  /* ---- the plate mark ---- */
+  --color-accent: #2c4a7a;
+  --color-accent-hover: #1f3861;
+  --color-accent-light: #dde3ee;
+  --color-accent-border: #8ba0c4;
 
-  --color-easy: #059669;
-  --color-easy-bg: #ecfdf5;
-  --color-medium: #d97706;
-  --color-medium-bg: #fffbeb;
-  --color-hard: #dc2626;
-  --color-hard-bg: #fef2f2;
+  /* The keyboard focus ring. Drawn OUTSIDE the control (outline-offset), so
+     it lands on the page or the card rather than on the control's own fill —
+     which is what lets one colour work on a navy button and a paper card
+     alike. WCAG 1.4.11 wants 3:1 against what surrounds it. */
+  --color-focus: #2c4a7a;
 
+  --color-success: #35663f;
+  --color-success-hover: #2a5232;
+  --color-success-bg: #dde8dc;
+  --color-error: #9c3030;
+  --color-error-hover: #7e2626;
+  --color-error-bg: #f0dede;
+  --color-warning: #6f5410;
+  --color-warning-bg: #ece0c4;
+
+  --color-easy: #35663f;
+  --color-easy-bg: #dde8dc;
+  --color-medium: #6f5410;
+  --color-medium-bg: #ece0c4;
+  --color-hard: #9c3030;
+  --color-hard-bg: #f0dede;
+
+  /* ---- type ----
+     A display face carries the identity; the UI stays on the system
+     stack, which costs no bytes and renders instantly. */
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
   --font-mono: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
 
-  --radius: 10px;
-  --radius-sm: 6px;
-  --radius-lg: 14px;
+  --text-display: 2rem;
+  --text-title: 1.5rem;
+  --text-heading: 1.125rem;
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-micro: 0.75rem;
 
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  /* Paper is cut, not rounded off. Tight radii read as a trimmed edge;
+     the pill shapes a default UI kit reaches for read as plastic. */
+  --radius: 4px;
+  --radius-sm: 3px;
+  --radius-lg: 6px;
+
+  /* A sheet lying on another sheet: a hairline under it and a hard offset
+     beside it, rather than the soft ambient blur of a floating panel. */
+  --shadow: 0 1px 0 var(--color-border), 2px 3px 0 -1px rgba(27, 29, 31, 0.07);
+  --shadow-md: 0 1px 0 var(--color-border), 4px 6px 0 -2px rgba(27, 29, 31, 0.1);
+
+  /* The tooth of the paper, drawn rather than downloaded: no image asset,
+     works offline, and retints with the theme. Consumed by .paper-grain. */
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  --paper-grain-opacity: 0.5;
+  --paper-grain-blend: multiply;
 
   --sidebar-w: 240px;
   --header-h: 56px;
@@ -53,254 +115,98 @@
   color-scheme: light;
 }
 
-/* ---- DARK THEME ----
-   Applies when the OS prefers dark and there's no manual override,
-   or when the user has manually toggled dark mode via [data-theme]. */
+/* ---- DARK: the same plate on dark stock ----
+   Applies when the OS prefers dark and there is no manual override, or
+   when the user has toggled it. The two blocks carry identical values;
+   only their triggers differ. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
 
-    --color-bg: #0f1115;
-    --color-surface: #1a1d24;
-    --color-border: #2a2e38;
-    --color-border-light: #23262e;
+    --color-bg: #15171a;
+    --color-surface: #1d2024;
+    --color-surface-raised: #262a2f;
+    --color-surface-sunken: #0f1113;
 
-    --color-text: #f3f4f6;
-    --color-text-2: #b4b8c5;
-    --color-text-3: #7b8190;
+    --color-border: #333840;
+    --color-border-light: #262a30;
+    --color-border-strong: #767d88;
 
-    --color-accent: #818cf8;
-    --color-accent-hover: #6366f1;
-    --color-accent-light: #1e1b4b;
-    --color-accent-border: #3730a3;
+    --color-text: #e8e9ea;
+    --color-text-2: #b2b7bd;
+    --color-text-3: #939aa1;
 
-    --color-success: #34d399;
-    --color-success-hover: #10b981;
-    --color-success-bg: #052e1f;
-    --color-error: #f87171;
-    --color-error-hover: #ef4444;
-    --color-error-bg: #3f1212;
-    --color-warning: #fbbf24;
-    --color-warning-bg: #3f2d05;
+    --color-accent: #8fb0e6;
+    --color-accent-hover: #a9c3f0;
+    --color-accent-light: #1c2433;
+    --color-accent-border: #43587d;
+    --color-focus: #8fb0e6;
 
-    --color-easy: #34d399;
-    --color-easy-bg: #052e1f;
-    --color-medium: #fbbf24;
-    --color-medium-bg: #3f2d05;
-    --color-hard: #f87171;
-    --color-hard-bg: #3f1212;
+    --color-success: #82c08f;
+    --color-success-hover: #9bd0a6;
+    --color-success-bg: #16261a;
+    --color-error: #ef8f84;
+    --color-error-hover: #f5a79e;
+    --color-error-bg: #2e1614;
+    --color-warning: #d8b25c;
+    --color-warning-bg: #2a2008;
 
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+    --color-easy: #82c08f;
+    --color-easy-bg: #16261a;
+    --color-medium: #d8b25c;
+    --color-medium-bg: #2a2008;
+    --color-hard: #ef8f84;
+    --color-hard-bg: #2e1614;
+
+    --shadow: 0 1px 0 #0f1113, 2px 3px 0 -1px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 1px 0 #0f1113, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
+
+    /* Grain has to lighten on dark stock, or it just muddies it. */
+    --paper-grain-opacity: 0.16;
+    --paper-grain-blend: screen;
   }
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --color-bg: #0f1115;
-  --color-surface: #1a1d24;
-  --color-border: #2a2e38;
-  --color-border-light: #23262e;
+  --color-bg: #15171a;
+  --color-surface: #1d2024;
+  --color-surface-raised: #262a2f;
+  --color-surface-sunken: #0f1113;
 
-  --color-text: #f3f4f6;
-  --color-text-2: #b4b8c5;
-  --color-text-3: #7b8190;
+  --color-border: #333840;
+  --color-border-light: #262a30;
+  --color-border-strong: #767d88;
 
-  --color-accent: #818cf8;
-  --color-accent-hover: #6366f1;
-  --color-accent-light: #1e1b4b;
-  --color-accent-border: #3730a3;
+  --color-text: #e8e9ea;
+  --color-text-2: #b2b7bd;
+  --color-text-3: #939aa1;
 
-  --color-success: #34d399;
-  --color-success-hover: #10b981;
-  --color-success-bg: #052e1f;
-  --color-error: #f87171;
-  --color-error-hover: #ef4444;
-  --color-error-bg: #3f1212;
-  --color-warning: #fbbf24;
-  --color-warning-bg: #3f2d05;
+  --color-accent: #8fb0e6;
+  --color-accent-hover: #a9c3f0;
+  --color-accent-light: #1c2433;
+  --color-accent-border: #43587d;
+  --color-focus: #8fb0e6;
 
-  --color-easy: #34d399;
-  --color-easy-bg: #052e1f;
-  --color-medium: #fbbf24;
-  --color-medium-bg: #3f2d05;
-  --color-hard: #f87171;
-  --color-hard-bg: #3f1212;
+  --color-success: #82c08f;
+  --color-success-hover: #9bd0a6;
+  --color-success-bg: #16261a;
+  --color-error: #ef8f84;
+  --color-error-hover: #f5a79e;
+  --color-error-bg: #2e1614;
+  --color-warning: #d8b25c;
+  --color-warning-bg: #2a2008;
 
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
-}
+  --color-easy: #82c08f;
+  --color-easy-bg: #16261a;
+  --color-medium: #d8b25c;
+  --color-medium-bg: #2a2008;
+  --color-hard: #ef8f84;
+  --color-hard-bg: #2e1614;
 
-/* ============================================================
-   TREE THEMES — [data-tree] on <html> overrides the full palette.
-   Each theme sets bg, surface, borders, text, AND accent so the
-   whole atmosphere shifts — not just the button color.
-   ============================================================ */
+  --shadow: 0 1px 0 #0f1113, 2px 3px 0 -1px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 1px 0 #0f1113, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
 
-/* ---- Winter — bare branches, icy slate, cold air ---- */
-:root[data-tree='winter'] {
-  --color-bg: #f0f4f8;
-  --color-surface: #ffffff;
-  --color-border: #c4d4e4;
-  --color-border-light: #d8e6f0;
-  --color-text: #1a2a3a;
-  --color-text-2: #4a6070;
-  --color-text-3: #7a98b0;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-accent-light: #dbeafe;
-  --color-accent-border: #93c5fd;
-}
-@media (prefers-color-scheme: dark) {
-  :root[data-tree='winter']:not([data-theme='light']) {
-    --color-bg: #090f18;
-    --color-surface: #0e1a28;
-    --color-border: #1a2e44;
-    --color-border-light: #122038;
-    --color-text: #dce8f5;
-    --color-text-2: #6890b0;
-    --color-text-3: #3a5870;
-    --color-accent: #93c5fd;
-    --color-accent-hover: #60a5fa;
-    --color-accent-light: #0a1e38;
-    --color-accent-border: #1e4480;
-  }
-}
-:root[data-tree='winter'][data-theme='light'] {
-  --color-bg: #f0f4f8;
-  --color-surface: #ffffff;
-  --color-border: #c4d4e4;
-  --color-border-light: #d8e6f0;
-  --color-text: #1a2a3a;
-  --color-text-2: #4a6070;
-  --color-text-3: #7a98b0;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-accent-light: #dbeafe;
-  --color-accent-border: #93c5fd;
-}
-:root[data-tree='winter'][data-theme='dark'] {
-  --color-bg: #090f18;
-  --color-surface: #0e1a28;
-  --color-border: #1a2e44;
-  --color-border-light: #122038;
-  --color-text: #dce8f5;
-  --color-text-2: #6890b0;
-  --color-text-3: #3a5870;
-  --color-accent: #93c5fd;
-  --color-accent-hover: #60a5fa;
-  --color-accent-light: #0a1e38;
-  --color-accent-border: #1e4480;
-}
-
-/* ---- Banyan — warm parchment, earthy forest greens, aged ---- */
-:root[data-tree='banyan'] {
-  --color-bg: #f2ede0;
-  --color-surface: #fdf9ef;
-  --color-border: #cec0a0;
-  --color-border-light: #e4dcc4;
-  --color-text: #281c08;
-  --color-text-2: #624c28;
-  --color-text-3: #9a8050;
-  --color-accent: #2d6a3f;
-  --color-accent-hover: #1e5030;
-  --color-accent-light: #e4f0e4;
-  --color-accent-border: #80b890;
-}
-@media (prefers-color-scheme: dark) {
-  :root[data-tree='banyan']:not([data-theme='light']) {
-    --color-bg: #0a1408;
-    --color-surface: #121e10;
-    --color-border: #203018;
-    --color-border-light: #182610;
-    --color-text: #c8e0b0;
-    --color-text-2: #6a9850;
-    --color-text-3: #3a5828;
-    --color-accent: #6abf7a;
-    --color-accent-hover: #4da862;
-    --color-accent-light: #0a2808;
-    --color-accent-border: #205c30;
-  }
-}
-:root[data-tree='banyan'][data-theme='light'] {
-  --color-bg: #f2ede0;
-  --color-surface: #fdf9ef;
-  --color-border: #cec0a0;
-  --color-border-light: #e4dcc4;
-  --color-text: #281c08;
-  --color-text-2: #624c28;
-  --color-text-3: #9a8050;
-  --color-accent: #2d6a3f;
-  --color-accent-hover: #1e5030;
-  --color-accent-light: #e4f0e4;
-  --color-accent-border: #80b890;
-}
-:root[data-tree='banyan'][data-theme='dark'] {
-  --color-bg: #0a1408;
-  --color-surface: #121e10;
-  --color-border: #203018;
-  --color-border-light: #182610;
-  --color-text: #c8e0b0;
-  --color-text-2: #6a9850;
-  --color-text-3: #3a5828;
-  --color-accent: #6abf7a;
-  --color-accent-hover: #4da862;
-  --color-accent-light: #0a2808;
-  --color-accent-border: #205c30;
-}
-
-/* ---- Fig — dusty violet, Mediterranean, tree of knowledge ---- */
-:root[data-tree='fig'] {
-  --color-bg: #ede8f5;
-  --color-surface: #f8f5fd;
-  --color-border: #c4b0dc;
-  --color-border-light: #dcd0ec;
-  --color-text: #1c1028;
-  --color-text-2: #523870;
-  --color-text-3: #8868a8;
-  --color-accent: #6d28d9;
-  --color-accent-hover: #5b21b6;
-  --color-accent-light: #ede9fe;
-  --color-accent-border: #c4b5fd;
-}
-@media (prefers-color-scheme: dark) {
-  :root[data-tree='fig']:not([data-theme='light']) {
-    --color-bg: #0d0818;
-    --color-surface: #171025;
-    --color-border: #2c1848;
-    --color-border-light: #201038;
-    --color-text: #e4d4f8;
-    --color-text-2: #9068c0;
-    --color-text-3: #584080;
-    --color-accent: #a78bfa;
-    --color-accent-hover: #8b5cf6;
-    --color-accent-light: #2a0e58;
-    --color-accent-border: #4c1d95;
-  }
-}
-:root[data-tree='fig'][data-theme='light'] {
-  --color-bg: #ede8f5;
-  --color-surface: #f8f5fd;
-  --color-border: #c4b0dc;
-  --color-border-light: #dcd0ec;
-  --color-text: #1c1028;
-  --color-text-2: #523870;
-  --color-text-3: #8868a8;
-  --color-accent: #6d28d9;
-  --color-accent-hover: #5b21b6;
-  --color-accent-light: #ede9fe;
-  --color-accent-border: #c4b5fd;
-}
-:root[data-tree='fig'][data-theme='dark'] {
-  --color-bg: #0d0818;
-  --color-surface: #171025;
-  --color-border: #2c1848;
-  --color-border-light: #201038;
-  --color-text: #e4d4f8;
-  --color-text-2: #9068c0;
-  --color-text-3: #584080;
-  --color-accent: #a78bfa;
-  --color-accent-hover: #8b5cf6;
-  --color-accent-light: #2a0e58;
-  --color-accent-border: #4c1d95;
+  --paper-grain-opacity: 0.16;
+  --paper-grain-blend: screen;
 }

@@ -1,11 +1,6 @@
 import { useState } from 'react';
-import { TREE_THEMES, useThemeStore, type TreeName } from '@/store/theme';
 import { useOnboardingStore } from '@/store/onboarding';
 import { Icon, type IconName } from './Icon';
-
-function treeIcon(tree: TreeName): IconName {
-  return `tree-${tree ?? 'default'}` as IconName;
-}
 
 type Platform = 'ios' | 'android' | 'desktop';
 
@@ -75,8 +70,6 @@ function Glyph({ name }: { name: IconName }) {
 export function Onboarding() {
   const onboarded = useOnboardingStore((s) => s.onboarded);
   const complete = useOnboardingStore((s) => s.complete);
-  const tree = useThemeStore((s) => s.tree);
-  const setTree = useThemeStore((s) => s.setTree);
   const [platform] = useState(detectPlatform);
   const [installed] = useState(isInstalled);
   const [framed] = useState(inFrame);
@@ -90,12 +83,11 @@ export function Onboarding() {
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
       <div className="my-6 w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-md">
         <div className="flex justify-center text-accent">
-          <Icon name={treeIcon(tree)} size={40} />
+          <Icon name={'tree-default' as IconName} size={40} />
         </div>
         <h1 className="mt-2 text-center text-xl font-semibold text-text">Welcome to Arborous</h1>
         <p className="mt-1 text-center text-sm text-text-2">
-          You bring your own lecture notes; an AI turns them into a course; Arborous drills you on
-          it and keeps score. The app hands you the prompt — you don&rsquo;t need to have one.
+          Turn your lecture notes into a course, then study it. The app gives you the prompt.
         </p>
 
         {showInstall && (
@@ -161,35 +153,6 @@ export function Onboarding() {
             ✓ You&rsquo;re using Arborous as an installed app — it works offline from here.
           </div>
         )}
-
-        <div className="mt-5">
-          <div className="mb-2 text-center text-xs font-semibold uppercase tracking-wide text-text-3">
-            Choose your tree
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {TREE_THEMES.map((t) => (
-              <button
-                key={t.name}
-                type="button"
-                onClick={() => setTree(t.value)}
-                aria-pressed={tree === t.value}
-                className={`flex flex-col items-center gap-1 rounded border px-1 py-2 text-xs transition-colors ${
-                  tree === t.value
-                    ? 'border-accent bg-accent-light text-accent'
-                    : 'border-border text-text-2 hover:border-accent-border'
-                }`}
-              >
-                <Icon name={treeIcon(t.value)} size={22} />
-                {t.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <p className="mt-4 text-center text-xs text-text-3">
-          Stuck at any point? The <span aria-hidden="true">?</span> button in the top bar explains
-          every mode and where your data lives.
-        </p>
 
         <div className="mt-5 flex justify-center gap-2">
           <button

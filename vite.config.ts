@@ -42,7 +42,11 @@ export default defineConfig({
       // The web app manifest is shipped as a static file in public/, not generated.
       manifest: false,
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+        // woff2 included deliberately: the display face is part of the
+        // app's identity, and an installed app that falls back to a system
+        // serif offline looks broken in exactly the state it is meant to
+        // shine in. It is fingerprinted, so caching it is safe forever.
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest,woff2}'],
       },
       devOptions: {
         // Keep the SW out of the way during `npm run dev`.

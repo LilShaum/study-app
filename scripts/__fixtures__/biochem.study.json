@@ -1,0 +1,2889 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "title": "Enzyme Kinetics and Regulation (Lecture 9)",
+    "course_code": "BIOC301",
+    "subject": "Biochemistry",
+    "description": "Steady-state kinetics, inhibition, and allosteric control, from Lecture 9 of BIOC 301 Enzymology & Metabolic Regulation (Prof. M. Okonkwo, Week 9; readings Lehninger 6th ed., ch. 6.2-6.5).",
+    "tags": [
+      "enzyme-kinetics",
+      "michaelis-menten",
+      "inhibition",
+      "cooperativity",
+      "allostery",
+      "regulation",
+      "biochemistry"
+    ],
+    "total_items": 151,
+    "item_counts": {
+      "mcq": 46,
+      "flashcard": 38,
+      "definition": 54,
+      "example": 6,
+      "graphic": 7
+    }
+  },
+  "sections": [
+    {
+      "id": "steady-state-assumption",
+      "title": "The steady-state assumption",
+      "description": "How an enzyme-catalysed reaction proceeds through an ES complex, and what Briggs and Haldane's steady state does and does not claim.",
+      "order": 1,
+      "items": [
+        {
+          "id": "d_es_complex",
+          "type": "definition",
+          "term": "Enzyme–substrate complex (ES)",
+          "definition": "The intermediate an enzyme-catalysed reaction proceeds through: E + S ⇌ ES → E + P.",
+          "example_sentence": "In the scheme E + S ⇌ ES → E + P, ES is the enzyme–substrate complex whose concentration the steady state holds constant.",
+          "related_terms": [
+            "steady-state assumption",
+            "rapid-equilibrium assumption"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "steady-state",
+            "kinetics"
+          ],
+          "source_excerpt": "An enzyme-catalysed reaction proceeds through an enzyme–substrate complex (ES): E + S ⇌ ES → E + P"
+        },
+        {
+          "id": "d_steady_state",
+          "type": "definition",
+          "term": "Steady-state assumption",
+          "definition": "Introduced by Briggs and Haldane: the concentration of ES stays constant because it is formed and broken down at equal rates.",
+          "example_sentence": "Under the steady-state assumption [ES] is unchanging, which is what allows the Michaelis–Menten equation to be derived.",
+          "related_terms": [
+            "rapid-equilibrium assumption",
+            "enzyme–substrate complex (ES)"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "steady-state",
+            "kinetics",
+            "exam-key"
+          ],
+          "source_excerpt": "The steady-state assumption, introduced by Briggs and Haldane, states that the concentration of ES stays constant because it is formed and broken down at equal rates."
+        },
+        {
+          "id": "d_rapid_equilibrium",
+          "type": "definition",
+          "term": "Rapid-equilibrium assumption",
+          "definition": "The earlier assumption that E + S ⇌ ES reaches true equilibrium — a stricter condition than the steady state, which holds only when k2 is much smaller than k−1.",
+          "related_terms": [
+            "steady-state assumption"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "steady-state",
+            "kinetics"
+          ],
+          "source_excerpt": "This replaces the earlier rapid-equilibrium assumption, which required that E + S ⇌ ES reach true equilibrium — a stricter condition that holds only when k2 is much smaller than k−1."
+        },
+        {
+          "id": "q_steady_state_meaning",
+          "type": "mcq",
+          "question": "What does the steady-state assumption actually claim about the ES complex?",
+          "options": [
+            "Its concentration stays constant because it is formed and broken down at equal rates",
+            "It is in true equilibrium with free enzyme and free substrate",
+            "It breaks down to product much more slowly than it dissociates back to E + S",
+            "Its concentration is negligible compared with the total enzyme concentration"
+          ],
+          "correct_index": 0,
+          "explanation": "The lecture states the steady state as constant [ES] arising from equal rates of formation and breakdown, and warns that steady state means unchanging, not at equilibrium.",
+          "distractor_rationale": [
+            "",
+            "This is the older rapid-equilibrium assumption that the steady state replaced; the slide flags confusing the two as the most common exam error.",
+            "That inequality (k2 much smaller than k−1) is the condition under which rapid equilibrium holds, not what the steady state asserts.",
+            "The assumption is that [ES] is unchanging, not that it is small; the slide says nothing about [ES] being negligible."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "steady-state",
+            "kinetics",
+            "exam-key"
+          ],
+          "source_excerpt": "Key: steady state means unchanging, not at equilibrium. This distinction is the most common exam error."
+        },
+        {
+          "id": "q_rapid_eq_condition",
+          "type": "mcq",
+          "question": "Under what condition does the stricter rapid-equilibrium assumption hold?",
+          "options": [
+            "When k−1 is much smaller than k2",
+            "When k1 is much larger than k2",
+            "When k2 is much smaller than k−1",
+            "When [S] is much larger than Km"
+          ],
+          "correct_index": 2,
+          "explanation": "The slide states that requiring E + S ⇌ ES to reach true equilibrium holds only when k2 is much smaller than k−1 — that is, when ES falls apart far faster than it goes on to product.",
+          "distractor_rationale": [
+            "This reverses the inequality: if breakdown to product outran dissociation, ES could not stay in equilibrium with E + S.",
+            "Plausible-sounding, but the lecture states the condition in terms of k2 and k−1, not k1 and k2.",
+            "",
+            "Saturating substrate is a condition on where you sit on the Michaelis–Menten curve, not on which kinetic assumption is valid."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "steady-state",
+            "kinetics"
+          ],
+          "source_excerpt": "a stricter condition that holds only when k2 is much smaller than k−1."
+        },
+        {
+          "id": "f_briggs_haldane",
+          "type": "flashcard",
+          "front": "Who introduced the steady-state assumption used in this treatment of enzyme kinetics?",
+          "back": "Briggs and Haldane.",
+          "difficulty": "easy",
+          "tags": [
+            "steady-state",
+            "kinetics"
+          ],
+          "source_excerpt": "The steady-state assumption, introduced by Briggs and Haldane…"
+        },
+        {
+          "id": "f_es_scheme",
+          "type": "flashcard",
+          "front": "Write the reaction scheme an enzyme-catalysed reaction proceeds through.",
+          "back": "E + S ⇌ ES → E + P",
+          "hint": "The first step is reversible; the second, as written, is not.",
+          "difficulty": "easy",
+          "tags": [
+            "steady-state",
+            "kinetics"
+          ],
+          "source_excerpt": "E + S ⇌ ES → E + P"
+        },
+        {
+          "id": "f_steady_vs_equilibrium",
+          "type": "flashcard",
+          "front": "Complete the lecture's key warning: steady state means ___, not ___.",
+          "back": "Unchanging, not at equilibrium. The slide calls this distinction the most common exam error.",
+          "difficulty": "medium",
+          "tags": [
+            "steady-state",
+            "exam-key"
+          ],
+          "source_excerpt": "Key: steady state means unchanging, not at equilibrium. This distinction is the most common exam error."
+        },
+        {
+          "id": "x_steady_state_scheme",
+          "type": "example",
+          "title": "Reading E + S ⇌ ES → E + P under the steady state",
+          "context": "The lecture's scheme, step by step, and what each assumption adds to it.",
+          "steps": [
+            "Enzyme and substrate associate reversibly to form the enzyme–substrate complex: E + S ⇌ ES.",
+            "The complex breaks down to release free enzyme and product: ES → E + P.",
+            "The steady-state assumption says [ES] stays constant, because the rate at which ES forms equals the rate at which it is broken down.",
+            "It does not say the first step is at equilibrium; that stronger claim is the rapid-equilibrium assumption.",
+            "Rapid equilibrium is recovered only in the special case k2 much smaller than k−1, when ES dissociates back to E + S far faster than it goes on to product."
+          ],
+          "takeaway": "The steady state constrains only that [ES] is unchanging; equilibrium is a stricter, special case.",
+          "difficulty": "medium",
+          "tags": [
+            "steady-state",
+            "kinetics",
+            "exam-key"
+          ],
+          "source_excerpt": "The steady-state assumption… states that the concentration of ES stays constant because it is formed and broken down at equal rates. This replaces the earlier rapid-equilibrium assumption…"
+        },
+        {
+          "id": "g_reaction_scheme",
+          "type": "graphic",
+          "title": "The enzyme-catalysed reaction scheme",
+          "svg": "<svg viewBox=\"0 0 440 115\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"currentColor\" font-family=\"sans-serif\" font-size=\"18\"><text x=\"14\" y=\"59\">E + S</text><text x=\"196\" y=\"59\">ES</text><text x=\"352\" y=\"59\">E + P</text></g><g stroke=\"currentColor\" stroke-width=\"2\" fill=\"none\"><path d=\"M78 44 H178\"/><path d=\"M178 44 l-9 -4 M178 44 l-9 4\"/><path d=\"M178 62 H78\"/><path d=\"M78 62 l9 -4 M78 62 l9 4\"/><path d=\"M246 53 H342\"/><path d=\"M342 53 l-9 -4 M342 53 l-9 4\"/></g><g fill=\"currentColor\" font-family=\"sans-serif\" font-size=\"12\"><text x=\"118\" y=\"34\">k1</text><text x=\"114\" y=\"84\">k−1</text><text x=\"286\" y=\"44\">k2</text><text x=\"150\" y=\"106\">[ES] constant: formed and broken down at equal rates</text></g></svg>",
+          "alt_text": "Reaction scheme: E plus S connected to ES by a pair of opposed arrows labelled k1 (forward) and k minus 1 (reverse), and ES connected by a single forward arrow labelled k2 to E plus P. A caption notes that the concentration of ES stays constant because it is formed and broken down at equal rates.",
+          "caption": "The two-step scheme the steady state applies to: reversible binding, then irreversible breakdown to product.",
+          "difficulty": "easy",
+          "tags": [
+            "steady-state",
+            "kinetics"
+          ],
+          "source_excerpt": "An enzyme-catalysed reaction proceeds through an enzyme–substrate complex (ES): E + S ⇌ ES → E + P"
+        }
+      ]
+    },
+    {
+      "id": "michaelis-menten-and-km",
+      "title": "The Michaelis–Menten equation and Km",
+      "description": "The rate equation, the meaning of each of its terms, and how to interpret the Michaelis constant.",
+      "order": 2,
+      "items": [
+        {
+          "id": "d_mm_equation",
+          "type": "definition",
+          "term": "Michaelis–Menten equation",
+          "definition": "v0 = (Vmax · [S]) / (Km + [S]) — the rate equation relating initial velocity to substrate concentration, with Vmax the saturated rate and Km the Michaelis constant.",
+          "example_sentence": "Substituting [S] = Km into v0 = (Vmax · [S])/(Km + [S]) gives v0 = Vmax/2.",
+          "related_terms": [
+            "initial velocity (v0)",
+            "Vmax",
+            "Michaelis constant (Km)"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "michaelis-menten",
+            "formula",
+            "kinetics"
+          ],
+          "source_excerpt": "v0 = (Vmax · [S]) / (Km + [S])"
+        },
+        {
+          "id": "d_initial_velocity",
+          "type": "definition",
+          "term": "Initial velocity (v0)",
+          "definition": "The reaction rate measured before more than about 10% of the substrate is consumed, so that [S] can be treated as constant.",
+          "related_terms": [
+            "Michaelis–Menten equation",
+            "Vmax"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "michaelis-menten",
+            "kinetics"
+          ],
+          "source_excerpt": "v0 is the initial velocity — measured before more than about 10% of substrate is consumed, so that [S] can be treated as constant."
+        },
+        {
+          "id": "d_vmax",
+          "type": "definition",
+          "term": "Vmax",
+          "definition": "The rate of the reaction when every enzyme molecule is saturated with substrate.",
+          "related_terms": [
+            "kcat (turnover number)",
+            "initial velocity (v0)"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "michaelis-menten",
+            "vmax",
+            "kinetics"
+          ],
+          "source_excerpt": "Vmax is the rate when every enzyme molecule is saturated with substrate."
+        },
+        {
+          "id": "d_km",
+          "type": "definition",
+          "term": "Michaelis constant (Km)",
+          "definition": "Km = (k−1 + k2)/k1. Operationally, it is the substrate concentration at which v0 = Vmax/2. It has units of concentration, usually mol/L.",
+          "example_sentence": "When [S] = Km, v0 = Vmax/2 — this is the operational definition of Km.",
+          "related_terms": [
+            "Michaelis–Menten equation",
+            "dissociation constant (Kd)",
+            "K0.5"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "michaelis-menten",
+            "km",
+            "formula",
+            "kinetics"
+          ],
+          "source_excerpt": "Km, the Michaelis constant, equals (k−1 + k2)/k1. When [S] = Km, v0 = Vmax/2. This is the operational definition of Km."
+        },
+        {
+          "id": "d_rectangular_hyperbola",
+          "type": "definition",
+          "term": "Rectangular hyperbola",
+          "definition": "The shape of the Michaelis–Menten v0 versus [S] curve: linear at low [S] and asymptotic at high [S].",
+          "related_terms": [
+            "Michaelis–Menten equation",
+            "sigmoidal curve"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "michaelis-menten",
+            "kinetics"
+          ],
+          "source_excerpt": "The curve is a rectangular hyperbola: linear at low [S], asymptotic at high [S]."
+        },
+        {
+          "id": "d_kd",
+          "type": "definition",
+          "term": "Dissociation constant (Kd)",
+          "definition": "The constant Km equals only when k2 is much smaller than k−1; outside that case, treating Km as an affinity constant is an approximation.",
+          "related_terms": [
+            "Michaelis constant (Km)",
+            "inhibition constant (Ki)"
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "km",
+            "kinetics"
+          ],
+          "source_excerpt": "Km equals the dissociation constant Kd only when k2 ≪ k−1. Outside that case, treating Km as an affinity constant is an approximation."
+        },
+        {
+          "id": "d_apparent_affinity",
+          "type": "definition",
+          "term": "High apparent affinity",
+          "definition": "The description applied to an enzyme with a low Km, which reaches half-maximal velocity at low substrate concentration.",
+          "related_terms": [
+            "Michaelis constant (Km)",
+            "dissociation constant (Kd)"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "km",
+            "kinetics"
+          ],
+          "source_excerpt": "A low Km means the enzyme reaches half-maximal velocity at low substrate concentration — often described as high apparent affinity."
+        },
+        {
+          "id": "f_km_rate_constants",
+          "type": "flashcard",
+          "front": "Km is defined in terms of which rate constants?",
+          "back": "Km = (k−1 + k2)/k1.",
+          "hint": "Two constants on top, one underneath.",
+          "difficulty": "medium",
+          "tags": [
+            "km",
+            "formula",
+            "kinetics"
+          ],
+          "source_excerpt": "Km, the Michaelis constant, equals (k−1 + k2)/k1."
+        },
+        {
+          "id": "f_s_equals_km",
+          "type": "flashcard",
+          "front": "What is v0 when [S] = Km?",
+          "back": "v0 = Vmax/2. This is the operational definition of Km.",
+          "difficulty": "easy",
+          "tags": [
+            "km",
+            "michaelis-menten",
+            "kinetics"
+          ],
+          "source_excerpt": "When [S] = Km, v0 = Vmax/2. This is the operational definition of Km."
+        },
+        {
+          "id": "f_ten_percent_rule",
+          "type": "flashcard",
+          "front": "How much substrate may be consumed before a measurement no longer counts as an initial velocity?",
+          "back": "No more than about 10% — beyond that, [S] can no longer be treated as constant.",
+          "difficulty": "medium",
+          "tags": [
+            "michaelis-menten",
+            "kinetics"
+          ],
+          "source_excerpt": "v0 is the initial velocity — measured before more than about 10% of substrate is consumed, so that [S] can be treated as constant."
+        },
+        {
+          "id": "f_km_units",
+          "type": "flashcard",
+          "front": "What units does Km have?",
+          "back": "Units of concentration, usually mol/L.",
+          "difficulty": "easy",
+          "tags": [
+            "km",
+            "kinetics"
+          ],
+          "source_excerpt": "Km has units of concentration, usually mol/L."
+        },
+        {
+          "id": "f_km_typical_range",
+          "type": "flashcard",
+          "front": "What range do typical Km values fall in?",
+          "back": "Between 10⁻⁶ and 10⁻¹ M.",
+          "difficulty": "medium",
+          "tags": [
+            "km",
+            "kinetics"
+          ],
+          "source_excerpt": "Typical Km values fall between 10⁻⁶ and 10⁻¹ M."
+        },
+        {
+          "id": "q_mm_apply_v0",
+          "type": "mcq",
+          "question": "An enzyme has Km = 2.0 mM and Vmax = 100 µmol·min⁻¹. Using v0 = (Vmax · [S])/(Km + [S]), what is v0 at [S] = 6.0 mM?",
+          "options": [
+            "25 µmol·min⁻¹",
+            "50 µmol·min⁻¹",
+            "75 µmol·min⁻¹",
+            "100 µmol·min⁻¹"
+          ],
+          "correct_index": 2,
+          "explanation": "v0 = (100 × 6.0)/(2.0 + 6.0) = 600/8 = 75 µmol·min⁻¹. Substrate above Km puts the rate above half-maximal but still short of Vmax.",
+          "distractor_rationale": [
+            "Comes from inverting the fraction — using Km/(Km + [S]) instead of [S]/(Km + [S]).",
+            "This is v0 when [S] equals Km, not when [S] = 6.0 mM.",
+            "",
+            "Vmax is reached only when every enzyme molecule is saturated, which no finite [S] achieves."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "michaelis-menten",
+            "formula",
+            "kinetics"
+          ],
+          "source_excerpt": "v0 = (Vmax · [S]) / (Km + [S])"
+        },
+        {
+          "id": "q_half_max",
+          "type": "mcq",
+          "question": "The Michaelis–Menten equation predicts what initial velocity when the substrate concentration equals Km?",
+          "options": [
+            "Vmax",
+            "Vmax/2",
+            "Vmax/4",
+            "2 × Vmax"
+          ],
+          "correct_index": 1,
+          "explanation": "Setting [S] = Km gives v0 = Vmax·Km/(Km + Km) = Vmax/2; the lecture calls this the operational definition of Km.",
+          "distractor_rationale": [
+            "Vmax is the saturated rate, reached only when every enzyme molecule is bound — not at [S] = Km.",
+            "",
+            "A quarter-maximal rate would require [S] = Km/3 in this equation; the half-maximal point is the one the lecture defines.",
+            "Nothing in the Michaelis–Menten equation can exceed Vmax — it is the asymptote of the curve."
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "km",
+            "michaelis-menten",
+            "kinetics"
+          ],
+          "source_excerpt": "When [S] = Km, v0 = Vmax/2. This is the operational definition of Km."
+        },
+        {
+          "id": "q_low_km_meaning",
+          "type": "mcq",
+          "question": "What does a low Km tell you about an enzyme?",
+          "options": [
+            "It reaches half-maximal velocity at low substrate concentration — high apparent affinity",
+            "It converts more substrate molecules per second at saturation",
+            "Its maximal rate is higher than that of an enzyme with a high Km",
+            "It is operating at the diffusion limit"
+          ],
+          "correct_index": 0,
+          "explanation": "The lecture defines a low Km as reaching half-maximal velocity at low [S], often described as high apparent affinity.",
+          "distractor_rationale": [
+            "",
+            "Turnover per second at saturation is kcat, a different parameter — Km says nothing about it.",
+            "Km and Vmax are independent parameters in the equation; a low Km implies nothing about the maximal rate.",
+            "Operating at the diffusion limit is a statement about kcat/Km, not about Km alone."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "km",
+            "kinetics"
+          ],
+          "source_excerpt": "A low Km means the enzyme reaches half-maximal velocity at low substrate concentration — often described as high apparent affinity."
+        },
+        {
+          "id": "q_km_equals_kd",
+          "type": "mcq",
+          "question": "When may Km legitimately be treated as the dissociation constant Kd of the ES complex?",
+          "options": [
+            "Always, since Km is defined as (k−1 + k2)/k1",
+            "Whenever the substrate concentration equals Km",
+            "Whenever the enzyme is saturated with substrate",
+            "Only when k2 is much smaller than k−1"
+          ],
+          "correct_index": 3,
+          "explanation": "The slide states Km equals Kd only when k2 ≪ k−1; outside that case treating Km as an affinity constant is an approximation.",
+          "distractor_rationale": [
+            "The definition is exactly why they are not always equal: the k2 term in the numerator is what makes Km differ from Kd.",
+            "Confuses the operational half-maximal-velocity condition with the condition for Km to report on binding affinity.",
+            "Saturation determines the rate you measure, not whether Km reflects the dissociation equilibrium.",
+            ""
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "km",
+            "kinetics",
+            "exam-key"
+          ],
+          "source_excerpt": "Km equals the dissociation constant Kd only when k2 ≪ k−1. Outside that case, treating Km as an affinity constant is an approximation."
+        },
+        {
+          "id": "q_why_initial_velocity",
+          "type": "mcq",
+          "question": "Why is the rate measured before more than about 10% of the substrate has been consumed?",
+          "options": [
+            "So that [S] can be treated as constant",
+            "So that the enzyme has not yet become saturated with substrate",
+            "So that E + S ⇌ ES is still at true equilibrium",
+            "So that [ES] has not yet reached its steady-state value"
+          ],
+          "correct_index": 0,
+          "explanation": "The lecture gives the reason directly: the 10% limit keeps [S] effectively unchanged, which is what the term [S] in the Michaelis–Menten equation assumes.",
+          "distractor_rationale": [
+            "",
+            "Saturation depends on how much substrate you added, not on how far the reaction has run.",
+            "Confuses the initial-velocity condition with the rapid-equilibrium assumption; the derivation used here assumes a steady state, not equilibrium.",
+            "Backwards — the derivation relies on [ES] having reached its steady state, not on avoiding it."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "michaelis-menten",
+            "kinetics"
+          ],
+          "source_excerpt": "v0 is the initial velocity — measured before more than about 10% of substrate is consumed, so that [S] can be treated as constant."
+        },
+        {
+          "id": "q_km_range",
+          "type": "mcq",
+          "question": "Typical Km values for enzymes fall in which range?",
+          "options": [
+            "10⁻⁶ to 10⁻¹ M",
+            "10⁻¹² to 10⁻⁹ M",
+            "10⁻³ to 10³ M",
+            "10⁸ to 10⁹ M⁻¹s⁻¹"
+          ],
+          "correct_index": 0,
+          "explanation": "The lecture gives 10⁻⁶ to 10⁻¹ M as the typical range, consistent with Km having units of concentration.",
+          "distractor_rationale": [
+            "",
+            "Far too low; this is the kind of range quoted for very tight binding constants, not for the Km values given in this lecture.",
+            "The upper end is physically implausible for a solute concentration and is outside the range the slide gives.",
+            "These are the units and magnitude of the diffusion limit on kcat/Km, not of Km — note the units are not even concentration."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "km",
+            "kinetics"
+          ],
+          "source_excerpt": "Typical Km values fall between 10⁻⁶ and 10⁻¹ M."
+        },
+        {
+          "id": "q_curve_shape",
+          "type": "mcq",
+          "question": "The Michaelis–Menten curve is a rectangular hyperbola. Which description matches it?",
+          "options": [
+            "Sigmoidal, with a sharp transition over a narrow [S] range",
+            "Linear at low [S] and asymptotic at high [S]",
+            "Asymptotic at low [S] and linear at high [S]",
+            "Linear across the whole range of [S]"
+          ],
+          "correct_index": 1,
+          "explanation": "The slide describes the rectangular hyperbola as linear at low [S] and asymptotic at high [S] — the asymptote being Vmax.",
+          "distractor_rationale": [
+            "Sigmoidal is the allosteric-enzyme curve, for which Michaelis–Menten does not apply.",
+            "",
+            "Reverses the two regimes; the flattening happens at high [S] as the enzyme approaches saturation.",
+            "A straight line has no saturation behaviour, so it could never approach a maximum rate."
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "michaelis-menten",
+            "kinetics"
+          ],
+          "source_excerpt": "The curve is a rectangular hyperbola: linear at low [S], asymptotic at high [S]."
+        },
+        {
+          "id": "q_mm_assumption_basis",
+          "type": "mcq",
+          "question": "The Michaelis–Menten equation as derived in this lecture rests on which assumption?",
+          "options": [
+            "That E + S ⇌ ES has reached true equilibrium",
+            "That [ES] is constant, being formed and broken down at equal rates",
+            "That the enzyme is saturated with substrate throughout the measurement",
+            "That product is released as fast as it is formed"
+          ],
+          "correct_index": 1,
+          "explanation": "The learning objective is to derive the equation from the steady-state assumption, which is that [ES] stays constant because formation and breakdown are balanced.",
+          "distractor_rationale": [
+            "That is the rapid-equilibrium assumption the steady state replaced — a stricter condition valid only when k2 ≪ k−1.",
+            "",
+            "Saturation is the special condition that defines Vmax, not the assumption underlying the whole equation.",
+            "The lecture makes no such assumption about product release; the balance it requires is on formation and breakdown of ES."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "steady-state",
+            "michaelis-menten",
+            "exam-key"
+          ],
+          "source_excerpt": "Derive the Michaelis–Menten equation from the steady-state assumption, and state the assumptions it rests on."
+        },
+        {
+          "id": "x_half_max_derivation",
+          "type": "example",
+          "title": "Showing that v0 = Vmax/2 when [S] = Km",
+          "context": "Why the half-maximal velocity point is the operational definition of Km.",
+          "steps": [
+            "Start from the Michaelis–Menten equation: v0 = (Vmax · [S])/(Km + [S]).",
+            "Set the substrate concentration equal to the Michaelis constant: [S] = Km.",
+            "Substitute: v0 = (Vmax · Km)/(Km + Km) = (Vmax · Km)/(2Km).",
+            "Cancel Km from numerator and denominator: v0 = Vmax/2."
+          ],
+          "takeaway": "Km is the substrate concentration that gives exactly half the maximal rate — which is how it is read off a kinetic curve.",
+          "difficulty": "medium",
+          "tags": [
+            "km",
+            "michaelis-menten",
+            "formula"
+          ],
+          "source_excerpt": "When [S] = Km, v0 = Vmax/2. This is the operational definition of Km."
+        },
+        {
+          "id": "g_mm_curve",
+          "type": "graphic",
+          "title": "The Michaelis–Menten curve",
+          "svg": "<svg viewBox=\"0 0 380 250\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M55 25 V205 H355\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><g fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" stroke-dasharray=\"4 4\" opacity=\"0.7\"><path d=\"M55 55 H355\"/><path d=\"M55 130 H150\"/><path d=\"M150 130 V205\"/></g><path d=\"M55 205 C 80 175 118 148 150 130 C 205 100 270 72 355 62\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"/><g fill=\"currentColor\" font-family=\"sans-serif\" font-size=\"13\"><text x=\"296\" y=\"48\">Vmax</text><text x=\"6\" y=\"134\">Vmax/2</text><text x=\"140\" y=\"224\">Km</text><text x=\"310\" y=\"228\">[S]</text><text x=\"22\" y=\"20\">v0</text></g></svg>",
+          "alt_text": "A plot of initial velocity against substrate concentration. The curve rises steeply and almost linearly from the origin at low substrate concentration, then bends over and flattens towards a horizontal dashed asymptote labelled Vmax. A second dashed horizontal line at half that height, labelled Vmax over 2, meets the curve at a point whose substrate concentration is marked on the x-axis as Km.",
+          "caption": "A rectangular hyperbola: linear at low [S], asymptotic at high [S], with Km read off at half-maximal velocity.",
+          "difficulty": "medium",
+          "tags": [
+            "michaelis-menten",
+            "km",
+            "kinetics"
+          ],
+          "source_excerpt": "The curve is a rectangular hyperbola: linear at low [S], asymptotic at high [S]."
+        }
+      ]
+    },
+    {
+      "id": "kcat-and-catalytic-efficiency",
+      "title": "kcat and catalytic efficiency",
+      "description": "Turnover number, the kcat/Km ratio, and the diffusion limit that defines a catalytically perfect enzyme.",
+      "order": 3,
+      "items": [
+        {
+          "id": "d_kcat",
+          "type": "definition",
+          "term": "kcat (turnover number)",
+          "definition": "The number of substrate molecules converted per enzyme active site per second at saturation.",
+          "also_known_as": [
+            "turnover number"
+          ],
+          "related_terms": [
+            "Vmax",
+            "catalytic efficiency"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "kcat",
+            "kinetics"
+          ],
+          "source_excerpt": "kcat, the turnover number, is the number of substrate molecules converted per enzyme active site per second at saturation."
+        },
+        {
+          "id": "d_vmax_kcat_formula",
+          "type": "definition",
+          "term": "Vmax = kcat[E]T",
+          "definition": "The relation linking the maximal rate to the turnover number: Vmax is kcat multiplied by the total enzyme concentration [E]T. Vmax therefore depends on how much enzyme is present, while kcat does not.",
+          "related_terms": [
+            "Vmax",
+            "kcat (turnover number)"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "kcat",
+            "vmax",
+            "formula",
+            "kinetics"
+          ],
+          "source_excerpt": "Vmax = kcat[E]T."
+        },
+        {
+          "id": "d_catalytic_efficiency",
+          "type": "definition",
+          "term": "Catalytic efficiency",
+          "definition": "The ratio kcat/Km, with units M⁻¹s⁻¹. It describes the enzyme at low [S], where most enzymes actually operate.",
+          "related_terms": [
+            "kcat (turnover number)",
+            "Michaelis constant (Km)",
+            "catalytically perfect"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "catalytic-efficiency",
+            "kcat",
+            "formula",
+            "kinetics"
+          ],
+          "source_excerpt": "Catalytic efficiency is the ratio kcat/Km, with units M⁻¹s⁻¹. It describes the enzyme at low [S], where most enzymes actually operate."
+        },
+        {
+          "id": "d_catalytically_perfect",
+          "type": "definition",
+          "term": "Catalytically perfect",
+          "definition": "An enzyme whose kcat/Km has reached the upper limit set by how fast enzyme and substrate can diffuse together, roughly 10⁸–10⁹ M⁻¹s⁻¹.",
+          "also_known_as": [
+            "diffusion-limited"
+          ],
+          "example_sentence": "Carbonic anhydrase and triose phosphate isomerase are the standard examples of catalytically perfect enzymes.",
+          "related_terms": [
+            "catalytic efficiency"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "catalytic-efficiency",
+            "kinetics"
+          ],
+          "source_excerpt": "An enzyme at that ceiling is called catalytically perfect or diffusion-limited. Carbonic anhydrase and triose phosphate isomerase are the standard examples."
+        },
+        {
+          "id": "f_vmax_kcat",
+          "type": "flashcard",
+          "front": "How are Vmax and kcat related?",
+          "back": "Vmax = kcat[E]T, where [E]T is the total enzyme concentration.",
+          "difficulty": "easy",
+          "tags": [
+            "kcat",
+            "vmax",
+            "formula"
+          ],
+          "source_excerpt": "Vmax = kcat[E]T."
+        },
+        {
+          "id": "f_efficiency_units",
+          "type": "flashcard",
+          "front": "What are the units of catalytic efficiency?",
+          "back": "M⁻¹s⁻¹ — because it is kcat (per second) divided by Km (a concentration).",
+          "difficulty": "medium",
+          "tags": [
+            "catalytic-efficiency",
+            "kinetics"
+          ],
+          "source_excerpt": "Catalytic efficiency is the ratio kcat/Km, with units M⁻¹s⁻¹."
+        },
+        {
+          "id": "f_diffusion_limit_value",
+          "type": "flashcard",
+          "front": "What is the upper limit on kcat/Km, and what sets it?",
+          "back": "Roughly 10⁸–10⁹ M⁻¹s⁻¹, set by how fast enzyme and substrate can diffuse together.",
+          "difficulty": "medium",
+          "tags": [
+            "catalytic-efficiency",
+            "kinetics"
+          ],
+          "source_excerpt": "The upper limit on kcat/Km is set by how fast enzyme and substrate can diffuse together: roughly 10⁸–10⁹ M⁻¹s⁻¹."
+        },
+        {
+          "id": "f_perfect_examples",
+          "type": "flashcard",
+          "front": "Which two enzymes does the lecture give as the standard examples of catalytically perfect enzymes?",
+          "back": "Carbonic anhydrase and triose phosphate isomerase.",
+          "difficulty": "easy",
+          "tags": [
+            "catalytic-efficiency",
+            "kinetics"
+          ],
+          "source_excerpt": "Carbonic anhydrase and triose phosphate isomerase are the standard examples."
+        },
+        {
+          "id": "q_vmax_kcat_apply",
+          "type": "mcq",
+          "question": "An enzyme has kcat = 500 s⁻¹ and is present at a total concentration [E]T of 2 µM. Using Vmax = kcat[E]T, what is Vmax?",
+          "options": [
+            "250 µM·s⁻¹",
+            "500 µM·s⁻¹",
+            "1000 µM·s⁻¹",
+            "0.004 µM·s⁻¹"
+          ],
+          "correct_index": 2,
+          "explanation": "Vmax = kcat[E]T = 500 s⁻¹ × 2 µM = 1000 µM·s⁻¹; the relation is a product, so doubling the enzyme present doubles Vmax.",
+          "distractor_rationale": [
+            "Divides kcat by [E]T instead of multiplying — the relation is Vmax = kcat[E]T.",
+            "Quotes kcat itself, forgetting that Vmax also scales with how much enzyme is present.",
+            "",
+            "Inverts the calculation ([E]T/kcat); the units alone show this cannot be a rate."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "kcat",
+            "vmax",
+            "formula"
+          ],
+          "source_excerpt": "Vmax = kcat[E]T."
+        },
+        {
+          "id": "q_kcat_definition",
+          "type": "mcq",
+          "question": "kcat, the turnover number, counts what?",
+          "options": [
+            "Substrate molecules converted per enzyme active site per second at saturation",
+            "Substrate molecules bound per enzyme per second at low substrate concentration",
+            "The number of active sites on each enzyme molecule",
+            "The number of catalytic cycles completed before the enzyme is inactivated"
+          ],
+          "correct_index": 0,
+          "explanation": "The lecture defines kcat precisely as substrate molecules converted per enzyme active site per second at saturation — the 'at saturation' qualifier matters, since it is the rate when the enzyme is working flat out.",
+          "distractor_rationale": [
+            "",
+            "Behaviour at low [S] is what kcat/Km describes, and binding is not the same as conversion.",
+            "Confuses the per-active-site normalisation in the definition with a count of sites.",
+            "A lifetime count would describe inactivation, which belongs to irreversible inhibition, not to kcat."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "kcat",
+            "kinetics"
+          ],
+          "source_excerpt": "kcat, the turnover number, is the number of substrate molecules converted per enzyme active site per second at saturation."
+        },
+        {
+          "id": "q_efficiency_regime",
+          "type": "mcq",
+          "question": "kcat/Km describes an enzyme's performance under which conditions?",
+          "options": [
+            "At saturating substrate, where every active site is occupied",
+            "At low substrate concentration, where most enzymes actually operate",
+            "Exactly at [S] = Km, where the rate is half-maximal",
+            "Only in the presence of a competitive inhibitor"
+          ],
+          "correct_index": 1,
+          "explanation": "The slide states that catalytic efficiency describes the enzyme at low [S], which is the regime most enzymes are in physiologically.",
+          "distractor_rationale": [
+            "Saturation is the regime described by kcat and Vmax alone, not by the kcat/Km ratio.",
+            "",
+            "The half-maximal point is the operational definition of Km, not the regime kcat/Km reports on.",
+            "Catalytic efficiency is a property of the uninhibited enzyme; inhibitors are a separate topic."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "catalytic-efficiency",
+            "kinetics"
+          ],
+          "source_excerpt": "It describes the enzyme at low [S], where most enzymes actually operate."
+        },
+        {
+          "id": "q_catalytically_perfect",
+          "type": "mcq",
+          "question": "What does it mean to call an enzyme catalytically perfect?",
+          "options": [
+            "Its kcat is the highest of any known enzyme",
+            "Its Km has reached the lowest value physically attainable",
+            "Its kcat/Km sits at the ceiling set by diffusion of enzyme and substrate together",
+            "It converts every substrate molecule it binds, releasing no intermediates"
+          ],
+          "correct_index": 2,
+          "explanation": "The ceiling on kcat/Km is set by how fast enzyme and substrate diffuse together (about 10⁸–10⁹ M⁻¹s⁻¹); an enzyme at that ceiling is called catalytically perfect, or diffusion-limited.",
+          "distractor_rationale": [
+            "Perfection here is about the kcat/Km ratio against the diffusion ceiling, not about kcat alone being a record value.",
+            "Same error on the other parameter — it is the ratio, not either constant separately, that reaches the limit.",
+            "",
+            "Plausible-sounding chemistry, but the lecture defines the term by the diffusion ceiling, not by what happens after binding."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "catalytic-efficiency",
+            "kinetics"
+          ],
+          "source_excerpt": "The upper limit on kcat/Km is set by how fast enzyme and substrate can diffuse together: roughly 10⁸–10⁹ M⁻¹s⁻¹. An enzyme at that ceiling is called catalytically perfect or diffusion-limited."
+        },
+        {
+          "id": "q_efficiency_vs_vmax",
+          "type": "mcq",
+          "question": "Two enzymes have the same Vmax, but enzyme A has a much larger kcat/Km than enzyme B. In a cell where [S] is well below Km, which performs better and why?",
+          "options": [
+            "Enzyme A, because kcat/Km is the parameter that describes the enzyme at low [S]",
+            "Enzyme B, because a smaller kcat/Km means a lower Km and so tighter binding",
+            "Neither — equal Vmax means equal rate at any substrate concentration",
+            "Enzyme A, because a larger kcat/Km raises its maximal rate"
+          ],
+          "correct_index": 0,
+          "explanation": "Catalytic efficiency, kcat/Km, is explicitly the parameter describing the enzyme at low [S], which is where most enzymes operate; Vmax only tells you about the saturated regime.",
+          "distractor_rationale": [
+            "",
+            "Gets the ratio backwards: for a fixed kcat, a smaller kcat/Km means a larger Km, i.e. weaker apparent affinity.",
+            "Equal Vmax only fixes the saturated rate; below saturation the two enzymes differ according to kcat/Km.",
+            "Right enzyme, wrong reason — Vmax is stated to be equal, so the advantage cannot lie in the maximal rate."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "catalytic-efficiency",
+            "vmax",
+            "kinetics"
+          ],
+          "source_excerpt": "Catalytic efficiency is the ratio kcat/Km… It describes the enzyme at low [S], where most enzymes actually operate."
+        }
+      ]
+    },
+    {
+      "id": "linearising-the-data",
+      "title": "Linearising the data: Lineweaver–Burk and Eadie–Hofstee",
+      "description": "The double-reciprocal plot, how to read Km and Vmax off it, its weakness, and the alternative preferred for fitting.",
+      "order": 4,
+      "items": [
+        {
+          "id": "d_lineweaver_burk",
+          "type": "definition",
+          "term": "Lineweaver–Burk plot",
+          "definition": "A plot of 1/v0 against 1/[S], which gives a straight line: y-intercept 1/Vmax, x-intercept −1/Km, slope Km/Vmax.",
+          "also_known_as": [
+            "double-reciprocal plot"
+          ],
+          "related_terms": [
+            "Eadie–Hofstee plot",
+            "Michaelis–Menten equation"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "plots",
+            "kinetics"
+          ],
+          "source_excerpt": "The Lineweaver–Burk plot (double-reciprocal plot) graphs 1/v0 against 1/[S], giving a straight line."
+        },
+        {
+          "id": "d_lb_equation",
+          "type": "definition",
+          "term": "Lineweaver–Burk equation",
+          "definition": "1/v0 = (Km/Vmax)·(1/[S]) + 1/Vmax — the reciprocal form of the Michaelis–Menten equation, in straight-line form with slope Km/Vmax and intercept 1/Vmax.",
+          "related_terms": [
+            "Lineweaver–Burk plot",
+            "Michaelis–Menten equation"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "plots",
+            "formula",
+            "kinetics"
+          ],
+          "source_excerpt": "1/v0 = (Km/Vmax) · (1/[S]) + 1/Vmax"
+        },
+        {
+          "id": "d_eadie_hofstee",
+          "type": "definition",
+          "term": "Eadie–Hofstee plot",
+          "definition": "A plot of v0 against v0/[S]. It distributes error more evenly than the double-reciprocal plot and is preferred for fitting.",
+          "related_terms": [
+            "Lineweaver–Burk plot"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "plots",
+            "kinetics"
+          ],
+          "source_excerpt": "The Eadie–Hofstee plot (v0 against v0/[S]) distributes error more evenly and is preferred for fitting."
+        },
+        {
+          "id": "f_lb_y_intercept",
+          "type": "flashcard",
+          "front": "On a Lineweaver–Burk plot, what is the y-intercept?",
+          "back": "1/Vmax.",
+          "difficulty": "easy",
+          "tags": [
+            "plots",
+            "vmax"
+          ],
+          "source_excerpt": "The y-intercept is 1/Vmax."
+        },
+        {
+          "id": "f_lb_x_intercept",
+          "type": "flashcard",
+          "front": "On a Lineweaver–Burk plot, what is the x-intercept?",
+          "back": "−1/Km (note the minus sign).",
+          "difficulty": "medium",
+          "tags": [
+            "plots",
+            "km"
+          ],
+          "source_excerpt": "the x-intercept is −1/Km"
+        },
+        {
+          "id": "f_lb_slope",
+          "type": "flashcard",
+          "front": "On a Lineweaver–Burk plot, what is the slope of the line?",
+          "back": "Km/Vmax.",
+          "difficulty": "easy",
+          "tags": [
+            "plots",
+            "km",
+            "vmax"
+          ],
+          "source_excerpt": "the slope is Km/Vmax"
+        },
+        {
+          "id": "q_lb_read_km",
+          "type": "mcq",
+          "question": "A Lineweaver–Burk plot has its x-intercept at 1/[S] = −0.5 mM⁻¹. What is Km?",
+          "options": [
+            "0.5 mM",
+            "2.0 mM",
+            "−2.0 mM",
+            "−0.5 mM"
+          ],
+          "correct_index": 1,
+          "explanation": "The x-intercept equals −1/Km, so −1/Km = −0.5 mM⁻¹ gives Km = 2.0 mM. The minus sign belongs to the intercept, not to Km.",
+          "distractor_rationale": [
+            "Reads the intercept value straight off as Km without taking the reciprocal.",
+            "",
+            "Takes the reciprocal correctly but carries the minus sign through; Km is a concentration and cannot be negative.",
+            "Keeps both the sign and the un-reciprocated value — the intercept read verbatim."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "plots",
+            "km",
+            "formula"
+          ],
+          "source_excerpt": "the x-intercept is −1/Km"
+        },
+        {
+          "id": "q_lb_read_vmax",
+          "type": "mcq",
+          "question": "A Lineweaver–Burk plot has a y-intercept of 0.01 (µmol·min⁻¹)⁻¹. What is Vmax?",
+          "options": [
+            "0.01 µmol·min⁻¹",
+            "1.0 µmol·min⁻¹",
+            "10 µmol·min⁻¹",
+            "100 µmol·min⁻¹"
+          ],
+          "correct_index": 3,
+          "explanation": "The y-intercept is 1/Vmax, so Vmax = 1/0.01 = 100 µmol·min⁻¹.",
+          "distractor_rationale": [
+            "Reads the intercept directly as Vmax, forgetting that the axis is a reciprocal.",
+            "Comes from treating the intercept as if it were already a ratio to be normalised rather than inverted.",
+            "An arithmetic slip in taking the reciprocal of 0.01.",
+            ""
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "plots",
+            "vmax",
+            "formula"
+          ],
+          "source_excerpt": "The y-intercept is 1/Vmax."
+        },
+        {
+          "id": "q_lb_weakness",
+          "type": "mcq",
+          "question": "What is the weakness of the Lineweaver–Burk plot?",
+          "options": [
+            "Taking reciprocals compresses high-[S] points and inflates the error on low-[S] points, so the least reliable measurements dominate the fit",
+            "It cannot be used when an inhibitor is present, because the line is no longer straight",
+            "It requires measurements at saturating [S], which are hard to obtain",
+            "It gives Vmax but provides no way to obtain Km"
+          ],
+          "correct_index": 0,
+          "explanation": "The slide states exactly this: the double-reciprocal transformation squashes the reliable high-[S] data together and magnifies the error in the low-[S] data, so the worst points carry the fit.",
+          "distractor_rationale": [
+            "",
+            "The opposite is true — the plot's diagnostic value with inhibitors (lines meeting on the y-axis, parallel, or intersecting left of it) is one of its main uses.",
+            "The plot's problem is with the low-[S] end of the data, not with a requirement for saturating substrate.",
+            "Km is obtainable from the x-intercept (−1/Km) or the slope (Km/Vmax)."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "plots",
+            "kinetics"
+          ],
+          "source_excerpt": "Its weakness: taking reciprocals compresses high-[S] points and inflates the error on low-[S] points, so the least reliable measurements dominate the fit."
+        },
+        {
+          "id": "q_eadie_preferred",
+          "type": "mcq",
+          "question": "Why is the Eadie–Hofstee plot preferred for fitting kinetic data?",
+          "options": [
+            "It does not require the steady-state assumption",
+            "It distributes error more evenly than the double-reciprocal plot",
+            "It plots 1/v0 against 1/[S], which is more familiar to most readers",
+            "It yields Km directly without needing Vmax"
+          ],
+          "correct_index": 1,
+          "explanation": "The lecture gives even distribution of error as the reason the Eadie–Hofstee plot (v0 against v0/[S]) is preferred over Lineweaver–Burk for fitting.",
+          "distractor_rationale": [
+            "Both plots are rearrangements of the same Michaelis–Menten equation, which rests on the steady state either way.",
+            "",
+            "That describes the Lineweaver–Burk plot; Eadie–Hofstee plots v0 against v0/[S].",
+            "The lecture's stated advantage is about error distribution, not about isolating one parameter."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "plots",
+            "kinetics"
+          ],
+          "source_excerpt": "The Eadie–Hofstee plot (v0 against v0/[S]) distributes error more evenly and is preferred for fitting."
+        },
+        {
+          "id": "x_lb_linearisation",
+          "type": "example",
+          "title": "Linearising Michaelis–Menten into the Lineweaver–Burk form",
+          "context": "How the double-reciprocal equation follows from the rate equation, and where the intercepts come from.",
+          "steps": [
+            "Start from v0 = (Vmax · [S])/(Km + [S]).",
+            "Take the reciprocal of both sides: 1/v0 = (Km + [S])/(Vmax · [S]).",
+            "Split the numerator into two terms: 1/v0 = Km/(Vmax · [S]) + [S]/(Vmax · [S]).",
+            "Simplify: 1/v0 = (Km/Vmax)·(1/[S]) + 1/Vmax.",
+            "Compare with y = mx + c: plotting 1/v0 against 1/[S] gives slope Km/Vmax and y-intercept 1/Vmax.",
+            "Setting 1/v0 = 0 and solving gives the x-intercept, −1/Km."
+          ],
+          "takeaway": "The double-reciprocal plot is just the Michaelis–Menten equation in straight-line form, which is why Km and Vmax can be read off its slope and intercepts.",
+          "difficulty": "hard",
+          "tags": [
+            "plots",
+            "formula",
+            "michaelis-menten"
+          ],
+          "source_excerpt": "1/v0 = (Km/Vmax) · (1/[S]) + 1/Vmax … The y-intercept is 1/Vmax; the x-intercept is −1/Km; the slope is Km/Vmax."
+        },
+        {
+          "id": "g_lb_plot",
+          "type": "graphic",
+          "title": "Reading Km and Vmax off a Lineweaver–Burk plot",
+          "svg": "<svg viewBox=\"0 0 380 240\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M25 185 H355\"/><path d=\"M150 20 V215\"/></g><path d=\"M85 185 L345 25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"/><g fill=\"currentColor\"><circle cx=\"85\" cy=\"185\" r=\"3.5\"/><circle cx=\"150\" cy=\"145\" r=\"3.5\"/></g><g fill=\"currentColor\" font-family=\"sans-serif\" font-size=\"13\"><text x=\"42\" y=\"205\">−1/Km</text><text x=\"158\" y=\"142\">1/Vmax</text><text x=\"232\" y=\"84\">slope = Km/Vmax</text><text x=\"300\" y=\"205\">1/[S]</text><text x=\"104\" y=\"30\">1/v0</text></g></svg>",
+          "alt_text": "A double-reciprocal plot with the vertical axis 1 over v nought and the horizontal axis 1 over S. A straight line rises from lower left to upper right, crossing the horizontal axis to the left of the origin at a point marked minus 1 over Km, and crossing the vertical axis at a point marked 1 over Vmax. The line itself is labelled slope equals Km over Vmax.",
+          "caption": "The three quantities readable from the line: y-intercept 1/Vmax, x-intercept −1/Km, slope Km/Vmax.",
+          "difficulty": "medium",
+          "tags": [
+            "plots",
+            "km",
+            "vmax"
+          ],
+          "source_excerpt": "The y-intercept is 1/Vmax; the x-intercept is −1/Km; the slope is Km/Vmax."
+        }
+      ]
+    },
+    {
+      "id": "reversible-inhibition",
+      "title": "Reversible inhibition — three modes",
+      "description": "Competitive, uncompetitive and mixed inhibition: what each binds, what it does to apparent Km and Vmax, and how each looks on a Lineweaver–Burk plot.",
+      "order": 5,
+      "items": [
+        {
+          "id": "d_competitive_inhibition",
+          "type": "definition",
+          "term": "Competitive inhibition",
+          "definition": "Inhibition in which the inhibitor binds free enzyme only, at the active site. Apparent Km increases; Vmax is unchanged.",
+          "related_terms": [
+            "uncompetitive inhibition",
+            "mixed inhibition",
+            "active site"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "inhibition",
+            "competitive-inhibition"
+          ],
+          "source_excerpt": "Competitive | Free E only, at the active site | Apparent Km: Increases | Apparent Vmax: Unchanged"
+        },
+        {
+          "id": "d_uncompetitive_inhibition",
+          "type": "definition",
+          "term": "Uncompetitive inhibition",
+          "definition": "Inhibition in which the inhibitor binds the ES complex only. Apparent Km decreases and apparent Vmax decreases.",
+          "related_terms": [
+            "competitive inhibition",
+            "mixed inhibition"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "uncompetitive-inhibition"
+          ],
+          "source_excerpt": "Uncompetitive | ES complex only | Apparent Km: Decreases | Apparent Vmax: Decreases"
+        },
+        {
+          "id": "d_mixed_inhibition",
+          "type": "definition",
+          "term": "Mixed inhibition",
+          "definition": "Inhibition in which the inhibitor binds both E and ES, at an allosteric site. Apparent Km may increase or decrease; apparent Vmax decreases.",
+          "related_terms": [
+            "noncompetitive inhibition",
+            "allosteric site"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "mixed-inhibition"
+          ],
+          "source_excerpt": "Mixed | Both E and ES, at an allosteric site | Apparent Km: Increases or decreases | Apparent Vmax: Decreases"
+        },
+        {
+          "id": "d_noncompetitive_inhibition",
+          "type": "definition",
+          "term": "Noncompetitive inhibition (pure)",
+          "definition": "The special case of mixed inhibition in which the inhibitor binds E and ES with equal affinity, so Km is unchanged and only Vmax falls.",
+          "related_terms": [
+            "mixed inhibition"
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "inhibition",
+            "mixed-inhibition"
+          ],
+          "source_excerpt": "Pure noncompetitive inhibition is the special case of mixed inhibition where the inhibitor binds E and ES with equal affinity, so Km is unchanged and only Vmax falls."
+        },
+        {
+          "id": "d_active_site",
+          "type": "definition",
+          "term": "Active site",
+          "definition": "The site on the free enzyme at which a competitive inhibitor binds, and from which an allosteric enzyme's regulatory site is distinct; it is also what the reactive species generated by a suicide inhibitor attacks.",
+          "related_terms": [
+            "allosteric site",
+            "competitive inhibition"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "inhibition",
+            "allostery"
+          ],
+          "source_excerpt": "Competitive | Free E only, at the active site"
+        },
+        {
+          "id": "d_allosteric_site",
+          "type": "definition",
+          "term": "Allosteric site",
+          "definition": "A binding site distinct from the active site: where a mixed inhibitor binds both E and ES, and, in an allosteric enzyme, the regulatory site at which an effector binds.",
+          "also_known_as": [
+            "regulatory site"
+          ],
+          "related_terms": [
+            "active site",
+            "mixed inhibition",
+            "allosteric enzyme"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "allostery"
+          ],
+          "source_excerpt": "Mixed | Both E and ES, at an allosteric site"
+        },
+        {
+          "id": "f_competitive_effects",
+          "type": "flashcard",
+          "front": "What does a competitive inhibitor do to apparent Km and apparent Vmax?",
+          "back": "Apparent Km increases; Vmax is unchanged.",
+          "difficulty": "easy",
+          "tags": [
+            "inhibition",
+            "competitive-inhibition"
+          ],
+          "source_excerpt": "Competitive | Apparent Km: Increases | Apparent Vmax: Unchanged"
+        },
+        {
+          "id": "f_uncompetitive_effects",
+          "type": "flashcard",
+          "front": "What does an uncompetitive inhibitor do to apparent Km and apparent Vmax?",
+          "back": "Both decrease.",
+          "hint": "It is the only one of the three modes that lowers apparent Km.",
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "uncompetitive-inhibition"
+          ],
+          "source_excerpt": "Uncompetitive | Apparent Km: Decreases | Apparent Vmax: Decreases"
+        },
+        {
+          "id": "f_mixed_effects",
+          "type": "flashcard",
+          "front": "What does a mixed inhibitor do to apparent Km and apparent Vmax?",
+          "back": "Apparent Km may increase or decrease; apparent Vmax decreases.",
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "mixed-inhibition"
+          ],
+          "source_excerpt": "Mixed | Apparent Km: Increases or decreases | Apparent Vmax: Decreases"
+        },
+        {
+          "id": "f_lb_competitive",
+          "type": "flashcard",
+          "front": "On a Lineweaver–Burk plot, what is the signature of a competitive inhibitor?",
+          "back": "Lines that meet on the y-axis (Vmax, and so 1/Vmax, is unchanged).",
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "competitive-inhibition",
+            "plots"
+          ],
+          "source_excerpt": "Key diagnostic: on a Lineweaver–Burk plot, competitive inhibitors give lines meeting on the y-axis"
+        },
+        {
+          "id": "f_lb_uncompetitive",
+          "type": "flashcard",
+          "front": "On a Lineweaver–Burk plot, what is the signature of an uncompetitive inhibitor?",
+          "back": "Parallel lines.",
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "uncompetitive-inhibition",
+            "plots"
+          ],
+          "source_excerpt": "uncompetitive inhibitors give parallel lines"
+        },
+        {
+          "id": "f_lb_mixed",
+          "type": "flashcard",
+          "front": "On a Lineweaver–Burk plot, what is the signature of a mixed inhibitor?",
+          "back": "Lines that intersect to the left of the y-axis.",
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "mixed-inhibition",
+            "plots"
+          ],
+          "source_excerpt": "mixed inhibitors intersect to the left of the y-axis"
+        },
+        {
+          "id": "q_binds_es_only",
+          "type": "mcq",
+          "question": "Which mode of reversible inhibition involves an inhibitor that binds the ES complex only?",
+          "options": [
+            "Competitive",
+            "Uncompetitive",
+            "Mixed",
+            "Pure noncompetitive"
+          ],
+          "correct_index": 1,
+          "explanation": "The table gives uncompetitive inhibition as binding the ES complex only; competitive binds free E, and mixed (including pure noncompetitive) binds both.",
+          "distractor_rationale": [
+            "Competitive inhibitors bind free enzyme only, at the active site.",
+            "",
+            "Mixed inhibitors bind both E and ES, not ES alone.",
+            "Pure noncompetitive is a mixed inhibitor that binds E and ES with equal affinity — so it binds both forms, not just ES."
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "inhibition",
+            "uncompetitive-inhibition"
+          ],
+          "source_excerpt": "Uncompetitive | ES complex only"
+        },
+        {
+          "id": "q_identify_from_kinetics",
+          "type": "mcq",
+          "question": "Adding an inhibitor raises the apparent Km but leaves Vmax unchanged. Which mode is it?",
+          "options": [
+            "Uncompetitive",
+            "Mixed",
+            "Competitive",
+            "Pure noncompetitive"
+          ],
+          "correct_index": 2,
+          "explanation": "Competitive inhibition is the only mode in the table that raises apparent Km while leaving Vmax unchanged — saturating substrate still reaches the same maximal rate.",
+          "distractor_rationale": [
+            "Uncompetitive inhibition lowers apparent Km and lowers Vmax — the opposite pattern on both counts.",
+            "Mixed inhibition always lowers Vmax, so Vmax could not be unchanged.",
+            "",
+            "Pure noncompetitive leaves Km unchanged and lowers Vmax — the mirror image of this result."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "competitive-inhibition"
+          ],
+          "source_excerpt": "Competitive | Apparent Km: Increases | Apparent Vmax: Unchanged"
+        },
+        {
+          "id": "q_identify_parallel_lines",
+          "type": "mcq",
+          "question": "A Lineweaver–Burk experiment with and without inhibitor gives two parallel lines. What kind of inhibitor is it?",
+          "options": [
+            "Competitive",
+            "Mixed",
+            "Uncompetitive",
+            "Irreversible"
+          ],
+          "correct_index": 2,
+          "explanation": "Parallel double-reciprocal lines are the stated diagnostic for uncompetitive inhibition; the slope Km/Vmax is unchanged because apparent Km and Vmax fall together.",
+          "distractor_rationale": [
+            "Competitive inhibitors give lines that meet on the y-axis, since Vmax is unchanged.",
+            "Mixed inhibitors give lines intersecting to the left of the y-axis, not parallel ones.",
+            "",
+            "Irreversible inhibition is covalent inactivation and is not one of the three reversible modes this diagnostic distinguishes."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "uncompetitive-inhibition",
+            "plots"
+          ],
+          "source_excerpt": "uncompetitive inhibitors give parallel lines"
+        },
+        {
+          "id": "q_lb_meet_on_y_axis",
+          "type": "mcq",
+          "question": "Why do competitive inhibitors give Lineweaver–Burk lines that meet on the y-axis?",
+          "options": [
+            "Because Vmax is unchanged, so the 1/Vmax intercept is the same with and without inhibitor",
+            "Because Km is unchanged, so the x-intercept is the same with and without inhibitor",
+            "Because both Km and Vmax fall by the same factor, keeping the slope constant",
+            "Because the inhibitor binds the ES complex and cannot affect the free enzyme"
+          ],
+          "correct_index": 0,
+          "explanation": "The y-intercept of a double-reciprocal plot is 1/Vmax; competitive inhibition leaves Vmax unchanged, so every line crosses the y-axis at the same point regardless of [I].",
+          "distractor_rationale": [
+            "",
+            "Competitive inhibition raises apparent Km, so the x-intercept (−1/Km) does move.",
+            "This describes the uncompetitive pattern, where Km and Vmax fall together and the lines come out parallel.",
+            "Reverses the binding: competitive inhibitors bind free enzyme at the active site, not ES."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "inhibition",
+            "competitive-inhibition",
+            "plots"
+          ],
+          "source_excerpt": "Key diagnostic: on a Lineweaver–Burk plot, competitive inhibitors give lines meeting on the y-axis"
+        },
+        {
+          "id": "q_noncompetitive_special_case",
+          "type": "mcq",
+          "question": "Pure noncompetitive inhibition is best described as which of the following?",
+          "options": [
+            "A separate fourth mode in which the inhibitor binds neither E nor ES",
+            "The special case of mixed inhibition in which the inhibitor binds E and ES with equal affinity",
+            "Another name for competitive inhibition at an allosteric site",
+            "The special case of uncompetitive inhibition in which Vmax is unchanged"
+          ],
+          "correct_index": 1,
+          "explanation": "The slide's footnote defines pure noncompetitive inhibition as the case of mixed inhibition with equal affinity for E and ES, so Km is unchanged and only Vmax falls.",
+          "distractor_rationale": [
+            "An inhibitor binding neither enzyme form could not inhibit at all; noncompetitive inhibitors bind both.",
+            "",
+            "Competitive inhibitors bind the active site of free E only; the two modes differ in both binding and kinetic signature.",
+            "Uncompetitive inhibition lowers Vmax, and in noncompetitive inhibition it is Km, not Vmax, that is unchanged."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "inhibition",
+            "mixed-inhibition"
+          ],
+          "source_excerpt": "Pure noncompetitive inhibition is the special case of mixed inhibition where the inhibitor binds E and ES with equal affinity, so Km is unchanged and only Vmax falls."
+        },
+        {
+          "id": "q_mixed_binding_site",
+          "type": "mcq",
+          "question": "Where does a mixed inhibitor bind, and to what?",
+          "options": [
+            "To free enzyme only, at the active site",
+            "To the ES complex only, at the active site",
+            "To both E and ES, at an allosteric site",
+            "To both E and ES, at the active site"
+          ],
+          "correct_index": 2,
+          "explanation": "The table specifies that mixed inhibitors bind both E and ES at an allosteric site — a site distinct from the active site, which is why substrate binding does not exclude them.",
+          "distractor_rationale": [
+            "This is competitive inhibition.",
+            "Uncompetitive inhibitors do bind ES only, but the active site is occupied by substrate in that complex; the table assigns the active site to competitive inhibition.",
+            "",
+            "Right on the two enzyme forms, wrong on the site: binding at the active site would be blocked once substrate is bound, so a mixed inhibitor could not bind ES there."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "mixed-inhibition",
+            "allostery"
+          ],
+          "source_excerpt": "Mixed | Both E and ES, at an allosteric site"
+        },
+        {
+          "id": "g_inhibition_lb_signatures",
+          "type": "graphic",
+          "title": "Lineweaver–Burk signatures of the three inhibition modes",
+          "svg": "<svg viewBox=\"0 0 500 200\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M10 150 H150\"/><path d=\"M40 20 V160\"/><path d=\"M170 150 H310\"/><path d=\"M200 20 V160\"/><path d=\"M330 150 H470\"/><path d=\"M360 20 V160\"/></g><g fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M10 125 L150 55\"/><path d=\"M10 134 L150 22\"/><path d=\"M170 125 L310 55\"/><path d=\"M170 95 L310 25\"/><path d=\"M330 125 L470 55\"/><path d=\"M330 129 L470 3\"/></g><g fill=\"currentColor\" font-family=\"sans-serif\" font-size=\"12\"><text x=\"22\" y=\"180\">Competitive</text><text x=\"176\" y=\"180\">Uncompetitive</text><text x=\"370\" y=\"180\">Mixed</text><text x=\"20\" y=\"196\">meet on y-axis</text><text x=\"186\" y=\"196\">parallel lines</text><text x=\"336\" y=\"196\">cross left of y-axis</text></g></svg>",
+          "alt_text": "Three small double-reciprocal plots side by side, each showing an uninhibited line and an inhibited line. In the left panel, labelled Competitive, the two lines converge on the vertical axis. In the middle panel, labelled Uncompetitive, the two lines are parallel with the inhibited line higher. In the right panel, labelled Mixed, the two lines cross at a point to the left of the vertical axis.",
+          "caption": "The key diagnostic: where the inhibited and uninhibited lines meet tells you the mode.",
+          "difficulty": "hard",
+          "tags": [
+            "inhibition",
+            "plots",
+            "exam-key"
+          ],
+          "source_excerpt": "Key diagnostic: on a Lineweaver–Burk plot, competitive inhibitors give lines meeting on the y-axis; uncompetitive inhibitors give parallel lines; mixed inhibitors intersect to the left of the y-axis."
+        }
+      ]
+    },
+    {
+      "id": "quantifying-inhibition",
+      "title": "Quantifying inhibition",
+      "description": "Ki, the factor α, apparent Km under competitive inhibition, and why IC50 is not a constant of the enzyme.",
+      "order": 6,
+      "items": [
+        {
+          "id": "d_ki",
+          "type": "definition",
+          "term": "Inhibition constant (Ki)",
+          "definition": "The dissociation constant of the enzyme–inhibitor complex. A lower Ki means a more potent inhibitor.",
+          "related_terms": [
+            "IC50",
+            "alpha (α)",
+            "dissociation constant (Kd)"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "formula"
+          ],
+          "source_excerpt": "Ki, the inhibition constant, is the dissociation constant of the enzyme–inhibitor complex. A lower Ki means a more potent inhibitor."
+        },
+        {
+          "id": "d_alpha_factor",
+          "type": "definition",
+          "term": "Alpha (α)",
+          "definition": "The factor (1 + [I]/Ki) by which competitive inhibition multiplies Km: apparent Km = Km(1 + [I]/Ki).",
+          "example_sentence": "With [I] = 4.0 mM and Ki = 2.0 mM, α = 1 + 4.0/2.0 = 3.",
+          "related_terms": [
+            "inhibition constant (Ki)",
+            "apparent Km"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "competitive-inhibition",
+            "formula"
+          ],
+          "source_excerpt": "For competitive inhibition, apparent Km = Km(1 + [I]/Ki). The factor (1 + [I]/Ki) is written α."
+        },
+        {
+          "id": "d_apparent_km",
+          "type": "definition",
+          "term": "Apparent Km (competitive inhibition)",
+          "definition": "The Km an inhibited enzyme appears to have: apparent Km = Km(1 + [I]/Ki) = α · Km. It rises with inhibitor concentration, while Vmax stays unchanged.",
+          "related_terms": [
+            "alpha (α)",
+            "competitive inhibition",
+            "Michaelis constant (Km)"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "competitive-inhibition",
+            "formula",
+            "km"
+          ],
+          "source_excerpt": "For competitive inhibition, apparent Km = Km(1 + [I]/Ki)."
+        },
+        {
+          "id": "d_ic50",
+          "type": "definition",
+          "term": "IC50",
+          "definition": "The inhibitor concentration that halves activity under one specific set of conditions. Unlike Ki it depends on [S], so it is not a constant of the enzyme.",
+          "related_terms": [
+            "inhibition constant (Ki)"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition"
+          ],
+          "source_excerpt": "IC50 is the inhibitor concentration that halves activity under one specific set of conditions. Unlike Ki it depends on [S], so it is not a constant of the enzyme."
+        },
+        {
+          "id": "f_lower_ki",
+          "type": "flashcard",
+          "front": "What does a lower Ki tell you about an inhibitor?",
+          "back": "That it is more potent — Ki is the dissociation constant of the enzyme–inhibitor complex.",
+          "difficulty": "easy",
+          "tags": [
+            "inhibition"
+          ],
+          "source_excerpt": "A lower Ki means a more potent inhibitor."
+        },
+        {
+          "id": "f_apparent_km_formula",
+          "type": "flashcard",
+          "front": "Give the expression for apparent Km under competitive inhibition.",
+          "back": "Apparent Km = Km(1 + [I]/Ki), where the factor (1 + [I]/Ki) is written α.",
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "competitive-inhibition",
+            "formula"
+          ],
+          "source_excerpt": "For competitive inhibition, apparent Km = Km(1 + [I]/Ki). The factor (1 + [I]/Ki) is written α."
+        },
+        {
+          "id": "f_ic50_not_constant",
+          "type": "flashcard",
+          "front": "Why is IC50 not a constant of the enzyme, while Ki is?",
+          "back": "IC50 depends on [S] and applies only to one specific set of conditions; Ki is the dissociation constant of the enzyme–inhibitor complex.",
+          "difficulty": "hard",
+          "tags": [
+            "inhibition",
+            "exam-key"
+          ],
+          "source_excerpt": "Unlike Ki it depends on [S], so it is not a constant of the enzyme."
+        },
+        {
+          "id": "q_alpha_apply",
+          "type": "mcq",
+          "question": "A competitive inhibitor is present at a concentration exactly equal to its Ki. What is α, and what happens to apparent Km?",
+          "options": [
+            "α = 2, so apparent Km doubles",
+            "α = 1, so apparent Km is unchanged",
+            "α = 0.5, so apparent Km halves",
+            "α = 2, so Vmax halves"
+          ],
+          "correct_index": 0,
+          "explanation": "α = 1 + [I]/Ki; with [I] = Ki this is 1 + 1 = 2, and apparent Km = α·Km, so Km doubles. Vmax is unaffected in competitive inhibition.",
+          "distractor_rationale": [
+            "",
+            "α = 1 corresponds to no inhibitor at all ([I] = 0); here [I]/Ki contributes an extra 1.",
+            "Treats α as a ratio that can fall below 1; the expression 1 + [I]/Ki is always at least 1.",
+            "Right value of α, wrong consequence — competitive inhibition leaves Vmax unchanged and acts on Km."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "competitive-inhibition",
+            "formula"
+          ],
+          "source_excerpt": "For competitive inhibition, apparent Km = Km(1 + [I]/Ki). The factor (1 + [I]/Ki) is written α."
+        },
+        {
+          "id": "q_ki_vs_ic50",
+          "type": "mcq",
+          "question": "Two papers report inhibitor potency: one gives Ki, the other IC50. Why can the IC50 not be compared directly between experiments?",
+          "options": [
+            "Because IC50 is measured on the ES complex rather than on free enzyme",
+            "Because IC50 depends on [S], so it holds only for one specific set of conditions",
+            "Because IC50 is a rate constant rather than a concentration",
+            "Because IC50 applies only to irreversible inhibitors"
+          ],
+          "correct_index": 1,
+          "explanation": "The lecture distinguishes them on exactly this point: IC50 depends on the substrate concentration used, so it is not a constant of the enzyme the way Ki is.",
+          "distractor_rationale": [
+            "Which enzyme form is bound is what distinguishes the three inhibition modes, not what makes IC50 condition-dependent.",
+            "",
+            "IC50 is an inhibitor concentration — the one that halves activity — not a rate constant.",
+            "IC50 is introduced here for reversible inhibitors; irreversible inhibition is a separate topic with no such halving constant given."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "inhibition",
+            "exam-key"
+          ],
+          "source_excerpt": "IC50 is the inhibitor concentration that halves activity under one specific set of conditions. Unlike Ki it depends on [S], so it is not a constant of the enzyme."
+        },
+        {
+          "id": "q_overcome_with_substrate",
+          "type": "mcq",
+          "question": "An assay is inhibited, and raising [S] makes the inhibition worse rather than better. Which mode is at work?",
+          "options": [
+            "Competitive inhibition",
+            "Uncompetitive inhibition",
+            "Pure noncompetitive inhibition",
+            "No reversible mode behaves this way"
+          ],
+          "correct_index": 1,
+          "explanation": "The slide states that competitive inhibition can always be overcome by raising [S], whereas uncompetitive inhibition cannot — and raising [S] makes it worse, since more substrate means more ES for the inhibitor to bind.",
+          "distractor_rationale": [
+            "Competitive inhibition is the one that can always be overcome by raising [S] — the opposite of what is observed.",
+            "",
+            "Pure noncompetitive inhibitors bind E and ES equally, so the degree of inhibition does not depend on [S] in this way.",
+            "One of the reversible modes does behave this way; the lecture names it explicitly."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "inhibition",
+            "uncompetitive-inhibition",
+            "exam-key"
+          ],
+          "source_excerpt": "Competitive inhibition can always be overcome by raising [S]; uncompetitive inhibition cannot, and raising [S] makes it worse."
+        }
+      ]
+    },
+    {
+      "id": "irreversible-inhibition",
+      "title": "Irreversible inhibition",
+      "description": "Covalent inactivation, and the mechanism-based selectivity of suicide inhibitors.",
+      "order": 7,
+      "items": [
+        {
+          "id": "d_irreversible_inhibitor",
+          "type": "definition",
+          "term": "Irreversible inhibitor",
+          "definition": "An inhibitor that forms a covalent bond with the enzyme, permanently inactivating it.",
+          "related_terms": [
+            "suicide inhibitor"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "inhibition",
+            "irreversible-inhibition"
+          ],
+          "source_excerpt": "An irreversible inhibitor forms a covalent bond with the enzyme, permanently inactivating it."
+        },
+        {
+          "id": "d_suicide_inhibitor",
+          "type": "definition",
+          "term": "Suicide inhibitor",
+          "definition": "An inhibitor that is unreactive until the enzyme's own catalytic machinery converts it into a reactive species, which then attacks the active site.",
+          "also_known_as": [
+            "mechanism-based inhibitor"
+          ],
+          "example_sentence": "Penicillin acting on transpeptidase and allopurinol acting on xanthine oxidase are the examples given in the reading.",
+          "related_terms": [
+            "irreversible inhibitor",
+            "active site"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "irreversible-inhibition"
+          ],
+          "source_excerpt": "A suicide inhibitor (mechanism-based inhibitor) is unreactive until the enzyme's own catalytic machinery converts it into a reactive species, which then attacks the active site."
+        },
+        {
+          "id": "f_suicide_selectivity",
+          "type": "flashcard",
+          "front": "Why is a suicide inhibitor highly selective for its target?",
+          "back": "Because the enzyme must act on it first — only the target enzyme's catalytic machinery can generate the reactive species.",
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "irreversible-inhibition"
+          ],
+          "source_excerpt": "Because the enzyme must act on it first, a suicide inhibitor is highly selective for its target."
+        },
+        {
+          "id": "f_suicide_examples",
+          "type": "flashcard",
+          "front": "Which two drug–enzyme pairs does the reading give as examples of irreversible inhibition?",
+          "back": "Penicillin acting on transpeptidase, and allopurinol acting on xanthine oxidase.",
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "irreversible-inhibition"
+          ],
+          "source_excerpt": "Penicillin acting on transpeptidase and allopurinol acting on xanthine oxidase are the examples given in the reading."
+        },
+        {
+          "id": "q_suicide_selective",
+          "type": "mcq",
+          "question": "What makes a suicide inhibitor so selective for its target enzyme?",
+          "options": [
+            "It binds an allosteric site found only on that enzyme",
+            "It must be converted into its reactive form by the target enzyme's own catalytic machinery",
+            "It has a far lower Ki than other inhibitors of that enzyme",
+            "It binds the ES complex rather than free enzyme"
+          ],
+          "correct_index": 1,
+          "explanation": "The inhibitor is unreactive as supplied; only the target enzyme can turn it into the reactive species that then attacks the active site, so no other enzyme is modified.",
+          "distractor_rationale": [
+            "Allosteric binding is the mechanism of mixed inhibition and allosteric regulation, not what gives suicide inhibitors their selectivity.",
+            "",
+            "Ki quantifies reversible binding potency; a suicide inhibitor's selectivity comes from requiring catalysis, not from tight binding.",
+            "Binding ES only is the definition of uncompetitive inhibition, a reversible mode."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "irreversible-inhibition"
+          ],
+          "source_excerpt": "Because the enzyme must act on it first, a suicide inhibitor is highly selective for its target."
+        },
+        {
+          "id": "q_irreversible_bond",
+          "type": "mcq",
+          "question": "What distinguishes an irreversible inhibitor from the reversible modes covered earlier?",
+          "options": [
+            "It raises apparent Km without changing Vmax",
+            "It binds only the ES complex",
+            "It forms a covalent bond with the enzyme, permanently inactivating it",
+            "It binds an allosteric site rather than the active site"
+          ],
+          "correct_index": 2,
+          "explanation": "The defining feature is covalent bond formation and permanent inactivation, rather than the reversible binding that underlies competitive, uncompetitive and mixed inhibition.",
+          "distractor_rationale": [
+            "That is the kinetic signature of competitive inhibition, a reversible mode.",
+            "Binding ES only defines uncompetitive inhibition, also reversible.",
+            "",
+            "Allosteric binding describes mixed inhibition; the irreversible case is defined by the covalent bond, and the suicide inhibitor example attacks the active site."
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "inhibition",
+            "irreversible-inhibition"
+          ],
+          "source_excerpt": "An irreversible inhibitor forms a covalent bond with the enzyme, permanently inactivating it."
+        },
+        {
+          "id": "x_suicide_mechanism",
+          "type": "example",
+          "title": "How a suicide inhibitor inactivates its enzyme",
+          "context": "The mechanism-based route, step by step, and why it confers selectivity.",
+          "steps": [
+            "The inhibitor is administered in an unreactive form — it does nothing to enzymes on contact.",
+            "The target enzyme binds it and its own catalytic machinery acts on it.",
+            "That catalysis converts the inhibitor into a reactive species.",
+            "The reactive species attacks the active site of the very enzyme that generated it.",
+            "A covalent bond forms and the enzyme is permanently inactivated."
+          ],
+          "takeaway": "Because step 2 can only be carried out by the target enzyme, the damage in steps 4 and 5 is confined to that enzyme — this is the source of a suicide inhibitor's selectivity.",
+          "difficulty": "medium",
+          "tags": [
+            "inhibition",
+            "irreversible-inhibition"
+          ],
+          "source_excerpt": "A suicide inhibitor (mechanism-based inhibitor) is unreactive until the enzyme's own catalytic machinery converts it into a reactive species, which then attacks the active site. Because the enzyme must act on it first, a suicide inhibitor is highly selective for its target."
+        }
+      ]
+    },
+    {
+      "id": "cooperativity-and-allosteric-kinetics",
+      "title": "Cooperativity and sigmoidal kinetics",
+      "description": "Allosteric enzymes, the Hill coefficient, and the two models of cooperativity.",
+      "order": 8,
+      "items": [
+        {
+          "id": "d_allosteric_enzyme",
+          "type": "definition",
+          "term": "Allosteric enzyme",
+          "definition": "An enzyme with multiple subunits and a regulatory site distinct from the active site. Its v0 versus [S] curve is sigmoidal rather than hyperbolic, so Michaelis–Menten does not apply.",
+          "related_terms": [
+            "cooperativity",
+            "allosteric site",
+            "sigmoidal curve"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "allostery",
+            "cooperativity"
+          ],
+          "source_excerpt": "An allosteric enzyme has multiple subunits and a regulatory site distinct from the active site. Its v0 versus [S] curve is sigmoidal, not hyperbolic, so Michaelis–Menten does not apply."
+        },
+        {
+          "id": "d_sigmoidal_curve",
+          "type": "definition",
+          "term": "Sigmoidal curve",
+          "definition": "The S-shaped v0 versus [S] curve of an allosteric enzyme, in contrast to the rectangular hyperbola of a Michaelis–Menten enzyme.",
+          "related_terms": [
+            "rectangular hyperbola",
+            "allosteric enzyme",
+            "K0.5"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "allostery",
+            "cooperativity"
+          ],
+          "source_excerpt": "Its v0 versus [S] curve is sigmoidal, not hyperbolic, so Michaelis–Menten does not apply."
+        },
+        {
+          "id": "d_cooperativity",
+          "type": "definition",
+          "term": "Cooperativity",
+          "definition": "Substrate binding at one site changing the affinity of the remaining sites.",
+          "related_terms": [
+            "positive cooperativity",
+            "negative cooperativity",
+            "Hill coefficient"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "Cooperativity means substrate binding at one site changes the affinity of the remaining sites."
+        },
+        {
+          "id": "d_positive_cooperativity",
+          "type": "definition",
+          "term": "Positive cooperativity",
+          "definition": "Cooperativity that makes the enzyme a sharp switch over a narrow [S] range; it corresponds to a Hill coefficient greater than 1.",
+          "related_terms": [
+            "cooperativity",
+            "Hill coefficient",
+            "negative cooperativity"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "Positive cooperativity makes the enzyme a sharp switch over a narrow [S] range… nH > 1 is positive cooperativity"
+        },
+        {
+          "id": "d_negative_cooperativity",
+          "type": "definition",
+          "term": "Negative cooperativity",
+          "definition": "Cooperativity with a Hill coefficient less than 1. The sequential (KNF) model can explain it; the concerted (MWC) model cannot.",
+          "related_terms": [
+            "cooperativity",
+            "Hill coefficient",
+            "sequential (KNF) model"
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "nH < 1 is negative cooperativity… Negative cooperativity: Concerted (MWC) model — Cannot explain it; Sequential (KNF) model — Can explain it"
+        },
+        {
+          "id": "d_hill_coefficient",
+          "type": "definition",
+          "term": "Hill coefficient (nH)",
+          "definition": "The quantity that quantifies cooperativity: nH > 1 is positive cooperativity, nH = 1 is non-cooperative, nH < 1 is negative cooperativity.",
+          "related_terms": [
+            "cooperativity",
+            "positive cooperativity",
+            "negative cooperativity"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "cooperativity",
+            "allostery",
+            "formula"
+          ],
+          "source_excerpt": "The Hill coefficient (nH) quantifies it: nH > 1 is positive cooperativity, nH = 1 is non-cooperative, nH < 1 is negative cooperativity."
+        },
+        {
+          "id": "d_k05",
+          "type": "definition",
+          "term": "K0.5",
+          "definition": "The half-saturation point of an allosteric enzyme, written K0.5 rather than Km because the curve is sigmoidal.",
+          "related_terms": [
+            "Michaelis constant (Km)",
+            "sigmoidal curve",
+            "allosteric enzyme"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "allostery",
+            "cooperativity",
+            "km"
+          ],
+          "source_excerpt": "Because the curve is sigmoidal, the half-saturation point is written K0.5 rather than Km."
+        },
+        {
+          "id": "d_mwc_model",
+          "type": "definition",
+          "term": "Concerted (MWC) model",
+          "definition": "A model of cooperativity in which all subunits switch together with no hybrid states, between a T (tense, low affinity) and an R (relaxed, high affinity) conformation. It cannot explain negative cooperativity.",
+          "also_known_as": [
+            "MWC model"
+          ],
+          "related_terms": [
+            "sequential (KNF) model",
+            "T state",
+            "R state"
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "Concerted (MWC) model — Subunit states: All subunits switch together; no hybrid states. Conformations: T (tense, low affinity) and R (relaxed, high affinity). Negative cooperativity: Cannot explain it."
+        },
+        {
+          "id": "d_knf_model",
+          "type": "definition",
+          "term": "Sequential (KNF) model",
+          "definition": "A model of cooperativity in which subunits change one at a time and hybrid states are allowed, with induced fit propagating to neighbours. It can explain negative cooperativity.",
+          "also_known_as": [
+            "KNF model"
+          ],
+          "related_terms": [
+            "concerted (MWC) model",
+            "induced fit",
+            "negative cooperativity"
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "Sequential (KNF) model — Subunit states: Subunits change one at a time; hybrids allowed. Conformations: Induced fit propagates to neighbours. Negative cooperativity: Can explain it."
+        },
+        {
+          "id": "d_t_state",
+          "type": "definition",
+          "term": "T state (tense)",
+          "definition": "In the concerted (MWC) model, the low-affinity conformation of the enzyme.",
+          "related_terms": [
+            "R state",
+            "concerted (MWC) model"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "T (tense, low affinity) and R (relaxed, high affinity)"
+        },
+        {
+          "id": "d_r_state",
+          "type": "definition",
+          "term": "R state (relaxed)",
+          "definition": "In the concerted (MWC) model, the high-affinity conformation of the enzyme.",
+          "related_terms": [
+            "T state",
+            "concerted (MWC) model"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "T (tense, low affinity) and R (relaxed, high affinity)"
+        },
+        {
+          "id": "d_induced_fit",
+          "type": "definition",
+          "term": "Induced fit",
+          "definition": "In the sequential (KNF) model, the conformational change in a subunit that propagates to its neighbours.",
+          "related_terms": [
+            "sequential (KNF) model",
+            "cooperativity"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "Induced fit propagates to neighbours"
+        },
+        {
+          "id": "d_homotropic",
+          "type": "definition",
+          "term": "Homotropic effector",
+          "definition": "An effector that is the substrate itself.",
+          "related_terms": [
+            "heterotropic effector",
+            "allosteric regulation"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "allostery",
+            "regulation"
+          ],
+          "source_excerpt": "An effector that is the substrate itself is homotropic; one that is a different molecule is heterotropic."
+        },
+        {
+          "id": "d_heterotropic",
+          "type": "definition",
+          "term": "Heterotropic effector",
+          "definition": "An effector that is a molecule different from the substrate.",
+          "related_terms": [
+            "homotropic effector",
+            "allosteric regulation"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "allostery",
+            "regulation"
+          ],
+          "source_excerpt": "An effector that is the substrate itself is homotropic; one that is a different molecule is heterotropic."
+        },
+        {
+          "id": "f_nh_values",
+          "type": "flashcard",
+          "front": "What do nH > 1, nH = 1 and nH < 1 mean?",
+          "back": "nH > 1: positive cooperativity. nH = 1: non-cooperative. nH < 1: negative cooperativity.",
+          "difficulty": "medium",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "nH > 1 is positive cooperativity, nH = 1 is non-cooperative, nH < 1 is negative cooperativity."
+        },
+        {
+          "id": "f_why_mm_fails",
+          "type": "flashcard",
+          "front": "Why does the Michaelis–Menten equation not apply to an allosteric enzyme?",
+          "back": "Because its v0 versus [S] curve is sigmoidal rather than hyperbolic.",
+          "difficulty": "medium",
+          "tags": [
+            "allostery",
+            "michaelis-menten"
+          ],
+          "source_excerpt": "Its v0 versus [S] curve is sigmoidal, not hyperbolic, so Michaelis–Menten does not apply."
+        },
+        {
+          "id": "f_negative_coop_model",
+          "type": "flashcard",
+          "front": "Which model of cooperativity can account for negative cooperativity?",
+          "back": "The sequential (KNF) model. The concerted (MWC) model cannot.",
+          "difficulty": "hard",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "Negative cooperativity: Concerted (MWC) model — Cannot explain it; Sequential (KNF) model — Can explain it"
+        },
+        {
+          "id": "f_hybrid_states",
+          "type": "flashcard",
+          "front": "Which model of cooperativity allows hybrid states, and which forbids them?",
+          "back": "The sequential (KNF) model allows hybrids — subunits change one at a time. The concerted (MWC) model forbids them — all subunits switch together.",
+          "difficulty": "medium",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "Concerted (MWC): All subunits switch together; no hybrid states. Sequential (KNF): Subunits change one at a time; hybrids allowed."
+        },
+        {
+          "id": "f_k05_vs_km",
+          "type": "flashcard",
+          "front": "What is the half-saturation point of an allosteric enzyme called, and why not Km?",
+          "back": "K0.5 — because the curve is sigmoidal rather than the hyperbola that Km is defined on.",
+          "difficulty": "medium",
+          "tags": [
+            "allostery",
+            "km"
+          ],
+          "source_excerpt": "Because the curve is sigmoidal, the half-saturation point is written K0.5 rather than Km."
+        },
+        {
+          "id": "q_nh_interpret",
+          "type": "mcq",
+          "question": "An enzyme is measured to have a Hill coefficient of 0.6. What does this indicate?",
+          "options": [
+            "Positive cooperativity",
+            "Negative cooperativity",
+            "No cooperativity at all",
+            "That the enzyme obeys Michaelis–Menten kinetics"
+          ],
+          "correct_index": 1,
+          "explanation": "nH < 1 is negative cooperativity by the lecture's criterion; 0.6 is below 1.",
+          "distractor_rationale": [
+            "Positive cooperativity requires nH greater than 1, not less.",
+            "",
+            "Non-cooperative behaviour is nH exactly equal to 1.",
+            "nH = 1 is the non-cooperative case; a value of 0.6 is a departure from it, not a Michaelis–Menten enzyme."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "nH > 1 is positive cooperativity, nH = 1 is non-cooperative, nH < 1 is negative cooperativity."
+        },
+        {
+          "id": "q_mwc_vs_knf",
+          "type": "mcq",
+          "question": "An enzyme is found to pass through partly-switched states in which some subunits have changed conformation and others have not. Which model accommodates this observation?",
+          "options": [
+            "The concerted (MWC) model, because all subunits switch together",
+            "The sequential (KNF) model, because subunits change one at a time and hybrids are allowed",
+            "Neither model allows subunits to differ from one another",
+            "Both models allow it, since they differ only in how they treat negative cooperativity"
+          ],
+          "correct_index": 1,
+          "explanation": "Hybrid states are exactly what distinguishes the two models: KNF allows subunits to change one at a time; MWC insists all subunits switch together with no hybrid states.",
+          "distractor_rationale": [
+            "Switching together is precisely what rules the MWC model out here — it permits no hybrid states.",
+            "",
+            "The KNF model explicitly allows hybrids, so the observation is not beyond both models.",
+            "They differ on subunit states as well as on negative cooperativity; the table lists both rows."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "Concerted (MWC): All subunits switch together; no hybrid states. Sequential (KNF): Subunits change one at a time; hybrids allowed."
+        },
+        {
+          "id": "q_t_r_affinity",
+          "type": "mcq",
+          "question": "In the concerted (MWC) model, which statement about the T and R conformations is correct?",
+          "options": [
+            "T is relaxed and high affinity; R is tense and low affinity",
+            "T is tense and low affinity; R is relaxed and high affinity",
+            "Both have the same affinity, but only R is catalytically active",
+            "T and R differ only in the number of subunits they contain"
+          ],
+          "correct_index": 1,
+          "explanation": "The table gives T as tense with low affinity and R as relaxed with high affinity — the two states between which all subunits switch together.",
+          "distractor_rationale": [
+            "Swaps the two states; the mnemonic is T for tense, which binds substrate less well.",
+            "",
+            "Equal affinity would leave nothing for the conformational switch to do; the model's whole point is that the two states differ in affinity.",
+            "Both conformations are states of the same multi-subunit enzyme; the subunit count does not change."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "T (tense, low affinity) and R (relaxed, high affinity)"
+        },
+        {
+          "id": "q_homo_hetero",
+          "type": "mcq",
+          "question": "An allosteric enzyme is regulated by a molecule that is not its substrate. What kind of effector is that?",
+          "options": [
+            "Homotropic",
+            "Heterotropic",
+            "Uncompetitive",
+            "Mechanism-based"
+          ],
+          "correct_index": 1,
+          "explanation": "The lecture defines a heterotropic effector as one that is a different molecule from the substrate; a homotropic effector is the substrate itself.",
+          "distractor_rationale": [
+            "Homotropic is reserved for the case where the effector is the substrate itself.",
+            "",
+            "Uncompetitive describes a mode of reversible inhibition defined by binding ES, not a class of effector.",
+            "Mechanism-based is another name for a suicide inhibitor, which is irreversible and unrelated to effector classification."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "allostery",
+            "regulation"
+          ],
+          "source_excerpt": "An effector that is the substrate itself is homotropic; one that is a different molecule is heterotropic."
+        },
+        {
+          "id": "q_positive_coop_switch",
+          "type": "mcq",
+          "question": "What is the functional consequence of positive cooperativity for an allosteric enzyme?",
+          "options": [
+            "It raises the enzyme's maximal turnover number",
+            "It makes the enzyme a sharp switch over a narrow range of [S]",
+            "It makes the response to substrate more gradual across a wide range of [S]",
+            "It converts the sigmoidal curve into a rectangular hyperbola"
+          ],
+          "correct_index": 1,
+          "explanation": "The lecture states that positive cooperativity makes the enzyme a sharp switch over a narrow [S] range — binding at one site raises the affinity of the others, so activity climbs steeply once binding starts.",
+          "distractor_rationale": [
+            "Cooperativity changes the shape of the response to [S]; kcat is a separate parameter the slide does not link to it.",
+            "",
+            "This is the opposite of a sharp switch, and closer to what negative cooperativity would produce.",
+            "The sigmoidal shape is the signature of cooperativity, not something it removes."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "cooperativity",
+            "allostery"
+          ],
+          "source_excerpt": "Positive cooperativity makes the enzyme a sharp switch over a narrow [S] range."
+        },
+        {
+          "id": "q_k05_naming",
+          "type": "mcq",
+          "question": "Why is the half-saturation point of an allosteric enzyme written K0.5 rather than Km?",
+          "options": [
+            "Because its value is always exactly half of Km",
+            "Because the curve is sigmoidal, not the hyperbola on which Km is defined",
+            "Because it is measured at half the total enzyme concentration",
+            "Because allosteric enzymes have two substrates rather than one"
+          ],
+          "correct_index": 1,
+          "explanation": "The slide ties the change of symbol directly to the shape of the curve: the sigmoidal curve means Michaelis–Menten does not apply, so the half-saturation point gets its own name.",
+          "distractor_rationale": [
+            "The subscript 0.5 refers to half saturation, not to a numerical relationship with Km.",
+            "",
+            "The 0.5 refers to half-maximal velocity with respect to substrate, not to enzyme concentration.",
+            "Nothing in the lecture says allosteric enzymes have two substrates; what they have is multiple subunits and a regulatory site."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "allostery",
+            "km",
+            "cooperativity"
+          ],
+          "source_excerpt": "Because the curve is sigmoidal, the half-saturation point is written K0.5 rather than Km."
+        },
+        {
+          "id": "g_sigmoid_vs_hyperbola",
+          "type": "graphic",
+          "title": "Sigmoidal versus hyperbolic kinetics",
+          "svg": "<svg viewBox=\"0 0 380 235\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M55 20 V190 H355\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/><path d=\"M55 190 C 85 140 120 110 160 98 C 220 80 290 70 355 66\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"/><path d=\"M55 188 C 110 186 135 175 160 135 C 190 88 250 72 355 66\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-dasharray=\"7 5\"/><g fill=\"currentColor\" font-family=\"sans-serif\" font-size=\"12\"><text x=\"196\" y=\"122\">hyperbolic (Michaelis–Menten)</text><text x=\"120\" y=\"46\">sigmoidal (allosteric)</text><text x=\"310\" y=\"210\">[S]</text><text x=\"22\" y=\"18\">v0</text></g><g stroke=\"currentColor\" stroke-width=\"2\" fill=\"none\"><path d=\"M170 118 H190\"/><path d=\"M96 42 H116\" stroke-dasharray=\"7 5\"/></g></svg>",
+          "alt_text": "Two curves of initial velocity against substrate concentration on the same axes. The solid curve rises steeply from the origin and bends over towards a plateau: the hyperbolic Michaelis–Menten shape. The dashed curve starts almost flat at low substrate concentration, then rises steeply through a middle range before flattening to the same plateau: the sigmoidal shape of an allosteric enzyme.",
+          "caption": "The shallow start and steep middle of the sigmoidal curve are what make a positively cooperative enzyme a sharp switch.",
+          "difficulty": "medium",
+          "tags": [
+            "allostery",
+            "cooperativity",
+            "michaelis-menten"
+          ],
+          "source_excerpt": "Its v0 versus [S] curve is sigmoidal, not hyperbolic, so Michaelis–Menten does not apply… Positive cooperativity makes the enzyme a sharp switch over a narrow [S] range."
+        }
+      ]
+    },
+    {
+      "id": "four-mechanisms-of-regulation",
+      "title": "Four mechanisms of regulation",
+      "description": "Allosteric regulation, covalent modification, proteolytic activation and control of enzyme amount — how they differ in timescale and reversibility.",
+      "order": 9,
+      "items": [
+        {
+          "id": "d_allosteric_regulation",
+          "type": "definition",
+          "term": "Allosteric regulation",
+          "definition": "Reversible binding of an effector at a regulatory site, acting on a timescale of milliseconds.",
+          "related_terms": [
+            "allosteric site",
+            "homotropic effector",
+            "heterotropic effector"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "regulation",
+            "allostery"
+          ],
+          "source_excerpt": "Allosteric regulation — reversible binding of an effector at a regulatory site, acting on a timescale of milliseconds."
+        },
+        {
+          "id": "d_covalent_modification",
+          "type": "definition",
+          "term": "Covalent modification",
+          "definition": "Regulation by covalent change to the enzyme, most often phosphorylation by a kinase, reversed by a phosphatase; it acts over seconds to minutes.",
+          "related_terms": [
+            "phosphorylation",
+            "kinase",
+            "phosphatase"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "regulation"
+          ],
+          "source_excerpt": "Covalent modification — most often phosphorylation by a kinase, reversed by a phosphatase; seconds to minutes."
+        },
+        {
+          "id": "d_phosphorylation",
+          "type": "definition",
+          "term": "Phosphorylation",
+          "definition": "The most common form of covalent modification of enzymes, carried out by a kinase and reversed by a phosphatase.",
+          "related_terms": [
+            "covalent modification",
+            "kinase",
+            "phosphatase"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "regulation"
+          ],
+          "source_excerpt": "most often phosphorylation by a kinase, reversed by a phosphatase"
+        },
+        {
+          "id": "d_kinase",
+          "type": "definition",
+          "term": "Kinase",
+          "definition": "The enzyme that carries out phosphorylation in covalent modification.",
+          "related_terms": [
+            "phosphatase",
+            "phosphorylation"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "regulation"
+          ],
+          "source_excerpt": "most often phosphorylation by a kinase, reversed by a phosphatase"
+        },
+        {
+          "id": "d_phosphatase",
+          "type": "definition",
+          "term": "Phosphatase",
+          "definition": "The enzyme that reverses phosphorylation, making covalent modification a reversible mode of regulation.",
+          "related_terms": [
+            "kinase",
+            "phosphorylation"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "regulation"
+          ],
+          "source_excerpt": "most often phosphorylation by a kinase, reversed by a phosphatase"
+        },
+        {
+          "id": "d_proteolytic_activation",
+          "type": "definition",
+          "term": "Proteolytic activation",
+          "definition": "Regulation in which an inactive precursor, a zymogen, is irreversibly cleaved to the active enzyme. It is the only one of the four mechanisms that cannot be undone.",
+          "example_sentence": "Chymotrypsinogen to chymotrypsin is the standard case.",
+          "related_terms": [
+            "zymogen"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "regulation",
+            "exam-key"
+          ],
+          "source_excerpt": "Proteolytic activation — an inactive precursor, a zymogen, is irreversibly cleaved to the active enzyme. Chymotrypsinogen to chymotrypsin is the standard case."
+        },
+        {
+          "id": "d_zymogen",
+          "type": "definition",
+          "term": "Zymogen",
+          "definition": "An inactive enzyme precursor that is irreversibly cleaved to produce the active enzyme.",
+          "example_sentence": "Chymotrypsinogen is the zymogen of chymotrypsin.",
+          "related_terms": [
+            "proteolytic activation"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "regulation"
+          ],
+          "source_excerpt": "an inactive precursor, a zymogen, is irreversibly cleaved to the active enzyme"
+        },
+        {
+          "id": "d_control_enzyme_amount",
+          "type": "definition",
+          "term": "Control of enzyme amount",
+          "definition": "Regulation by altering the rate of transcription or of degradation; on a timescale of hours to days, it is the slowest of the four mechanisms.",
+          "related_terms": [
+            "allosteric regulation",
+            "covalent modification"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "regulation"
+          ],
+          "source_excerpt": "Control of enzyme amount — altering transcription or degradation rate; hours to days, the slowest mechanism."
+        },
+        {
+          "id": "f_timescale_allosteric",
+          "type": "flashcard",
+          "front": "On what timescale does allosteric regulation act?",
+          "back": "Milliseconds.",
+          "difficulty": "easy",
+          "tags": [
+            "regulation",
+            "allostery"
+          ],
+          "source_excerpt": "Allosteric regulation — … acting on a timescale of milliseconds."
+        },
+        {
+          "id": "f_timescale_covalent",
+          "type": "flashcard",
+          "front": "On what timescale does covalent modification act?",
+          "back": "Seconds to minutes.",
+          "difficulty": "easy",
+          "tags": [
+            "regulation"
+          ],
+          "source_excerpt": "Covalent modification — … seconds to minutes."
+        },
+        {
+          "id": "f_timescale_amount",
+          "type": "flashcard",
+          "front": "On what timescale does control of enzyme amount act, and how does it rank among the four mechanisms?",
+          "back": "Hours to days — the slowest of the four.",
+          "difficulty": "easy",
+          "tags": [
+            "regulation"
+          ],
+          "source_excerpt": "Control of enzyme amount — altering transcription or degradation rate; hours to days, the slowest mechanism."
+        },
+        {
+          "id": "f_chymotrypsinogen",
+          "type": "flashcard",
+          "front": "What is the standard case of proteolytic activation?",
+          "back": "Chymotrypsinogen cleaved to chymotrypsin.",
+          "difficulty": "easy",
+          "tags": [
+            "regulation"
+          ],
+          "source_excerpt": "Chymotrypsinogen to chymotrypsin is the standard case."
+        },
+        {
+          "id": "q_irreversible_mechanism",
+          "type": "mcq",
+          "question": "Which of the four regulatory mechanisms cannot be undone?",
+          "options": [
+            "Allosteric regulation",
+            "Covalent modification",
+            "Proteolytic activation",
+            "Control of enzyme amount"
+          ],
+          "correct_index": 2,
+          "explanation": "The slide's key point states that proteolytic activation is the only one of the four that cannot be undone — the zymogen is irreversibly cleaved.",
+          "distractor_rationale": [
+            "Allosteric regulation is explicitly reversible binding of an effector.",
+            "Covalent modification is reversible: a phosphatase removes what a kinase added.",
+            "",
+            "Enzyme amount can be raised or lowered again by changing transcription or degradation rates; it is slow, not irreversible."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "regulation",
+            "exam-key"
+          ],
+          "source_excerpt": "Key: the four mechanisms differ chiefly in timescale and in whether they are reversible. Proteolytic activation is the only one that cannot be undone."
+        },
+        {
+          "id": "q_slowest_mechanism",
+          "type": "mcq",
+          "question": "Which regulatory mechanism is the slowest, and why?",
+          "options": [
+            "Control of enzyme amount, because transcription and degradation rates change over hours to days",
+            "Proteolytic activation, because cleaving a zymogen is irreversible",
+            "Covalent modification, because it requires two enzymes, a kinase and a phosphatase",
+            "Allosteric regulation, because the effector must diffuse to a regulatory site"
+          ],
+          "correct_index": 0,
+          "explanation": "Control of enzyme amount works by altering transcription or degradation rate, on a timescale of hours to days — the slide names it the slowest mechanism.",
+          "distractor_rationale": [
+            "",
+            "Irreversibility is not the same as slowness; the slide gives no timescale for proteolytic activation, only that it cannot be undone.",
+            "Covalent modification acts over seconds to minutes, far faster than control of enzyme amount.",
+            "Allosteric regulation is the fastest of the four, acting on milliseconds."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "regulation"
+          ],
+          "source_excerpt": "Control of enzyme amount — altering transcription or degradation rate; hours to days, the slowest mechanism."
+        },
+        {
+          "id": "q_timescale_order",
+          "type": "mcq",
+          "question": "Put allosteric regulation, covalent modification and control of enzyme amount in order from fastest to slowest.",
+          "options": [
+            "Covalent modification → allosteric regulation → control of enzyme amount",
+            "Allosteric regulation → control of enzyme amount → covalent modification",
+            "Control of enzyme amount → covalent modification → allosteric regulation",
+            "Allosteric regulation → covalent modification → control of enzyme amount"
+          ],
+          "correct_index": 3,
+          "explanation": "The stated timescales are milliseconds for allosteric regulation, seconds to minutes for covalent modification, and hours to days for control of enzyme amount.",
+          "distractor_rationale": [
+            "Swaps the first two: allosteric regulation acts in milliseconds, faster than the seconds-to-minutes of covalent modification.",
+            "Places the hours-to-days mechanism in the middle; the slide calls it the slowest.",
+            "Exactly reverses the correct order.",
+            ""
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "regulation"
+          ],
+          "source_excerpt": "milliseconds… seconds to minutes… hours to days, the slowest mechanism."
+        },
+        {
+          "id": "q_phosphatase_role",
+          "type": "mcq",
+          "question": "In covalent modification, what reverses the phosphorylation added by a kinase?",
+          "options": [
+            "A phosphatase",
+            "A second kinase acting on a different residue",
+            "Proteolytic cleavage of the modified enzyme",
+            "Binding of a heterotropic effector"
+          ],
+          "correct_index": 0,
+          "explanation": "The slide states that phosphorylation by a kinase is reversed by a phosphatase — which is what makes covalent modification a reversible mechanism.",
+          "distractor_rationale": [
+            "",
+            "Kinases add phosphate; adding a second one could not remove the first.",
+            "That is proteolytic activation, a different mechanism, and it is irreversible.",
+            "Effector binding is allosteric regulation, which does not act on a covalent modification."
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "regulation"
+          ],
+          "source_excerpt": "most often phosphorylation by a kinase, reversed by a phosphatase"
+        },
+        {
+          "id": "x_four_mechanisms_compared",
+          "type": "example",
+          "title": "The four regulatory mechanisms compared",
+          "context": "The lecture's four mechanisms, set against the two axes it says they differ on: timescale and reversibility.",
+          "steps": [
+            "Allosteric regulation: reversible binding of an effector at a regulatory site — milliseconds.",
+            "Covalent modification: most often phosphorylation by a kinase, reversed by a phosphatase — seconds to minutes.",
+            "Proteolytic activation: an inactive zymogen irreversibly cleaved to the active enzyme, as in chymotrypsinogen to chymotrypsin.",
+            "Control of enzyme amount: altering transcription or degradation rate — hours to days, the slowest.",
+            "Compare them: allosteric regulation, covalent modification and control of enzyme amount can all be undone; proteolytic activation cannot."
+          ],
+          "takeaway": "The four mechanisms differ chiefly in timescale and in whether they are reversible — and proteolytic activation is the only one-way step among them.",
+          "difficulty": "medium",
+          "tags": [
+            "regulation",
+            "exam-key"
+          ],
+          "source_excerpt": "Key: the four mechanisms differ chiefly in timescale and in whether they are reversible. Proteolytic activation is the only one that cannot be undone."
+        },
+        {
+          "id": "g_regulation_mechanisms",
+          "type": "graphic",
+          "title": "Four mechanisms of regulation, by timescale",
+          "svg": "<svg viewBox=\"0 0 460 250\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><rect x=\"46\" y=\"12\" width=\"400\" height=\"48\" rx=\"6\"/><rect x=\"46\" y=\"68\" width=\"400\" height=\"48\" rx=\"6\"/><rect x=\"46\" y=\"124\" width=\"400\" height=\"48\" rx=\"6\"/><rect x=\"46\" y=\"180\" width=\"400\" height=\"48\" rx=\"6\"/><path d=\"M22 18 V222\"/><path d=\"M22 222 l-5 -10 M22 222 l5 -10\"/></g><g fill=\"currentColor\" font-family=\"sans-serif\"><text x=\"58\" y=\"32\" font-size=\"14\">Allosteric regulation</text><text x=\"58\" y=\"50\" font-size=\"12\">reversible effector binding — milliseconds</text><text x=\"58\" y=\"88\" font-size=\"14\">Covalent modification</text><text x=\"58\" y=\"106\" font-size=\"12\">kinase adds, phosphatase removes — seconds to minutes</text><text x=\"58\" y=\"144\" font-size=\"14\">Proteolytic activation</text><text x=\"58\" y=\"162\" font-size=\"12\">zymogen irreversibly cleaved — cannot be undone</text><text x=\"58\" y=\"200\" font-size=\"14\">Control of enzyme amount</text><text x=\"58\" y=\"218\" font-size=\"12\">transcription or degradation rate — hours to days (slowest)</text><text x=\"16\" y=\"120\" font-size=\"12\" transform=\"rotate(-90 16 120)\">slower</text></g></svg>",
+          "alt_text": "Four stacked boxes, with a downward arrow beside them labelled slower. From top to bottom: allosteric regulation, reversible effector binding on a millisecond timescale; covalent modification, where a kinase adds and a phosphatase removes a phosphate, over seconds to minutes; proteolytic activation, where a zymogen is irreversibly cleaved and cannot be undone; and control of enzyme amount, by transcription or degradation rate, over hours to days and the slowest of the four.",
+          "caption": "The four mechanisms differ chiefly in timescale and in whether they are reversible.",
+          "difficulty": "medium",
+          "tags": [
+            "regulation",
+            "exam-key"
+          ],
+          "source_excerpt": "Key: the four mechanisms differ chiefly in timescale and in whether they are reversible. Proteolytic activation is the only one that cannot be undone."
+        }
+      ]
+    },
+    {
+      "id": "feedback-inhibition",
+      "title": "Feedback inhibition",
+      "description": "End-product inhibition, why it targets the committed step, and how isozymes handle branched pathways.",
+      "order": 10,
+      "items": [
+        {
+          "id": "d_feedback_inhibition",
+          "type": "definition",
+          "term": "Feedback inhibition",
+          "definition": "Regulation in which the end product of a pathway inhibits an enzyme early in that pathway.",
+          "example_sentence": "Aspartate transcarbamoylase, inhibited by CTP, is the classical example.",
+          "related_terms": [
+            "committed step",
+            "isozymes"
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "feedback-inhibition",
+            "regulation"
+          ],
+          "source_excerpt": "In feedback inhibition, the end product of a pathway inhibits an enzyme early in that pathway."
+        },
+        {
+          "id": "d_committed_step",
+          "type": "definition",
+          "term": "Committed step",
+          "definition": "The first irreversible reaction unique to a pathway — the usual target of feedback inhibition, because inhibiting there wastes no intermediates.",
+          "related_terms": [
+            "feedback inhibition"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "feedback-inhibition",
+            "regulation",
+            "exam-key"
+          ],
+          "source_excerpt": "The target is usually the committed step — the first irreversible reaction unique to that pathway — because inhibiting there wastes no intermediates."
+        },
+        {
+          "id": "d_isozymes",
+          "type": "definition",
+          "term": "Isozymes",
+          "definition": "Distinct enzymes that catalyse the same reaction. In a branched pathway they allow each branch product to inhibit only its own isozyme.",
+          "related_terms": [
+            "feedback inhibition"
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "feedback-inhibition",
+            "regulation"
+          ],
+          "source_excerpt": "In a branched pathway, isozymes (distinct enzymes catalysing the same reaction) allow each branch product to inhibit only its own isozyme."
+        },
+        {
+          "id": "f_committed_step_reason",
+          "type": "flashcard",
+          "front": "Why does feedback inhibition usually target the committed step?",
+          "back": "Because inhibiting at the first irreversible reaction unique to the pathway wastes no intermediates.",
+          "difficulty": "medium",
+          "tags": [
+            "feedback-inhibition",
+            "regulation"
+          ],
+          "source_excerpt": "because inhibiting there wastes no intermediates"
+        },
+        {
+          "id": "f_atcase_ctp",
+          "type": "flashcard",
+          "front": "What is the classical example of feedback inhibition?",
+          "back": "Aspartate transcarbamoylase, inhibited by CTP.",
+          "difficulty": "easy",
+          "tags": [
+            "feedback-inhibition",
+            "regulation"
+          ],
+          "source_excerpt": "Aspartate transcarbamoylase, inhibited by CTP, is the classical example."
+        },
+        {
+          "id": "q_committed_step_why",
+          "type": "mcq",
+          "question": "Why is the committed step the usual target of feedback inhibition?",
+          "options": [
+            "Because it is the fastest reaction in the pathway",
+            "Because inhibiting there wastes no intermediates",
+            "Because it is the only reversible reaction in the pathway",
+            "Because the end product binds it with the lowest Ki"
+          ],
+          "correct_index": 1,
+          "explanation": "The committed step is the first irreversible reaction unique to the pathway; blocking it means no intermediates are made and then stranded downstream.",
+          "distractor_rationale": [
+            "The slide identifies the committed step by irreversibility and uniqueness to the pathway, not by speed.",
+            "",
+            "Backwards — the committed step is defined as the first irreversible reaction unique to that pathway.",
+            "Ki is a measure of inhibitor potency; the lecture's reason for targeting the committed step is metabolic economy, not binding strength."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "feedback-inhibition",
+            "regulation",
+            "exam-key"
+          ],
+          "source_excerpt": "The target is usually the committed step — the first irreversible reaction unique to that pathway — because inhibiting there wastes no intermediates."
+        },
+        {
+          "id": "q_isozymes_branched",
+          "type": "mcq",
+          "question": "In a branched biosynthetic pathway, what problem do isozymes solve?",
+          "options": [
+            "They let one branch product shut down the whole pathway, including the other branches",
+            "They let each branch product inhibit only its own isozyme, so the other branches keep running",
+            "They make the committed step reversible so intermediates can be recovered",
+            "They convert feedback inhibition into covalent modification"
+          ],
+          "correct_index": 1,
+          "explanation": "Isozymes are distinct enzymes catalysing the same reaction; having several means each branch product can inhibit just the copy serving its own branch.",
+          "distractor_rationale": [
+            "That is the problem isozymes exist to avoid — a single enzyme would let one product starve every branch.",
+            "",
+            "Isozymes catalyse the same reaction; they do not change the committed step's irreversibility.",
+            "Feedback inhibition works by end-product binding, a different mechanism from covalent modification."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "feedback-inhibition",
+            "regulation"
+          ],
+          "source_excerpt": "In a branched pathway, isozymes (distinct enzymes catalysing the same reaction) allow each branch product to inhibit only its own isozyme."
+        },
+        {
+          "id": "g_feedback_pathway",
+          "type": "graphic",
+          "title": "Feedback inhibition of the committed step",
+          "svg": "<svg viewBox=\"0 0 460 165\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"currentColor\" font-family=\"sans-serif\" font-size=\"16\"><text x=\"34\" y=\"56\">A</text><text x=\"146\" y=\"56\">B</text><text x=\"256\" y=\"56\">C</text><text x=\"332\" y=\"56\">D (end product)</text></g><g fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M52 50 H136\"/><path d=\"M136 50 l-9 -4 M136 50 l-9 4\"/><path d=\"M164 50 H246\"/><path d=\"M246 50 l-9 -4 M246 50 l-9 4\"/><path d=\"M272 50 H326\"/><path d=\"M326 50 l-9 -4 M326 50 l-9 4\"/></g><g fill=\"currentColor\" font-family=\"sans-serif\" font-size=\"11\"><text x=\"56\" y=\"38\">committed step</text><text x=\"62\" y=\"80\">first irreversible reaction</text></g><g fill=\"none\" stroke=\"#cc5555\" stroke-width=\"2\" stroke-dasharray=\"6 4\"><path d=\"M372 66 C 372 130 150 148 95 96\"/></g><path d=\"M84 92 L106 80\" fill=\"none\" stroke=\"#cc5555\" stroke-width=\"3\"/><text x=\"176\" y=\"152\" fill=\"#cc5555\" font-family=\"sans-serif\" font-size=\"12\">end product inhibits the committed step</text></svg>",
+          "alt_text": "A linear pathway A to B to C to D, with D labelled as the end product. The first arrow, from A to B, is labelled as the committed step and the first irreversible reaction. A dashed red line curves back from the end product D to that first step, ending in a blunt bar rather than an arrowhead, indicating inhibition rather than conversion.",
+          "caption": "The end product reaches back to the first irreversible reaction unique to the pathway, so no intermediates are wasted.",
+          "difficulty": "medium",
+          "tags": [
+            "feedback-inhibition",
+            "regulation"
+          ],
+          "source_excerpt": "In feedback inhibition, the end product of a pathway inhibits an enzyme early in that pathway. The target is usually the committed step."
+        }
+      ]
+    },
+    {
+      "id": "worked-example-competitive-inhibitor",
+      "title": "Worked example: the effect of a competitive inhibitor",
+      "description": "The lecture's calculation of α, apparent Km and v0 for an enzyme with Km = 2.0 mM and Vmax = 100 µmol·min⁻¹.",
+      "order": 11,
+      "items": [
+        {
+          "id": "x_competitive_worked",
+          "type": "example",
+          "title": "Effect of a competitive inhibitor on Km, Vmax and v0",
+          "context": "An enzyme has Km = 2.0 mM and Vmax = 100 µmol·min⁻¹. A competitive inhibitor is added at [I] = 4.0 mM, with Ki = 2.0 mM.",
+          "steps": [
+            "Compute the factor α = 1 + [I]/Ki = 1 + 4.0/2.0 = 3.",
+            "Apply it to Km: apparent Km = α · Km = 3 × 2.0 = 6.0 mM.",
+            "Note that Vmax is unchanged at 100 µmol·min⁻¹, as competitive inhibition always leaves it.",
+            "Evaluate the rate at [S] = 6.0 mM: v0 = (100 × 6.0)/(6.0 + 6.0) = 600/12 = 50 µmol·min⁻¹.",
+            "Check it: 50 is exactly half of Vmax, which is what the Michaelis–Menten equation gives whenever [S] equals the (apparent) Km."
+          ],
+          "takeaway": "A competitive inhibitor multiplies Km by α and leaves Vmax alone; the half-maximal-velocity relation still holds, but now at the apparent Km.",
+          "difficulty": "hard",
+          "tags": [
+            "worked-example",
+            "competitive-inhibition",
+            "inhibition",
+            "formula"
+          ],
+          "source_excerpt": "An enzyme has Km = 2.0 mM and Vmax = 100 µmol·min⁻¹. A competitive inhibitor is added at [I] = 4.0 mM, with Ki = 2.0 mM. α = 1 + [I]/Ki = 1 + 4.0/2.0 = 3. Apparent Km = α · Km = 3 × 2.0 = 6.0 mM."
+        },
+        {
+          "id": "q_worked_alpha",
+          "type": "mcq",
+          "question": "In the worked example, a competitive inhibitor is present at [I] = 4.0 mM with Ki = 2.0 mM. What is α?",
+          "options": [
+            "2",
+            "3",
+            "0.5",
+            "8"
+          ],
+          "correct_index": 1,
+          "explanation": "α = 1 + [I]/Ki = 1 + 4.0/2.0 = 1 + 2 = 3.",
+          "distractor_rationale": [
+            "This is [I]/Ki alone — it omits the leading 1 in the expression.",
+            "",
+            "Inverts the ratio to Ki/[I]; α is built from [I]/Ki.",
+            "Multiplies [I] by Ki instead of dividing, then adds nothing meaningful."
+          ],
+          "difficulty": "easy",
+          "tags": [
+            "worked-example",
+            "competitive-inhibition",
+            "formula"
+          ],
+          "source_excerpt": "α = 1 + [I]/Ki = 1 + 4.0/2.0 = 3."
+        },
+        {
+          "id": "q_worked_apparent_km",
+          "type": "mcq",
+          "question": "With Km = 2.0 mM and α = 3, what are the apparent Km and the Vmax of the inhibited enzyme?",
+          "options": [
+            "Apparent Km = 6.0 mM; Vmax unchanged at 100 µmol·min⁻¹",
+            "Apparent Km = 6.0 mM; Vmax reduced to about 33 µmol·min⁻¹",
+            "Apparent Km = 0.67 mM; Vmax unchanged at 100 µmol·min⁻¹",
+            "Apparent Km = 2.0 mM; Vmax reduced to 50 µmol·min⁻¹"
+          ],
+          "correct_index": 0,
+          "explanation": "Apparent Km = α · Km = 3 × 2.0 = 6.0 mM, and competitive inhibition leaves Vmax unchanged at 100 µmol·min⁻¹.",
+          "distractor_rationale": [
+            "",
+            "Right Km, but applies α to Vmax as well; in competitive inhibition Vmax does not change.",
+            "Divides Km by α instead of multiplying — competitive inhibition raises apparent Km.",
+            "Leaves Km untouched and lowers Vmax, which is the noncompetitive pattern, not the competitive one."
+          ],
+          "difficulty": "medium",
+          "tags": [
+            "worked-example",
+            "competitive-inhibition",
+            "km",
+            "vmax"
+          ],
+          "source_excerpt": "Apparent Km = α · Km = 3 × 2.0 = 6.0 mM. Vmax is unchanged at 100 µmol·min⁻¹."
+        },
+        {
+          "id": "q_worked_v0",
+          "type": "mcq",
+          "question": "For the inhibited enzyme (apparent Km = 6.0 mM, Vmax = 100 µmol·min⁻¹), what is v0 at [S] = 6.0 mM?",
+          "options": [
+            "25 µmol·min⁻¹",
+            "33 µmol·min⁻¹",
+            "50 µmol·min⁻¹",
+            "75 µmol·min⁻¹"
+          ],
+          "correct_index": 2,
+          "explanation": "v0 = (100 × 6.0)/(6.0 + 6.0) = 600/12 = 50 µmol·min⁻¹ — exactly half Vmax, as expected when [S] equals the apparent Km.",
+          "distractor_rationale": [
+            "A quarter of Vmax would require [S] to be a third of the apparent Km, not equal to it.",
+            "Comes from dividing Vmax by α rather than using the rate equation.",
+            "",
+            "Uses the original Km of 2.0 mM instead of the apparent Km of 6.0 mM, ignoring the inhibitor."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "worked-example",
+            "competitive-inhibition",
+            "michaelis-menten",
+            "formula"
+          ],
+          "source_excerpt": "At [S] = 6.0 mM: v0 = (100 × 6.0)/(6.0 + 6.0) = 50 µmol·min⁻¹"
+        },
+        {
+          "id": "q_worked_why_half",
+          "type": "mcq",
+          "question": "In the worked example, why does v0 come out at exactly half of Vmax?",
+          "options": [
+            "Because α = 3, and a threefold rise in Km always halves the rate",
+            "Because the substrate concentration chosen, 6.0 mM, equals the apparent Km",
+            "Because a competitive inhibitor halves Vmax at saturating inhibitor concentrations",
+            "Because [I] is twice Ki, so half the enzyme is bound by inhibitor"
+          ],
+          "correct_index": 1,
+          "explanation": "The half-maximal relation holds whenever [S] equals the Michaelis constant in force — here the apparent Km of 6.0 mM — so v0 = Vmax/2.",
+          "distractor_rationale": [
+            "α sets how far Km shifts; it is the coincidence of [S] with the new Km, not the value of α, that gives exactly half.",
+            "",
+            "Competitive inhibition never lowers Vmax, at any inhibitor concentration.",
+            "Plausible-sounding, but the lecture attributes the result to [S] equalling the apparent Km, not to the fraction of enzyme bound."
+          ],
+          "difficulty": "hard",
+          "tags": [
+            "worked-example",
+            "competitive-inhibition",
+            "km"
+          ],
+          "source_excerpt": "exactly half Vmax, as expected when [S] equals the apparent Km."
+        },
+        {
+          "id": "f_worked_vmax_unchanged",
+          "type": "flashcard",
+          "front": "In the worked example, what happens to Vmax when the competitive inhibitor is added?",
+          "back": "Nothing — Vmax is unchanged at 100 µmol·min⁻¹. Only Km shifts, to an apparent 6.0 mM.",
+          "difficulty": "easy",
+          "tags": [
+            "worked-example",
+            "competitive-inhibition",
+            "vmax"
+          ],
+          "source_excerpt": "Apparent Km = α · Km = 3 × 2.0 = 6.0 mM. Vmax is unchanged at 100 µmol·min⁻¹."
+        }
+      ]
+    }
+  ]
+}

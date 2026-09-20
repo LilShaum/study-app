@@ -51,7 +51,7 @@ export function AddItemButton({ courseId, sectionId }: AddItemButtonProps) {
               setDraft(createBlankItem(t.value, generateId(t.value)));
               setPicking(false);
             }}
-            className="rounded border border-border bg-surface px-3 py-1.5 text-sm text-text-2 hover:border-accent-border hover:text-text"
+            className="rounded border border-border bg-surface px-3 py-1.5 text-sm text-text-2 hover:border-border-strong hover:text-text"
           >
             {t.label}
           </button>
@@ -71,7 +71,7 @@ export function AddItemButton({ courseId, sectionId }: AddItemButtonProps) {
     <button
       type="button"
       onClick={() => setPicking(true)}
-      className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border py-2 text-sm text-text-3 hover:border-accent-border hover:text-text-2"
+      className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border py-2 text-sm text-text-3 hover:border-border-strong hover:text-text-2"
     >
       <Icon name="plus" size={14} />
       Add item

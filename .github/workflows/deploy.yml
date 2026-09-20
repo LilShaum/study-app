@@ -52,6 +52,10 @@ jobs:
 
       - name: Build (vite build → dist/)
         run: npm run build
+        env:
+          # Stamped into sw.js so the deploy can be checked against this
+          # commit rather than against "the server answered".
+          VITE_BUILD_SHA: ${{ github.sha }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v4
@@ -72,18 +76,20 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Verify sw.js is reachable
-        # Poll for up to ~5 minutes (10 x 30 s) to give CDN propagation time.
+      - name: Verify the live site is serving THIS commit
+        # A 200 from sw.js only proves something is being served. A stale CDN
+        # answers 200 with last month's app, so the check has to be for the
+        # commit: sw.js carries the SHA it was built from.
+        # Polls for up to ~5 minutes (10 x 30 s) to allow CDN propagation.
         run: |
           URL="https://lilshaum.github.io/study-app/sw.js"
           for i in $(seq 1 10); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
-            if [ "$STATUS" = "200" ]; then
-              echo "✓ sw.js reachable on attempt $i"
+            if curl -fsS "$URL" | grep -q "${{ github.sha }}"; then
+              echo "✓ $URL is serving ${{ github.sha }} (attempt $i)"
               exit 0
             fi
-            echo "Attempt $i: HTTP $STATUS — waiting 30 s…"
+            echo "Attempt $i: not yet serving this commit — waiting 30 s…"
             sleep 30
           done
-          echo "ERROR: sw.js not reachable at $URL after 10 attempts"
+          echo "::error::deploy reported success but $URL is not serving ${{ github.sha }}"
           exit 1

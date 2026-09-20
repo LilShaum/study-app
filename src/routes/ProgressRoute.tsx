@@ -85,7 +85,8 @@ export function ProgressRoute() {
       <Link to={`/study/${id}`} className="text-sm text-text-2 hover:text-text">
         ← Back
       </Link>
-      <h1 className="mt-2 text-2xl font-semibold text-text">{course.metadata.title} — Progress</h1>
+      <h1 className="mt-3 font-display text-display font-semibold text-text">{course.metadata.title}</h1>
+      <p className="mt-1 text-body text-text-3">Progress</p>
 
       {/* 2-up on phones — four tiles at 375px wrapped labels and looked broken. */}
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
