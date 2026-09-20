@@ -122,14 +122,19 @@
      TWO layers, because one was not paper. A single fine noise at an opacity
      low enough not to dirty the page is sub-pixel mush you cannot see in
      light mode, and raising it just greys the sheet. Real stock has a fine
-     tooth AND a coarser, directional fibre, so the second layer is
-     stretched — baseFrequency '.035 .22' is six times coarser across than
-     down — which reads as laid fibre rather than as television static, and
-     carries at a much lower opacity because it has structure to see. */
+     tooth AND a coarser grain, so there are two layers: a fine tooth and an
+     even medium one at a third of the opacity.
+
+     The medium layer is ISOTROPIC — the same frequency across and down. An
+     earlier pass stretched it six to one, reasoning that laid paper has
+     directional fibre. On a screen that does not read as fibre, it reads as
+     a horizontal smear, and worst in dark mode where the grain lightens the
+     page rather than darkening it. Keep both axes equal. */
   --paper-grain:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='.5'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.035 .22' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)' opacity='.38'/%3E%3C/svg%3E");
-  --paper-grain-opacity: 0.4;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)' opacity='.5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.22' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='.34'/%3E%3C/svg%3E");
+  --paper-grain-size: 220px 220px, 380px 380px;
+  --paper-grain-opacity: 0.34;
   --paper-grain-blend: multiply;
 
   --sidebar-w: 240px;
@@ -185,7 +190,7 @@
     --shadow-md: 0 1px 0 #0f1113, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
 
     /* Grain has to lighten on dark stock, or it just muddies it. */
-    --paper-grain-opacity: 0.16;
+    --paper-grain-opacity: 0.18;
     --paper-grain-blend: screen;
   }
 }
@@ -230,6 +235,6 @@
   --shadow: 0 1px 0 #0f1113, 2px 3px 0 -1px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 1px 0 #0f1113, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
 
-  --paper-grain-opacity: 0.16;
+  --paper-grain-opacity: 0.18;
   --paper-grain-blend: screen;
 }

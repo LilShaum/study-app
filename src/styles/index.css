@@ -360,11 +360,25 @@
   }
   .paper-grain::before {
     content: '';
-    position: fixed;
+    /* ABSOLUTE, not fixed.
+       Fixed pinned the tooth to the viewport, so the words slid across a
+       stationary texture as you scrolled — which is the one thing paper
+       never does, and it broke the illusion the texture exists to create.
+       Absolute against the shell means the grain is as tall as the document
+       and travels with the text on it. */
+    position: absolute;
     inset: 0;
     z-index: 0;
     pointer-events: none;
     background-image: var(--paper-grain);
+    /* Tiled rather than one filter pass over the whole document: a long
+       course page is several thousand pixels tall, and rasterising one
+       turbulence field that size is slow on a phone. The tiles stitch
+       (stitchTiles in the filter) so no seam shows, and the two layers use
+       DIFFERENT tile sizes, so their repeats fall out of step and the eye
+       never finds the period. */
+    background-size: var(--paper-grain-size);
+    background-repeat: repeat;
     opacity: var(--paper-grain-opacity);
     mix-blend-mode: var(--paper-grain-blend);
   }
