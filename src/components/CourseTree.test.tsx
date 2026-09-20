@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, render as rtlRender, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render as rtlRender, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import type { ReactElement } from 'react';
 import { CourseTree } from './CourseTree';
@@ -66,23 +66,47 @@ describe('CourseTree', () => {
   });
 
   it('keeps every leaf painted after every branch', () => {
+    // The limbs are grouped by section so a section can swing aside as a
+    // unit, and grouping is exactly what could undo this: one section's
+    // branches would land back on top of another's leaves. Document order
+    // across the whole drawing is what decides paint order.
     const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
-    // The hit layer is appended last and paints nothing, so paint order is
-    // decided by the visible paths alone.
-    const painted = [...container.querySelectorAll('svg > path')];
+    const painted = [...container.querySelectorAll('path')];
     const isLeaf = (el: Element) => el.classList.contains('lf');
     const lastWood = painted.reduce((last, el, i) => (isLeaf(el) ? last : i), -1);
     const firstLeaf = painted.findIndex(isLeaf);
     expect(firstLeaf).toBeGreaterThan(lastWood);
   });
 
+  it('groups each section so it can move as one', () => {
+    const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
+    const sets = [...container.querySelectorAll('g.limb-set')];
+    // One wood group and one foliage group per section that has both.
+    expect(sets.length).toBeGreaterThanOrEqual(2);
+    // Every group turns about a point on the tree, not about the page.
+    for (const set of sets) {
+      expect((set as SVGElement).style.transformOrigin).toMatch(/\d/);
+    }
+  });
+
+  it('expands rather than navigating when it is a preview', () => {
+    const onExpand = vi.fn();
+    const { container } = render(
+      <CourseTree courseId="c1" course={course} progress={progress} interactive mode="preview" onExpand={onExpand} />,
+    );
+    fireEvent.click(container.querySelector('svg')!);
+    // At thumbnail size a click cannot reliably pick one limb among
+    // interleaved crowns, so it opens the drawing instead of guessing.
+    expect(onExpand).toHaveBeenCalled();
+  });
+
   it('dims the other sections while one is highlighted', () => {
     const { container } = render(
       <CourseTree courseId="c1" course={course} progress={progress} interactive highlight="sec-a" />,
     );
-    const dimmed = [...container.querySelectorAll('svg > path[opacity]')];
+    const dimmed = [...container.querySelectorAll('path[opacity]')];
     expect(dimmed.length).toBeGreaterThan(0);
     // The bole and the leader belong to no section and must never dim.
-    expect(container.querySelectorAll('svg > path').length).toBeGreaterThan(dimmed.length);
+    expect(container.querySelectorAll('path').length).toBeGreaterThan(dimmed.length);
   });
 });

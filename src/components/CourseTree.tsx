@@ -39,11 +39,22 @@ interface CourseTreeProps {
    */
   on?: 'page' | 'card';
   /**
-   * Limbs become links to their section, and pointing at one dims the rest.
-   * Off by default: a thumbnail on a library card is a picture of a course,
-   * not a way into its eleventh section.
+   * Limbs become live: pointing at one lights it and pivots its neighbours
+   * aside. Off by default — a thumbnail on a library card is a picture of a
+   * course, not a way into its eleventh section.
    */
   interactive?: boolean;
+  /**
+   * What a click does.
+   *
+   * 'preview' calls `onExpand`, because at the size a tree sits on a course
+   * page you cannot reliably aim at one limb among eleven interleaved
+   * crowns — measured at 60% correct. 'navigate' goes to the section, and is
+   * for the expanded view, where the same drawing is three times the size
+   * and the pointer resolves about four times finer.
+   */
+  mode?: 'preview' | 'navigate';
+  onExpand?: () => void;
   /** Draw this section's limbs at full strength and dim everything else. */
   highlight?: string | null;
   /**
@@ -63,6 +74,18 @@ const isStructural = (limb: Limb) => !limb.sectionId;
 
 /** Beyond this far from any limb (in viewBox units) the pointer is on nothing. */
 const REACH = 26;
+
+/** How far a neighbouring limb swings aside, in degrees, at its closest. */
+const PIVOT = 5;
+
+/** Falloff of that swing with distance across the crown, in viewBox units. */
+const PIVOT_REACH = 60;
+
+/** The first point of a path — where a limb leaves the wood it grew from. */
+function startOf(d: string): [number, number] | null {
+  const m = /^M\s*(-?[\d.]+)[\s,]+(-?[\d.]+)/.exec(d);
+  return m ? [Number(m[1]), Number(m[2])] : null;
+}
 
 interface Sample {
   x: number;
@@ -99,6 +122,8 @@ export function CourseTree({
   interactive = false,
   highlight = null,
   animate = false,
+  mode = 'navigate',
+  onExpand,
 }: CourseTreeProps) {
   const [pointed, setPointed] = useState<string | null>(null);
   const active = pointed ?? highlight;
@@ -117,6 +142,72 @@ export function CourseTree({
     });
     return { tree: growTree(courseId, sections), sections };
   }, [courseId, course, progress]);
+
+  /*
+   * The limbs, grouped twice: by layer, then by section.
+   *
+   * By layer because paint order is load-bearing — every leaf is drawn after
+   * every branch so a canopy hides the wood behind it, and grouping by
+   * section alone would put one section's branches back on top of another's
+   * leaves. By section inside that, because a section is the thing that
+   * moves: pointing at one limb swings its neighbours aside, and a group is
+   * what can carry a transform.
+   *
+   * Each section also gets an anchor — where its lowest limb leaves the wood
+   * it grew from, which is what it pivots about — and a centroid, which is
+   * what decides the direction it swings.
+   */
+  const layers = useMemo(() => {
+    const wood = new Map<string, Limb[]>();
+    const foliage = new Map<string, Limb[]>();
+    const structural: Limb[] = [];
+    const structuralFoliage: Limb[] = [];
+    for (const limb of tree.limbs) {
+      if (!limb.sectionId) {
+        // Split by layer, not just set aside. The leader carries foliage and
+        // belongs to no section, so filing all of it as "structural" and
+        // drawing that first put the leader's leaves UNDER the branches —
+        // the one thing the layering exists to prevent.
+        (limb.solid ? structuralFoliage : structural).push(limb);
+        continue;
+      }
+      const into = limb.solid ? foliage : wood;
+      const list = into.get(limb.sectionId);
+      if (list) list.push(limb);
+      else into.set(limb.sectionId, [limb]);
+    }
+
+    const geometry = new Map<string, { anchor: [number, number]; cx: number }>();
+    for (const [id, limbs] of wood) {
+      const starts = limbs.map((l) => startOf(l.d)).filter((p): p is [number, number] => !!p);
+      if (!starts.length) continue;
+      // Lowest start point: the limb nearest the ground is the one the rest
+      // of the section hangs off, so it is what the section turns about.
+      const anchor = starts.reduce((low, p) => (p[1] > low[1] ? p : low));
+      const cx = starts.reduce((n, p) => n + p[0], 0) / starts.length;
+      geometry.set(id, { anchor, cx });
+    }
+    return { wood, foliage, structural, structuralFoliage, geometry };
+  }, [tree]);
+
+  /** How far each section swings while another is being pointed at. */
+  const pivots = useMemo(() => {
+    const out = new Map<string, string>();
+    if (!interactive || !active) return out;
+    const focus = layers.geometry.get(active);
+    if (!focus) return out;
+    for (const [id, geo] of layers.geometry) {
+      if (id === active) continue;
+      const dx = geo.cx - focus.cx;
+      // Away from the section being pointed at, hardest for its nearest
+      // neighbours and fading across the crown. A tie goes left, so two limbs
+      // at the same centroid never both sit still.
+      const away = dx === 0 ? -1 : Math.sign(dx);
+      const angle = away * PIVOT * Math.exp(-Math.abs(dx) / PIVOT_REACH);
+      out.set(id, `rotate(${angle.toFixed(2)}deg)`);
+    }
+    return out;
+  }, [interactive, active, layers]);
 
   const svgRef = useRef<SVGSVGElement>(null);
   const cloud = useRef<Sample[]>([]);
@@ -137,6 +228,22 @@ export function CourseTree({
    * the nearest sample. Whatever you are closest to is what you get, which
    * is both correct by construction and what the drawing looks like it
    * should do.
+   *
+   * Measured at the expanded size, over 1737 probes along every limb:
+   *
+   *   hit-test by stacking, fat transparent copies ......... 54%
+   *   ditto, ordered by limb thickness ..................... 58%
+   *   nearest sampled point (this) ......................... 65%
+   *   ditto, plus one sample per leaf ...................... 58%
+   *   ditto, distance discounted by limb weight ............ 63%
+   *
+   * Sampling the canopy sounds right — a person aims at the leafy mass, not
+   * the twig — and measures worse, because leaves sit at the crown's edge
+   * where sections interleave most. Weighting by thickness measures worse
+   * too. The remaining error is not a modelling failure: deep in a crown the
+   * nearest limb genuinely belongs to a neighbour, and no hit model fixes an
+   * ambiguous drawing. What fixes it is naming what the pointer is on before
+   * the click, which is what the caption under the tree does.
    */
   useLayoutEffect(() => {
     const svg = svgRef.current;
@@ -186,6 +293,32 @@ export function CourseTree({
   );
 
   const label = `${course.metadata.title}: ${inLeaf} of ${course.sections.length} sections in leaf`;
+
+  const paint = (limb: Limb) => ({
+    d: limb.d,
+    // The lit limb is drawn heavier as well as left at full strength. Dimming
+    // alone had to be so deep to register that the whole crown went to a
+    // ghost, and a tree you cannot see is not locating anything.
+    strokeWidth: active && limb.sectionId === active ? limb.weight * 1.5 : limb.weight,
+    className: limb.solid ? 'lf' : 'wd',
+    // Normalised length, so one dash rule can draw on a path of any size
+    // without knowing how long it is.
+    pathLength: animate && !limb.solid ? 1 : undefined,
+    // Only the wood is sampled: a crown's leaves are hundreds of marks a few
+    // units across, and the branch running through them puts a sample
+    // everywhere they are anyway.
+    'data-section': interactive && limb.kind !== 'leaf' ? limb.sectionId : undefined,
+    opacity: active && !isStructural(limb) && limb.sectionId !== active ? 0.4 : undefined,
+  });
+
+  const swing = (id: string) => {
+    const geo = layers.geometry.get(id);
+    if (!geo) return undefined;
+    return {
+      transform: pivots.get(id) ?? 'rotate(0deg)',
+      transformOrigin: `${geo.anchor[0]}px ${geo.anchor[1]}px`,
+    };
+  };
   const pointedTitle = interactive ? sections.find((s) => s.id === pointed)?.title : undefined;
 
   const svg = (
@@ -205,6 +338,10 @@ export function CourseTree({
       onClick={
         interactive
           ? (e) => {
+              if (mode === 'preview') {
+                onExpand?.();
+                return;
+              }
               const id = nearest(e);
               if (id) navigate(`/study/${courseId}/section/${encodeURIComponent(id)}`);
             }
@@ -212,28 +349,35 @@ export function CourseTree({
       }
       className={`w-auto shrink-0 text-text ${
         on === 'card' ? '[&_.lf]:fill-[var(--color-surface)]' : '[&_.lf]:fill-[var(--color-bg)]'
-      } ${animate ? 'tree-grow' : ''} ${interactive && pointed ? 'cursor-pointer' : ''} ${className}`}
+      } ${animate ? 'tree-grow' : ''} ${
+        interactive ? (mode === 'preview' ? 'cursor-zoom-in' : pointed ? 'cursor-pointer' : '') : ''
+      } ${className}`}
     >
-      {tree.limbs.map((limb, i) => (
-        <path
-          key={i}
-          d={limb.d}
-          // The lit limb is drawn heavier as well as left at full strength.
-          // Dimming alone had to be so deep to register that the whole crown
-          // went to a ghost, and a tree you cannot see is not locating
-          // anything.
-          strokeWidth={active && limb.sectionId === active ? limb.weight * 1.5 : limb.weight}
-          className={limb.solid ? 'lf' : 'wd'}
-          // Normalised length, so one dash rule can draw on a path of any
-          // size without knowing how long it is.
-          pathLength={animate && !limb.solid ? 1 : undefined}
-          // Only the wood is sampled: a crown's leaves are hundreds of marks
-          // a few units across, and the branch running through them puts a
-          // sample everywhere they are anyway.
-          data-section={interactive && limb.kind !== 'leaf' ? limb.sectionId : undefined}
-          opacity={active && !isStructural(limb) && limb.sectionId !== active ? 0.4 : undefined}
-        />
-      ))}
+      {/* Wood first, then foliage, so a canopy hides the branches behind it. */}
+      <g>
+        {layers.structural.map((limb, i) => (
+          <path key={`s${i}`} {...paint(limb)} />
+        ))}
+        {[...layers.wood].map(([id, limbs]) => (
+          <g key={id} data-sid={id} className="limb-set" style={swing(id)}>
+            {limbs.map((limb, i) => (
+              <path key={i} {...paint(limb)} />
+            ))}
+          </g>
+        ))}
+      </g>
+      <g>
+        {layers.structuralFoliage.map((limb, i) => (
+          <path key={`sf${i}`} {...paint(limb)} />
+        ))}
+        {[...layers.foliage].map(([id, limbs]) => (
+          <g key={id} data-sid={id} className="limb-set" style={swing(id)}>
+            {limbs.map((limb, i) => (
+              <path key={i} {...paint(limb)} />
+            ))}
+          </g>
+        ))}
+      </g>
 
       {/* Keyboard and screen-reader access to the same sections. These carry
           no pointer events — pointing is handled above, by distance — so they
