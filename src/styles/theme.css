@@ -117,9 +117,19 @@
   --shadow-md: 0 1px 0 var(--color-border), 4px 6px 0 -2px rgba(27, 29, 31, 0.1);
 
   /* The tooth of the paper, drawn rather than downloaded: no image asset,
-     works offline, and retints with the theme. Consumed by .paper-grain. */
-  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
-  --paper-grain-opacity: 0.28;
+     works offline, and retints with the theme. Consumed by .paper-grain.
+
+     TWO layers, because one was not paper. A single fine noise at an opacity
+     low enough not to dirty the page is sub-pixel mush you cannot see in
+     light mode, and raising it just greys the sheet. Real stock has a fine
+     tooth AND a coarser, directional fibre, so the second layer is
+     stretched — baseFrequency '.035 .22' is six times coarser across than
+     down — which reads as laid fibre rather than as television static, and
+     carries at a much lower opacity because it has structure to see. */
+  --paper-grain:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='.5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.035 .22' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)' opacity='.38'/%3E%3C/svg%3E");
+  --paper-grain-opacity: 0.4;
   --paper-grain-blend: multiply;
 
   --sidebar-w: 240px;

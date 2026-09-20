@@ -24,7 +24,12 @@ export function SpecimenLabel({ rows, className = '' }: { rows: SpecimenRow[]; c
     <dl className={`border-y border-border py-2.5 text-small ${className}`}>
       {present.map((row) => (
         <div key={row.label} className="flex gap-4 py-0.5">
-          <dt className="w-16 shrink-0 pt-px text-micro uppercase tracking-wider text-text-3 sm:w-20">
+          {/* The global `overflow-wrap: anywhere` exists so a long chemical
+              name cannot widen the page, but in a 4rem column it broke the
+              label itself — "CONTENTS" set as "CONTEN / TS". A label is one
+              short word by construction, so it opts out and the column is
+              sized to hold the longest of them instead. */}
+          <dt className="w-[4.75rem] shrink-0 whitespace-nowrap pt-px text-micro uppercase tracking-wider text-text-3 [overflow-wrap:normal] sm:w-24">
             {row.label}
           </dt>
           <dd className="min-w-0 flex-1 text-text-2">{row.value}</dd>

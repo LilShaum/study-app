@@ -48,6 +48,19 @@ export interface Limb {
   solid?: boolean;
   /** The section this limb grew from, for hit-testing and highlighting. */
   sectionId?: string;
+  /**
+   * True for the limbs on a section's MAIN LINE — the unbroken chain from
+   * where it leaves the trunk out to its own tip.
+   *
+   * `kind` cannot stand in for this, because kind comes from depth: a
+   * section's depth-3 limb and every depth-2 child it throws are all
+   * `branch`, so a section is about nine separate strokes fanning across
+   * the crown. Sampling all of them for hit-testing made a section's
+   * target a wide, ragged region that overlapped its neighbours' — aiming
+   * at one branch could land two over. The main line is one stroke, which
+   * is what a person means when they point at a branch.
+   */
+  spine?: boolean;
 }
 
 export interface Tree {
@@ -163,7 +176,14 @@ function smooth(points: Pt[]): string {
  * point and using round caps hides the joins, so it reads as one continuous
  * limb that thins toward its tip.
  */
-function taperedLimb(points: Pt[], from: number, to: number, kind: LimbKind, sectionId?: string): Limb[] {
+function taperedLimb(
+  points: Pt[],
+  from: number,
+  to: number,
+  kind: LimbKind,
+  sectionId?: string,
+  spine?: boolean,
+): Limb[] {
   const pieces = Math.min(4, Math.max(2, Math.floor(points.length / 2)));
   const out: Limb[] = [];
   const per = (points.length - 1) / pieces;
@@ -173,7 +193,7 @@ function taperedLimb(points: Pt[], from: number, to: number, kind: LimbKind, sec
     const slice = points.slice(start, end + 1);
     if (slice.length < 2) continue;
     const t = pieces === 1 ? 0 : i / (pieces - 1);
-    out.push({ d: smooth(slice), weight: round(from + (to - from) * t), kind, sectionId });
+    out.push({ d: smooth(slice), weight: round(from + (to - from) * t), kind, sectionId, spine });
   }
   return out;
 }
@@ -250,6 +270,8 @@ function grow(
   length: number,
   width: number,
   depth: number,
+  /** Whether this limb continues its section's main line. */
+  spine = false,
 ): void {
   const { rand, traits } = ctx;
 
@@ -270,7 +292,7 @@ function grow(
   }
 
   const kind: LimbKind = depth >= 4 ? 'trunk' : depth >= 2 ? 'branch' : 'twig';
-  ctx.limbs.push(...taperedLimb(pts, width, Math.max(0.55, width * 0.55), kind, ctx.sectionId));
+  ctx.limbs.push(...taperedLimb(pts, width, Math.max(0.55, width * 0.55), kind, ctx.sectionId, spine));
 
   const tip = pts[pts.length - 1];
   if (depth <= 0 || length < 7) {
@@ -301,7 +323,7 @@ function grow(
     // Departures leave from partway down the limb, not all from the tip —
     // every child sharing one origin is the other machinery tell.
     const fromIdx = lead ? pts.length - 1 : Math.max(1, Math.round((0.55 + rand() * 0.4) * (pts.length - 1)));
-    grow(ctx, pts[fromIdx], a + off, length * ratio, Math.max(0.6, width * 0.62), depth - 1);
+    grow(ctx, pts[fromIdx], a + off, length * ratio, Math.max(0.6, width * 0.62), depth - 1, spine && lead);
     side *= -1;
   }
 
@@ -404,6 +426,7 @@ export function growTree(seed: string, sections: TreeSection[]): Tree {
       length,
       2.4 * vigour,
       3,
+      true,
     );
     anchorsBySection.set(section.id, anchors);
 
