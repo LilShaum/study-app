@@ -54,30 +54,108 @@ export interface TreeSection {
 export type Species = 'default' | 'winter' | 'banyan' | 'fig';
 
 interface SpeciesTraits {
-  /** Branch angle from vertical at the base and at the crown, in degrees. */
+  /** Attachment angle from vertical, at the base of the trunk and at the crown. */
   spread: [number, number];
-  /** How sharply a branch curves back toward vertical as it grows. */
+  /**
+   * How a limb curves as it grows. Positive reaches back toward vertical;
+   * negative lets it fall away and droop.
+   */
   lift: number;
-  /** Sideways drift of the trunk over its length, in viewBox units. */
-  sway: number;
-  twigs: [number, number];
-  /** Leaves a fully-mastered section can carry. */
+  /**
+   * Apical dominance. High means one leader dominates and the tree is
+   * conical or columnar; low means the trunk dissolves into equals and the
+   * crown spreads. This is the single parameter that most decides what
+   * species a tree reads as, and the first version did not have it.
+   */
+  leader: number;
+  /** How many limbs come off a limb, at the coarse and fine scales. */
+  children: [number, number];
+  /** Trunk length before the crown begins. */
+  bole: [number, number];
+  /** Crown width relative to height. Above 1 is wider than tall. */
+  aspect: number;
   foliage: number;
   leafLength: number;
+  leafShape: 'simple' | 'oval';
+  /** Banyan's signature: roots dropped from the limbs toward the ground. */
+  aerialRoots?: boolean;
   /** Winter keeps its branches bare however well you know it. */
   bare?: boolean;
 }
 
 /**
- * Four species, not four palettes. Winter is deliberately bare — the theme
- * has described itself as "bare branches, icy slate" since the palette was
- * written, and a winter tree in full leaf would contradict its own name.
+ * Four species, not four palettes — and not one tree with four filters,
+ * which is what the first attempt actually produced. Each has its own
+ * architecture:
+ *
+ * - DEFAULT is an open vase: moderate leader, limbs reaching back up.
+ * - WINTER is skeletal and upright, finely divided, and never in leaf.
+ * - BANYAN spreads wider than it is tall, branches near-horizontal and
+ *   drooping, and drops aerial roots from its limbs.
+ * - FIG is sparse and upright, with few limbs carrying large lobed leaves.
  */
 const SPECIES: Record<Species, SpeciesTraits> = {
-  default: { spread: [74, 40], lift: 0.30, sway: 7, twigs: [2, 4], foliage: 7, leafLength: 7.5 },
-  winter: { spread: [78, 46], lift: 0.22, sway: 10, twigs: [3, 5], foliage: 3, leafLength: 5, bare: true },
-  banyan: { spread: [84, 58], lift: 0.16, sway: 4, twigs: [2, 4], foliage: 9, leafLength: 8.5 },
-  fig: { spread: [66, 34], lift: 0.38, sway: 9, twigs: [2, 3], foliage: 6, leafLength: 10 },
+  default: {
+    spread: [70, 38],
+    lift: 0.3,
+    leader: 0.55,
+    children: [3, 2],
+    bole: [84, 14],
+    aspect: 1,
+    foliage: 7,
+    leafLength: 7.5,
+    leafShape: 'simple',
+  },
+  winter: {
+    spread: [64, 30],
+    lift: 0.34,
+    leader: 0.78,
+    children: [3, 3],
+    bole: [96, 12],
+    aspect: 0.82,
+    foliage: 3,
+    leafLength: 4.5,
+    leafShape: 'simple',
+    bare: true,
+  },
+  banyan: {
+    // Spreading is not the same as horizontal. Attaching limbs at 80-plus
+    // degrees and then widening every child by the aspect turned this into a
+    // scribble of crossing lines; a banyan's limbs leave at a moderate angle
+    // and flatten as they run, which is what the slight negative lift does.
+    // Arching, not flat. Near-zero lift over a long limb draws a straight
+    // run, which is what put a rigid chevron through the middle of the
+    // crown; a banyan's limbs curve out and over, then the tips fall.
+    spread: [56, 46],
+    lift: 0.16,
+    leader: 0.34,
+    children: [3, 2],
+    bole: [54, 10],
+    aspect: 1.18,
+    foliage: 10,
+    leafLength: 7,
+    leafShape: 'oval',
+    aerialRoots: true,
+  },
+  fig: {
+    spread: [56, 34],
+    lift: 0.24,
+    leader: 0.54,
+    children: [3, 2],
+    bole: [74, 12],
+    aspect: 1.05,
+    // Few and large, which is what distinguishes a fig from the default's
+    // many small leaves and the banyan's dense medium ones.
+    //
+    // It used to draw a lobed fig leaf and no longer does. Three attempts
+    // produced a five-pointed star, then a rosette, then crumpled paper: at
+    // the ~19px a leaf actually renders at, lobe geometry has no room to
+    // read, and a shape that is only identifiable at 4x zoom is not doing a
+    // job here. Cut rather than iterated on further.
+    foliage: 4,
+    leafLength: 13,
+    leafShape: 'oval',
+  },
 };
 
 /** Cheap, stable string hash — the same course id always seeds the same tree. */
@@ -156,27 +234,43 @@ function taperedLimb(points: Pt[], from: number, to: number, kind: LimbKind, sec
 }
 
 /**
- * A leaf: two curves meeting at the tip, asymmetric about its own midrib.
+ * Leaves, in two shapes — a narrow pointed one and a broad blunt one —
+ * varied further by size and by how many a limb carries.
  *
- * The asymmetry is the point. Two mirrored arcs give the pointed oval every
- * generated plant drawing uses; pulling one side fuller than the other is the
- * difference between a leaf and a lens.
+ * There was a third, a lobed fig leaf, and it is gone. Three attempts drew a
+ * five-pointed star, then a rosette, then crumpled paper: at the ~19px a leaf
+ * actually renders at, lobe geometry has no room to read. A shape only
+ * identifiable at 4x zoom was not doing a job here.
+ *
+ * Both are asymmetric about their own midrib. Two mirrored arcs give the
+ * pointed oval every generated plant drawing uses; pulling one side fuller
+ * than the other is the difference between a leaf and a lens.
  */
-function leaf(at: Pt, angle: number, length: number, rand: () => number): string {
+function leafPath(
+  shape: 'simple' | 'oval',
+  at: Pt,
+  angle: number,
+  length: number,
+  rand: () => number,
+): string {
   const dx = Math.sin(angle);
   const dy = -Math.cos(angle);
-  const tip = { x: at.x + dx * length, y: at.y + dy * length };
-  const px = -dy;
-  const py = dx;
-  const belly = length * (0.34 + rand() * 0.1);
-  const lean = 0.42 + rand() * 0.16;
-  const near = { x: at.x + dx * length * lean, y: at.y + dy * length * lean };
-  const c1 = { x: near.x + px * belly, y: near.y + py * belly };
-  const c2 = { x: near.x - px * belly * (0.62 + rand() * 0.16), y: near.y - py * belly * (0.62 + rand() * 0.16) };
+  // Leaf-local frame: u runs along the midrib, v across it.
+  const to = (u: number, v: number): Pt => ({
+    x: at.x + dx * length * u - dy * length * v,
+    y: at.y + dy * length * u + dx * length * v,
+  });
+  const P = (p: Pt) => `${round(p.x)} ${round(p.y)}`;
+
+  // simple = a narrow pointed leaf; oval = broad and blunt, banyan's habit.
+  const belly = shape === 'oval' ? 0.42 + rand() * 0.08 : 0.3 + rand() * 0.08;
+  const tipU = shape === 'oval' ? 0.94 : 1;
+  const shoulder = shape === 'oval' ? 0.42 : 0.5;
+  const skew = 0.66 + rand() * 0.2;
   return (
-    `M${round(at.x)} ${round(at.y)}` +
-    `Q${round(c1.x)} ${round(c1.y)},${round(tip.x)} ${round(tip.y)}` +
-    `Q${round(c2.x)} ${round(c2.y)},${round(at.x)} ${round(at.y)}`
+    `M${P(to(0, 0))}` +
+    `Q${P(to(shoulder, belly))},${P(to(tipU, 0))}` +
+    `Q${P(to(shoulder, -belly * skew))},${P(to(0, 0))}`
   );
 }
 
@@ -243,14 +337,24 @@ function grow(
 
   // A leader that carries on, and one or two departures. Their angles and
   // lengths are drawn from the seed, never mirrored.
-  const children = depth >= 3 ? 2 + (rand() < 0.45 ? 1 : 0) : 1 + (rand() < 0.62 ? 1 : 0);
+  const [coarse, fine] = traits.children;
+  const base = depth >= 3 ? coarse : fine;
+  const children = Math.max(1, base + (rand() < 0.4 ? 1 : 0) - (rand() < 0.2 ? 1 : 0));
   const spread = (traits.spread[1] * 0.55 + rand() * traits.spread[1] * 0.5) * RAD;
   let side = rand() < 0.5 ? -1 : 1;
 
   for (let c = 0; c < children; c++) {
     const lead = c === 0;
-    const off = lead ? (rand() - 0.5) * spread * 0.5 : side * spread * (0.7 + rand() * 0.6);
-    const ratio = lead ? 0.78 + rand() * 0.1 : 0.54 + rand() * 0.18;
+    // Apical dominance: a strong leader makes a conical, upright tree; a weak
+    // one lets the limb dissolve into equals and the crown spread. This is
+    // what makes the four species read as different trees rather than the
+    // same tree with different leaf counts.
+    const off = lead
+      ? (rand() - 0.5) * spread * (1.1 - traits.leader)
+      : side * spread * (0.7 + rand() * 0.6);
+    const ratio = lead
+      ? 0.6 + traits.leader * 0.3 + rand() * 0.08
+      : 0.44 + (1 - traits.leader) * 0.3 + rand() * 0.16;
     // Departures leave from partway down the limb, not all from the tip —
     // every child sharing one origin is the other machinery tell.
     const fromIdx = lead ? pts.length - 1 : Math.max(1, Math.round((0.55 + rand() * 0.4) * (pts.length - 1)));
@@ -289,8 +393,10 @@ export function growTree(seed: string, sections: TreeSection[], species: Species
      spike. It is short, because in a mature tree most of the height is
      branching, not bole. ---- */
   // Enough bole that it reads as a tree rather than a bouquet — the first
-  // recursive pass started branching almost at the ground.
-  const trunkLen = 84 + rand() * 14;
+  // recursive pass started branching almost at the ground. How much is a
+  // species trait: a banyan is nearly all crown, a winter tree nearly all
+  // trunk.
+  const trunkLen = traits.bole[0] + rand() * traits.bole[1];
   const trunkLean = (rand() - 0.5) * 0.22;
   const trunkPts: Pt[] = [];
   const TSTEPS = 7;
@@ -345,7 +451,7 @@ export function growTree(seed: string, sections: TreeSection[], species: Species
     // instead of a triangle.
     const spread = traits.spread[0] + (traits.spread[1] - traits.spread[0]) * t;
     const angle = side * (spread + (rand() - 0.5) * 16) * RAD;
-    const length = (30 + 18 * vigour) * (1.2 - 0.45 * t);
+    const length = (30 + 18 * vigour) * (1.2 - 0.45 * t) * traits.aspect;
 
     const anchors: Anchor[] = [];
     grow(
@@ -375,6 +481,32 @@ export function growTree(seed: string, sections: TreeSection[], species: Species
     3,
   );
 
+  /* ---- banyan's signature: roots let down from the limbs ----
+     A structural feature rather than a parameter tweak, and the reason a
+     banyan is recognisable across a room. They hang from the outer limbs,
+     and the longest reach the ground and thicken into props. ---- */
+  if (traits.aerialRoots) {
+    const hosts = [...anchorsBySection.values()].flat();
+    const count = Math.min(9, 4 + Math.floor(rand() * 5));
+    for (let k = 0; k < count; k++) {
+      const host = hosts[Math.floor(rand() * hosts.length)];
+      if (!host) break;
+      const reach = baseY - host.at.y;
+      if (reach < 24) continue;
+      const drop = reach * (0.25 + rand() * 0.6);
+      const grounded = drop > reach * 0.92;
+      const pts: Pt[] = [host.at];
+      const STEPS = 4;
+      for (let i = 1; i <= STEPS; i++) {
+        pts.push({
+          x: host.at.x + Math.sin(i * 1.3 + rand()) * 1.6 + (rand() - 0.5) * 1.2,
+          y: host.at.y + (drop / STEPS) * i,
+        });
+      }
+      limbs.push(...taperedLimb(pts, grounded ? 1.3 : 0.7, grounded ? 1.5 : 0.45, 'twig'));
+    }
+  }
+
   /* ---- foliage: the only thing study changes ---- */
   sections.forEach((section) => {
     const anchors = anchorsBySection.get(section.id) ?? [];
@@ -389,7 +521,7 @@ export function growTree(seed: string, sections: TreeSection[], species: Species
       for (let k = 0; k < buds; k++) {
         const host = anchors[Math.floor(rand() * anchors.length)];
         limbs.push({
-          d: leaf(host.at, host.angle + (rand() - 0.5) * 1.1, traits.leafLength * 0.55, rand),
+          d: leafPath('simple', host.at, host.angle + (rand() - 0.5) * 1.1, traits.leafLength * 0.6, rand),
           weight: 0.8,
           kind: 'leaf',
           sectionId: section.id,
@@ -406,7 +538,8 @@ export function growTree(seed: string, sections: TreeSection[], species: Species
     for (let k = 0; k < count; k++) {
       const host = order[k % order.length].a;
       limbs.push({
-        d: leaf(
+        d: leafPath(
+          traits.leafShape,
           { x: host.at.x + (rand() - 0.5) * 2.5, y: host.at.y + (rand() - 0.5) * 2.5 },
           host.angle + (rand() - 0.5) * 1.6,
           traits.leafLength * (0.7 + rand() * 0.55),
