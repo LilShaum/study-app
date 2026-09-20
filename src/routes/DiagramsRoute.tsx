@@ -67,7 +67,7 @@ function PlateFigure({ plate, courseId }: { plate: Plate; courseId: string }) {
       <div
         role="img"
         aria-label={item.alt_text || item.title}
-        className="mt-5 flex items-center justify-center text-text [&_svg]:max-h-80 [&_svg]:max-w-full"
+        className="mt-5 flex items-center justify-center border border-border p-6 text-text [&_svg]:max-h-80 [&_svg]:max-w-full"
       >
         {svg ? (
           <div dangerouslySetInnerHTML={{ __html: svg }} />

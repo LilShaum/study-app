@@ -53,13 +53,25 @@ export function DefinitionCard({
         Definition
         <DifficultyBadge difficulty={item.difficulty} />
       </div>
-      <div className="font-display text-heading font-semibold text-text">{item.term}</div>
+      {/* An entry, not a form: the headword runs into its definition, the way
+          a dictionary sets one. In reveal mode the term stands alone until
+          asked, so it keeps the stacked form there. */}
+      {(revealMode || !revealed) && (
+        <div className="font-display text-heading font-semibold text-text">{item.term}</div>
+      )}
 
       {revealMode && !revealed && <div className="mt-1 text-sm text-accent">Click to reveal definition →</div>}
 
       {revealed && (
-        <div className="mt-2">
-          <div className="font-display text-body text-text">{item.definition}</div>
+        <div className={revealMode ? 'mt-2' : ''}>
+          <p className="prose-set text-body text-text">
+            {!revealMode && (
+              <span className="mr-1.5 text-small font-semibold uppercase tracking-wider text-text">
+                {item.term}.
+              </span>
+            )}
+            {item.definition}
+          </p>
           {item.example_sentence && (
             <div className="mt-2 text-sm italic text-text-2">&ldquo;{item.example_sentence}&rdquo;</div>
           )}

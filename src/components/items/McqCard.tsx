@@ -91,7 +91,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
         Multiple Choice
         <DifficultyBadge difficulty={item.difficulty} />
       </div>
-      <div className="mb-4 font-display text-heading text-text">{item.question}</div>
+      <div className="prose-set mb-4 text-heading text-text">{item.question}</div>
 
       <div
         role="radiogroup"
