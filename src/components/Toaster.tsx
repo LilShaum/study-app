@@ -1,10 +1,15 @@
 import * as RadixToast from '@radix-ui/react-toast';
 import { useToastStore, type ToastItem } from '@/store/toast';
 
+/**
+ * A slip laid on the page, so the left edge carries the verdict as a
+ * printed rule rather than the whole box being tinted. The type colour goes
+ * on that rule and stays off the message, which has to stay readable.
+ */
 const TYPE_CLASSES: Record<ToastItem['type'], string> = {
-  success: 'border-success text-success',
-  error: 'border-error text-error',
-  info: 'border-border text-text',
+  success: 'border-l-success',
+  error: 'border-l-error',
+  info: 'border-l-text-3',
 };
 
 export function Toaster() {
@@ -20,14 +25,14 @@ export function Toaster() {
           onOpenChange={(open) => {
             if (!open) dismiss(t.id);
           }}
-          className={`flex items-center justify-between gap-3 rounded-lg border bg-surface px-4 py-3 shadow-md ${TYPE_CLASSES[t.type]}`}
+          className={`flex items-center justify-between gap-3 rounded-sm border border-border-light border-l-2 bg-surface px-4 py-3 text-text shadow-md ${TYPE_CLASSES[t.type]}`}
         >
           <RadixToast.Description className="text-sm">{t.message}</RadixToast.Description>
           {t.onAction && t.actionLabel && (
             <RadixToast.Action altText={t.actionLabel} asChild>
               <button
                 type="button"
-                className="shrink-0 text-sm font-medium text-accent underline-offset-2 hover:underline"
+                className="press press-quiet shrink-0"
                 onClick={() => {
                   t.onAction?.();
                   dismiss(t.id);

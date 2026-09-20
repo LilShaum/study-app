@@ -168,7 +168,7 @@ export function LibraryRoute() {
       {ids.length === 0 ? (
         <div className="border-y border-border py-14 text-center text-text-2">
           <div className="mb-5 flex justify-center text-text-3">
-            <Sprig className="h-12" />
+            <Sprig size={48} />
           </div>
           <p className="font-display text-heading text-text">The library is empty.</p>
           <p className="mx-auto mt-2 max-w-md text-small">
