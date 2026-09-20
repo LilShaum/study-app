@@ -181,6 +181,11 @@ export function CourseRoute() {
       {/* Column on a phone: beside the tree the title had a third of the width
           and broke over four lines. */}
       <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:gap-8">
+        {/* Not `interactive` yet. Limb-clicking is built and tested, but with
+            eleven crowns interleaved the nearest limb to a given pixel is the
+            wrong section 40% of the time — measured over 1737 probes — and a
+            navigation control that misroutes two clicks in five is worse than
+            none. See CourseTree for the two approaches tried. */}
         <CourseTree courseId={id} course={course} progress={progress} className="h-24 sm:h-44" />
         <div className="min-w-0 flex-1">
           {meta.length > 0 && (
