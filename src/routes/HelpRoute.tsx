@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Icon, type IconName } from '@/components/Icon';
 import { useOnboardingStore } from '@/store/onboarding';
 import { storageUsage } from '@/lib/safeStorage';
+import { scrollToAnchor } from '@/lib/scrollToAnchor';
 
 interface HelpSection {
   id: string;
@@ -416,21 +417,6 @@ function ReplayWelcome() {
 }
 
 /** "/help" — what the app does, including the parts that aren't obvious. */
-/**
- * Scrolls a help section into view and moves focus to it.
- *
- * Focus matters as much as the scroll: a keyboard or screen-reader user who
- * presses a topic button and only gets a scrolled viewport is still parked at
- * the top of the page with the next Tab taking them back to the topic list.
- */
-function jumpTo(id: string) {
-  const target = document.getElementById(id);
-  if (!target) return;
-  const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  target.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
-  target.focus({ preventScroll: true });
-}
-
 export function HelpRoute() {
   return (
     <div className="mx-auto max-w-3xl p-6">
@@ -464,7 +450,7 @@ export function HelpRoute() {
           <button
             key={s.id}
             type="button"
-            onClick={() => jumpTo(s.id)}
+            onClick={() => scrollToAnchor(s.id)}
             className="tap-safe rounded border border-border bg-surface px-3 py-1 text-xs text-text-2 hover:border-border-strong hover:text-text"
           >
             {s.title}
