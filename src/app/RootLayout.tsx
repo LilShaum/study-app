@@ -10,7 +10,7 @@ export function RootLayout() {
   return (
     <div className="app-shell paper-grain flex min-h-screen flex-col bg-bg">
       <ThemeEffect />
-      <header className="app-header flex min-h-header shrink-0 items-center gap-3 border-b border-border bg-surface px-4">
+      <header className="app-header flex min-h-header shrink-0 items-center gap-3 border-b-2 border-border-strong bg-surface px-4">
         <Link
           to="/"
           className="flex items-center gap-2 font-display text-heading font-semibold tracking-tight text-text"
@@ -30,7 +30,7 @@ export function RootLayout() {
           <DarkModeToggle />
         </div>
       </header>
-      <main className="flex-1">
+      <main className="flex-1 lg:mx-auto lg:my-8 lg:w-full lg:max-w-5xl lg:rounded lg:border lg:border-border lg:bg-surface lg:shadow-md">
         <Outlet />
       </main>
       <Toaster />

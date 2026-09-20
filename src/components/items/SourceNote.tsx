@@ -17,7 +17,7 @@ export function SourceNote({ excerpt }: { excerpt?: string }) {
         <span className="group-open/src:hidden">From your notes ▸</span>
         <span className="hidden group-open/src:inline">From your notes ▾</span>
       </summary>
-      <blockquote className="mt-1.5 border-l-2 border-accent-border pl-2.5 text-xs italic text-text-2">
+      <blockquote className="mt-1.5 border-l-2 border-border-strong pl-2.5 text-xs italic text-text-2">
         {excerpt}
       </blockquote>
     </details>

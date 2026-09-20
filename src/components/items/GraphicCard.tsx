@@ -2,14 +2,15 @@ import { useMemo } from 'react';
 import type { GraphicItem } from '@/schema/course';
 import { prepareSvg } from '@/lib/prepareSvg';
 import { DifficultyBadge } from './DifficultyBadge';
+import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
 
-export function GraphicCard({ item }: { item: GraphicItem }) {
+export function GraphicCard({ item, frame = 'card' }: { item: GraphicItem; frame?: ItemFrame }) {
   // Sanitized + theme-adapted; see prepareSvg for why raw markup isn't used.
   const svg = useMemo(() => prepareSvg(item.svg), [item.svg]);
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-5 shadow">
+    <div className={FRAME[frame]}>
       <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-text-3">
         Diagram
         <DifficultyBadge difficulty={item.difficulty} />

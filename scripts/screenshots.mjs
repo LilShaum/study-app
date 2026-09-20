@@ -86,8 +86,17 @@ async function page(browser, size, { onboarded = true } = {}) {
   const p = await ctx.newPage();
   if (size === 'phone') {
     const cdp = await ctx.newCDPSession(p);
-    await cdp.send('Emulation.setEmulatedMedia', {
-      features: [{ name: 'hover', value: 'none' }, { name: 'pointer', value: 'coarse' }],
+    const touchMedia = () =>
+      cdp.send('Emulation.setEmulatedMedia', {
+        features: [{ name: 'hover', value: 'none' }, { name: 'pointer', value: 'coarse' }],
+      });
+    await touchMedia();
+    // Playwright re-sends its own emulation bundle on every navigation and
+    // that clears ours, so the override goes back on after each one. The
+    // first version set it once and every phone shot quietly rendered with
+    // desktop media — hover-only UI visible, 44px targets not applied.
+    p.on('framenavigated', (frame) => {
+      if (frame === p.mainFrame()) touchMedia().catch(() => {});
     });
   }
   if (onboarded) {

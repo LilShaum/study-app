@@ -2,6 +2,7 @@ import { useState, type KeyboardEvent } from 'react';
 import type { DefinitionItem } from '@/schema/course';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { DifficultyBadge } from './DifficultyBadge';
+import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
 
 interface DefinitionCardProps {
@@ -11,6 +12,7 @@ interface DefinitionCardProps {
   /** Only true for the single card in a study session, never in Browse. */
   keyboardEnabled?: boolean;
   onNext?: () => void;
+  frame?: ItemFrame;
 }
 
 export function DefinitionCard({
@@ -18,6 +20,7 @@ export function DefinitionCard({
   revealMode = false,
   keyboardEnabled = false,
   onNext,
+  frame = 'card',
 }: DefinitionCardProps) {
   const [revealed, setRevealed] = useState(!revealMode);
 
@@ -39,7 +42,7 @@ export function DefinitionCard({
 
   return (
     <div
-      className={`rounded-lg border border-border bg-surface p-5 shadow ${revealMode ? 'cursor-pointer' : ''}`}
+      className={`${FRAME[frame]} ${revealMode ? 'cursor-pointer' : ''}`}
       role={revealMode ? 'button' : undefined}
       tabIndex={revealMode ? 0 : undefined}
       aria-expanded={revealMode ? revealed : undefined}
@@ -56,7 +59,7 @@ export function DefinitionCard({
 
       {revealed && (
         <div className="mt-2">
-          <div className="text-body text-text">{item.definition}</div>
+          <div className="font-display text-body text-text">{item.definition}</div>
           {item.example_sentence && (
             <div className="mt-2 text-sm italic text-text-2">&ldquo;{item.example_sentence}&rdquo;</div>
           )}

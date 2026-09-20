@@ -25,7 +25,7 @@ interface CardSessionProps {
 
 const MODE_LABELS: Record<CardMode, string> = {
   learn: 'Learn',
-  weakest: 'Weakest First',
+  weakest: 'Weakest first',
   quiz: 'Quiz',
   flashcards: 'Flashcards',
   definitions: 'Definitions',
@@ -300,7 +300,19 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-6">
+    <div className="relative mx-auto max-w-2xl p-6">
+      {/* A marginal figure: the course's tree with the section you are in
+          lit, in the margin a page has anyway. The one screen you spend the
+          most time on had nothing of the course on it but its text. */}
+      <div className="absolute -left-40 top-24 hidden xl:block" aria-hidden="true">
+        <CourseTree
+          courseId={courseId}
+          course={course}
+          progress={progress}
+          className="h-40"
+          highlight={activeSectionId}
+        />
+      </div>
       <div className="mb-4 flex items-center justify-between">
         <Link to={`/study/${courseId}`} className="text-sm text-text-2 hover:text-text">
           ← Back
@@ -351,6 +363,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         <ItemRenderer
           key={current.id}
           item={current}
+          frame="sheet"
           revealMode={mode === 'definitions'}
           onAnswered={record}
           // Grading a flashcard also advances it, as the vanilla app did —

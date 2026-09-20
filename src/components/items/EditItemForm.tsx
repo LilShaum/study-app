@@ -317,7 +317,7 @@ export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-accent-border bg-surface p-5">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-border-strong bg-surface p-5">
       <TypeFields item={item} mcqDraft={mcqDraft} onMcqChange={setMcqDraft} />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Difficulty">

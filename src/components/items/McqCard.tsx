@@ -3,6 +3,7 @@ import type { McqItem } from '@/schema/course';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { normalisedRationale } from '@/lib/mcqRationale';
 import { DifficultyBadge } from './DifficultyBadge';
+import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
 
 interface McqCardProps {
@@ -12,9 +13,10 @@ interface McqCardProps {
   onNext?: () => void;
   /** Only true for the single card in a study session, never in Browse. */
   keyboardEnabled?: boolean;
+  frame?: ItemFrame;
 }
 
-export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: McqCardProps) {
+export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, frame = 'card' }: McqCardProps) {
   const [selected, setSelected] = useState(-1);
   const [revealed, setRevealed] = useState(false);
   const options = item.options ?? [];
@@ -84,12 +86,12 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
   const correct = selected === item.correct_index;
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-5 shadow">
+    <div className={FRAME[frame]}>
       <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-text-3">
         Multiple Choice
         <DifficultyBadge difficulty={item.difficulty} />
       </div>
-      <div className="mb-4 text-heading text-text">{item.question}</div>
+      <div className="mb-4 font-display text-heading text-text">{item.question}</div>
 
       <div
         role="radiogroup"
@@ -108,7 +110,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false }: M
             if (isCorrectOpt) stateClasses = 'border-success bg-success-bg text-success';
             else if (isSelected) stateClasses = 'border-error bg-error-bg text-error';
           } else if (isSelected) {
-            stateClasses = 'border-accent bg-accent-light';
+            stateClasses = 'border-accent bg-surface-sunken';
           }
           const rationale = revealed ? rationales?.[i] || undefined : undefined;
           return (

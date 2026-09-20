@@ -66,9 +66,9 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
               key={s.id}
               type="button"
               onClick={() => scrollToSection(s.id)}
-              className={`shrink-0 rounded-full border px-3 py-1 text-xs transition-colors ${
+              className={`shrink-0 rounded border px-3 py-1 text-xs transition-colors ${
                 activeSection === s.id
-                  ? 'border-accent bg-accent-light text-accent'
+                  ? 'border-border-strong bg-surface-sunken font-medium text-text'
                   : 'border-border text-text-2'
               }`}
             >
@@ -89,7 +89,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
                   onClick={() => scrollToSection(s.id)}
                   className={`block w-full rounded px-3 py-1.5 text-left text-sm transition-colors ${
                     activeSection === s.id
-                      ? 'bg-accent-light font-medium text-accent'
+                      ? 'bg-surface-sunken font-medium text-text'
                       : 'text-text-2 hover:text-text'
                   }`}
                 >
