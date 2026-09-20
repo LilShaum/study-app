@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useOnboardingStore } from '@/store/onboarding';
+import { Sprig } from '@/components/Sprig';
 import { Icon, type IconName } from './Icon';
 
 type Platform = 'ios' | 'android' | 'desktop';
@@ -83,7 +84,7 @@ export function Onboarding() {
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
       <div className="my-6 w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-md">
         <div className="flex justify-center text-accent">
-          <Icon name={'tree-default' as IconName} size={40} />
+          <Sprig className="h-10" />
         </div>
         <h1 className="mt-2 text-center text-xl font-semibold text-text">Welcome to Arborous</h1>
         <p className="mt-1 text-center text-sm text-text-2">

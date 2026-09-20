@@ -64,7 +64,7 @@ describe('ProgressRoute', () => {
     // 75% legitimately appears twice — the accuracy tile and the section bar.
     expect(screen.getAllByText('75%').length).toBeGreaterThan(0);
     expect(screen.getByText('Accuracy')).toBeTruthy();
-    expect(screen.getByText('Weakest Sections')).toBeTruthy();
+    expect(screen.getByText('Weakest sections')).toBeTruthy();
     expect(screen.getByText('Membranes')).toBeTruthy();
   });
 

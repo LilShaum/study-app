@@ -8,6 +8,7 @@ import { useResumeStore } from '@/store/resume';
 import { beginWriteCheck, writesLanded } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
+import { Sprig } from '@/components/Sprig';
 import { CourseTree } from '@/components/CourseTree';
 import { sectionStats } from '@/lib/sectionStats';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
@@ -132,7 +133,7 @@ export function LibraryRoute() {
             className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-border-strong hover:text-text"
             onClick={() => inputRef.current?.click()}
           >
-            <Icon name="download" size={14} />
+            <Icon name="upload" size={14} />
             Upload
           </button>
           <button
@@ -155,13 +156,13 @@ export function LibraryRoute() {
 
       {ids.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-10 text-center text-text-2">
-          <div className="mb-3 flex justify-center text-text-3">
-            <Icon name="library" size={40} />
+          <div className="mb-4 flex justify-center text-text-3">
+            <Sprig className="h-12" />
           </div>
           <p>No courses yet.</p>
           <p className="mx-auto mt-1 max-w-md text-sm">
             A course is a{' '}
-            <code className="rounded bg-accent-light px-1 font-mono text-accent">.study.json</code>{' '}
+            <code className="rounded border border-border px-1 font-mono text-text-2">.study.json</code>{' '}
             file generated from your own notes. Start here and the app will give you the prompt.
           </p>
           <button
