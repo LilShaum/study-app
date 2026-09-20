@@ -170,7 +170,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
                 rows={8}
                 spellCheck={false}
                 placeholder={'{\n  "schema_version": "1.0",\n  "metadata": { … },\n  "sections": [ … ]\n}'}
-                className="w-full rounded border border-border bg-bg px-2.5 py-2 font-mono text-xs text-text focus:border-accent focus:outline-none"
+                className="w-full rounded border border-border bg-bg px-2.5 py-2 font-mono text-xs text-text focus:border-accent"
               />
             </label>
             <div className="mt-2 text-sm text-text-3">

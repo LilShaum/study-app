@@ -310,7 +310,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 rows={8}
                 spellCheck={false}
                 placeholder={'{\n  "sections": [\n    { "id": "…", "items": [ … ] }\n  ]\n}'}
-                className="w-full rounded border border-border bg-bg px-2.5 py-2 font-mono text-xs text-text focus:border-accent focus:outline-none"
+                className="w-full rounded border border-border bg-bg px-2.5 py-2 font-mono text-xs text-text focus:border-accent"
               />
             </label>
           </section>

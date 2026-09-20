@@ -116,6 +116,11 @@ const ON_TINT_PAIRS: [string, string, string][] = [
 const CONTROL_PAIRS: [string, string, string][] = [
   ['--color-border-strong', '--color-surface', 'a control outline on a card'],
   ['--color-border-strong', '--color-bg', 'a control outline on the page'],
+  // The ring is drawn outside the control, so it must clear whatever the
+  // control is sitting ON — never the control's own fill.
+  ['--color-focus', '--color-surface', 'the focus ring on a card'],
+  ['--color-focus', '--color-bg', 'the focus ring on the page'],
+  ['--color-focus', '--color-surface-raised', 'the focus ring on a raised card'],
 ];
 
 describe.each(MODES)('%s', (mode) => {

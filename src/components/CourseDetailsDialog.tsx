@@ -12,7 +12,7 @@ interface CourseDetailsDialogProps {
 }
 
 const FIELD =
-  'w-full rounded border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-3 focus:border-accent focus:outline-none';
+  'w-full rounded border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-3 focus:border-accent';
 
 /**
  * Editing a course's own details — title, code, subject, description, tags.

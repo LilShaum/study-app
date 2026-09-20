@@ -106,13 +106,37 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* A finger is not a cursor: on a touch device give small controls a
-     40px-high hit area without changing how they look on a desktop, where a
-     20px text link is perfectly clickable. */
+  /* A finger is not a cursor: on a touch device give small controls a hit
+     area without changing how they look on a desktop, where a 20px text link
+     is perfectly clickable. 44px is Apple's floor and within Material's 48dp
+     once the 8dp gap between neighbours is counted; the 40px this used to be
+     was under both. */
   @media (pointer: coarse) {
     .tap-safe {
-      min-height: 40px;
+      min-height: 44px;
     }
+  }
+
+  /* ONE focus ring, for everything.
+     Keyboard users had nothing: there was no :focus-visible rule anywhere in
+     the app, and six controls additionally cleared the browser's own outline
+     in favour of a border colour change — which is invisible to anyone who
+     cannot see the colour shift, and on a text field is indistinguishable
+     from hover. That is WCAG 2.4.7 (AA) unmet, on every control.
+     :focus-visible rather than :focus, so a mouse click does not leave a ring
+     behind; offset rather than inset, so the ring never has to contrast with
+     the control's own fill. */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+  /* An element that already has a radius keeps it, so the ring follows the
+     shape rather than boxing a rounded control in a squarer one. */
+  .rounded:focus-visible,
+  .rounded-lg:focus-visible,
+  .rounded-full:focus-visible {
+    border-radius: inherit;
   }
 
   /* Flashcard 3D flip. Tailwind v3 ships no utilities for perspective,

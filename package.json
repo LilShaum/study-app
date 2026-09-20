@@ -13,7 +13,8 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "audit": "node scripts/audit-course.mjs"
+    "audit": "node scripts/audit-course.mjs",
+    "shots": "node scripts/screenshots.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.4",

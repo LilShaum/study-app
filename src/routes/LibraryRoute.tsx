@@ -186,7 +186,7 @@ export function LibraryRoute() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search courses…"
                 aria-label="Search courses"
-                className="w-full rounded border border-border bg-surface py-2 pl-9 pr-3 text-sm text-text placeholder:text-text-3 focus:border-accent focus:outline-none"
+                className="w-full rounded border border-border bg-surface py-2 pl-9 pr-3 text-sm text-text placeholder:text-text-3 focus:border-accent"
               />
             </div>
             {allTags.length > 0 && (

@@ -56,6 +56,12 @@
   --color-accent-light: #dde3ee;
   --color-accent-border: #8ba0c4;
 
+  /* The keyboard focus ring. Drawn OUTSIDE the control (outline-offset), so
+     it lands on the page or the card rather than on the control's own fill —
+     which is what lets one colour work on a navy button and a paper card
+     alike. WCAG 1.4.11 wants 3:1 against what surrounds it. */
+  --color-focus: #2c4a7a;
+
   --color-success: #35663f;
   --color-success-hover: #2a5232;
   --color-success-bg: #dde8dc;
@@ -134,6 +140,7 @@
     --color-accent-hover: #a9c3f0;
     --color-accent-light: #1c2433;
     --color-accent-border: #43587d;
+    --color-focus: #8fb0e6;
 
     --color-success: #82c08f;
     --color-success-hover: #9bd0a6;
@@ -179,6 +186,7 @@
   --color-accent-hover: #a9c3f0;
   --color-accent-light: #1c2433;
   --color-accent-border: #43587d;
+  --color-focus: #8fb0e6;
 
   --color-success: #82c08f;
   --color-success-hover: #9bd0a6;
