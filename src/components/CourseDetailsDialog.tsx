@@ -210,14 +210,14 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
           <button
             type="button"
             onClick={onClose}
-            className="rounded border border-border px-4 py-2 text-sm text-text-2 hover:text-text"
+            className="press"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={!title.trim()}
-            className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+            className="press press-ink"
           >
             Save
           </button>

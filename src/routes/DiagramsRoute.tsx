@@ -130,7 +130,7 @@ export function DiagramsRoute() {
   if (!id) return <Navigate to="/" replace />;
   if (!course) {
     return (
-      <div className="mx-auto max-w-2xl p-6 text-center text-text-2">
+      <div className="py-6 text-center text-text-2">
         Course not found.{' '}
         <Link to="/" className="text-accent hover:underline">
           Back to Library
@@ -140,7 +140,7 @@ export function DiagramsRoute() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl p-6">
+    <div>
       <Link to={`/study/${id}`} className="text-sm text-text-2 hover:text-text">
         ← {course.metadata.title}
       </Link>

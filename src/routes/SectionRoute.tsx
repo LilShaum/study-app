@@ -43,7 +43,7 @@ export function SectionRoute() {
   const section = course ? findSection(course, sectionId) : undefined;
   if (!course || !section) {
     return (
-      <div className="mx-auto max-w-2xl p-6 text-center text-text-2">
+      <div className="py-6 text-center text-text-2">
         Section not found.{' '}
         <Link to={course ? `/study/${id}` : '/'} className="text-accent hover:underline">
           {course ? 'Back to course' : 'Back to Library'}
@@ -65,7 +65,7 @@ export function SectionRoute() {
   ];
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
+    <div>
       <Link to={`/study/${id}`} className="text-sm text-text-2 hover:text-text">
         ← {course.metadata.title}
       </Link>

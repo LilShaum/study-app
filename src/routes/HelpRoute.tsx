@@ -408,7 +408,7 @@ function ReplayWelcome() {
     <button
       type="button"
       onClick={reset}
-      className="tap-safe inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-border-strong hover:text-text"
+      className="press tap-safe"
     >
       <Icon name="bulb" size={14} />
       Show the welcome screen again
@@ -419,7 +419,7 @@ function ReplayWelcome() {
 /** "/help" — what the app does, including the parts that aren't obvious. */
 export function HelpRoute() {
   return (
-    <div className="mx-auto max-w-3xl p-6">
+    <div>
       <Link to="/" className="text-sm text-text-2 hover:text-text">
         ← Library
       </Link>

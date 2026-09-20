@@ -127,7 +127,7 @@ function LearnStageBanner({ item }: { item: { type: StudyItemType; _sectionTitle
           {LEARN_STAGES.map((s, i) => (
             <span
               key={s.key}
-              className={`h-1.5 w-6 rounded-full ${i <= stage ? 'bg-accent' : 'bg-border'}`}
+              className={`h-px w-6 ${i <= stage ? 'bg-text' : 'bg-border-strong'}`}
             />
           ))}
         </span>
@@ -243,7 +243,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         <p className="mt-2 text-text-2">{copy.text}</p>
         <Link
           to={`/study/${courseId}`}
-          className="mt-4 inline-block rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+          className="press press-ink mt-4"
         >
           Back to Course
         </Link>
@@ -286,13 +286,13 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           <button
             type="button"
             onClick={restart}
-            className="tap-safe rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+            className="press press-ink tap-safe"
           >
             Study again
           </button>
           <Link
             to={`/study/${courseId}`}
-            className="tap-safe rounded border border-border px-4 py-2 text-sm text-text-2 hover:border-border-strong hover:text-text"
+            className="press tap-safe"
           >
             Back to course
           </Link>
@@ -336,9 +336,13 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
       {/* The bar alone. Its caption said "12 / 46" directly under a bar that
           was already 26% full, and sat above a section readout and a stage
           readout — four statements of where you are before any content. */}
-      <div className="mb-4 h-1.5 w-full rounded-full bg-border">
+      {/* A rule that inks in, not a pill that fills with blue. The rounded
+          accent bar was the last painted surface in the app and read as a
+          browser download bar; a hairline whose left portion is struck in
+          full ink says the same thing in the page's own voice. */}
+      <div className="mb-4 h-px w-full bg-border-strong">
         <div
-          className="h-1.5 rounded-full bg-accent transition-all"
+          className="h-px bg-text transition-all"
           style={{ width: `${((index + 1) / items.length) * 100}%` }}
         />
       </div>
@@ -388,14 +392,14 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           type="button"
           disabled={!hasPrev}
           onClick={prev}
-          className="rounded border border-border px-4 py-1.5 text-sm text-text-2 hover:text-text disabled:opacity-40"
+          className="press"
         >
           ← Prev
         </button>
         <button
           type="button"
           onClick={handleNext}
-          className="rounded border border-border px-4 py-1.5 text-sm text-text-2 hover:text-text"
+          className="press"
         >
           {hasNext ? 'Next →' : 'Finish'}
         </button>

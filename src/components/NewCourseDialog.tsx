@@ -223,7 +223,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
             type="button"
             onClick={confirmPaste}
             disabled={!course}
-            className="rounded bg-accent px-3 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="press press-ink"
           >
             Add course
           </button>

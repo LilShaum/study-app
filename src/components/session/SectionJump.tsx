@@ -46,7 +46,7 @@ export function SectionJump({ items, mode, activeSectionId, onJump }: SectionJum
         <select
           value={activeSectionId ?? ''}
           onChange={(e) => onJump(e.target.value)}
-          className="tap-safe w-full truncate rounded border border-border bg-surface px-2 py-1 text-xs text-text-2 focus:border-accent"
+          className="field tap-safe w-full truncate text-xs text-text-2"
         >
           {sections.map((s) => (
             <option key={s.id} value={s.id}>

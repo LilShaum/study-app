@@ -159,7 +159,7 @@ export function Onboarding() {
           <button
             type="button"
             onClick={complete}
-            className="tap-safe rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+            className="press press-ink tap-safe"
           >
             Get started
           </button>
@@ -167,7 +167,7 @@ export function Onboarding() {
             <button
               type="button"
               onClick={complete}
-              className="tap-safe rounded border border-border px-4 py-2 text-sm text-text-2 hover:text-text"
+              className="press tap-safe"
             >
               Continue in the browser
             </button>
@@ -176,7 +176,7 @@ export function Onboarding() {
             <button
               type="button"
               onClick={complete}
-              className="tap-safe rounded border border-border px-4 py-2 text-sm text-text-2 hover:text-text"
+              className="press tap-safe"
             >
               Skip
             </button>

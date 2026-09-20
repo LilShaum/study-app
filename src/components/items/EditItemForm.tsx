@@ -105,7 +105,7 @@ function McqOptions({ draft, onChange }: { draft: McqDraft; onChange: (d: McqDra
               disabled={options.length <= MIN_OPTIONS}
               aria-label={`Remove option ${LETTERS[i] ?? i + 1}`}
               title={options.length <= MIN_OPTIONS ? 'A question needs at least two options' : 'Remove this option'}
-              className="mb-1.5 rounded border border-border px-2 py-1.5 text-text-3 hover:text-text disabled:opacity-40"
+              className="press mb-1.5 disabled:opacity-40"
             >
               <span aria-hidden="true">&times;</span>
             </button>
@@ -118,7 +118,7 @@ function McqOptions({ draft, onChange }: { draft: McqDraft; onChange: (d: McqDra
           type="button"
           onClick={addOption}
           disabled={options.length >= MAX_OPTIONS}
-          className="rounded border border-border px-3 py-1 text-sm text-text-2 hover:border-border-strong hover:text-text disabled:opacity-40"
+          className="press"
         >
           + Add option
         </button>
@@ -335,14 +335,14 @@ export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
       <div className="flex gap-2 pt-1">
         <button
           type="submit"
-          className="rounded bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
+          className="press press-ink"
         >
           Save
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="rounded border border-border px-4 py-1.5 text-sm text-text-2 hover:text-text"
+          className="press"
         >
           Cancel
         </button>

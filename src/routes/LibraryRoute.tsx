@@ -16,6 +16,28 @@ import { NewCourseDialog } from '@/components/NewCourseDialog';
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
 
+/**
+ * The entry's number in the contents list.
+ *
+ * Roman for the same reason a book uses it in the front matter: it numbers
+ * the entries without competing with the arabic figures in the right-hand
+ * column, which are the ones carrying information.
+ */
+function roman(n: number): string {
+  const table: [number, string][] = [
+    [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'],
+    [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I'],
+  ];
+  let out = '';
+  for (const [value, sign] of table) {
+    while (n >= value) {
+      out += sign;
+      n -= value;
+    }
+  }
+  return out;
+}
+
 /** A course's totals, aggregated from the same per-section figures the course page uses. */
 function courseTotals(course: Course, progress: Record<string, ItemResult>) {
   let total = 0;
@@ -114,34 +136,23 @@ export function LibraryRoute() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      {/* Wraps rather than squeezing: at 390px the title, the count and two
-          buttons do not fit on one line, and a row that cannot wrap shrinks
-          its children instead. */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-        <div className="flex items-baseline gap-3">
+    <div>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <div>
           <h1 className="font-display text-display font-semibold text-text">My courses</h1>
-          <span className="whitespace-nowrap text-small text-text-3">
+          <p className="mark mt-1 text-text-3">
             {isFiltering
-              ? `${filteredIds.length} of ${ids.length} course${ids.length !== 1 ? 's' : ''}`
-              : `${ids.length} course${ids.length !== 1 ? 's' : ''}`}
-          </span>
+              ? `${filteredIds.length} of ${ids.length} shown`
+              : `${ids.length} in the library`}
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded border border-border px-3 py-1.5 text-sm text-text-2 hover:border-border-strong hover:text-text"
-            onClick={() => inputRef.current?.click()}
-          >
-            <Icon name="upload" size={14} />
+        <div className="flex items-center gap-3">
+          <button type="button" className="press tap-safe" onClick={() => inputRef.current?.click()}>
+            <Icon name="upload" size={13} />
             Upload
           </button>
-          <button
-            type="button"
-            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
-            onClick={() => setCreating(true)}
-          >
-            <Icon name="plus" size={14} />
+          <button type="button" className="press press-ink tap-safe" onClick={() => setCreating(true)}>
+            <Icon name="plus" size={13} />
             New course
           </button>
         </div>
@@ -155,59 +166,66 @@ export function LibraryRoute() {
       </div>
 
       {ids.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border p-10 text-center text-text-2">
-          <div className="mb-4 flex justify-center text-text-3">
+        <div className="border-y border-border py-14 text-center text-text-2">
+          <div className="mb-5 flex justify-center text-text-3">
             <Sprig className="h-12" />
           </div>
-          <p>No courses yet.</p>
-          <p className="mx-auto mt-1 max-w-md text-sm">
+          <p className="font-display text-heading text-text">The library is empty.</p>
+          <p className="mx-auto mt-2 max-w-md text-small">
             A course is a{' '}
-            <code className="rounded border border-border px-1 font-mono text-text-2">.study.json</code>{' '}
-            file generated from your own notes. Start here and the app will give you the prompt.
+            <code className="font-mono text-text-2">.study.json</code> file generated from your own
+            notes. Start here and the app will give you the prompt.
           </p>
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="mt-4 inline-flex items-center gap-1.5 rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
+            className="press press-ink tap-safe mt-6"
           >
-            <Icon name="plus" size={14} />
+            <Icon name="plus" size={13} />
             New course
           </button>
         </div>
       ) : (
         <>
-          <div className="mb-4 space-y-3">
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-3">
-                <Icon name="search" size={14} />
-              </span>
+          {/* The apparatus of a contents page: a ruled line to write the
+              search on, and the subjects set as an index line. Both used to
+              be web furniture — a grey rounded search box and a row of
+              filled pill chips — which is the look the page was trying to
+              get away from. A selected subject is underscored, the way you
+              would mark an index entry, not filled in. */}
+          <div className="mb-7 space-y-4">
+            <label className="flex items-baseline gap-3">
+              <span className="mark shrink-0 text-text-3">Find</span>
               <input
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search courses…"
+                placeholder="title, code or subject"
                 aria-label="Search courses"
-                className="w-full rounded border border-border bg-surface py-2 pl-9 pr-3 text-sm text-text placeholder:text-text-3 focus:border-accent"
+                className="field w-full text-small"
               />
-            </div>
+            </label>
             {allTags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {allTags.map((tag) => {
+              <div className="flex flex-wrap items-baseline gap-x-1 gap-y-2">
+                <span className="mark mr-2 text-text-3">Subjects</span>
+                {allTags.map((tag, i) => {
                   const active = selectedTags.has(tag);
                   return (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => toggleTag(tag)}
-                      aria-pressed={active}
-                      className={`rounded border px-2.5 py-1 text-xs transition-colors ${
-                        active
-                          ? 'border-accent bg-accent text-white'
-                          : 'border-border text-text-2 hover:border-border-strong'
-                      }`}
-                    >
-                      {tag}
-                    </button>
+                    <span key={tag} className="flex items-baseline">
+                      <button
+                        type="button"
+                        onClick={() => toggleTag(tag)}
+                        aria-pressed={active}
+                        className={`px-0.5 text-small transition-colors ${
+                          active
+                            ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
+                            : 'text-text-2 hover:text-text hover:underline hover:underline-offset-4'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                      {i < allTags.length - 1 && <span className="ml-1 text-text-3">·</span>}
+                    </span>
                   );
                 })}
               </div>
@@ -215,39 +233,57 @@ export function LibraryRoute() {
           </div>
 
           {filteredIds.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border p-10 text-center text-text-2">
-              No matching courses. Try a different search term or clear the tag filter.
+            <div className="border-y border-border py-12 text-center text-text-2">
+              No matching courses. Try a different search term or clear the subject filter.
             </div>
           ) : (
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {filteredIds.map((id) => {
+            /* A contents list, not a card grid.
+               Two columns of shadowed, rounded, filled boxes is a dashboard
+               — and it also reads worse: the eye has to re-find the title
+               in every box. A ruled list with the figures in a right-hand
+               column lets you scan one edge, which is exactly why books
+               have set contents this way for four hundred years. */
+            <ul className="border-t border-border">
+              {filteredIds.map((id, index) => {
                 const course = courses[id];
                 const stats = courseTotals(course, allProgress[id] ?? EMPTY_PROGRESS);
                 return (
-                  <li key={id} className="group relative">
-                    <Link
-                      to={`/study/${id}`}
-                      className="flex items-center gap-4 rounded border border-border bg-surface p-4 shadow transition-colors hover:border-border-strong"
-                    >
+                  <li key={id} className="group relative border-b border-border">
+                    <Link to={`/study/${id}`} className="entry py-4 pr-8">
+                      <span className="entry-num mark text-right text-text-3">
+                        {roman(index + 1)}
+                      </span>
                       <CourseTree
                         courseId={id}
                         course={course}
                         progress={allProgress[id] ?? EMPTY_PROGRESS}
-                        className="h-20"
+                        className="entry-art h-12 w-12 sm:h-16 sm:w-16"
                         on="card"
                       />
-                      <span className="min-w-0 flex-1">
+                      <span className="entry-body min-w-0">
                         {course.metadata.course_code && (
-                          <span className="block text-micro font-medium uppercase tracking-wider text-text-3">
+                          <span className="mark block text-text-3">
                             {course.metadata.course_code}
                           </span>
                         )}
-                        <span className="block pr-6 font-display text-heading font-semibold leading-snug text-text">
-                          {course.metadata.title}
+                        {/* The leaders sit on the TITLE's baseline, so they
+                            share a line with the entry whose eye they are
+                            carrying — not the code above it. Hidden on a
+                            phone, where there is no run of empty width for
+                            them to be dots rather than a smudge. */}
+                        <span className="flex items-baseline gap-2">
+                          <span className="font-display text-heading font-semibold leading-snug text-text group-hover:text-accent">
+                            {course.metadata.title}
+                          </span>
+                          <span className="leaders hidden sm:block" aria-hidden="true" />
                         </span>
-                        <span className="mt-1.5 block text-small text-text-2">
-                          {stats.total} item{stats.total !== 1 ? 's' : ''} · {course.sections.length} section
-                          {course.sections.length !== 1 ? 's' : ''}
+                      </span>
+                      <span className="entry-figs tabular-nums">
+                        <span className="mark block text-text-2">
+                          {stats.total} item{stats.total !== 1 ? 's' : ''}
+                        </span>
+                        <span className="mark block text-text-3">
+                          {course.sections.length} section{course.sections.length !== 1 ? 's' : ''}
                           {stats.accuracy !== null && <> · {stats.accuracy}%</>}
                         </span>
                       </span>
@@ -260,7 +296,7 @@ export function LibraryRoute() {
                         e.preventDefault();
                         handleDelete(id, course.metadata.title);
                       }}
-                      className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded text-text-3 opacity-0 transition-opacity hover:bg-error-bg hover:text-error group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-70"
+                      className="absolute right-0 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center text-text-3 opacity-0 transition-opacity hover:text-error group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-60"
                     >
                       <Icon name="x" size={14} />
                     </button>

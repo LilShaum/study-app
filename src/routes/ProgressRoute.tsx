@@ -78,7 +78,7 @@ export function ProgressRoute() {
   if (!id) return <Navigate to="/" replace />;
   if (!course) {
     return (
-      <div className="mx-auto max-w-2xl p-6 text-center text-text-2">
+      <div className="py-6 text-center text-text-2">
         Course not found.{' '}
         <Link to="/" className="text-accent hover:underline">
           Back to Library
@@ -91,7 +91,7 @@ export function ProgressRoute() {
 
   if (stats.studiedCount === 0) {
     return (
-      <div className="mx-auto max-w-2xl p-10 text-center">
+      <div className="py-10 text-center">
         <Link to={`/study/${id}`} className="text-sm text-text-2 hover:text-text">
           ← Back
         </Link>
@@ -101,7 +101,7 @@ export function ProgressRoute() {
         </p>
         <Link
           to={`/study/${id}`}
-          className="mt-4 inline-block rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+          className="press press-ink mt-4"
         >
           Back to Course
         </Link>
@@ -112,7 +112,7 @@ export function ProgressRoute() {
   const lastSeenText = stats.lastSeen ? ago(stats.lastSeen) : '—';
 
   return (
-    <div className="mx-auto max-w-2xl p-6">
+    <div>
       <Link to={`/study/${id}`} className="text-sm text-text-2 hover:text-text">
         ← Back
       </Link>
