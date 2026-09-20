@@ -36,13 +36,11 @@ export function SectionJump({ items, mode, activeSectionId, onJump }: SectionJum
 
   if (!GROUPED_MODES.includes(mode) || sections.length < 2) return null;
 
-  const position = sections.findIndex((s) => s.id === activeSectionId);
-
   return (
+    // No "Section 3 of 11" beside it: the select names the section, the
+    // session already carries a progress bar and a count, and a third
+    // statement of position is not a fourth piece of information.
     <div className="mb-4 flex items-center gap-2 text-xs text-text-3">
-      <span className="shrink-0">
-        Section {position >= 0 ? position + 1 : 1} of {sections.length}
-      </span>
       <label className="min-w-0 flex-1">
         <span className="sr-only">Jump to section</span>
         <select

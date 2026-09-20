@@ -5,7 +5,8 @@ import type { Course, StudyItem } from '@/schema/course';
 import { LEARN_STAGES, learnStageIndex, type StudyMode } from '@/lib/buildSessionItems';
 import { useSessionStore } from '@/store/session';
 import { useResumeStore } from '@/store/resume';
-import { Icon } from '@/components/Icon';
+import { CourseTree } from '@/components/CourseTree';
+import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { SectionJump } from './SectionJump';
 
@@ -120,9 +121,7 @@ function LearnStageBanner({ item }: { item: { type: StudyItemType; _sectionTitle
   return (
     <div className="mb-4 rounded-lg border border-border bg-surface px-4 py-2.5">
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-text">
-          Step {stage + 1} of {LEARN_STAGES.length} · {label}
-        </span>
+        <span className="text-sm font-medium text-text">{label}</span>
         <span className="ml-auto flex gap-1" aria-hidden="true">
           {LEARN_STAGES.map((s, i) => (
             <span
@@ -132,9 +131,7 @@ function LearnStageBanner({ item }: { item: { type: StudyItemType; _sectionTitle
           ))}
         </span>
       </div>
-      <div className="mt-0.5 text-xs text-text-3">
-        {hint} · {item._sectionTitle}
-      </div>
+      <div className="mt-0.5 text-xs text-text-3">{hint}</div>
     </div>
   );
 }
@@ -142,6 +139,9 @@ function LearnStageBanner({ item }: { item: { type: StudyItemType; _sectionTitle
 /** Every mode except Browse — one item at a time. */
 export function CardSession({ courseId, course, mode, sectionId, resume = false }: CardSessionProps) {
   const navigate = useNavigate();
+  // Read after the session has recorded its results, so the tree on the
+  // finish screen is the tree this session just grew.
+  const progress = useProgressStore((s) => s.getProgress(courseId) ?? EMPTY_PROGRESS);
   const init = useSessionStore((s) => s.init);
   const items = useSessionStore((s) => s.items);
   const index = useSessionStore((s) => s.index);
@@ -254,29 +254,45 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
     const attempted = score.got + score.missed;
     const pct = attempted > 0 ? Math.round((score.got / attempted) * 100) : 100;
     return (
-      <div className="mx-auto max-w-2xl p-10 text-center">
-        <div className="flex justify-center text-success">
-          <Icon name="check-circle" size={40} />
+      /*
+       * The end of a session is where the tree pays off.
+       *
+       * It used to be a green tick, three numbers and two buttons — the one
+       * moment in the app where something has actually been earned, and the
+       * most generic screen in it. The course's own tree draws itself on
+       * here, carrying the growth this session just put into it, because a
+       * number cannot show you that a branch you had never opened is now in
+       * leaf.
+       */
+      <div className="mx-auto flex max-w-2xl flex-col items-center p-10 text-center">
+        <CourseTree
+          courseId={courseId}
+          course={course}
+          progress={progress}
+          className="h-44 sm:h-56"
+          animate
+        />
+        <h1 className="mt-5 font-display text-title font-semibold text-text">
+          {MODE_LABELS[mode]} finished
+        </h1>
+        <div className="mt-3 flex justify-center gap-5 text-small tabular-nums">
+          <span className="text-success">{score.got} correct</span>
+          <span className="text-error">{score.missed} missed</span>
+          {attempted > 0 && <span className="text-text-2">{pct}%</span>}
         </div>
-        <h1 className="mt-3 text-xl font-semibold text-text">Session Complete!</h1>
-        <div className="mt-3 flex justify-center gap-4 text-sm">
-          <span className="text-success">{score.got} Correct</span>
-          <span className="text-error">{score.missed} Missed</span>
-          {attempted > 0 && <span className="text-text-2">{pct}% Accuracy</span>}
-        </div>
-        <div className="mt-5 flex justify-center gap-3">
+        <div className="mt-6 flex justify-center gap-3">
           <button
             type="button"
             onClick={restart}
-            className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+            className="tap-safe rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
-            Study Again
+            Study again
           </button>
           <Link
             to={`/study/${courseId}`}
-            className="rounded border border-border px-4 py-2 text-sm text-text-2 hover:text-text"
+            className="tap-safe rounded border border-border px-4 py-2 text-sm text-text-2 hover:border-border-strong hover:text-text"
           >
-            Back to Course
+            Back to course
           </Link>
         </div>
       </div>
@@ -289,8 +305,13 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         <Link to={`/study/${courseId}`} className="text-sm text-text-2 hover:text-text">
           ← Back
         </Link>
-        <span className="rounded border border-border px-2.5 py-0.5 text-xs font-medium text-text-2">
-          {MODE_LABELS[mode]}
+        <span className="flex items-baseline gap-2">
+          <span className="rounded border border-border px-2.5 py-0.5 text-xs font-medium text-text-2">
+            {MODE_LABELS[mode]}
+          </span>
+          <span className="whitespace-nowrap text-xs tabular-nums text-text-3">
+            {index + 1} / {items.length}
+          </span>
         </span>
         <div className="flex gap-3 text-sm">
           <span className="text-success">✓ {score.got}</span>
@@ -298,16 +319,14 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         </div>
       </div>
 
-      <div className="mb-4">
-        <div className="h-1.5 w-full rounded-full bg-border">
-          <div
-            className="h-1.5 rounded-full bg-accent transition-all"
-            style={{ width: `${((index + 1) / items.length) * 100}%` }}
-          />
-        </div>
-        <div className="mt-1 text-xs text-text-3">
-          {index + 1} / {items.length}
-        </div>
+      {/* The bar alone. Its caption said "12 / 46" directly under a bar that
+          was already 26% full, and sat above a section readout and a stage
+          readout — four statements of where you are before any content. */}
+      <div className="mb-4 h-1.5 w-full rounded-full bg-border">
+        <div
+          className="h-1.5 rounded-full bg-accent transition-all"
+          style={{ width: `${((index + 1) / items.length) * 100}%` }}
+        />
       </div>
 
       <SectionJump items={items} mode={mode} activeSectionId={activeSectionId} onJump={jumpToSection} />

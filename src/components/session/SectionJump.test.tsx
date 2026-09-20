@@ -56,9 +56,12 @@ describe('SectionJump', () => {
       />,
     );
 
-  it('shows where you are and offers every section', () => {
+  it('offers every section, and names the one you are in', () => {
     renderJump();
-    expect(screen.getByText('Section 1 of 2')).toBeTruthy();
+    // The ordinal that used to sit beside this ("Section 1 of 2") is gone:
+    // the select already names the section, and the session carries a
+    // progress bar and a count above it.
+    expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('s1');
     expect(screen.getByRole('option', { name: 'Kinetics (2)' })).toBeTruthy();
     expect(screen.getByRole('option', { name: 'Inhibition (1)' })).toBeTruthy();
   });

@@ -46,6 +46,16 @@ interface CourseTreeProps {
   interactive?: boolean;
   /** Draw this section's limbs at full strength and dim everything else. */
   highlight?: string | null;
+  /**
+   * Draw the tree on, once, as it appears.
+   *
+   * The only animation in the app, and it is growth-shaped because that is
+   * the one thing this drawing is about: the wood inks itself in and the
+   * leaves come after it. Reserved for the end of a session, where something
+   * has actually been earned; a tree that redraws itself every time a page
+   * loads is a loading spinner with extra steps.
+   */
+  animate?: boolean;
 }
 
 /** Wood that belongs to no section — the bole and the leader — never dims. */
@@ -88,6 +98,7 @@ export function CourseTree({
   on = 'page',
   interactive = false,
   highlight = null,
+  animate = false,
 }: CourseTreeProps) {
   const [pointed, setPointed] = useState<string | null>(null);
   const active = pointed ?? highlight;
@@ -200,7 +211,7 @@ export function CourseTree({
       }
       className={`w-auto shrink-0 text-text ${
         on === 'card' ? '[&_.lf]:fill-[var(--color-surface)]' : '[&_.lf]:fill-[var(--color-bg)]'
-      } ${interactive && pointed ? 'cursor-pointer' : ''} ${className}`}
+      } ${animate ? 'tree-grow' : ''} ${interactive && pointed ? 'cursor-pointer' : ''} ${className}`}
     >
       {tree.limbs.map((limb, i) => (
         <path
@@ -211,7 +222,10 @@ export function CourseTree({
           // went to a ghost, and a tree you cannot see is not locating
           // anything.
           strokeWidth={active && limb.sectionId === active ? limb.weight * 1.5 : limb.weight}
-          className={limb.solid ? 'lf' : undefined}
+          className={limb.solid ? 'lf' : 'wd'}
+          // Normalised length, so one dash rule can draw on a path of any
+          // size without knowing how long it is.
+          pathLength={animate && !limb.solid ? 1 : undefined}
           // Only the wood is sampled: a crown's leaves are hundreds of marks
           // a few units across, and the branch running through them puts a
           // sample everywhere they are anyway.
