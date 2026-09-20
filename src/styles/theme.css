@@ -35,14 +35,27 @@
    ============================================================ */
 
 :root {
-  /* ---- the paper ---- */
-  --color-bg: #e2e0d5;
-  --color-surface: #f2f1e9;
-  --color-surface-raised: #fafaf4;
-  --color-surface-sunken: #d2cfc1;
+  /* ---- the paper ----
+     These values were set when the app was a bright card floating on a
+     tinted backdrop: `bg` was the backdrop, so it was the DARKEST light
+     tone and `surface` carried the light. Once the card came off and the
+     viewport became the sheet, the app lost its only bright surface and
+     the whole screen sat at the backdrop's mid-tone — murky rather than
+     papery, with the one surviving panel glaring off it.
 
-  --color-border: #c4c1b1;
-  --color-border-light: #d5d2c4;
+     So the stack is re-pitched around the page: `bg` is now the sheet and
+     holds the light, and the surfaces step UP from it in small increments,
+     because a card laid on paper is barely brighter than the paper. The
+     old separations were large because they had to read across a card
+     edge and a shadow; on one continuous field they only have to read as
+     a second sheet. */
+  --color-bg: #f3f1e8;
+  --color-surface: #fbf9f3;
+  --color-surface-raised: #fffefa;
+  --color-surface-sunken: #e6e3d7;
+
+  --color-border: #cfccbc;
+  --color-border-light: #dddacb;
   --color-border-strong: #6f6d5f;
 
   /* ---- the ink ---- */
@@ -106,7 +119,7 @@
   /* The tooth of the paper, drawn rather than downloaded: no image asset,
      works offline, and retints with the theme. Consumed by .paper-grain. */
   --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
-  --paper-grain-opacity: 0.5;
+  --paper-grain-opacity: 0.28;
   --paper-grain-blend: multiply;
 
   --sidebar-w: 240px;

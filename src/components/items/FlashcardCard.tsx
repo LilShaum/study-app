@@ -43,8 +43,8 @@ export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false }
   }, keyboardEnabled);
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-5 shadow">
-      <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-text-3">
+    <div className="rounded-sm border border-border-light border-t-text-3 border-t-2 bg-surface p-5 shadow sm:p-6">
+      <div className="mark mb-4 flex items-center gap-2 border-b border-border-light pb-2 text-text-3">
         Flashcard
         <DifficultyBadge difficulty={item.difficulty} />
       </div>
@@ -58,9 +58,9 @@ export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false }
               type="button"
               tabIndex={flipped ? -1 : 0}
               onClick={() => setFlipped(true)}
-              className="press press-ink"
+              className="press press-ink tap-safe"
             >
-              Flip Card
+              Flip card
             </button>
           </div>
 
@@ -78,17 +78,17 @@ export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false }
                 type="button"
                 tabIndex={flipped ? 0 : -1}
                 onClick={() => grade(true)}
-                className="rounded bg-success px-4 py-2 text-sm font-medium text-white hover:bg-success-hover"
+                className="press press-yes tap-safe"
               >
-                Got it ✓
+                Got it
               </button>
               <button
                 type="button"
                 tabIndex={flipped ? 0 : -1}
                 onClick={() => grade(false)}
-                className="rounded bg-error px-4 py-2 text-sm font-medium text-white hover:bg-error-hover"
+                className="press press-no tap-safe"
               >
-                Missed it ✗
+                Missed it
               </button>
             </div>
           </div>
