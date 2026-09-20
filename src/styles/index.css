@@ -206,6 +206,14 @@
     animation: tree-leaf 700ms ease-out 650ms both;
   }
 
+  /* A section of the tree swinging aside while another is pointed at. The
+     transform itself is set per section in CourseTree; this is only how it
+     moves, so the reduced-motion block below can neutralise it. */
+  .limb-set {
+    transform-box: view-box;
+    transition: transform 420ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
   /* Flashcard 3D flip. Tailwind v3 ships no utilities for perspective,
      transform-style or backface-visibility, so these are hand-rolled.
      The reduced-motion block below neutralises the transition. */

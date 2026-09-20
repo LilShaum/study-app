@@ -11,6 +11,7 @@ import { Icon, type IconName } from '@/components/Icon';
 import { CourseTree } from '@/components/CourseTree';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
 import { Fleuron } from '@/components/Fleuron';
+import { TreeDialog } from '@/components/TreeDialog';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
 import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
@@ -109,6 +110,7 @@ export function CourseRoute() {
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
   const [adding, setAdding] = useState<AddMode | null>(null);
   const [editingDetails, setEditingDetails] = useState(false);
+  const [treeOpen, setTreeOpen] = useState(false);
   // Indexing straight into the map keeps the selector's return reference
   // stable — a getter that built an object would change the snapshot on every
   // store read (see EMPTY_PROGRESS for the render loop that causes).
@@ -181,7 +183,15 @@ export function CourseRoute() {
       {/* Column on a phone: beside the tree the title had a third of the width
           and broke over four lines. */}
       <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:gap-8">
-        <CourseTree courseId={id} course={course} progress={progress} className="h-24 sm:h-44" interactive />
+        <CourseTree
+          courseId={id}
+          course={course}
+          progress={progress}
+          className="h-28 sm:h-52 lg:h-64"
+          interactive
+          mode="preview"
+          onExpand={() => setTreeOpen(true)}
+        />
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-display font-semibold text-text">{course.metadata.title}</h1>
           {course.metadata.description && (
@@ -376,6 +386,10 @@ export function CourseRoute() {
           );
         })}
       </ul>
+
+      {treeOpen && (
+        <TreeDialog courseId={id} course={course} progress={progress} onClose={() => setTreeOpen(false)} />
+      )}
 
       {editingDetails && (
         <CourseDetailsDialog courseId={id} course={course} onClose={() => setEditingDetails(false)} />
