@@ -416,6 +416,21 @@ function ReplayWelcome() {
 }
 
 /** "/help" — what the app does, including the parts that aren't obvious. */
+/**
+ * Scrolls a help section into view and moves focus to it.
+ *
+ * Focus matters as much as the scroll: a keyboard or screen-reader user who
+ * presses a topic button and only gets a scrolled viewport is still parked at
+ * the top of the page with the next Tab taking them back to the topic list.
+ */
+function jumpTo(id: string) {
+  const target = document.getElementById(id);
+  if (!target) return;
+  const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  target.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+  target.focus({ preventScroll: true });
+}
+
 export function HelpRoute() {
   return (
     <div className="mx-auto max-w-3xl p-6">
@@ -432,21 +447,39 @@ export function HelpRoute() {
         <ReplayWelcome />
       </div>
 
+      {/*
+        Buttons, not anchors.
+
+        These were `<a href="#prompt">`, which under a hash router is not an
+        in-page anchor at all: setting the hash to `#prompt` makes the router
+        read the route as `/prompt`, match nothing, and fall back to the
+        library. Every topic link on the help page quietly threw you out of
+        it. There is no href that means "scroll down" when the hash is
+        already carrying the route, so the jump is done directly — and it
+        moves focus as well as the scroll position, or it only works for
+        people using a mouse.
+      */}
       <nav className="mt-5 flex flex-wrap gap-2" aria-label="Help topics">
         {SECTIONS.map((s) => (
-          <a
+          <button
             key={s.id}
-            href={`#${s.id}`}
-            className="rounded border border-border bg-surface px-3 py-1 text-xs text-text-2 hover:border-border-strong hover:text-text"
+            type="button"
+            onClick={() => jumpTo(s.id)}
+            className="tap-safe rounded border border-border bg-surface px-3 py-1 text-xs text-text-2 hover:border-border-strong hover:text-text"
           >
             {s.title}
-          </a>
+          </button>
         ))}
       </nav>
 
       <div className="mt-6 space-y-6">
         {SECTIONS.map((s) => (
-          <section key={s.id} id={s.id} className="scroll-mt-20 rounded-lg border border-border bg-surface p-5">
+          <section
+            key={s.id}
+            id={s.id}
+            tabIndex={-1}
+            className="scroll-mt-20 rounded-lg border border-border bg-surface p-5"
+          >
             <h2 className="mb-2 font-display text-heading font-semibold text-text">{s.title}</h2>
             <div className="space-y-1 text-small text-text-2">{s.body}</div>
           </section>
