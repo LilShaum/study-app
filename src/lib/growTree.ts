@@ -64,125 +64,44 @@ export interface TreeSection {
   mastery: number;
 }
 
-export type Species = 'default' | 'winter' | 'banyan' | 'fig';
-
-interface SpeciesTraits {
+/**
+ * How this tree grows.
+ *
+ * One set of traits, not four. There were four "species" — Winter, Banyan,
+ * Fig and a default — and they could not be told apart, because a line
+ * drawing with no colour has only silhouette to work with and silhouette
+ * alone cannot carry a species. Six attempts produced a scribble, a fishbone,
+ * a five-pointed star and a rosette before that was accepted.
+ *
+ * The variety that matters survives and is better: every course grows its own
+ * tree, seeded from the course, and what the student has learned decides how
+ * much of it is in leaf.
+ */
+const TRAITS = {
   /** Attachment angle from vertical, at the base of the trunk and at the crown. */
-  spread: [number, number];
-  /**
-   * How a limb curves as it grows. Positive reaches back toward vertical;
-   * negative lets it fall away and droop.
-   */
-  lift: number;
+  spread: [70, 38] as [number, number],
+  /** Positive curves a limb back toward vertical as it rises. */
+  lift: 0.3,
   /**
    * Apical dominance. High means one leader dominates and the tree is
-   * conical or columnar; low means the trunk dissolves into equals and the
-   * crown spreads. This is the single parameter that most decides what
-   * species a tree reads as, and the first version did not have it.
+   * upright; low means the trunk dissolves into equals and the crown
+   * spreads.
    */
-  leader: number;
+  leader: 0.55,
   /** How many limbs come off a limb, at the coarse and fine scales. */
-  children: [number, number];
+  children: [3, 2] as [number, number],
   /** Trunk length before the crown begins. */
-  bole: [number, number];
-  /** Crown width relative to height. Above 1 is wider than tall. */
-  aspect: number;
+  bole: [84, 14] as [number, number],
   /** How many clumps of foliage a fully-known section carries. */
-  clumps: number;
+  clumps: 5,
   /** Leaves packed into one clump — this is what turns marks into mass. */
-  clumpDensity: number;
+  clumpDensity: 16,
   /** Radius of a clump, in viewBox units. */
-  clumpSize: number;
-  leafLength: number;
-  leafShape: 'simple' | 'oval';
-  /** Banyan's signature: roots dropped from the limbs toward the ground. */
-  aerialRoots?: boolean;
-  /** Winter keeps its branches bare however well you know it. */
-  bare?: boolean;
-}
-
-/**
- * Four species, not four palettes — and not one tree with four filters,
- * which is what the first attempt actually produced. Each has its own
- * architecture:
- *
- * - DEFAULT is an open vase: moderate leader, limbs reaching back up.
- * - WINTER is skeletal and upright, finely divided, and never in leaf.
- * - BANYAN spreads wider than it is tall, branches near-horizontal and
- *   drooping, and drops aerial roots from its limbs.
- * - FIG is sparse and upright, with few limbs carrying large lobed leaves.
- */
-const SPECIES: Record<Species, SpeciesTraits> = {
-  default: {
-    spread: [70, 38],
-    lift: 0.3,
-    leader: 0.55,
-    children: [3, 2],
-    bole: [84, 14],
-    aspect: 1,
-    clumps: 5,
-    clumpDensity: 16,
-    clumpSize: 11,
-    leafLength: 7.5,
-    leafShape: 'simple',
-  },
-  winter: {
-    spread: [64, 30],
-    lift: 0.34,
-    leader: 0.78,
-    children: [3, 3],
-    bole: [96, 12],
-    aspect: 0.82,
-    clumps: 0,
-    clumpDensity: 0,
-    clumpSize: 0,
-    leafLength: 4.5,
-    leafShape: 'simple',
-    bare: true,
-  },
-  banyan: {
-    // Spreading is not the same as horizontal. Attaching limbs at 80-plus
-    // degrees and then widening every child by the aspect turned this into a
-    // scribble of crossing lines; a banyan's limbs leave at a moderate angle
-    // and flatten as they run, which is what the slight negative lift does.
-    // Arching, not flat. Near-zero lift over a long limb draws a straight
-    // run, which is what put a rigid chevron through the middle of the
-    // crown; a banyan's limbs curve out and over, then the tips fall.
-    spread: [56, 46],
-    lift: 0.16,
-    leader: 0.34,
-    children: [3, 2],
-    bole: [54, 10],
-    aspect: 1.18,
-    clumps: 6,
-    clumpDensity: 20,
-    clumpSize: 12,
-    leafLength: 7,
-    leafShape: 'oval',
-    aerialRoots: true,
-  },
-  fig: {
-    spread: [56, 34],
-    lift: 0.24,
-    leader: 0.54,
-    children: [3, 2],
-    bole: [74, 12],
-    aspect: 1.05,
-    // Few and large, which is what distinguishes a fig from the default's
-    // many small leaves and the banyan's dense medium ones.
-    //
-    // It used to draw a lobed fig leaf and no longer does. Three attempts
-    // produced a five-pointed star, then a rosette, then crumpled paper: at
-    // the ~19px a leaf actually renders at, lobe geometry has no room to
-    // read, and a shape that is only identifiable at 4x zoom is not doing a
-    // job here. Cut rather than iterated on further.
-    clumps: 3,
-    clumpDensity: 9,
-    clumpSize: 13,
-    leafLength: 13,
-    leafShape: 'oval',
-  },
+  clumpSize: 11,
+  leafLength: 7.5,
 };
+
+type SpeciesTraits = typeof TRAITS;
 
 /** Cheap, stable string hash — the same course id always seeds the same tree. */
 function hashSeed(s: string): number {
@@ -273,7 +192,6 @@ function taperedLimb(points: Pt[], from: number, to: number, kind: LimbKind, sec
  * than the other is the difference between a leaf and a lens.
  */
 function leafPath(
-  shape: 'simple' | 'oval',
   at: Pt,
   angle: number,
   length: number,
@@ -288,10 +206,9 @@ function leafPath(
   });
   const P = (p: Pt) => `${round(p.x)} ${round(p.y)}`;
 
-  // simple = a narrow pointed leaf; oval = broad and blunt, banyan's habit.
-  const belly = shape === 'oval' ? 0.42 + rand() * 0.08 : 0.3 + rand() * 0.08;
-  const tipU = shape === 'oval' ? 0.94 : 1;
-  const shoulder = shape === 'oval' ? 0.42 : 0.5;
+  const belly = 0.32 + rand() * 0.1;
+  const tipU = 0.97 + rand() * 0.03;
+  const shoulder = 0.46 + rand() * 0.08;
   const skew = 0.66 + rand() * 0.2;
   return (
     `M${P(to(0, 0))}` +
@@ -405,8 +322,8 @@ function grow(
  * you have never opened is a bare branch, and that is the honest signal the
  * picture exists to give.
  */
-export function growTree(seed: string, sections: TreeSection[], species: Species = 'default'): Tree {
-  const traits = SPECIES[species];
+export function growTree(seed: string, sections: TreeSection[]): Tree {
+  const traits = TRAITS;
   const rand = rng(hashSeed(seed));
   const width = 200;
   const height = 260;
@@ -477,7 +394,7 @@ export function growTree(seed: string, sections: TreeSection[], species: Species
     // instead of a triangle.
     const spread = traits.spread[0] + (traits.spread[1] - traits.spread[0]) * t;
     const angle = side * (spread + (rand() - 0.5) * 16) * RAD;
-    const length = (30 + 18 * vigour) * (1.2 - 0.45 * t) * traits.aspect;
+    const length = (30 + 18 * vigour) * (1.2 - 0.45 * t);
 
     const anchors: Anchor[] = [];
     grow(
@@ -507,29 +424,36 @@ export function growTree(seed: string, sections: TreeSection[], species: Species
     3,
   );
 
-  /* ---- banyan's signature: roots let down from the limbs ----
-     A structural feature rather than a parameter tweak, and the reason a
-     banyan is recognisable across a room. They hang from the outer limbs,
-     and the longest reach the ground and thicken into props. ---- */
-  if (traits.aerialRoots) {
-    const hosts = [...anchorsBySection.values()].flat();
-    const count = Math.min(9, 4 + Math.floor(rand() * 5));
-    for (let k = 0; k < count; k++) {
-      const host = hosts[Math.floor(rand() * hosts.length)];
-      if (!host) break;
-      const reach = baseY - host.at.y;
-      if (reach < 24) continue;
-      const drop = reach * (0.25 + rand() * 0.6);
-      const grounded = drop > reach * 0.92;
-      const pts: Pt[] = [host.at];
-      const STEPS = 4;
-      for (let i = 1; i <= STEPS; i++) {
-        pts.push({
-          x: host.at.x + Math.sin(i * 1.3 + rand()) * 1.6 + (rand() - 0.5) * 1.2,
-          y: host.at.y + (drop / STEPS) * i,
+  /* ---- the leader's share of the canopy ----
+     It belongs to no section, so the per-section loop below never reached it
+     and the top of every crown was left as a bare spike poking through the
+     leaves. It leafs with the course's overall progress. ---- */
+  const overall = sections.length
+    ? sections.reduce((n, x) => n + Math.max(0, Math.min(1, x.mastery)), 0) / sections.length
+    : 0;
+  if (overall > 0 && leaderAnchors.length) {
+    const order = leaderAnchors.map((a, n) => ({ a, k: rand(), n })).sort((x, y) => x.k - y.k);
+    const clumps = Math.max(1, Math.round(overall * Math.max(2, leaderAnchors.length / 3)));
+    for (let c = 0; c < clumps; c++) {
+      const host = order[c % order.length].a;
+      const spreadR = traits.clumpSize * (0.7 + rand() * 0.5);
+      const leaves = traits.clumpDensity + Math.floor(rand() * traits.clumpDensity * 0.6);
+      for (let k = 0; k < leaves; k++) {
+        const fill = Math.sqrt(rand());
+        const r = spreadR * fill * (0.6 + rand() * 0.7);
+        const theta = rand() * Math.PI * 2;
+        limbs.push({
+          d: leafPath(
+            { x: host.at.x + Math.cos(theta) * r, y: host.at.y + Math.sin(theta) * r * 0.85 },
+            theta + Math.PI / 2 + (rand() - 0.5) * 2.4,
+            traits.leafLength * (0.5 + fill * 0.5 + rand() * 0.4),
+            rand,
+          ),
+          weight: 0.7,
+          kind: 'leaf',
+          solid: true,
         });
       }
-      limbs.push(...taperedLimb(pts, grounded ? 1.3 : 0.7, grounded ? 1.5 : 0.45, 'twig'));
     }
   }
 
@@ -546,26 +470,12 @@ export function growTree(seed: string, sections: TreeSection[], species: Species
     const mastery = Math.max(0, Math.min(1, section.mastery));
     if (mastery <= 0) return;
 
-    if (traits.bare) {
-      // Winter shows study as buds on bare wood — never a canopy.
-      const buds = Math.round(mastery * Math.min(7, anchors.length));
-      for (let k = 0; k < buds; k++) {
-        const host = anchors[Math.floor(rand() * anchors.length)];
-        limbs.push({
-          d: leafPath('simple', host.at, host.angle + (rand() - 0.5) * 1.1, traits.leafLength * 0.6, rand),
-          weight: 0.8,
-          kind: 'leaf',
-          solid: true,
-          sectionId: section.id,
-        });
-      }
-      return;
-    }
-
-    // Clumps are seeded from the outer anchors, so foliage sits where the
-    // twigs are rather than floating in the crown.
+    // Clumps sit ON the anchors — the twig tips — so the canopy covers the
+    // wood that made it rather than floating near it, and it scales with how
+    // much wood there is. Taking anchors in a shuffled order without repeats
+    // spreads the crown instead of piling several clumps on one twig.
     const order = anchors.map((a, n) => ({ a, k: rand(), n })).sort((x, y) => x.k - y.k);
-    const clumps = Math.max(1, Math.round(mastery * traits.clumps));
+    const clumps = Math.max(1, Math.round(mastery * Math.max(traits.clumps, anchors.length / 3)));
     for (let c = 0; c < clumps; c++) {
       const host = order[c % order.length].a;
       const spreadR = traits.clumpSize * (0.75 + rand() * 0.55);
@@ -573,7 +483,8 @@ export function growTree(seed: string, sections: TreeSection[], species: Species
       for (let k = 0; k < leaves; k++) {
         // Pack toward the centre so a clump has a dense middle and a ragged
         // edge, the way a mass of leaves actually reads.
-        const r = spreadR * Math.sqrt(rand()) * (0.55 + rand() * 0.75);
+        const fill = Math.sqrt(rand());
+        const r = spreadR * fill * (0.6 + rand() * 0.7);
         const theta = rand() * Math.PI * 2;
         const at = {
           x: host.at.x + Math.cos(theta) * r,
@@ -581,12 +492,13 @@ export function growTree(seed: string, sections: TreeSection[], species: Species
         };
         limbs.push({
           d: leafPath(
-            traits.leafShape,
             at,
             // Leaves in a clump fan outward from its centre, with enough
             // scatter that no two sit parallel.
             theta + Math.PI / 2 + (rand() - 0.5) * 2.4,
-            traits.leafLength * (0.62 + rand() * 0.6),
+            // Larger toward the outside of a clump: the big leaves draw the
+            // silhouette, the small ones pack the shaded core.
+            traits.leafLength * (0.5 + fill * 0.5 + rand() * 0.4),
             rand,
           ),
           weight: 0.7,

@@ -99,14 +99,6 @@ describe('growTree — what study changes', () => {
     expect(withSection.size).toBe(6);
   });
 
-  it('keeps winter bare — it shows study as buds, never leaves', () => {
-    const summer = growTree('bioc301', sections(9, 1), 'banyan');
-    const winter = growTree('bioc301', sections(9, 1), 'winter');
-    const leafCount = (t: ReturnType<typeof growTree>) => t.limbs.filter((l) => l.kind === 'leaf').length;
-    expect(leafCount(winter)).toBeGreaterThan(0);
-    expect(leafCount(winter)).toBeLessThan(leafCount(summer) / 3);
-  });
-
   it('survives a course with one section, and with none', () => {
     expect(() => growTree('x', sections(1, 1))).not.toThrow();
     expect(growTree('x', []).limbs.length).toBeGreaterThan(0);
@@ -139,10 +131,5 @@ describe('growTree — foliage is mass, not decoration', () => {
     expect(firstLeaf).toBeGreaterThan(lastWood);
   });
 
-  it('keeps winter skeletal at full mastery — a handful of buds, never a canopy', () => {
-    const winter = growTree('bioc301', sections(9, 1), 'winter').limbs.filter((l) => l.kind === 'leaf');
-    const summer = growTree('bioc301', sections(9, 1), 'banyan').limbs.filter((l) => l.kind === 'leaf');
-    expect(winter.length).toBeLessThan(80);
-    expect(summer.length).toBeGreaterThan(winter.length * 5);
-  });
+
 });

@@ -61,6 +61,33 @@
 }
 
 @layer components {
+  /* ---- the tooth of the paper ----
+     Drawn by a filter rather than shipped as an image: nothing to download,
+     nothing to precache, and it retints with the theme. Sits above the
+     background and below everything else, and never eats a click. */
+  .paper-grain {
+    position: relative;
+  }
+  .paper-grain::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: var(--paper-grain);
+    opacity: var(--paper-grain-opacity);
+    mix-blend-mode: var(--paper-grain-blend);
+  }
+  .paper-grain > * {
+    position: relative;
+    z-index: 1;
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .paper-grain::before {
+      display: none;
+    }
+  }
+
   /* ---- display cutouts ----
      index.html opts into the cutout area with `viewport-fit=cover`, which is
      what lets the themed background reach the screen edges. The cost is that

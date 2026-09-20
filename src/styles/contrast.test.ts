@@ -50,24 +50,12 @@ function block(selector: string): Record<string, string> {
   return Object.assign({}, ...hit.map((r) => r.decls));
 }
 
-export type Tree = 'default' | 'winter' | 'banyan' | 'fig';
 export type Mode = 'light' | 'dark';
 
-/**
- * The palette a browser would actually compute for one tree/mode pair.
- *
- * Applied in cascade order: base, then the dark overrides, then the tree's
- * own light values, then the tree's dark values. That mirrors the file, where
- * the tree blocks come after the dark block at equal specificity and the
- * `[data-tree][data-theme]` pair outranks both.
- */
-export function palette(tree: Tree, mode: Mode): Record<string, string> {
+/** The palette a browser would actually compute, in cascade order. */
+export function palette(mode: Mode): Record<string, string> {
   let p = { ...block(':root') };
   if (mode === 'dark') p = { ...p, ...block(":root[data-theme='dark']") };
-  if (tree !== 'default') {
-    p = { ...p, ...block(`:root[data-tree='${tree}']`) };
-    p = { ...p, ...block(`:root[data-tree='${tree}'][data-theme='${mode}']`) };
-  }
   return p;
 }
 
@@ -90,7 +78,6 @@ export function contrast(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-const TREES: Tree[] = ['default', 'winter', 'banyan', 'fig'];
 const MODES: Mode[] = ['light', 'dark'];
 
 /** Text pairs, at AA for body text. */
@@ -131,9 +118,9 @@ const CONTROL_PAIRS: [string, string, string][] = [
   ['--color-border-strong', '--color-bg', 'a control outline on the page'],
 ];
 
-describe.each(TREES)('%s', (tree) => {
-  describe.each(MODES)('%s', (mode) => {
-    const p = palette(tree, mode);
+describe.each(MODES)('%s', (mode) => {
+  {
+    const p = palette(mode);
     const ratio = (a: string, b: string) => contrast(p[a], p[b]);
 
     it.each(TEXT_PAIRS)('%s vs %s — %s reaches AA (4.5:1)', (fg, bg) => {
@@ -147,5 +134,5 @@ describe.each(TREES)('%s', (tree) => {
     it.each(CONTROL_PAIRS)('%s vs %s — %s reaches 3:1', (fg, bg) => {
       expect(ratio(fg, bg)).toBeGreaterThanOrEqual(3);
     });
-  });
+  }
 });

@@ -51,13 +51,9 @@ const block = (selector) => {
   return Object.assign({}, ...hit.map((r) => r.decls));
 };
 
-const palette = (tree, mode) => {
+const palette = (mode) => {
   let p = { ...block(':root') };
   if (mode === 'dark') p = { ...p, ...block(":root[data-theme='dark']") };
-  if (tree !== 'default') {
-    p = { ...p, ...block(`:root[data-tree='${tree}']`) };
-    p = { ...p, ...block(`:root[data-tree='${tree}'][data-theme='${mode}']`) };
-  }
   return p;
 };
 
@@ -100,9 +96,9 @@ const PAIRS = [
 
 const onlyFails = process.argv.includes('--fails');
 let failures = 0;
-for (const tree of ['default', 'winter', 'banyan', 'fig']) {
-  for (const mode of ['light', 'dark']) {
-    const p = palette(tree, mode);
+for (const mode of ['light', 'dark']) {
+  {
+    const p = palette(mode);
     const rows = PAIRS.map(([fg, bg, min, label]) => {
       const missing = !p[fg] || !p[bg];
       const r = missing ? 0 : ratio(p[fg], p[bg]);
@@ -112,7 +108,7 @@ for (const tree of ['default', 'winter', 'banyan', 'fig']) {
     });
     const shown = onlyFails ? rows.filter((x) => !x.ok) : rows;
     if (!shown.length) continue;
-    console.log(`\n${tree}/${mode}`);
+    console.log(`\n${mode}`);
     for (const x of shown) {
       const mark = x.ok ? ' ok ' : 'FAIL';
       const val = x.missing ? 'missing token' : `${x.r.toFixed(2)}:1 (needs ${x.min})`;
@@ -120,5 +116,5 @@ for (const tree of ['default', 'winter', 'banyan', 'fig']) {
     }
   }
 }
-console.log(`\n${failures} failing pair(s) across 8 theme/mode combinations.`);
+console.log(`\n${failures} failing pair(s) across both modes.`);
 process.exit(failures ? 1 : 0);

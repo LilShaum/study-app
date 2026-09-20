@@ -3,46 +3,37 @@ import { persist } from 'zustand/middleware';
 import { safeJSONStorage } from '@/lib/safeStorage';
 
 export type ThemeMode = 'light' | 'dark' | null;
-export type TreeName = 'winter' | 'banyan' | 'fig' | null;
-
-export interface TreeInfo {
-  value: TreeName;
-  name: string;
-  desc: string;
-}
-
-/** Cycle order + display copy, ported from the vanilla TreeTheme.LABELS. */
-export const TREE_THEMES: readonly TreeInfo[] = [
-  { value: null, name: 'Default', desc: 'Classic indigo' },
-  { value: 'winter', name: 'Winter', desc: 'Icy slate blue' },
-  { value: 'banyan', name: 'Banyan', desc: 'Forest green' },
-  { value: 'fig', name: 'Fig', desc: 'Deep purple' },
-];
 
 interface ThemeState {
+  /** null follows the operating system. */
   mode: ThemeMode;
-  tree: TreeName;
   setMode: (mode: ThemeMode) => void;
-  setTree: (tree: TreeName) => void;
-  cycleTree: () => TreeName;
 }
 
+/**
+ * Light or dark, and nothing else.
+ *
+ * This used to carry a `tree` as well — Winter, Banyan, Fig or the default —
+ * four palettes named after four trees the app could not actually draw
+ * differently. Choosing between them was a decision asked of the student for
+ * no gain. The one palette that replaced them gets the care those four were
+ * splitting, and the variety moved somewhere it means something: every course
+ * grows its own tree.
+ *
+ * A stored `tree` from the old build is simply ignored rather than migrated.
+ * It only ever selected a palette that no longer exists, and nothing a
+ * student made is lost by dropping it.
+ */
 export const useThemeStore = create<ThemeState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       mode: null,
-      tree: null,
-
       setMode: (mode) => set({ mode }),
-      setTree: (tree) => set({ tree }),
-
-      cycleTree: () => {
-        const idx = TREE_THEMES.findIndex((t) => t.value === get().tree);
-        const next = TREE_THEMES[(idx + 1) % TREE_THEMES.length].value;
-        set({ tree: next });
-        return next;
-      },
     }),
-    { name: 'arborous:theme', storage: safeJSONStorage },
+    {
+      name: 'arborous:theme',
+      storage: safeJSONStorage,
+      partialize: (state) => ({ mode: state.mode }),
+    },
   ),
 );

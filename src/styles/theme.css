@@ -1,75 +1,84 @@
 /* ============================================================
-   THEME TOKENS — the single source of truth for colour, type and
-   surface. Tailwind's semantic classes (bg-surface, text-text-2,
-   ...) reference these (see tailwind.config.ts), so every utility
-   responds automatically to [data-theme] and [data-tree] on <html>.
+   THEME TOKENS — one identity, two modes.
 
-   Three rules hold across every theme below:
+   Arborous is a botanical plate: cool ink printed on laid paper.
+   Warm grey-green stock, blue-black line work, and a single indigo
+   accent used sparingly. Dark mode is the same plate pulled on dark
+   stock, not an inverted website.
 
-   1. FOUR SURFACE LEVELS, not one. `bg` is the page, `surface` is a
-      card, `surface-raised` is a card that outranks its neighbours,
-      `surface-sunken` is an inset well. One surface token was why
-      every block in the app rendered as the same object.
+   This replaced four tree "themes" (Winter, Banyan, Fig, Default).
+   They were four palettes competing for attention, and the trees they
+   were named after could not be told apart anyway — a line drawing with
+   no colour has only silhouette to work with, which cannot carry a
+   species. Two palettes get the care that eight could not, and the
+   variety now comes from the courses themselves: every course grows its
+   own tree, seeded from the course.
 
-   2. STATUS COLOURS BELONG TO THEIR THEME. success/error/warning are
-      declared per tree, not once globally. Borrowing one green for a
-      parchment world and an ice world is the loudest tell that a
-      palette was assembled rather than designed.
+   The ink is deliberately cool against warm paper. A first pass had warm
+   cream under warm brown ink with a terracotta accent, which is the
+   palette generated interfaces land on by reflex — recognisably a
+   default rather than a decision, and flat besides, since warm on warm
+   gives the ink nothing to push against.
 
-   3. EVERY PAIR MEETS WCAG AA. src/styles/contrast.test.ts asserts it
-      for all four trees in both modes; `node scripts/contrast-report.mjs`
-      prints the table while tuning. Before that existed, 33 of 72 pairs
-      failed and every one had been shipped past by eye.
+   Rules that hold in both modes:
+
+   1. FOUR SURFACE LEVELS. `bg` is the paper, `surface` is a card laid on
+      it, `surface-raised` outranks its neighbours, `surface-sunken` is an
+      inset well. One surface token was why every block in the app
+      rendered as the same object.
+   2. A hairline between two surfaces is decorative; the outline of a
+      CONTROL carries meaning and needs 3:1 (WCAG 1.4.11). Hence
+      `border` and `border-strong`.
+   3. EVERY PAIR MEETS WCAG AA. src/styles/contrast.test.ts asserts it for
+      both modes; `node scripts/contrast-report.mjs` prints the table
+      while tuning.
    ============================================================ */
 
 :root {
-  /* ---- surfaces ---- */
-  --color-bg: #f6f4ef;
-  --color-surface: #fffdf9;
-  --color-surface-raised: #ffffff;
-  --color-surface-sunken: #eeebe2;
+  /* ---- the paper ---- */
+  --color-bg: #e2e0d5;
+  --color-surface: #f2f1e9;
+  --color-surface-raised: #fafaf4;
+  --color-surface-sunken: #d2cfc1;
 
-  /* A hairline separating two surfaces is decorative; the outline of a
-     control carries meaning and needs 3:1 (WCAG 1.4.11). Two tokens. */
-  --color-border: #dcd7c9;
-  --color-border-light: #e9e5d9;
-  --color-border-strong: #7d7665;
+  --color-border: #c4c1b1;
+  --color-border-light: #d5d2c4;
+  --color-border-strong: #6f6d5f;
 
-  --color-text: #17150f;
-  --color-text-2: #474235;
-  --color-text-3: #67604f;
+  /* ---- the ink ---- */
+  --color-text: #1b1d1f;
+  --color-text-2: #45484b;
+  --color-text-3: #585c5f;
 
-  --color-accent: #3d3a86;
-  --color-accent-hover: #2f2c68;
-  --color-accent-light: #e7e5f3;
-  --color-accent-border: #9e99cd;
+  /* ---- the plate mark ---- */
+  --color-accent: #2c4a7a;
+  --color-accent-hover: #1f3861;
+  --color-accent-light: #dde3ee;
+  --color-accent-border: #8ba0c4;
 
-  --color-success: #3c6630;
-  --color-success-hover: #2f5226;
-  --color-success-bg: #e6eedc;
-  --color-error: #9a3120;
-  --color-error-hover: #7e2718;
-  --color-error-bg: #f7e4df;
-  --color-warning: #77500b;
-  --color-warning-bg: #f4ead2;
+  --color-success: #35663f;
+  --color-success-hover: #2a5232;
+  --color-success-bg: #dde8dc;
+  --color-error: #9c3030;
+  --color-error-hover: #7e2626;
+  --color-error-bg: #f0dede;
+  --color-warning: #6f5410;
+  --color-warning-bg: #ece0c4;
 
-  --color-easy: #3c6630;
-  --color-easy-bg: #e6eedc;
-  --color-medium: #77500b;
-  --color-medium-bg: #f4ead2;
-  --color-hard: #9a3120;
-  --color-hard-bg: #f7e4df;
+  --color-easy: #35663f;
+  --color-easy-bg: #dde8dc;
+  --color-medium: #6f5410;
+  --color-medium-bg: #ece0c4;
+  --color-hard: #9c3030;
+  --color-hard-bg: #f0dede;
 
   /* ---- type ----
      A display face carries the identity; the UI stays on the system
-     stack, which costs no bytes and renders instantly. Fraunces is
-     variable, so weight and optical size are free. */
+     stack, which costs no bytes and renders instantly. */
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
   --font-mono: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
 
-  /* A real scale. Everything used to be 14px or 12px, which is why the
-     page had no hierarchy for the eye to grab. */
   --text-display: 2rem;
   --text-title: 1.5rem;
   --text-heading: 1.125rem;
@@ -77,12 +86,22 @@
   --text-small: 0.875rem;
   --text-micro: 0.75rem;
 
-  --radius: 10px;
-  --radius-sm: 6px;
-  --radius-lg: 14px;
+  /* Paper is cut, not rounded off. Tight radii read as a trimmed edge;
+     the pill shapes a default UI kit reaches for read as plastic. */
+  --radius: 4px;
+  --radius-sm: 3px;
+  --radius-lg: 6px;
 
-  --shadow: 0 1px 2px rgba(41, 37, 28, 0.06), 0 1px 3px rgba(41, 37, 28, 0.05);
-  --shadow-md: 0 2px 4px rgba(41, 37, 28, 0.06), 0 8px 20px rgba(41, 37, 28, 0.09);
+  /* A sheet lying on another sheet: a hairline under it and a hard offset
+     beside it, rather than the soft ambient blur of a floating panel. */
+  --shadow: 0 1px 0 var(--color-border), 2px 3px 0 -1px rgba(27, 29, 31, 0.07);
+  --shadow-md: 0 1px 0 var(--color-border), 4px 6px 0 -2px rgba(27, 29, 31, 0.1);
+
+  /* The tooth of the paper, drawn rather than downloaded: no image asset,
+     works offline, and retints with the theme. Consumed by .paper-grain. */
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  --paper-grain-opacity: 0.5;
+  --paper-grain-blend: multiply;
 
   --sidebar-w: 240px;
   --header-h: 56px;
@@ -90,440 +109,96 @@
   color-scheme: light;
 }
 
-/* ---- DEFAULT, DARK ----
-   Applies when the OS prefers dark and there's no manual override, or
-   when the user has toggled dark mode via [data-theme]. The two blocks
-   carry identical values; only their triggers differ. */
+/* ---- DARK: the same plate on dark stock ----
+   Applies when the OS prefers dark and there is no manual override, or
+   when the user has toggled it. The two blocks carry identical values;
+   only their triggers differ. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
 
-    --color-bg: #13120e;
-    --color-surface: #1b1915;
-    --color-surface-raised: #232019;
-    --color-surface-sunken: #0e0d0a;
+    --color-bg: #15171a;
+    --color-surface: #1d2024;
+    --color-surface-raised: #262a2f;
+    --color-surface-sunken: #0f1113;
 
-    --color-border: #35312a;
-    --color-border-light: #2a2721;
-    --color-border-strong: #6e6757;
+    --color-border: #333840;
+    --color-border-light: #262a30;
+    --color-border-strong: #767d88;
 
-    --color-text: #f2efe5;
-    --color-text-2: #c2bcab;
-    --color-text-3: #928b79;
+    --color-text: #e8e9ea;
+    --color-text-2: #b2b7bd;
+    --color-text-3: #939aa1;
 
-    --color-accent: #aca5f2;
-    --color-accent-hover: #c3bdff;
-    --color-accent-light: #24214a;
-    --color-accent-border: #4b4593;
+    --color-accent: #8fb0e6;
+    --color-accent-hover: #a9c3f0;
+    --color-accent-light: #1c2433;
+    --color-accent-border: #43587d;
 
-    --color-success: #8cc478;
-    --color-success-hover: #a3d691;
-    --color-success-bg: #1b2a15;
-    --color-error: #ea8b76;
-    --color-error-hover: #f3a38f;
-    --color-error-bg: #351810;
-    --color-warning: #dcae46;
-    --color-warning-bg: #302307;
+    --color-success: #82c08f;
+    --color-success-hover: #9bd0a6;
+    --color-success-bg: #16261a;
+    --color-error: #ef8f84;
+    --color-error-hover: #f5a79e;
+    --color-error-bg: #2e1614;
+    --color-warning: #d8b25c;
+    --color-warning-bg: #2a2008;
 
-    --color-easy: #8cc478;
-    --color-easy-bg: #1b2a15;
-    --color-medium: #dcae46;
-    --color-medium-bg: #302307;
-    --color-hard: #ea8b76;
-    --color-hard-bg: #351810;
+    --color-easy: #82c08f;
+    --color-easy-bg: #16261a;
+    --color-medium: #d8b25c;
+    --color-medium-bg: #2a2008;
+    --color-hard: #ef8f84;
+    --color-hard-bg: #2e1614;
 
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.55);
+    --shadow: 0 1px 0 #0f1113, 2px 3px 0 -1px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 1px 0 #0f1113, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
+
+    /* Grain has to lighten on dark stock, or it just muddies it. */
+    --paper-grain-opacity: 0.16;
+    --paper-grain-blend: screen;
   }
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --color-bg: #13120e;
-  --color-surface: #1b1915;
-  --color-surface-raised: #232019;
-  --color-surface-sunken: #0e0d0a;
+  --color-bg: #15171a;
+  --color-surface: #1d2024;
+  --color-surface-raised: #262a2f;
+  --color-surface-sunken: #0f1113;
 
-  --color-border: #35312a;
-  --color-border-light: #2a2721;
-  --color-border-strong: #6e6757;
+  --color-border: #333840;
+  --color-border-light: #262a30;
+  --color-border-strong: #767d88;
 
-  --color-text: #f2efe5;
-  --color-text-2: #c2bcab;
-  --color-text-3: #928b79;
+  --color-text: #e8e9ea;
+  --color-text-2: #b2b7bd;
+  --color-text-3: #939aa1;
 
-  --color-accent: #aca5f2;
-  --color-accent-hover: #c3bdff;
-  --color-accent-light: #24214a;
-  --color-accent-border: #4b4593;
+  --color-accent: #8fb0e6;
+  --color-accent-hover: #a9c3f0;
+  --color-accent-light: #1c2433;
+  --color-accent-border: #43587d;
 
-  --color-success: #8cc478;
-  --color-success-hover: #a3d691;
-  --color-success-bg: #1b2a15;
-  --color-error: #ea8b76;
-  --color-error-hover: #f3a38f;
-  --color-error-bg: #351810;
-  --color-warning: #dcae46;
-  --color-warning-bg: #302307;
+  --color-success: #82c08f;
+  --color-success-hover: #9bd0a6;
+  --color-success-bg: #16261a;
+  --color-error: #ef8f84;
+  --color-error-hover: #f5a79e;
+  --color-error-bg: #2e1614;
+  --color-warning: #d8b25c;
+  --color-warning-bg: #2a2008;
 
-  --color-easy: #8cc478;
-  --color-easy-bg: #1b2a15;
-  --color-medium: #dcae46;
-  --color-medium-bg: #302307;
-  --color-hard: #ea8b76;
-  --color-hard-bg: #351810;
+  --color-easy: #82c08f;
+  --color-easy-bg: #16261a;
+  --color-medium: #d8b25c;
+  --color-medium-bg: #2a2008;
+  --color-hard: #ef8f84;
+  --color-hard-bg: #2e1614;
 
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.55);
-}
+  --shadow: 0 1px 0 #0f1113, 2px 3px 0 -1px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 1px 0 #0f1113, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
 
-/* ============================================================
-   TREE THEMES — [data-tree] on <html> replaces the whole palette,
-   status colours included, so each is a coherent world rather than
-   a different button colour.
-   ============================================================ */
-
-/* ---- WINTER — bare branches, ice, cold light.
-   Accent is a glacier blue; growth reads as a cold pine, and the
-   warning ochre is pulled toward the cold end so nothing looks
-   borrowed from a warmer theme. ---- */
-:root[data-tree='winter'],
-:root[data-tree='winter'][data-theme='light'] {
-  --color-bg: #eef3f8;
-  --color-surface: #fdfeff;
-  --color-surface-raised: #ffffff;
-  --color-surface-sunken: #e1e9f1;
-
-  --color-border: #c2d2e2;
-  --color-border-light: #d7e3ee;
-  --color-border-strong: #6c8098;
-
-  --color-text: #12202e;
-  --color-text-2: #3b5266;
-  --color-text-3: #566e85;
-
-  --color-accent: #1f5b9e;
-  --color-accent-hover: #164a84;
-  --color-accent-light: #dbe8f6;
-  --color-accent-border: #8fb4d8;
-
-  --color-success: #1f6350;
-  --color-success-hover: #17513f;
-  --color-success-bg: #dcece6;
-  --color-error: #a02f3d;
-  --color-error-hover: #85242f;
-  --color-error-bg: #f7e2e5;
-  --color-warning: #785310;
-  --color-warning-bg: #f3ead4;
-
-  --color-easy: #1f6350;
-  --color-easy-bg: #dcece6;
-  --color-medium: #785310;
-  --color-medium-bg: #f3ead4;
-  --color-hard: #a02f3d;
-  --color-hard-bg: #f7e2e5;
-
-  --shadow: 0 1px 2px rgba(18, 32, 46, 0.07), 0 1px 3px rgba(18, 32, 46, 0.05);
-  --shadow-md: 0 2px 4px rgba(18, 32, 46, 0.07), 0 8px 20px rgba(18, 32, 46, 0.1);
-}
-@media (prefers-color-scheme: dark) {
-  :root[data-tree='winter']:not([data-theme='light']) {
-    --color-bg: #080e16;
-    --color-surface: #0f1a26;
-    --color-surface-raised: #16232f;
-    --color-surface-sunken: #060a11;
-
-    --color-border: #21364a;
-    --color-border-light: #18293a;
-    --color-border-strong: #587690;
-
-    --color-text: #dde9f6;
-    --color-text-2: #a8bfd4;
-    --color-text-3: #8099b0;
-
-    --color-accent: #8dc0f5;
-    --color-accent-hover: #a9d2ff;
-    --color-accent-light: #0c2038;
-    --color-accent-border: #1f4a80;
-
-    --color-success: #6fc4a6;
-    --color-success-hover: #8ad5ba;
-    --color-success-bg: #08241d;
-    --color-error: #f08a95;
-    --color-error-hover: #f7a3ac;
-    --color-error-bg: #33121a;
-    --color-warning: #dfae4e;
-    --color-warning-bg: #2d2208;
-
-    --color-easy: #6fc4a6;
-    --color-easy-bg: #08241d;
-    --color-medium: #dfae4e;
-    --color-medium-bg: #2d2208;
-    --color-hard: #f08a95;
-    --color-hard-bg: #33121a;
-  }
-}
-:root[data-tree='winter'][data-theme='dark'] {
-  --color-bg: #080e16;
-  --color-surface: #0f1a26;
-  --color-surface-raised: #16232f;
-  --color-surface-sunken: #060a11;
-
-  --color-border: #21364a;
-  --color-border-light: #18293a;
-  --color-border-strong: #587690;
-
-  --color-text: #dde9f6;
-  --color-text-2: #a8bfd4;
-  --color-text-3: #8099b0;
-
-  --color-accent: #8dc0f5;
-  --color-accent-hover: #a9d2ff;
-  --color-accent-light: #0c2038;
-  --color-accent-border: #1f4a80;
-
-  --color-success: #6fc4a6;
-  --color-success-hover: #8ad5ba;
-  --color-success-bg: #08241d;
-  --color-error: #f08a95;
-  --color-error-hover: #f7a3ac;
-  --color-error-bg: #33121a;
-  --color-warning: #dfae4e;
-  --color-warning-bg: #2d2208;
-
-  --color-easy: #6fc4a6;
-  --color-easy-bg: #08241d;
-  --color-medium: #dfae4e;
-  --color-medium-bg: #2d2208;
-  --color-hard: #f08a95;
-  --color-hard-bg: #33121a;
-}
-
-/* ---- BANYAN — aged parchment, bark, deep forest.
-   The accent is bark rather than leaf, which frees green to mean
-   growth and correctness instead of competing with every link. ---- */
-:root[data-tree='banyan'],
-:root[data-tree='banyan'][data-theme='light'] {
-  --color-bg: #f2ecdd;
-  --color-surface: #fdf9ee;
-  --color-surface-raised: #fffdf6;
-  --color-surface-sunken: #e5ddc8;
-
-  --color-border: #cdbf9e;
-  --color-border-light: #e2d9c1;
-  --color-border-strong: #8a7a54;
-
-  --color-text: #241a07;
-  --color-text-2: #55431f;
-  --color-text-3: #6b5730;
-
-  --color-accent: #7a4718;
-  --color-accent-hover: #613710;
-  --color-accent-light: #f0e4d2;
-  --color-accent-border: #b89a6e;
-
-  --color-success: #2f6a3c;
-  --color-success-hover: #24552e;
-  --color-success-bg: #e2eede;
-  --color-error: #94301f;
-  --color-error-hover: #7a2617;
-  --color-error-bg: #f6e3dd;
-  --color-warning: #75570b;
-  --color-warning-bg: #f1e8ce;
-
-  --color-easy: #2f6a3c;
-  --color-easy-bg: #e2eede;
-  --color-medium: #75570b;
-  --color-medium-bg: #f1e8ce;
-  --color-hard: #94301f;
-  --color-hard-bg: #f6e3dd;
-
-  --shadow: 0 1px 2px rgba(36, 26, 7, 0.08), 0 1px 3px rgba(36, 26, 7, 0.06);
-  --shadow-md: 0 2px 4px rgba(36, 26, 7, 0.08), 0 8px 20px rgba(36, 26, 7, 0.12);
-}
-@media (prefers-color-scheme: dark) {
-  :root[data-tree='banyan']:not([data-theme='light']) {
-    --color-bg: #0b1209;
-    --color-surface: #141c11;
-    --color-surface-raised: #1b2517;
-    --color-surface-sunken: #070c06;
-
-    --color-border: #2a3823;
-    --color-border-light: #1f2a1a;
-    --color-border-strong: #6a7a58;
-
-    --color-text: #e6ecd8;
-    --color-text-2: #b9c6a4;
-    --color-text-3: #93a37d;
-
-    --color-accent: #d99a5c;
-    --color-accent-hover: #ecb078;
-    --color-accent-light: #2a1a0b;
-    --color-accent-border: #6b4620;
-
-    --color-success: #7fc078;
-    --color-success-hover: #97d18f;
-    --color-success-bg: #142a16;
-    --color-error: #e8836e;
-    --color-error-hover: #f29b88;
-    --color-error-bg: #33150f;
-    --color-warning: #d9ab4c;
-    --color-warning-bg: #2c2107;
-
-    --color-easy: #7fc078;
-    --color-easy-bg: #142a16;
-    --color-medium: #d9ab4c;
-    --color-medium-bg: #2c2107;
-    --color-hard: #e8836e;
-    --color-hard-bg: #33150f;
-  }
-}
-:root[data-tree='banyan'][data-theme='dark'] {
-  --color-bg: #0b1209;
-  --color-surface: #141c11;
-  --color-surface-raised: #1b2517;
-  --color-surface-sunken: #070c06;
-
-  --color-border: #2a3823;
-  --color-border-light: #1f2a1a;
-  --color-border-strong: #6a7a58;
-
-  --color-text: #e6ecd8;
-  --color-text-2: #b9c6a4;
-  --color-text-3: #93a37d;
-
-  --color-accent: #d99a5c;
-  --color-accent-hover: #ecb078;
-  --color-accent-light: #2a1a0b;
-  --color-accent-border: #6b4620;
-
-  --color-success: #7fc078;
-  --color-success-hover: #97d18f;
-  --color-success-bg: #142a16;
-  --color-error: #e8836e;
-  --color-error-hover: #f29b88;
-  --color-error-bg: #33150f;
-  --color-warning: #d9ab4c;
-  --color-warning-bg: #2c2107;
-
-  --color-easy: #7fc078;
-  --color-easy-bg: #142a16;
-  --color-medium: #d9ab4c;
-  --color-medium-bg: #2c2107;
-  --color-hard: #e8836e;
-  --color-hard-bg: #33150f;
-}
-
-/* ---- FIG — dusty violet, Mediterranean, the tree of knowledge.
-   Fig leaf for growth, fig flesh for the misses. ---- */
-:root[data-tree='fig'],
-:root[data-tree='fig'][data-theme='light'] {
-  --color-bg: #efe9f4;
-  --color-surface: #fbf8fd;
-  --color-surface-raised: #ffffff;
-  --color-surface-sunken: #e1d8ea;
-
-  --color-border: #c7b6d8;
-  --color-border-light: #ddd2e8;
-  --color-border-strong: #7b6890;
-
-  --color-text: #1b1024;
-  --color-text-2: #4b3363;
-  --color-text-3: #614b79;
-
-  --color-accent: #6a2e9c;
-  --color-accent-hover: #55237d;
-  --color-accent-light: #ece3f7;
-  --color-accent-border: #b294d4;
-
-  --color-success: #3d6630;
-  --color-success-hover: #305226;
-  --color-success-bg: #e6eedc;
-  --color-error: #9e2f4a;
-  --color-error-hover: #83253c;
-  --color-error-bg: #f8e2e8;
-  --color-warning: #77530c;
-  --color-warning-bg: #f3e9d2;
-
-  --color-easy: #3d6630;
-  --color-easy-bg: #e6eedc;
-  --color-medium: #77530c;
-  --color-medium-bg: #f3e9d2;
-  --color-hard: #9e2f4a;
-  --color-hard-bg: #f8e2e8;
-
-  --shadow: 0 1px 2px rgba(27, 16, 36, 0.08), 0 1px 3px rgba(27, 16, 36, 0.06);
-  --shadow-md: 0 2px 4px rgba(27, 16, 36, 0.08), 0 8px 20px rgba(27, 16, 36, 0.12);
-}
-@media (prefers-color-scheme: dark) {
-  :root[data-tree='fig']:not([data-theme='light']) {
-    --color-bg: #0c0714;
-    --color-surface: #171023;
-    --color-surface-raised: #1e1630;
-    --color-surface-sunken: #080510;
-
-    --color-border: #2d1d45;
-    --color-border-light: #221533;
-    --color-border-strong: #6d5a85;
-
-    --color-text: #e7dbf6;
-    --color-text-2: #c0abd8;
-    --color-text-3: #9d89b5;
-
-    --color-accent: #bb9af5;
-    --color-accent-hover: #cdb2ff;
-    --color-accent-light: #2a1450;
-    --color-accent-border: #50307f;
-
-    --color-success: #8ac277;
-    --color-success-hover: #a1d38f;
-    --color-success-bg: #1a2a15;
-    --color-error: #f0899f;
-    --color-error-hover: #f7a2b3;
-    --color-error-bg: #33131d;
-    --color-warning: #dcac48;
-    --color-warning-bg: #2d2207;
-
-    --color-easy: #8ac277;
-    --color-easy-bg: #1a2a15;
-    --color-medium: #dcac48;
-    --color-medium-bg: #2d2207;
-    --color-hard: #f0899f;
-    --color-hard-bg: #33131d;
-  }
-}
-:root[data-tree='fig'][data-theme='dark'] {
-  --color-bg: #0c0714;
-  --color-surface: #171023;
-  --color-surface-raised: #1e1630;
-  --color-surface-sunken: #080510;
-
-  --color-border: #2d1d45;
-  --color-border-light: #221533;
-  --color-border-strong: #6d5a85;
-
-  --color-text: #e7dbf6;
-  --color-text-2: #c0abd8;
-  --color-text-3: #9d89b5;
-
-  --color-accent: #bb9af5;
-  --color-accent-hover: #cdb2ff;
-  --color-accent-light: #2a1450;
-  --color-accent-border: #50307f;
-
-  --color-success: #8ac277;
-  --color-success-hover: #a1d38f;
-  --color-success-bg: #1a2a15;
-  --color-error: #f0899f;
-  --color-error-hover: #f7a2b3;
-  --color-error-bg: #33131d;
-  --color-warning: #dcac48;
-  --color-warning-bg: #2d2207;
-
-  --color-easy: #8ac277;
-  --color-easy-bg: #1a2a15;
-  --color-medium: #dcac48;
-  --color-medium-bg: #2d2207;
-  --color-hard: #f0899f;
-  --color-hard-bg: #33131d;
+  --paper-grain-opacity: 0.16;
+  --paper-grain-blend: screen;
 }
