@@ -99,6 +99,211 @@
 }
 
 @layer components {
+  /* ---- the text block ----
+     One measure for the whole work.
+
+     The routes used to set their own width — 2xl here, 3xl there, 4xl on
+     two more — so the column jumped as you moved between pages. A book is
+     trimmed once: every page shares a measure, and that consistency is most
+     of why a spread reads as one object. ~44rem of text is also close to
+     the 60–75 characters a serif line wants. */
+  .page-block {
+    width: 100%;
+    max-width: 48rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .page-block {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* ---- the press ----
+     A control here is a piece of type, not a painted rectangle.
+
+     A filled accent pill is the loudest tell that a page was assembled from
+     a framework's defaults, and it is also wrong for the material: nothing
+     on a printed page is a filled blue pill. What a page has is type struck
+     into the sheet, sitting in a shallow well with the ink caught at the
+     bottom of the impression.
+
+     So the face is letterspaced small caps and the box is a hairline with a
+     rule beneath it — the shadow a letter casts in the paper it was pressed
+     into. The depth is a box-shadow rather than a thicker border because a
+     shadow costs no layout: pressing sinks the face by exactly that depth
+     and collapses the shadow, so the control bottoms out under the finger
+     without nudging its neighbours. */
+  .press {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45em;
+    padding: 0.42em 0.9em;
+    font-family: var(--font-display);
+    font-size: var(--text-micro);
+    font-weight: 500;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--color-text-2);
+    background: none;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 1px;
+    box-shadow: 0 2px 0 0 var(--color-border-strong);
+    transition:
+      color 120ms ease,
+      border-color 120ms ease,
+      box-shadow 70ms ease,
+      transform 70ms ease;
+  }
+  .press:hover:not(:disabled) {
+    color: var(--color-text);
+    border-color: var(--color-text-3);
+    box-shadow: 0 2px 0 0 var(--color-text-3);
+  }
+  .press:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 0 0 0 var(--color-text-3);
+  }
+  .press:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* The one struck hardest. Emphasis without a fill is what a printed form
+     does: full ink in the face and in the rule, and a deeper impression —
+     so the primary action is the darkest mark on the page rather than the
+     only coloured one. */
+  .press-ink {
+    color: var(--color-text);
+    font-weight: 600;
+    border-color: var(--color-text);
+    box-shadow: 0 3px 0 0 var(--color-text);
+  }
+  .press-ink:hover:not(:disabled) {
+    border-color: var(--color-text);
+    box-shadow: 0 3px 0 0 var(--color-text);
+  }
+  .press-ink:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: 0 0 0 0 var(--color-text);
+  }
+
+  /* A word that acts, with no box at all — for the third-rank actions that
+     would otherwise crowd a page with rules. */
+  .press-quiet {
+    box-shadow: none;
+    border-color: transparent;
+    padding-inline: 0.2em;
+  }
+  .press-quiet:hover:not(:disabled) {
+    box-shadow: 0 1px 0 0 currentColor;
+    border-color: transparent;
+  }
+  .press-quiet:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: none;
+  }
+
+  /* ---- ruled fields ----
+     A form on paper is a rule you write on. A rounded grey box with a
+     placeholder floating in it is a web control, and it reads as one. */
+  .field {
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--color-border-strong);
+    border-radius: 0;
+    padding: 0.4em 0.1em;
+    color: var(--color-text);
+    font-family: var(--font);
+  }
+  /* The rule inks up when you write on it. The focus outline is
+     deliberately left alone: the global :focus-visible ring is the
+     accessible indicator, and a 1px underline is no substitute for it.
+     This is the affordance on top of the ring, not instead of it. */
+  .field:focus {
+    border-bottom-color: var(--color-accent);
+    box-shadow: 0 1px 0 0 var(--color-accent);
+  }
+  .field::placeholder {
+    color: var(--color-text-3);
+  }
+
+  /* ---- the mark ----
+     The small letterspaced capitals a book uses for everything that is not
+     prose: running heads, folios, column headings, plate numbers. Having one
+     class for it is what keeps those voices consistent across the app. */
+  .mark {
+    font-family: var(--font-display);
+    font-size: var(--text-micro);
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  /* ---- a contents entry ----
+     Four things — the entry's number, its thumbnail, its name and its
+     figures — which sit on one line on a page wide enough and stack on one
+     that is not.
+
+     A grid rather than a flex row because at 390px a flex row has no way to
+     say "the figures drop below the title": it can only shrink the title's
+     column, and with min-w-0 it shrank it until the course name was setting
+     one character per line. Named areas state the two layouts outright, so
+     the narrow one is a layout rather than the wide one running out of
+     room. */
+  .entry {
+    display: grid;
+    grid-template-columns: 1.5rem auto minmax(0, 1fr);
+    grid-template-areas:
+      'num art body'
+      'num art figs';
+    align-items: center;
+    column-gap: 0.75rem;
+    row-gap: 0.25rem;
+  }
+  .entry > .entry-num {
+    grid-area: num;
+  }
+  .entry > .entry-art {
+    grid-area: art;
+  }
+  .entry > .entry-body {
+    grid-area: body;
+  }
+  .entry > .entry-figs {
+    grid-area: figs;
+    justify-self: start;
+  }
+  @media (min-width: 640px) {
+    .entry {
+      grid-template-columns: 1.75rem auto minmax(0, 1fr) auto;
+      grid-template-areas: 'num art body figs';
+      column-gap: 1rem;
+    }
+    .entry > .entry-figs {
+      justify-self: end;
+      text-align: right;
+    }
+  }
+
+  /* ---- dot leaders ----
+     The dots that carry the eye from an entry to its figure across a table
+     of contents. Drawn as a repeating gradient rather than a dotted border,
+     which renders as squares, and sat on the baseline of the row it is in. */
+  .leaders {
+    flex: 1 1 auto;
+    min-width: 1.5rem;
+    height: 1em;
+    background-image: radial-gradient(circle, var(--color-text-3) 0.9px, transparent 1.1px);
+    background-position: left bottom;
+    margin-bottom: 0.2em;
+    background-size: 0.45rem 0.45rem;
+    background-repeat: repeat-x;
+    opacity: 0.75;
+  }
+
   /* ---- the tooth of the paper ----
      Drawn by a filter rather than shipped as an image: nothing to download,
      nothing to precache, and it retints with the theme. Sits above the

@@ -432,7 +432,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             type="button"
             onClick={confirm}
             disabled={!canApply}
-            className="rounded bg-accent px-3 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="press press-ink"
           >
             {plan && (plan.totalAdded > 0 || plan.totalCorrected > 0)
               ? [

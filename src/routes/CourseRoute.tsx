@@ -163,7 +163,7 @@ export function CourseRoute() {
   if (!id) return <Navigate to="/" replace />;
   if (!course) {
     return (
-      <div className="mx-auto max-w-2xl p-6 text-center text-text-2">
+      <div className="py-6 text-center text-text-2">
         Course not found.{' '}
         <Link to="/" className="text-accent hover:underline">
           Back to Library
@@ -175,7 +175,7 @@ export function CourseRoute() {
   const tags = course.metadata.tags ?? [];
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
+    <div>
       <Link to="/" className="text-sm text-text-2 hover:text-text">
         ← Library
       </Link>
@@ -250,7 +250,7 @@ export function CourseRoute() {
             to={`/session/${id}/${resumable.mode}?resume=1${
               resumable.sectionId ? `&section=${encodeURIComponent(resumable.sectionId)}` : ''
             }`}
-            className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+            className="press press-ink"
           >
             Continue
           </Link>
@@ -266,45 +266,59 @@ export function CourseRoute() {
         </div>
       )}
 
-      <Link
-        to={`/session/${id}/${LEARN.mode}`}
-        className="mt-8 block rounded border border-border-strong bg-surface-raised px-5 py-4 shadow transition-colors hover:bg-surface"
-      >
-        {/* The name and the count stay on one line at every width; only the
-            description moves under them, so the tile never goes lopsided. */}
-        <span className="flex items-center gap-4">
-          <span className="shrink-0 text-text">
-            <Icon name={LEARN.icon} size={24} />
-          </span>
-          <span className="min-w-0 flex-1 font-display text-heading font-semibold text-text">
-            {LEARN.label}
-          </span>
-          <span className="shrink-0 whitespace-nowrap text-micro text-text-3">
-            {LEARN.count(counts)} items
-          </span>
-        </span>
-        <span className="mt-1 block text-small text-text-2 sm:pl-10">{LEARN.desc}</span>
-      </Link>
+      {/* The ways to work, set as an index rather than a tile grid.
+          This was a big shadowed card over a 3x2 grid of smaller shadowed
+          cards — the most dashboard-looking block in the app, and on the
+          page you see most. As ruled entries with the counts in a right-hand
+          column it reads as part of the same book as the library's contents
+          list, and the counts line up so you can actually compare them,
+          which in a grid they never did. */}
+      <section className="mt-8">
+        <h2 className="mark mb-2 text-text-3">Ways to work</h2>
+        <ul className="border-t border-border">
+          {/* The recommended path, set as the leading entry: full ink, a
+              gloss underneath, and a heavier rule closing it off from the
+              practice modes below. */}
+          <li className="border-b-2 border-text-3">
+            <Link to={`/session/${id}/${LEARN.mode}`} className="group block py-4">
+              <span className="flex items-baseline gap-3">
+                <span className="w-5 shrink-0 text-text-3">
+                  <Icon name={LEARN.icon} size={16} />
+                </span>
+                <span className="font-display text-heading font-semibold text-text group-hover:text-accent">
+                  {LEARN.label}
+                </span>
+                <span className="leaders hidden sm:block" aria-hidden="true" />
+                <span className="mark shrink-0 tabular-nums text-text-2">
+                  {LEARN.count(counts)} items
+                </span>
+              </span>
+              <span className="mt-0.5 block text-small text-text-2 sm:pl-8">{LEARN.desc}</span>
+            </Link>
+          </li>
+          {PRACTICE.map((m) => (
+            <li key={m.mode} className="border-b border-border">
+              <Link
+                to={`/session/${id}/${m.mode}`}
+                className="group tap-safe flex items-baseline gap-3 py-3"
+              >
+                <span className="w-5 shrink-0 text-text-3">
+                  <Icon name={m.icon} size={15} />
+                </span>
+                <span className="font-display text-body text-text group-hover:text-accent">
+                  {m.label}
+                </span>
+                <span className="leaders hidden sm:block" aria-hidden="true" />
+                <span className="mark shrink-0 tabular-nums text-text-3">
+                  {m.count(counts)} items
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {PRACTICE.map((m) => (
-          <Link
-            key={m.mode}
-            to={`/session/${id}/${m.mode}`}
-            className="flex items-center gap-3 rounded border border-border bg-surface px-4 py-3 transition-colors hover:border-border-strong"
-          >
-            <span className="shrink-0 text-text-3">
-              <Icon name={m.icon} size={18} />
-            </span>
-            <span className="min-w-0 flex-1 font-medium text-text">{m.label}</span>
-            <span className="shrink-0 whitespace-nowrap text-micro text-text-3">
-              {m.count(counts)} items
-            </span>
-          </Link>
-        ))}
-      </div>
-
-      <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-border pt-3 text-small">
+      <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-1 text-small">
         <ToolLink to={`/study/${id}/progress`}>
           <Icon name="bar-chart" size={14} />
           Progress
@@ -343,43 +357,54 @@ export function CourseRoute() {
       </div>
 
       <Fleuron className="mt-10" />
-      <h2 className="mb-3 mt-4 border-b-2 border-border-strong pb-1 font-display text-title font-semibold text-text">Sections</h2>
-      {/* A list on paper is ruled rows, not eleven stacked boxes each with its
-          own border and fill. */}
+      <h2 className="mb-3 mt-4 border-b-2 border-border-strong pb-1 font-display text-title font-semibold text-text">
+        Sections
+      </h2>
+      {/* The course's own contents list, set the way the library's is: the
+          section's place in the work on the left, the figures in a column on
+          the right, and leaders carrying the eye between them. Numbered
+          because the sections ARE ordered — it is the order the tree grows
+          its branches in and the order Learn serves them. */}
       <ul className="divide-y divide-border border-b border-border">
-        {sortedSections(course).map((section) => {
+        {sortedSections(course).map((section, index) => {
           const stats = sectionStats(section, progress);
           return (
             <li key={section.id}>
               <Link
                 to={`/study/${id}/section/${encodeURIComponent(section.id)}`}
-                className="flex items-center gap-3 px-2 py-3 transition-colors hover:bg-surface"
+                className="group tap-safe flex items-baseline gap-3 py-3"
               >
+                <span className="mark w-6 shrink-0 text-right tabular-nums text-text-3">
+                  {index + 1}
+                </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-body font-medium text-text">{section.title}</span>
-                  <span className="block text-small text-text-3">
-                    {section.items.length} item{section.items.length === 1 ? '' : 's'}
-                    {stats.accuracy !== null && (
-                      <>
-                        {' · '}
-                        <span
-                          className={
-                            stats.accuracy >= 80
-                              ? 'text-success'
-                              : stats.accuracy >= 50
-                                ? 'text-warning'
-                                : 'text-error'
-                          }
-                        >
-                          {stats.accuracy}%
-                        </span>
-                        <span className="text-text-3"> over {stats.studied} studied</span>
-                      </>
-                    )}
+                  <span className="flex items-baseline gap-2">
+                    <span className="font-display text-body font-medium text-text group-hover:text-accent">
+                      {section.title}
+                    </span>
+                    <span className="leaders hidden sm:block" aria-hidden="true" />
                   </span>
                 </span>
-                <span className="text-text-3" aria-hidden="true">
-                  →
+                <span className="shrink-0 text-right tabular-nums">
+                  <span className="mark block text-text-2">
+                    {section.items.length} item{section.items.length === 1 ? '' : 's'}
+                  </span>
+                  {stats.accuracy !== null && (
+                    <span className="mark block">
+                      <span
+                        className={
+                          stats.accuracy >= 80
+                            ? 'text-success'
+                            : stats.accuracy >= 50
+                              ? 'text-warning'
+                              : 'text-error'
+                        }
+                      >
+                        {stats.accuracy}%
+                      </span>
+                      <span className="text-text-3"> of {stats.studied}</span>
+                    </span>
+                  )}
                 </span>
               </Link>
             </li>

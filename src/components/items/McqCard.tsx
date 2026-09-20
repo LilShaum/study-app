@@ -102,15 +102,15 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
         {options.map((opt, i) => {
           const isSelected = i === selected;
           const isCorrectOpt = i === item.correct_index;
-          let stateClasses = 'border-border-strong hover:border-border-strong';
+          let stateClasses = 'border-border hover:border-text-3';
           if (revealed && keyBroken) {
             // Nothing is known to be right, so colour nothing.
-            if (isSelected) stateClasses = 'border-accent-border';
+            if (isSelected) stateClasses = 'border-text';
           } else if (revealed) {
-            if (isCorrectOpt) stateClasses = 'border-success bg-success-bg text-success';
-            else if (isSelected) stateClasses = 'border-error bg-error-bg text-error';
+            if (isCorrectOpt) stateClasses = 'border-success text-success';
+            else if (isSelected) stateClasses = 'border-error text-error';
           } else if (isSelected) {
-            stateClasses = 'border-accent bg-surface-sunken';
+            stateClasses = 'border-text';
           }
           const rationale = revealed ? rationales?.[i] || undefined : undefined;
           return (
@@ -122,7 +122,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
                 tabIndex={isSelected || (selected < 0 && i === 0) ? 0 : -1}
                 disabled={revealed}
                 onClick={() => selectOption(i)}
-                className={`flex w-full items-center gap-3 rounded border px-3.5 py-2.5 text-left text-small text-text transition-colors disabled:cursor-default ${stateClasses}`}
+                className={`flex w-full items-center gap-3 border-0 border-b px-1 py-3 text-left text-small text-text transition-colors disabled:cursor-default ${stateClasses}`}
               >
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold">
                   {'ABCD'[i] ?? i + 1}
@@ -145,7 +145,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
           type="button"
           disabled={selected < 0}
           onClick={check}
-          className="mt-4 rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-text-3"
+          className="press press-ink mt-4 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-text-3"
         >
           Check answer
         </button>

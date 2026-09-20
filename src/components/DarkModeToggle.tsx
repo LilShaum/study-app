@@ -25,12 +25,13 @@ export function DarkModeToggle() {
   return (
     <button
       type="button"
-      className="inline-flex h-9 w-9 items-center justify-center rounded border border-border bg-surface text-text-2 hover:text-text"
+      className="press press-quiet"
       title="Toggle dark mode"
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       onClick={() => setMode(isDark ? 'light' : 'dark')}
     >
-      <Icon name={isDark ? 'sun' : 'moon'} size={18} />
+      <Icon name={isDark ? 'sun' : 'moon'} size={14} />
+      {isDark ? 'Light' : 'Dark'}
     </button>
   );
 }

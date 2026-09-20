@@ -58,7 +58,7 @@ export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false }
               type="button"
               tabIndex={flipped ? -1 : 0}
               onClick={() => setFlipped(true)}
-              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+              className="press press-ink"
             >
               Flip Card
             </button>

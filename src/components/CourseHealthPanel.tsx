@@ -94,7 +94,7 @@ export function CourseHealthPanel({ course, onFix }: CourseHealthPanelProps) {
             <button
               type="button"
               onClick={onFix}
-              className="mt-1 inline-flex items-center gap-1.5 rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
+              className="press press-ink mt-1"
             >
               <Icon name="clipboard" size={14} />
               Send these to your AI to fix
