@@ -35,9 +35,13 @@
     height: 100%;
   }
   body {
-    @apply bg-bg text-text font-sans antialiased;
+    /* A book is set entirely in its text face. Fraunces carries an optical
+       size axis (9–144), so at body size it is a text cut, not the display
+       cut shrunk down; controls stay on the system stack further down. */
+    @apply bg-bg text-text font-display antialiased;
+    font-optical-sizing: auto;
     font-size: var(--text-body);
-    line-height: 1.65;
+    line-height: 1.6;
     /* A single unbroken token — a long chemical or anatomical name, a formula,
        a pasted URL — otherwise widens the page rather than wrapping, and the
        result on a phone is a sideways scroll on every screen that item appears
@@ -57,6 +61,40 @@
   kbd,
   th {
     overflow-wrap: normal;
+  }
+  /* Controls are the app's own furniture, not the printed matter. */
+  button,
+  input,
+  select,
+  option,
+  textarea,
+  kbd {
+    font-family: var(--font);
+  }
+
+  /* Prose set as a book sets it: justified, hyphenated, no orphans where
+     the engine can avoid them. Only on passages, never on labels. */
+  .prose-set {
+    hyphens: auto;
+    text-wrap: pretty;
+  }
+  /* Justified only where the measure is wide enough to carry it. On a phone
+     column a long unhyphenatable word — a headword in capitals, a chemical
+     name — forces the spaces on its line open into a river. Ragged there. */
+  @media (min-width: 640px) {
+    .prose-set {
+      text-align: justify;
+    }
+  }
+
+  /* An Oxford rule: the thick-thin pair a printed running head sits on. A
+     single line of any weight is not it. Drawn as the border plus a one-pixel
+     line a pixel below it. */
+  .rule-oxford {
+    border-bottom: 2px solid var(--color-border-strong);
+    box-shadow:
+      0 3px 0 0 var(--color-bg),
+      0 4px 0 0 var(--color-border-strong);
   }
 }
 

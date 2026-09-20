@@ -464,7 +464,7 @@ export function HelpRoute() {
             key={s.id}
             id={s.id}
             tabIndex={-1}
-            className="scroll-mt-20 border-t border-border pt-6"
+            className="prose-set scroll-mt-20 border-t border-border pt-6"
           >
             <h2 className="mb-2 font-display text-heading font-semibold text-text">{s.title}</h2>
             <div className="space-y-1 text-small text-text-2">{s.body}</div>

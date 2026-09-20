@@ -6,6 +6,7 @@ import { LEARN_STAGES, learnStageIndex, type StudyMode } from '@/lib/buildSessio
 import { useSessionStore } from '@/store/session';
 import { useResumeStore } from '@/store/resume';
 import { CourseTree } from '@/components/CourseTree';
+import { Fleuron } from '@/components/Fleuron';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { SectionJump } from './SectionJump';
@@ -272,7 +273,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           className="h-44 sm:h-56"
           animate
         />
-        <h1 className="mt-5 font-display text-title font-semibold text-text">
+        <Fleuron className="mt-4" />
+        <h1 className="mt-3 font-display text-title font-semibold text-text">
           {MODE_LABELS[mode]} finished
         </h1>
         <div className="mt-3 flex justify-center gap-5 text-small tabular-nums">

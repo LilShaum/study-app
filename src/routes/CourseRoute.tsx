@@ -10,6 +10,7 @@ import { toast } from '@/store/toast';
 import { Icon, type IconName } from '@/components/Icon';
 import { CourseTree } from '@/components/CourseTree';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
+import { Fleuron } from '@/components/Fleuron';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
 import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
@@ -331,7 +332,8 @@ export function CourseRoute() {
         </ToolButton>
       </div>
 
-      <h2 className="mb-3 mt-10 border-b-2 border-border-strong pb-1 font-display text-title font-semibold text-text">Sections</h2>
+      <Fleuron className="mt-10" />
+      <h2 className="mb-3 mt-4 border-b-2 border-border-strong pb-1 font-display text-title font-semibold text-text">Sections</h2>
       {/* A list on paper is ruled rows, not eleven stacked boxes each with its
           own border and fill. */}
       <ul className="divide-y divide-border border-b border-border">
