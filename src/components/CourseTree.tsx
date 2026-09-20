@@ -206,13 +206,17 @@ export function CourseTree({
         <path
           key={i}
           d={limb.d}
-          strokeWidth={limb.weight}
+          // The lit limb is drawn heavier as well as left at full strength.
+          // Dimming alone had to be so deep to register that the whole crown
+          // went to a ghost, and a tree you cannot see is not locating
+          // anything.
+          strokeWidth={active && limb.sectionId === active ? limb.weight * 1.5 : limb.weight}
           className={limb.solid ? 'lf' : undefined}
           // Only the wood is sampled: a crown's leaves are hundreds of marks
           // a few units across, and the branch running through them puts a
           // sample everywhere they are anyway.
           data-section={interactive && limb.kind !== 'leaf' ? limb.sectionId : undefined}
-          opacity={active && !isStructural(limb) && limb.sectionId !== active ? 0.25 : undefined}
+          opacity={active && !isStructural(limb) && limb.sectionId !== active ? 0.4 : undefined}
         />
       ))}
 

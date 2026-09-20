@@ -1,9 +1,10 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
-import { useProgressStore } from '@/store/progress';
+import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { availableModes, findSection, sectionStats } from '@/lib/sectionStats';
 import { Icon, type IconName } from '@/components/Icon';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
+import { CourseTree } from '@/components/CourseTree';
 
 const TYPE_LABELS: Record<string, string> = {
   mcq: 'MCQ',
@@ -32,7 +33,10 @@ function plural(n: number, word: string): string {
 export function SectionRoute() {
   const { id, sectionId } = useParams<{ id: string; sectionId: string }>();
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
-  const progress = useProgressStore((s) => (id ? s.getProgress(id) : {}));
+  // The fallback must be the shared frozen instance: a fresh `{}` here is a
+  // new snapshot on every store read, which is the render loop EMPTY_PROGRESS
+  // exists to prevent.
+  const progress = useProgressStore((s) => (id ? s.getProgress(id) : EMPTY_PROGRESS));
 
   if (!id || !sectionId) return <Navigate to="/" replace />;
 
@@ -57,7 +61,7 @@ export function SectionRoute() {
     { mode: 'flashcards', label: 'Flashcards', icon: 'layers', count: modes.flashcards },
     { mode: 'definitions', label: 'Definitions', icon: 'file-text', count: modes.definitions },
     { mode: 'mixed', label: 'Mixed', icon: 'shuffle', count: modes.mixed },
-    { mode: 'weakest', label: 'Weakest First', icon: 'bar-chart', count: modes.weakest },
+    { mode: 'weakest', label: 'Weakest first', icon: 'bar-chart', count: modes.weakest },
   ];
 
   return (
@@ -65,18 +69,34 @@ export function SectionRoute() {
       <Link to={`/study/${id}`} className="text-sm text-text-2 hover:text-text">
         ← {course.metadata.title}
       </Link>
-      <h1 className="mt-3 font-display text-display font-semibold text-text">{section.title}</h1>
-      {section.description && (
-        <p className="mt-2 max-w-prose text-body text-text-2">{section.description}</p>
-      )}
+      {/* The course's own tree with this section's limb lit and the rest
+          dropped back, so a section is always somewhere in a whole rather
+          than a page you arrived at from a list. */}
+      <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:gap-8">
+        <CourseTree
+          courseId={id}
+          course={course}
+          progress={progress}
+          className="h-24 sm:h-36"
+          highlight={section.id}
+        />
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display text-title font-semibold text-text sm:text-display">
+            {section.title}
+          </h1>
+          {section.description && (
+            <p className="mt-2 max-w-prose text-small text-text-2">{section.description}</p>
+          )}
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-2">
-        <span>{plural(stats.total, 'item')}</span>
-        {Object.entries(stats.byType).map(([type, n]) => (
-          <span key={type} className="text-text-3">
-            {plural(n, TYPE_LABELS[type] ?? type)}
-          </span>
-        ))}
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-2">
+            <span>{plural(stats.total, 'item')}</span>
+            {Object.entries(stats.byType).map(([type, n]) => (
+              <span key={type} className="text-text-3">
+                {plural(n, TYPE_LABELS[type] ?? type)}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
       {stats.gradable > 0 && (
@@ -107,11 +127,12 @@ export function SectionRoute() {
         </p>
       ) : (
         <>
-          <h2 className="mb-1 mt-8 font-display text-title font-semibold text-text">Study just this section</h2>
-          <p className="mb-3 text-sm text-text-3">
-            Learn walks this section in teaching order: definitions and examples first, then
-            flashcards, then questions.
-          </p>
+          {/* The heading says what these are. The paragraph that used to sit
+              under it explained what Learn does, on a page where Learn is one
+              of five tiles that all say what they are. */}
+          <h2 className="mb-3 mt-8 font-display text-title font-semibold text-text">
+            Study just this section
+          </h2>
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {MODE_LINKS.map((m) =>
               m.count > 0 ? (
