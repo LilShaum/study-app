@@ -213,6 +213,13 @@
     transform-box: view-box;
     transition: transform 420ms cubic-bezier(0.2, 0.7, 0.3, 1);
   }
+  /* The branch under the pointer settles at once; only its neighbours drift.
+     Sharing the slow transition made the one you had just moved ONTO swing
+     back up from where the last one had pushed it, so the branch you were
+     pointing at looked like it was tilting along with the rest. */
+  .limb-set[data-held] {
+    transition-duration: 120ms;
+  }
 
   /* Flashcard 3D flip. Tailwind v3 ships no utilities for perspective,
      transform-style or backface-visibility, so these are hand-rolled.
