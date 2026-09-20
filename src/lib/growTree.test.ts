@@ -112,3 +112,37 @@ describe('growTree — what study changes', () => {
     expect(growTree('x', []).limbs.length).toBeGreaterThan(0);
   });
 });
+
+describe('growTree — foliage is mass, not decoration', () => {
+  /**
+   * The complaint these exist for: every species still read as a bare winter
+   * skeleton however well the course was known, because foliage was a few
+   * dozen transparent outlines and nothing ever hid the wood behind it.
+   */
+  it('carries enough leaves to read as a canopy, not a scatter', () => {
+    const t = growTree('bioc301', sections(9, 1));
+    expect(t.limbs.filter((l) => l.kind === 'leaf').length).toBeGreaterThan(300);
+  });
+
+  it('marks foliage as solid, so it occludes the branches behind it', () => {
+    const t = growTree('bioc301', sections(9, 1));
+    const leaves = t.limbs.filter((l) => l.kind === 'leaf');
+    expect(leaves.every((l) => l.solid)).toBe(true);
+    // Wood stays stroke-only, the same language as the icon set.
+    expect(t.limbs.filter((l) => l.kind !== 'leaf').every((l) => !l.solid)).toBe(true);
+  });
+
+  it('draws foliage after the wood, so paint order can occlude', () => {
+    const t = growTree('bioc301', sections(9, 1));
+    const lastWood = t.limbs.map((l) => l.kind).lastIndexOf('branch');
+    const firstLeaf = t.limbs.findIndex((l) => l.kind === 'leaf');
+    expect(firstLeaf).toBeGreaterThan(lastWood);
+  });
+
+  it('keeps winter skeletal at full mastery — a handful of buds, never a canopy', () => {
+    const winter = growTree('bioc301', sections(9, 1), 'winter').limbs.filter((l) => l.kind === 'leaf');
+    const summer = growTree('bioc301', sections(9, 1), 'banyan').limbs.filter((l) => l.kind === 'leaf');
+    expect(winter.length).toBeLessThan(80);
+    expect(summer.length).toBeGreaterThan(winter.length * 5);
+  });
+});

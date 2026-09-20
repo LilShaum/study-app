@@ -15,9 +15,13 @@
    3. Three weights, never one: TRUNK heaviest, BRANCH lighter, TWIG and
       LEAF lightest. This is what makes a flat line drawing sit in front
       of itself.
-   4. Stroke only, `currentColor`, no fills — the same language as the
-      icon set (open paths, one weight, currentColor). An illustration in
-      a different language from the icons around it looks pasted on.
+   4. `currentColor` everywhere, so the drawing belongs to whatever theme
+      it is rendered in. The WOOD is stroke-only like the icon set. The
+      FOLIAGE is filled with the surface colour so it occludes the branches
+      behind it — an earlier version made every leaf a transparent outline
+      and the result was that a tree in full leaf still read as a bare
+      winter skeleton with leaves stuck on, because nothing ever hid
+      anything.
    5. Deterministic. The same course always grows the same tree; only
       what the student has learned changes.
 
@@ -33,6 +37,15 @@ export interface Limb {
   /** Stroke width in viewBox units. */
   weight: number;
   kind: LimbKind;
+  /**
+   * True for marks that must HIDE what is behind them rather than tint it.
+   * The renderer fills these with the surface colour.
+   *
+   * Without this every leaf was a transparent outline with branches showing
+   * straight through it, so a tree in full leaf still read as a bare winter
+   * skeleton with decoration attached. Draw order alone does not occlude.
+   */
+  solid?: boolean;
   /** The section this limb grew from, for hit-testing and highlighting. */
   sectionId?: string;
 }
@@ -74,7 +87,12 @@ interface SpeciesTraits {
   bole: [number, number];
   /** Crown width relative to height. Above 1 is wider than tall. */
   aspect: number;
-  foliage: number;
+  /** How many clumps of foliage a fully-known section carries. */
+  clumps: number;
+  /** Leaves packed into one clump — this is what turns marks into mass. */
+  clumpDensity: number;
+  /** Radius of a clump, in viewBox units. */
+  clumpSize: number;
   leafLength: number;
   leafShape: 'simple' | 'oval';
   /** Banyan's signature: roots dropped from the limbs toward the ground. */
@@ -102,7 +120,9 @@ const SPECIES: Record<Species, SpeciesTraits> = {
     children: [3, 2],
     bole: [84, 14],
     aspect: 1,
-    foliage: 7,
+    clumps: 5,
+    clumpDensity: 16,
+    clumpSize: 11,
     leafLength: 7.5,
     leafShape: 'simple',
   },
@@ -113,7 +133,9 @@ const SPECIES: Record<Species, SpeciesTraits> = {
     children: [3, 3],
     bole: [96, 12],
     aspect: 0.82,
-    foliage: 3,
+    clumps: 0,
+    clumpDensity: 0,
+    clumpSize: 0,
     leafLength: 4.5,
     leafShape: 'simple',
     bare: true,
@@ -132,7 +154,9 @@ const SPECIES: Record<Species, SpeciesTraits> = {
     children: [3, 2],
     bole: [54, 10],
     aspect: 1.18,
-    foliage: 10,
+    clumps: 6,
+    clumpDensity: 20,
+    clumpSize: 12,
     leafLength: 7,
     leafShape: 'oval',
     aerialRoots: true,
@@ -152,7 +176,9 @@ const SPECIES: Record<Species, SpeciesTraits> = {
     // the ~19px a leaf actually renders at, lobe geometry has no room to
     // read, and a shape that is only identifiable at 4x zoom is not doing a
     // job here. Cut rather than iterated on further.
-    foliage: 4,
+    clumps: 3,
+    clumpDensity: 9,
+    clumpSize: 13,
     leafLength: 13,
     leafShape: 'oval',
   },
@@ -507,7 +533,13 @@ export function growTree(seed: string, sections: TreeSection[], species: Species
     }
   }
 
-  /* ---- foliage: the only thing study changes ---- */
+  /* ---- foliage: the only thing study changes ----
+
+     Built as CLUMPS, not as scattered leaves. A canopy is mass: many marks
+     packed tightly enough to read as tone and to hide the wood behind them.
+     The previous version hung a few dozen outlines on the whole tree, which
+     is why every species still read as a winter skeleton however well the
+     course was known. ---- */
   sections.forEach((section) => {
     const anchors = anchorsBySection.get(section.id) ?? [];
     if (!anchors.length) return;
@@ -515,40 +547,54 @@ export function growTree(seed: string, sections: TreeSection[], species: Species
     if (mastery <= 0) return;
 
     if (traits.bare) {
-      // Winter shows study as buds, never leaves — the theme has called
-      // itself "bare branches" since the palette was written.
-      const buds = Math.round(mastery * Math.min(6, anchors.length));
+      // Winter shows study as buds on bare wood — never a canopy.
+      const buds = Math.round(mastery * Math.min(7, anchors.length));
       for (let k = 0; k < buds; k++) {
         const host = anchors[Math.floor(rand() * anchors.length)];
         limbs.push({
           d: leafPath('simple', host.at, host.angle + (rand() - 0.5) * 1.1, traits.leafLength * 0.6, rand),
           weight: 0.8,
           kind: 'leaf',
+          solid: true,
           sectionId: section.id,
         });
       }
       return;
     }
 
-    const capacity = Math.min(anchors.length, Math.round(traits.foliage * 2.2));
-    const count = Math.round(mastery * capacity);
-    // Shuffle the anchors deterministically so partial mastery doesn't always
-    // leaf the same end of a branch first.
+    // Clumps are seeded from the outer anchors, so foliage sits where the
+    // twigs are rather than floating in the crown.
     const order = anchors.map((a, n) => ({ a, k: rand(), n })).sort((x, y) => x.k - y.k);
-    for (let k = 0; k < count; k++) {
-      const host = order[k % order.length].a;
-      limbs.push({
-        d: leafPath(
-          traits.leafShape,
-          { x: host.at.x + (rand() - 0.5) * 2.5, y: host.at.y + (rand() - 0.5) * 2.5 },
-          host.angle + (rand() - 0.5) * 1.6,
-          traits.leafLength * (0.7 + rand() * 0.55),
-          rand,
-        ),
-        weight: 0.85,
-        kind: 'leaf',
-        sectionId: section.id,
-      });
+    const clumps = Math.max(1, Math.round(mastery * traits.clumps));
+    for (let c = 0; c < clumps; c++) {
+      const host = order[c % order.length].a;
+      const spreadR = traits.clumpSize * (0.75 + rand() * 0.55);
+      const leaves = traits.clumpDensity + Math.floor(rand() * traits.clumpDensity * 0.6);
+      for (let k = 0; k < leaves; k++) {
+        // Pack toward the centre so a clump has a dense middle and a ragged
+        // edge, the way a mass of leaves actually reads.
+        const r = spreadR * Math.sqrt(rand()) * (0.55 + rand() * 0.75);
+        const theta = rand() * Math.PI * 2;
+        const at = {
+          x: host.at.x + Math.cos(theta) * r,
+          y: host.at.y + Math.sin(theta) * r * 0.85,
+        };
+        limbs.push({
+          d: leafPath(
+            traits.leafShape,
+            at,
+            // Leaves in a clump fan outward from its centre, with enough
+            // scatter that no two sit parallel.
+            theta + Math.PI / 2 + (rand() - 0.5) * 2.4,
+            traits.leafLength * (0.62 + rand() * 0.6),
+            rand,
+          ),
+          weight: 0.7,
+          kind: 'leaf',
+          solid: true,
+          sectionId: section.id,
+        });
+      }
     }
   });
 
