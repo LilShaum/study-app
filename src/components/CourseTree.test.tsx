@@ -91,13 +91,27 @@ describe('CourseTree', () => {
 
   it('expands rather than navigating when it is a preview', () => {
     const onExpand = vi.fn();
-    const { container } = render(
+    render(
       <CourseTree courseId="c1" course={course} progress={progress} interactive mode="preview" onExpand={onExpand} />,
     );
-    fireEvent.click(container.querySelector('svg')!);
     // At thumbnail size a click cannot reliably pick one limb among
-    // interleaved crowns, so it opens the drawing instead of guessing.
+    // interleaved crowns, so the whole drawing is one button.
+    fireEvent.click(screen.getByRole('button'));
     expect(onExpand).toHaveBeenCalled();
+  });
+
+  it('does not follow the pointer while it is a preview', () => {
+    const { container } = render(
+      <CourseTree courseId="c1" course={course} progress={progress} interactive mode="preview" onExpand={vi.fn()} />,
+    );
+    const svg = container.querySelector('svg')!;
+    fireEvent.pointerMove(svg, { clientX: 40, clientY: 40 });
+    // Tracking the nearest limb at thumbnail size changes its answer every
+    // few pixels, and the crowns twitch between lit and dim as the mouse
+    // crosses. Nothing may respond to the pointer here.
+    expect(container.querySelectorAll('path[opacity]')).toHaveLength(0);
+    expect(container.querySelectorAll('path[data-section]')).toHaveLength(0);
+    expect(container.querySelectorAll('a')).toHaveLength(0);
   });
 
   it('dims the other sections while one is highlighted', () => {

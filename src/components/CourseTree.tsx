@@ -126,7 +126,19 @@ export function CourseTree({
   onExpand,
 }: CourseTreeProps) {
   const [pointed, setPointed] = useState<string | null>(null);
-  const active = pointed ?? highlight;
+
+  /*
+   * Only the expanded drawing follows the pointer.
+   *
+   * A thumbnail is one object, not eleven. Tracking the nearest limb at
+   * 176px tall means the answer changes every few pixels of mouse travel —
+   * sections flicking between lit and dim, crowns twitching — and the page
+   * reads as though it is malfunctioning. The whole preview responds to a
+   * click instead; the pointing happens where the limbs are far enough apart
+   * to point at.
+   */
+  const tracking = interactive && mode === 'navigate';
+  const active = (tracking ? pointed : null) ?? highlight;
 
   const { tree, sections } = useMemo(() => {
     const sections = sortedSections(course).map((section) => {
@@ -247,7 +259,7 @@ export function CourseTree({
    */
   useLayoutEffect(() => {
     const svg = svgRef.current;
-    if (!svg || !interactive) return;
+    if (!svg || !tracking) return;
     const samples: Sample[] = [];
     for (const el of svg.querySelectorAll<SVGPathElement>('path[data-section]')) {
       // jsdom has no SVG geometry, so the cloud stays empty under test and
@@ -264,7 +276,7 @@ export function CourseTree({
       }
     }
     cloud.current = samples;
-  }, [tree, interactive]);
+  }, [tree, tracking]);
 
   const nearest = useCallback((event: { clientX: number; clientY: number }): string | null => {
     const svg = svgRef.current;
@@ -307,7 +319,7 @@ export function CourseTree({
     // Only the wood is sampled: a crown's leaves are hundreds of marks a few
     // units across, and the branch running through them puts a sample
     // everywhere they are anyway.
-    'data-section': interactive && limb.kind !== 'leaf' ? limb.sectionId : undefined,
+    'data-section': tracking && limb.kind !== 'leaf' ? limb.sectionId : undefined,
     opacity: active && !isStructural(limb) && limb.sectionId !== active ? 0.4 : undefined,
   });
 
@@ -319,7 +331,7 @@ export function CourseTree({
       transformOrigin: `${geo.anchor[0]}px ${geo.anchor[1]}px`,
     };
   };
-  const pointedTitle = interactive ? sections.find((s) => s.id === pointed)?.title : undefined;
+  const pointedTitle = tracking ? sections.find((s) => s.id === pointed)?.title : undefined;
 
   const svg = (
     <svg
@@ -331,17 +343,13 @@ export function CourseTree({
       strokeLinejoin="round"
       // A drawing with links inside it is not an image: role="img" would hide
       // every one of those links from a screen reader.
-      role={interactive ? 'group' : 'img'}
+      role={tracking ? 'group' : 'img'}
       aria-label={label}
-      onPointerMove={interactive ? (e) => setPointed(nearest(e)) : undefined}
-      onPointerLeave={interactive ? () => setPointed(null) : undefined}
+      onPointerMove={tracking ? (e) => setPointed(nearest(e)) : undefined}
+      onPointerLeave={tracking ? () => setPointed(null) : undefined}
       onClick={
-        interactive
+        tracking
           ? (e) => {
-              if (mode === 'preview') {
-                onExpand?.();
-                return;
-              }
               const id = nearest(e);
               if (id) navigate(`/study/${courseId}/section/${encodeURIComponent(id)}`);
             }
@@ -382,7 +390,7 @@ export function CourseTree({
       {/* Keyboard and screen-reader access to the same sections. These carry
           no pointer events — pointing is handled above, by distance — so they
           exist to be tabbed to, named, and pressed. */}
-      {interactive &&
+      {tracking &&
         sections.map((section) => (
           <a
             key={section.id}
@@ -403,6 +411,19 @@ export function CourseTree({
   );
 
   if (!interactive) return svg;
+
+  if (mode === 'preview') {
+    return (
+      <button
+        type="button"
+        onClick={onExpand}
+        aria-label={`${label}. Open it`}
+        className="shrink-0 cursor-zoom-in rounded transition-opacity hover:opacity-80"
+      >
+        {svg}
+      </button>
+    );
+  }
 
   /* Named before it is clicked. Aiming at a limb inside eleven interleaved
      crowns picks the right section about 60% of the time, measured — so the
