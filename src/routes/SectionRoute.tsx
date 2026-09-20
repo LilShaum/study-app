@@ -133,7 +133,7 @@ export function SectionRoute() {
           <h2 className="mb-3 mt-8 font-display text-title font-semibold text-text">
             Study just this section
           </h2>
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {MODE_LINKS.map((m) =>
               m.count > 0 ? (
                 <Link

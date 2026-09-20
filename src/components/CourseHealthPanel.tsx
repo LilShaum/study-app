@@ -31,12 +31,12 @@ export function CourseHealthPanel({ course, onFix }: CourseHealthPanelProps) {
   const pct = coverage ? Math.round((coverage.covered / coverage.total) * 100) : null;
 
   return (
-    <div className="mt-4 rounded-lg border border-border bg-surface text-sm">
+    <div className="mt-4 border-b border-border text-sm">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center gap-2 px-4 py-2.5 text-left"
+        className="flex w-full items-center gap-2 px-2 py-2.5 text-left"
       >
         <span
           className={
@@ -67,7 +67,7 @@ export function CourseHealthPanel({ course, onFix }: CourseHealthPanelProps) {
       </button>
 
       {open && (
-        <div className="space-y-2 border-t border-border px-4 py-3">
+        <div className="space-y-2 border-t border-border px-2 py-3">
           {coverage && coverage.missing.length > 0 && (
             <p className="text-text-2">
               The generator listed these terms as being in your notes but never defined them:{' '}

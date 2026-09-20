@@ -9,6 +9,7 @@ import { useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon, type IconName } from '@/components/Icon';
 import { CourseTree } from '@/components/CourseTree';
+import { SpecimenLabel } from '@/components/SpecimenLabel';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
 import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
@@ -168,9 +169,7 @@ export function CourseRoute() {
     );
   }
 
-  // Code and subject only. The tags went here too, and a course with seven of
-  // them put two wrapped lines of shouting capitals above its own title.
-  const meta = [course.metadata.course_code, course.metadata.subject].filter(Boolean);
+  const tags = course.metadata.tags ?? [];
 
   return (
     <div className="mx-auto max-w-4xl p-6">
@@ -188,27 +187,45 @@ export function CourseRoute() {
             none. See CourseTree for the two approaches tried. */}
         <CourseTree courseId={id} course={course} progress={progress} className="h-24 sm:h-44" />
         <div className="min-w-0 flex-1">
-          {meta.length > 0 && (
-            <p className="text-micro uppercase tracking-wider text-text-3">{meta.join(' · ')}</p>
-          )}
-          <h1 className="mt-1 font-display text-display font-semibold text-text">{course.metadata.title}</h1>
+          <h1 className="font-display text-display font-semibold text-text">{course.metadata.title}</h1>
           {course.metadata.description && (
             <p className="mt-2 line-clamp-3 max-w-prose text-small text-text-2 sm:line-clamp-none">
               {course.metadata.description}
             </p>
           )}
-          <p className="mt-3 text-small text-text-2">
-            {counts.total} item{counts.total === 1 ? '' : 's'} · {course.sections.length} section
-            {course.sections.length === 1 ? '' : 's'}
-            {counts.accuracy !== null && <> · {counts.accuracy}% correct</>}
-          </p>
+          {/* The code, the subject and the figures were a line of run-together
+              small caps and a sentence of statistics. As a specimen label they
+              are fields, which is what they are. */}
+          <SpecimenLabel
+            className="mt-4"
+            rows={[
+              { label: 'Code', value: course.metadata.course_code },
+              { label: 'Subject', value: course.metadata.subject },
+              {
+                label: 'Contents',
+                value: `${counts.total} item${counts.total === 1 ? '' : 's'} in ${
+                  course.sections.length
+                } section${course.sections.length === 1 ? '' : 's'}`,
+              },
+              {
+                label: 'Studied',
+                value:
+                  counts.accuracy === null
+                    ? 'Not yet'
+                    : `${counts.accuracy}% correct over ${counts.gradable} scorable item${
+                        counts.gradable === 1 ? '' : 's'
+                      }`,
+              },
+              { label: 'Tags', value: tags.length ? tags.join(', ') : null },
+            ]}
+          />
         </div>
       </div>
 
       <CourseHealthPanel course={course} onFix={() => setAdding('fix')} />
 
       {resumable && (
-        <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded border border-accent-border bg-accent-light p-4">
+        <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded border border-border-strong bg-surface-raised p-4 shadow">
           <span className="min-w-0 flex-1">
             <span className="block font-medium text-text">
               {MODE_LABELS[resumable.mode] ?? resumable.mode}
@@ -320,14 +337,16 @@ export function CourseRoute() {
       </div>
 
       <h2 className="mb-3 mt-10 font-display text-title font-semibold text-text">Sections</h2>
-      <ul className="space-y-2">
+      {/* A list on paper is ruled rows, not eleven stacked boxes each with its
+          own border and fill. */}
+      <ul className="divide-y divide-border border-y border-border">
         {sortedSections(course).map((section) => {
           const stats = sectionStats(section, progress);
           return (
             <li key={section.id}>
               <Link
                 to={`/study/${id}/section/${encodeURIComponent(section.id)}`}
-                className="flex items-center gap-3 rounded border border-border bg-surface px-4 py-2.5 transition-colors hover:border-border-strong"
+                className="flex items-center gap-3 px-2 py-3 transition-colors hover:bg-surface"
               >
                 <span className="min-w-0 flex-1">
                   <span className="block text-body font-medium text-text">{section.title}</span>

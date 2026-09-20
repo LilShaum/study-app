@@ -37,7 +37,7 @@ function inFrame(): boolean {
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <li className="flex gap-2.5">
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-light text-[11px] font-semibold text-accent">
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border-strong text-[11px] font-semibold text-text-2">
         {n}
       </span>
       <span className="flex-1 pt-0.5">{children}</span>

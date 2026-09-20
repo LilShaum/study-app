@@ -53,7 +53,7 @@ export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false }
         <div className={`flip-card min-h-[220px] ${flipped ? 'is-flipped' : ''}`}>
           {/* Front */}
           <div className={FACE} aria-hidden={flipped}>
-            <p className="text-heading text-text">{item.front}</p>
+            <p className="font-display text-heading text-text">{item.front}</p>
             <button
               type="button"
               tabIndex={flipped ? -1 : 0}
@@ -66,7 +66,7 @@ export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false }
 
           {/* Back */}
           <div className={`${FACE} flip-face--back`} aria-hidden={!flipped}>
-            <p className="text-heading text-text">{item.back}</p>
+            <p className="font-display text-heading text-text">{item.back}</p>
             {item.hint && (
               <p className="flex items-center gap-1.5 text-sm text-text-3">
                 <Icon name="bulb" size={13} />
