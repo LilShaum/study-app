@@ -72,7 +72,7 @@ const SECTIONS: HelpSection[] = [
     body: (
       <>
         <p>
-          A course is a <code className="rounded bg-accent-light px-1 font-mono text-accent">.study.json</code>{' '}
+          A course is a <code className="rounded border border-border px-1 font-mono text-text-2">.study.json</code>{' '}
           file built from <em>your</em> notes — a lecture deck, a transcript, a textbook chapter, a
           photo of handwriting. Arborous does not generate it; you do, with an AI assistant, using
           the prompt the app hands you.
