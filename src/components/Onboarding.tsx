@@ -84,7 +84,7 @@ export function Onboarding() {
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
       <div className="my-6 w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-md">
         <div className="flex justify-center text-accent">
-          <Sprig className="h-10" />
+          <Sprig size={40} />
         </div>
         <h1 className="mt-2 text-center text-xl font-semibold text-text">Welcome to Arborous</h1>
         <p className="mt-1 text-center text-sm text-text-2">

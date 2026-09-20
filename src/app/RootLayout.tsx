@@ -4,7 +4,6 @@ import { DarkModeToggle } from '@/components/DarkModeToggle';
 import { Toaster } from '@/components/Toaster';
 import { Onboarding } from '@/components/Onboarding';
 import { Sprig } from '@/components/Sprig';
-import { Fleuron } from '@/components/Fleuron';
 import { useCoursesStore } from '@/store/courses';
 
 /**
@@ -51,7 +50,7 @@ export function RootLayout() {
             className="mark flex items-center gap-2 text-text hover:text-accent"
             aria-label="Arborous — back to the library"
           >
-            <Sprig className="h-5" />
+            <Sprig size={20} />
             Arborous
           </Link>
           {/* Truncates rather than wraps: a running head that grows to two
@@ -67,9 +66,18 @@ export function RootLayout() {
 
       {/* The colophon closes the page the way a book does, and is where the
           things you set once and forget live. They were in the head, which
-          is what made it read as a toolbar. */}
+          is what made it read as a toolbar.
+
+          The mark here is the whole sprig, not the single leaf it used to
+          be. Those are two different devices doing two different jobs: a
+          fleuron is a neutral ornament that divides one section from the
+          next, which is what it still does mid-page, while a book ends with
+          the printer's own device. Using the leaf for both left an
+          unexplained mark at the foot of every page. */}
       <footer className="page-block shrink-0 pb-8 pt-10">
-        <Fleuron className="mb-5" />
+        <div className="mb-5 flex justify-center text-text-3">
+          <Sprig size={22} />
+        </div>
         <div className="flex items-center justify-center gap-5">
           <Link to="/help" className="press press-quiet">
             Help
