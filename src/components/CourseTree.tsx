@@ -81,6 +81,16 @@ const PIVOT = 5;
 /** Falloff of that swing with distance across the crown, in viewBox units. */
 const PIVOT_REACH = 60;
 
+/**
+ * How much nearer a different branch must be before the selection moves to it.
+ *
+ * Without this the answer changes the instant another branch is a hair
+ * closer, so crossing the crown flickers between sections and the drawing
+ * churns. Holding what you have until something is clearly nearer is what
+ * makes it feel like pointing at a thing rather than sweeping a field.
+ */
+const STICK = 1.7;
+
 /** The first point of a path — where a limb leaves the wood it grew from. */
 function startOf(d: string): [number, number] | null {
   const m = /^M\s*(-?[\d.]+)[\s,]+(-?[\d.]+)/.exec(d);
@@ -278,7 +288,7 @@ export function CourseTree({
     cloud.current = samples;
   }, [tree, tracking]);
 
-  const nearest = useCallback((event: { clientX: number; clientY: number }): string | null => {
+  const nearest = useCallback((event: { clientX: number; clientY: number }, holding: string | null): string | null => {
     const svg = svgRef.current;
     if (!svg) return null;
     const ctm = svg.getScreenCTM();
@@ -289,12 +299,18 @@ export function CourseTree({
     const { x, y } = point.matrixTransform(ctm.inverse());
     let best: string | null = null;
     let bestDist = REACH * REACH;
+    let heldDist = Infinity;
     for (const s of cloud.current) {
       const d = (s.x - x) * (s.x - x) + (s.y - y) * (s.y - y);
+      if (s.sectionId === holding && d < heldDist) heldDist = d;
       if (d < bestDist) {
         bestDist = d;
         best = s.sectionId;
       }
+    }
+    // Keep what is already selected unless the new one is clearly nearer.
+    if (holding && best !== holding && heldDist < bestDist * STICK * STICK && heldDist < REACH * REACH) {
+      return holding;
     }
     return best;
   }, []);
@@ -316,10 +332,15 @@ export function CourseTree({
     // Normalised length, so one dash rule can draw on a path of any size
     // without knowing how long it is.
     pathLength: animate && !limb.solid ? 1 : undefined,
-    // Only the wood is sampled: a crown's leaves are hundreds of marks a few
-    // units across, and the branch running through them puts a sample
-    // everywhere they are anyway.
-    'data-section': tracking && limb.kind !== 'leaf' ? limb.sectionId : undefined,
+    // Only the MAIN branches are targets.
+    //
+    // Twigs outnumber branches five to one and thread through their
+    // neighbours' crowns, so sampling them made the answer change every few
+    // pixels of travel — and a twig is not a place you can go anyway: every
+    // limb of a section leads to the same section. Aiming at the branch is
+    // what a person means, and the generator already knows which limbs
+    // those are.
+    'data-section': tracking && limb.kind === 'branch' ? limb.sectionId : undefined,
     opacity: active && !isStructural(limb) && limb.sectionId !== active ? 0.4 : undefined,
   });
 
@@ -345,12 +366,12 @@ export function CourseTree({
       // every one of those links from a screen reader.
       role={tracking ? 'group' : 'img'}
       aria-label={label}
-      onPointerMove={tracking ? (e) => setPointed(nearest(e)) : undefined}
+      onPointerMove={tracking ? (e) => setPointed((held) => nearest(e, held)) : undefined}
       onPointerLeave={tracking ? () => setPointed(null) : undefined}
       onClick={
         tracking
           ? (e) => {
-              const id = nearest(e);
+              const id = nearest(e, pointed);
               if (id) navigate(`/study/${courseId}/section/${encodeURIComponent(id)}`);
             }
           : undefined
@@ -367,7 +388,7 @@ export function CourseTree({
           <path key={`s${i}`} {...paint(limb)} />
         ))}
         {[...layers.wood].map(([id, limbs]) => (
-          <g key={id} data-sid={id} className="limb-set" style={swing(id)}>
+          <g key={id} data-sid={id} data-held={id === active || undefined} className="limb-set" style={swing(id)}>
             {limbs.map((limb, i) => (
               <path key={i} {...paint(limb)} />
             ))}
@@ -379,7 +400,7 @@ export function CourseTree({
           <path key={`sf${i}`} {...paint(limb)} />
         ))}
         {[...layers.foliage].map(([id, limbs]) => (
-          <g key={id} data-sid={id} className="limb-set" style={swing(id)}>
+          <g key={id} data-sid={id} data-held={id === active || undefined} className="limb-set" style={swing(id)}>
             {limbs.map((limb, i) => (
               <path key={i} {...paint(limb)} />
             ))}
