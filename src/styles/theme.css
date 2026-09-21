@@ -129,13 +129,23 @@
      earlier pass stretched it six to one, reasoning that laid paper has
      directional fibre. On a screen that does not read as fibre, it reads as
      a horizontal smear, and worst in dark mode where the grain lightens the
-     page rather than darkening it. Keep both axes equal. */
+     page rather than darkening it. Keep both axes equal.
+
+     Both layers are contrast-stretched around mid-grey by a
+     feComponentTransfer, which is what turns flat mush into distinct
+     grains. That is needed because the two modes are not symmetrical:
+     `screen` on near-black is a large relative change and carries easily,
+     while `multiply` on near-white barely moves the luminance at all, so
+     the light page was effectively untextured at any opacity that did not
+     also grey it. Light therefore uses `overlay`, which puts specks both
+     lighter AND darker the way real tooth does, at a LOWER opacity than
+     dark rather than a higher one. */
   --paper-grain:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)' opacity='.5'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.22' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='.34'/%3E%3C/svg%3E");
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.4' intercept='-0.700'/%3E%3CfeFuncG type='linear' slope='2.4' intercept='-0.700'/%3E%3CfeFuncB type='linear' slope='2.4' intercept='-0.700'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)' opacity='.55'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.22' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.0' intercept='-0.500'/%3E%3CfeFuncG type='linear' slope='2.0' intercept='-0.500'/%3E%3CfeFuncB type='linear' slope='2.0' intercept='-0.500'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='.36'/%3E%3C/svg%3E");
   --paper-grain-size: 220px 220px, 380px 380px;
-  --paper-grain-opacity: 0.34;
-  --paper-grain-blend: multiply;
+  --paper-grain-opacity: 0.26;
+  --paper-grain-blend: overlay;
 
   --sidebar-w: 240px;
   --header-h: 56px;

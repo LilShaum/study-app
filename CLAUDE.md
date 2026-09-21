@@ -291,10 +291,52 @@ wrong thing. For every MCQ:
 - `explanation` states why the correct answer is right, grounded in the
   source, not just "because it's correct."
 
+**Do not let the shape of an option give the answer away.** This is the
+failure mode that survives every other rule, because a correct answer wants
+the qualifying clause that a wrong one can do without — so it grows, and a
+student who knows nothing learns to pick the longest. Measured on a real
+generated course: the right answer was the longest of four options 55% of
+the time against 25% by chance, averaging 1.48x the length of its
+distractors. The app now checks this and will report it.
+
+- Keep the four options within roughly the same length. If the correct one
+  needs a qualifier to be true, give the distractors one too.
+- No option carries a parenthetical gloss the others lack — "Connexins
+  (protein complexes) from the two adjacent cells" hands over the answer.
+- Never let one option run past twice the length of the others.
+- Vary which position is correct, and do not make "the longest", "the most
+  detailed" or "the most hedged" option a reliable signal.
+
 **Test understanding, not just recall.** If the source explains a mechanism,
 ask what happens when a step is blocked. If it gives a formula, ask the
 student to apply it. If it draws a distinction, ask for the case that
 separates the two. Recall items are necessary but they are the floor.
+
+Concretely: **every section needs at least one gradable item that asks the
+student to apply, predict or discriminate**, not only to retrieve. A section
+whose questions are all "which class does X belong to" has taught a lookup
+table. The app reports sections where nothing goes beyond recall.
+
+**Ask about the subject, never about the document.** Two failures here, and
+both produce items that are perfectly grounded and still worthless:
+
+- A stem that cites the source — "according to the notes", "on the Chemical
+  Messengers slide", "which two are listed together on one line". The cue
+  will not exist in the exam, and the last of those tests typesetting.
+- A stem built by bolting an interrogative onto the source sentence —
+  "Hydrophilic messengers travel to the target cell how?" from a source
+  reading "Travel to target cell dissolved in extracellular fluid". Nothing
+  is factually wrong here, and one such item is fine; the problem is a whole
+  course of them, because the student never has to do anything with a fact
+  except recognise it.
+
+Restating is not banned — a definition has to use its own term's words. The
+rule is that a fact stated as a rule should also be **asked as a rule**. The
+source above says hydrophilic messengers cannot cross the membrane, so
+besides recalling that, ask it: given a new messenger that is hydrophilic,
+where is its receptor? Same passage, same grounding, and now the student has
+to use it. Reuse the source's terms; don't reuse its sentences. The app
+measures this overlap across the whole course and reports the share.
 
 **Only `mcq` and `flashcard` items are graded.** Definitions, examples and
 diagrams are read, not scored — they never appear in the accuracy figures or
@@ -324,8 +366,16 @@ Check your own draft:
    Delete or fix any that don't.
 3. Does every MCQ have four options, a 0-based `correct_index` pointing at
    the genuinely correct one, and a real `distractor_rationale` per option?
-4. Is `total_items` / `item_counts` in metadata accurate if you included them?
-5. Is it valid JSON — no trailing commas, no comments, matching quotes?
+4. **Scan the correct options alone.** Are they consistently the longest, the
+   most qualified, the only ones with a parenthetical? If a stranger could
+   score above 25% seeing only the options and never the questions, fix the
+   distractors — this is the one fault that makes a course flatter a student
+   rather than prepare them.
+5. **Scan the stems alone.** Does any mention the notes, the slides or a
+   figure? Is any one just its `source_excerpt` reworded into a question?
+   Does every section have at least one that asks for more than retrieval?
+6. Is `total_items` / `item_counts` in metadata accurate if you included them?
+7. Is it valid JSON — no trailing commas, no comments, matching quotes?
 
 If the student's source material is missing, empty, or too vague to ground
 anything in, say so in plain text instead of generating a file — don't
