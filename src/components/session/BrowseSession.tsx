@@ -53,7 +53,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
         <Link to={`/study/${courseId}`} className="text-sm text-text-2 hover:text-text">
           ← Back
         </Link>
-        <span className="rounded border border-border px-2.5 py-0.5 text-xs font-medium text-text-2">Browse</span>
+        <span className="mark text-text-3">Browse</span>
       </div>
       <h1 className="mb-6 font-display text-display font-semibold text-text">{course.metadata.title}</h1>
 

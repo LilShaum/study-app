@@ -147,7 +147,7 @@ export function DiagramsRoute() {
       <h1 className="mt-3 font-display text-display font-semibold text-text">Diagrams</h1>
 
       {plates.length === 0 ? (
-        <div className="mt-6 rounded border border-dashed border-border p-8 text-center">
+        <div className="mt-6 border-y border-border py-8 text-center">
           <span className="inline-flex text-text-3">
             <Icon name="layers" size={28} />
           </span>
@@ -175,7 +175,7 @@ export function DiagramsRoute() {
                   key={s.id}
                   type="button"
                   onClick={() => scrollToAnchor(s.anchor)}
-                  className="tap-safe rounded border border-border bg-surface px-3 py-1 text-xs text-text-2 hover:border-border-strong hover:text-text"
+                  className="press tap-safe"
                 >
                   {s.title} ({s.count})
                 </button>
