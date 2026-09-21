@@ -1,6 +1,7 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { analyseCourseGaps, type CourseGaps } from './courseGaps';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
+import { analyseQuestionQuality, RESTATED_AT, type QuestionQuality } from './questionQuality';
 
 export type HealthSeverity = 'problem' | 'warning';
 
@@ -20,6 +21,8 @@ export interface CourseHealth {
   gaps: CourseGaps;
   /** Terms the generator declared but never defined. Null when it declared none. */
   declaredTermCoverage: { covered: number; total: number; missing: string[] } | null;
+  /** What the questions ask, as opposed to whether the file is well formed. */
+  quality: QuestionQuality;
 }
 
 function promptOf(item: StudyItem): string {
@@ -228,11 +231,65 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     });
   }
 
+  /* ---- what the questions actually ask ---- */
+  const quality = analyseQuestionQuality(course);
+
+  // Reported as a z-score, not a percentage: at small n a percentage is
+  // noise. Three sigma on at least twenty questions is a real pattern, and
+  // it is the one that lets a student who knows nothing beat chance.
+  if (quality.length.mcqs >= 20 && quality.length.z >= 3) {
+    const pct = Math.round((quality.length.longestIsCorrect / quality.length.mcqs) * 100);
+    findings.push({
+      id: 'length-tell',
+      severity: 'problem',
+      message: `The right answer is the longest of the four options ${pct}% of the time — it should be about 25%. Guessing the longest beats guessing at random here, so some of these are scoring length rather than knowledge.`,
+    });
+  }
+
+  if (quality.length.lopsided.length >= Math.max(4, quality.length.mcqs * 0.15)) {
+    findings.push({
+      id: 'lopsided-options',
+      severity: 'warning',
+      message: `${quality.length.lopsided.length} questions have one option more than twice the length of the others, which draws the eye to it whether or not it is right.`,
+      items: quality.length.lopsided,
+    });
+  }
+
+  if (quality.gradable > 0 && quality.restated.length > quality.gradable * 0.25) {
+    const pct = Math.round((quality.restated.length / quality.gradable) * 100);
+    findings.push({
+      id: 'restates-source',
+      severity: 'warning',
+      message: `${pct}% of questions reuse more than ${Math.round(RESTATED_AT * 100)}% of the wording of the passage they came from, so they can be answered by matching words rather than by knowing the material.`,
+      items: quality.restated,
+    });
+  }
+
+  if (quality.gradable > 0 && quality.sourceCued.length > quality.gradable * 0.08) {
+    const pct = Math.round((quality.sourceCued.length / quality.gradable) * 100);
+    findings.push({
+      id: 'cued-to-source',
+      severity: 'warning',
+      message: `${pct}% of questions ask about "the notes" or "the slide" rather than about the subject. That cue will not be there in the exam.`,
+      items: quality.sourceCued,
+    });
+  }
+
+  if (quality.recallOnlySections.length) {
+    const n = quality.recallOnlySections.length;
+    findings.push({
+      id: 'recall-only-sections',
+      severity: 'warning',
+      message: `${n} section${n === 1 ? '' : 's'} only ever ask you to recall a fact — nothing asks you to apply or compare: ${quality.recallOnlySections.slice(0, 3).join('; ')}${n > 3 ? `, +${n - 3} more` : ''}.`,
+    });
+  }
+
   return {
     findings,
     problems: findings.filter((f) => f.severity === 'problem').length,
     warnings: findings.filter((f) => f.severity === 'warning').length,
     gaps,
     declaredTermCoverage,
+    quality,
   };
 }
