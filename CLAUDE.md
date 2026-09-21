@@ -323,14 +323,20 @@ both produce items that are perfectly grounded and still worthless:
 - A stem that cites the source — "according to the notes", "on the Chemical
   Messengers slide", "which two are listed together on one line". The cue
   will not exist in the exam, and the last of those tests typesetting.
-- A stem that is its own `source_excerpt` with a question mark added —
-  "Hydrophilic messengers travel to the target cell how?" against a source
-  reading "Travel to target cell dissolved in extracellular fluid". That is
-  answerable by matching words, which is not knowing anything.
+- A stem built by bolting an interrogative onto the source sentence —
+  "Hydrophilic messengers travel to the target cell how?" from a source
+  reading "Travel to target cell dissolved in extracellular fluid". Nothing
+  is factually wrong here, and one such item is fine; the problem is a whole
+  course of them, because the student never has to do anything with a fact
+  except recognise it.
 
-Write the question as if the source were not in front of the student,
-because it will not be. Reuse the source's *terms* — those are the subject —
-but not its sentences. The app measures this overlap and reports it.
+Restating is not banned — a definition has to use its own term's words. The
+rule is that a fact stated as a rule should also be **asked as a rule**. The
+source above says hydrophilic messengers cannot cross the membrane, so
+besides recalling that, ask it: given a new messenger that is hydrophilic,
+where is its receptor? Same passage, same grounding, and now the student has
+to use it. Reuse the source's terms; don't reuse its sentences. The app
+measures this overlap across the whole course and reports the share.
 
 **Only `mcq` and `flashcard` items are graded.** Definitions, examples and
 diagrams are read, not scored — they never appear in the accuracy figures or

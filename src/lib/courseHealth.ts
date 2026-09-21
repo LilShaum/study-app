@@ -1,7 +1,7 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { analyseCourseGaps, type CourseGaps } from './courseGaps';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
-import { analyseQuestionQuality, RESTATED_AT, type QuestionQuality } from './questionQuality';
+import { analyseQuestionQuality, type QuestionQuality } from './questionQuality';
 
 export type HealthSeverity = 'problem' | 'warning';
 
@@ -260,7 +260,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     findings.push({
       id: 'restates-source',
       severity: 'warning',
-      message: `${pct}% of questions reuse more than ${Math.round(RESTATED_AT * 100)}% of the wording of the passage they came from, so they can be answered by matching words rather than by knowing the material.`,
+      message: `${pct}% of questions are worded very close to the passage they came from. Each is fine on its own — a definition has to use the term's own words — but at this share the course is mostly asking you to recognise sentences you have read, rather than to use what they say.`,
       items: quality.restated,
     });
   }

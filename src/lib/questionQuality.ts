@@ -115,14 +115,17 @@ const words = (s: string) => new Set(String(s).toLowerCase().match(/[a-z]{4,}/g)
  * The share of a question's own vocabulary that came straight from the
  * passage it cites.
  *
- * A stand-in for "is this testing the subject or testing whether you read the
- * slide". At the top of the range the item is the source sentence with a
- * question mark on it — answerable by matching words, forgotten by the exam,
- * where the sentence will not be in front of you. It is only a proxy: a
- * question about a formula legitimately reuses the formula's own terms. But
- * it is a proxy that can be computed, and it agrees with slower judgements —
- * on a course measured by hand the least-restated items were the ones that
- * asked for a calculation.
+ * Read it as "how close is this to the page it came from", and nothing
+ * stronger. A high score is NOT a broken item. For a definition-level fact
+ * restating the source IS the question — "what is X" has to use X's words,
+ * and a question about a formula legitimately reuses the formula's terms.
+ *
+ * What the number is good for is the aggregate. A course sitting high across
+ * the board has stayed at the floor: it asks you to recognise sentences you
+ * have read rather than to use what they say. That is worth knowing before
+ * an exam, and it is invisible item by item, because every one of those
+ * items looks reasonable on its own. Which is exactly why it is reported as
+ * a share of the course and never against a single question.
  */
 export function restatement(item: StudyItem): number {
   const asked = words(`${stemOf(item)} ${answerOf(item)}`);
