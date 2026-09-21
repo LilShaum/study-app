@@ -328,7 +328,7 @@ const SECTIONS: HelpSection[] = [
         <ul className="mt-2 space-y-1.5">
           {SHORTCUTS.map((s) => (
             <li key={s.keys} className="flex items-baseline gap-3">
-              <kbd className="w-20 shrink-0 rounded border border-border bg-surface px-1.5 py-0.5 text-center font-mono text-[11px] text-text-2">
+              <kbd className="w-20 shrink-0 rounded-sm border border-border bg-surface px-1.5 py-0.5 text-center font-mono text-[11px] text-text-2">
                 {s.keys}
               </kbd>
               <span className="text-text-2">{s.what}</span>
@@ -451,7 +451,7 @@ export function HelpRoute() {
             key={s.id}
             type="button"
             onClick={() => scrollToAnchor(s.id)}
-            className="tap-safe rounded border border-border bg-surface px-3 py-1 text-xs text-text-2 hover:border-border-strong hover:text-text"
+            className="press tap-safe"
           >
             {s.title}
           </button>

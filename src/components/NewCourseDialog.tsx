@@ -130,7 +130,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
       aria-modal="true"
       aria-label="Create a new course"
     >
-      <div className="my-8 w-full max-w-2xl rounded-lg border border-border bg-surface shadow-md">
+      <div className="my-8 w-full max-w-2xl rounded-sm border border-border-strong bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <h2 className="font-semibold text-text">New course</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="text-text-3 hover:text-text">
@@ -152,7 +152,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
             <button
               type="button"
               onClick={copyPrompt}
-              className="inline-flex items-center gap-1.5 rounded border border-border bg-bg px-3 py-1.5 text-sm text-text hover:border-border-strong"
+              className="press"
             >
               <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
               {copied ? 'Prompt copied' : 'Copy generator prompt'}
@@ -170,7 +170,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
                 rows={8}
                 spellCheck={false}
                 placeholder={'{\n  "schema_version": "1.0",\n  "metadata": { … },\n  "sections": [ … ]\n}'}
-                className="w-full rounded border border-border bg-bg px-2.5 py-2 font-mono text-xs text-text focus:border-accent"
+                className="field w-full font-mono text-xs"
               />
             </label>
             <div className="mt-2 text-sm text-text-3">
@@ -186,14 +186,14 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
           {result && 'error' in result && (
             <div
               role="alert"
-              className="whitespace-pre-wrap rounded border border-error bg-error-bg px-3 py-2 text-sm text-error"
+              className="whitespace-pre-wrap border-l-2 border-error py-2 pl-3 text-sm text-error"
             >
               {result.error}
             </div>
           )}
 
           {course && (
-            <div className="rounded border border-border bg-bg px-3 py-2.5 text-sm">
+            <div className="border-l-2 border-border-strong bg-bg py-2 pl-3 text-sm">
               <div className="font-medium text-text">
                 {course.metadata.title || 'Untitled course'}
                 {course.metadata.course_code && (

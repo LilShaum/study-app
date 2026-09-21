@@ -141,7 +141,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
       aria-modal="true"
       aria-label={`${MODE_TITLES[mode]} — ${course.metadata.title}`}
     >
-      <div className="my-8 w-full max-w-2xl rounded-lg border border-border bg-surface shadow-md">
+      <div className="my-8 w-full max-w-2xl rounded-sm border border-border-strong bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <h2 className="font-semibold text-text">{MODE_TITLES[mode]}</h2>
           <button
@@ -215,13 +215,13 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
             {mode === 'fix' &&
               (fixes.empty ? (
-                <div className="mb-2 rounded border border-border bg-bg px-3 py-2 text-sm text-text-2">
+                <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
                   The check found nothing to fix — every term the generator listed has a definition,
                   every definition is tested somewhere, and no question has a broken answer key. The
                   prompt would be asking for nothing.
                 </div>
               ) : (
-                <div className="mb-2 rounded border border-border bg-bg px-3 py-2 text-sm text-text-2">
+                <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
                   <div className="mb-1 font-medium text-text">The prompt will ask it to:</div>
                   <ul className="list-inside list-disc space-y-0.5">
                     {fixes.missingTerms.length > 0 && (
@@ -256,7 +256,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
               (gaps.untestedTerms.length > 0 ||
                 gaps.thinSections.length > 0 ||
                 gaps.gradableRatio < 0.5) && (
-                <div className="mb-2 rounded border border-border bg-bg px-3 py-2 text-sm text-text-2">
+                <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
                   <div className="mb-1 font-medium text-text">The prompt will prioritise:</div>
                   <ul className="list-inside list-disc space-y-0.5">
                     {gaps.untestedTerms.length > 0 && (
@@ -291,7 +291,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             <button
               type="button"
               onClick={copyPrompt}
-              className="inline-flex items-center gap-1.5 rounded border border-border bg-bg px-3 py-1.5 text-sm text-text hover:border-border-strong"
+              className="press"
             >
               <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
               {copied ? 'Prompt copied' : 'Copy prompt'}
@@ -310,7 +310,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 rows={8}
                 spellCheck={false}
                 placeholder={'{\n  "sections": [\n    { "id": "…", "items": [ … ] }\n  ]\n}'}
-                className="w-full rounded border border-border bg-bg px-2.5 py-2 font-mono text-xs text-text focus:border-accent"
+                className="field w-full font-mono text-xs"
               />
             </label>
           </section>
@@ -319,14 +319,14 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
           {result && 'error' in result && (
             <div
               role="alert"
-              className="whitespace-pre-wrap rounded border border-error bg-error-bg px-3 py-2 text-sm text-error"
+              className="whitespace-pre-wrap border-l-2 border-error py-2 pl-3 text-sm text-error"
             >
               {result.error}
             </div>
           )}
 
           {plan && (
-            <div className="rounded border border-border bg-bg px-3 py-2.5 text-sm">
+            <div className="border-l-2 border-border-strong bg-bg py-2 pl-3 text-sm">
               {plan.totalAdded === 0 && plan.totalCorrected === 0 ? (
                 <div className="text-text-2">
                   Nothing new to add

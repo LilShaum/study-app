@@ -519,5 +519,25 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    /* The delay has to go too, and it is the line this rule is usually
+       missing. Collapsing the DURATION of the session tree's leaf animation
+       left its 650ms delay intact, and because the animation is filled
+       `both` the element holds its `from` state through the delay — so the
+       crown sat invisible for two thirds of a second and then popped in.
+       A flash is exactly what this preference is asking us not to do. */
+    animation-delay: 0ms !important;
+    /* Covers scrolling CSS starts. A scroll started from script names its
+       own behaviour and ignores this, so those ask lib/motion.ts instead. */
+    scroll-behavior: auto !important;
+  }
+
+  /* The limbs do not swing aside at all.
+     Zeroing the transition only makes the swing instant: eleven branch
+     groups jumping five degrees on every pointer move is still motion, and
+     more startling than the drift it replaced. Nothing is lost by dropping
+     it, because which branch is held is already said twice without movement
+     — the held limb is drawn at 1.5x weight and the rest dim to 0.4. */
+  .limb-set {
+    transform: none !important;
   }
 }

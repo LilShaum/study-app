@@ -130,8 +130,22 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
                 <span>{opt}</span>
               </button>
               {rationale && (
-                <div className="mt-1 pl-3 text-xs text-text-3">
-                  <span className="text-text-2">Why not: </span>
+                /* The rationale under the option the student actually chose
+                   is set to be read; the rest are there to be glanced at.
+                   A wrong answer you picked is a misconception you just
+                   acted on, and it is the one worth correcting — giving it
+                   the same muted treatment as three options nobody touched
+                   buries the only feedback that was earned. */
+                <div
+                  className={
+                    isSelected
+                      ? 'mt-1.5 border-l-2 border-error py-0.5 pl-3 text-small text-text-2'
+                      : 'mt-1 pl-3 text-xs text-text-3'
+                  }
+                >
+                  <span className={isSelected ? 'text-error' : 'text-text-2'}>
+                    {isSelected ? 'Why that is wrong: ' : 'Why not: '}
+                  </span>
                   {rationale}
                 </div>
               )}
@@ -145,7 +159,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
           type="button"
           disabled={selected < 0}
           onClick={check}
-          className="press press-ink mt-4 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-text-3"
+          className="press press-ink tap-safe mt-4"
         >
           Check answer
         </button>
@@ -164,8 +178,8 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
           )}
           {item.explanation && <div className="mt-1 text-sm text-text-2">{item.explanation}</div>}
           {onNext && (
-            <button type="button" onClick={onNext} className="mt-3 text-sm text-text-2 hover:text-text">
-              Next →
+            <button type="button" onClick={onNext} className="press tap-safe mt-3">
+              Next
             </button>
           )}
         </div>

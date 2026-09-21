@@ -17,8 +17,16 @@ const SOLID = 80;
  * Bars are ink, not a traffic light. Accuracy here is a magnitude being
  * ranked, not a status being reported, and painting six rows in saturated
  * green and ochre made the largest coloured area in the app out of data that
- * is already sorted worst-first. Instead the rows that are not solid yet
- * carry the accent and the rest recede: one hue, used to point.
+ * is already sorted worst-first.
+ *
+ * A second pass then made the weak rows accent-blue, which was the same
+ * mistake in one hue: twelve filled bars is still the largest painted region
+ * on the page, and the rule this app works to is that the accent MARKS a
+ * thing and never fills a region. So the bars are ink on a hairline now,
+ * measured rules rather than coloured ones, and the ranking does the
+ * pointing — the list is sorted worst-first and the figure is right there.
+ * What is left of the emphasis is weight: a row below the solid mark is set
+ * in full ink, a solid one recedes.
  */
 function BarRow({ row }: { row: StatRow }) {
   const acc = row.acc ?? 0;
@@ -31,15 +39,17 @@ function BarRow({ row }: { row: StatRow }) {
           {acc}% <span className="text-text-3">of {row.attempts}</span>
         </span>
       </div>
-      <div className="relative mt-1 h-1.5 rounded-sm bg-surface-sunken">
+      <div className="relative mb-1 mt-2.5 h-px w-full bg-border">
         <div
-          className={`h-1.5 rounded-sm ${needsWork ? 'bg-accent' : 'bg-border-strong'}`}
+          className={`h-px ${needsWork ? 'bg-text' : 'bg-text-3'}`}
           style={{ width: `${acc}%` }}
         />
         {/* Where "solid" starts, so the emphasis explains itself without a
-            sentence underneath saying what the colours mean. */}
+            sentence underneath saying what it means. Drawn as a short tick
+            crossing the rule rather than a dot sitting on it, the way a
+            scale is marked. */}
         <div
-          className="absolute top-0 h-1.5 w-px bg-text-3 opacity-60"
+          className="absolute -top-1 h-[7px] w-px bg-text-3"
           style={{ left: `${SOLID}%` }}
           aria-hidden="true"
         />
@@ -48,11 +58,19 @@ function BarRow({ row }: { row: StatRow }) {
   );
 }
 
+/**
+ * One figure and what it counts.
+ *
+ * Four bordered tiles in a row is a dashboard's KPI strip, and it was the
+ * last one left in the app. On a page that is otherwise ruled, a figure
+ * needs no box around it — the rule above it and the space beside it are
+ * enough to say where it starts and stops.
+ */
 function Stat({ num, label }: { num: string; label: string }) {
   return (
-    <div className="rounded border border-border bg-surface px-3 py-2.5 text-center">
+    <div className="border-t border-border-strong pt-2">
       <div className="font-display text-title font-semibold tabular-nums text-text">{num}</div>
-      <div className="text-micro text-text-2">{label}</div>
+      <div className="mark mt-0.5 text-text-3">{label}</div>
     </div>
   );
 }
@@ -164,7 +182,7 @@ export function ProgressRoute() {
       {stats.weakestSections.length > 0 && (
         <Link
           to={`/session/${id}/weakest`}
-          className="mt-8 flex items-center justify-between gap-4 rounded border border-border-strong bg-surface-raised px-5 py-4 shadow transition-colors hover:bg-surface"
+          className="group mt-8 flex items-baseline justify-between gap-4 border-y-2 border-text-3 py-4"
         >
           <span className="font-display text-heading font-semibold text-text">Practise the weakest</span>
           <span className="shrink-0 text-small text-text-2">{stats.gradableCount} items →</span>

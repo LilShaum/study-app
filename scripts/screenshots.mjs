@@ -109,9 +109,25 @@ async function page(browser, size, { onboarded = true } = {}) {
 
 const base = (port) => `http://127.0.0.1:${port}${BASE}`;
 
+/** Chromium refuses to capture beyond this, and long before it refuses it
+    takes longer than any sane timeout. Browse renders every item in the
+    course at once, which at phone width is tens of thousands of pixels —
+    151 fixture items reach the limit, and a real 498-item course measured
+    168,640px. Clamping keeps the sweep honest about what it captured
+    instead of dying on one page. */
+const MAX_SHOT_PX = 16000;
+
 async function shot(p, name) {
   await p.waitForTimeout(500);
-  await p.screenshot({ path: path.join(OUT, `${name}.png`), fullPage: true });
+  const tall = await p.evaluate(() => document.documentElement.scrollHeight);
+  const file = path.join(OUT, `${name}.png`);
+  if (tall > MAX_SHOT_PX) {
+    const w = p.viewportSize().width;
+    await p.screenshot({ path: file, clip: { x: 0, y: 0, width: w, height: MAX_SHOT_PX } });
+    process.stdout.write(`  ${name}  (clipped: page is ${tall}px)\n`);
+    return;
+  }
+  await p.screenshot({ path: file, fullPage: true });
   process.stdout.write(`  ${name}\n`);
 }
 

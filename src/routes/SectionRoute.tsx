@@ -100,7 +100,7 @@ export function SectionRoute() {
       </div>
 
       {stats.gradable > 0 && (
-        <div className="mt-4 rounded-lg border border-border bg-surface px-4 py-3 text-sm">
+        <div className="mt-4 border-l-2 border-border-strong py-2 pl-3 text-sm">
           {stats.accuracy === null ? (
             <span className="text-text-2">
               Nothing studied in this section yet — {plural(stats.gradable, 'item')} can be scored.
@@ -121,7 +121,7 @@ export function SectionRoute() {
       {stats.total === 0 ? (
         // Six greyed-out "none here" tiles told an empty section's story six
         // times over; one line says it once.
-        <p className="mt-6 rounded-lg border border-dashed border-border p-5 text-sm text-text-2">
+        <p className="mt-6 border-y border-border py-5 text-center text-sm text-text-2">
           This section is empty — the generator created it but put no items in it. &ldquo;More
           practice&rdquo; on the course page can fill it, or you can add items yourself in Browse.
         </p>
@@ -139,7 +139,7 @@ export function SectionRoute() {
                 <Link
                   key={m.mode}
                   to={`/session/${id}/${m.mode}?section=${encodeURIComponent(section.id)}`}
-                  className="rounded-lg border border-border bg-surface p-4 transition-colors hover:border-border-strong"
+                  className="border-b border-border py-4 transition-colors hover:border-text-3"
                 >
                   <span className="mb-2 block text-accent">
                     <Icon name={m.icon} size={20} />
@@ -151,7 +151,7 @@ export function SectionRoute() {
                 <div
                   key={m.mode}
                   aria-disabled="true"
-                  className="rounded-lg border border-dashed border-border p-4 opacity-50"
+                  className="border-b border-dashed border-border py-4 opacity-50"
                 >
                   <span className="mb-2 block text-text-3">
                     <Icon name={m.icon} size={20} />
