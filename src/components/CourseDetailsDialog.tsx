@@ -11,8 +11,9 @@ interface CourseDetailsDialogProps {
   onClose: () => void;
 }
 
-const FIELD =
-  'w-full rounded border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-3 focus:border-accent';
+// A form on paper is a rule you write on; .field carries that and the focus
+// treatment with it.
+const FIELD = 'field w-full text-sm';
 
 /**
  * Editing a course's own details — title, code, subject, description, tags.
@@ -105,7 +106,7 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
       aria-modal="true"
       aria-label="Edit course details"
     >
-      <form onSubmit={save} className="my-8 w-full max-w-lg rounded-lg border border-border bg-surface shadow-md">
+      <form onSubmit={save} className="my-8 w-full max-w-lg rounded-sm border border-border-strong bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <h2 className="font-semibold text-text">Course details</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="text-text-3 hover:text-text">
@@ -160,7 +161,7 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1 rounded border border-border-strong px-2.5 py-1 text-xs text-text-2"
+                    className="inline-flex items-center gap-1 rounded-sm border border-border-strong px-2 py-0.5 text-xs text-text-2"
                   >
                     {tag}
                     <button

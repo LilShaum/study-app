@@ -8,8 +8,7 @@ interface EditItemFormProps {
   onCancel: () => void;
 }
 
-const inputClass =
-  'w-full rounded border border-border bg-bg px-2.5 py-1.5 text-sm text-text focus:border-accent';
+const inputClass = 'field w-full text-sm';
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
