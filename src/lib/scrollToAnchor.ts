@@ -1,3 +1,5 @@
+import { scrollBehavior } from './motion';
+
 /**
  * Jump to an element on the current page, without touching the URL.
  *
@@ -16,8 +18,7 @@
 export function scrollToAnchor(id: string): void {
   const target = document.getElementById(id);
   if (!target) return;
-  const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  target.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+  target.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
   // The target needs tabIndex={-1} for this to land anywhere.
   target.focus({ preventScroll: true });
 }

@@ -4,6 +4,7 @@ import type { Course } from '@/schema/course';
 import { sortedSections } from '@/lib/sortedSections';
 import { EditableItem } from '@/components/items/EditableItem';
 import { AddItemButton } from '@/components/items/AddItemButton';
+import { scrollBehavior } from '@/lib/motion';
 
 interface BrowseSessionProps {
   courseId: string;
@@ -40,7 +41,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
   }, [course]);
 
   const scrollToSection = (id: string) => {
-    sectionRefs.current.get(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    sectionRefs.current.get(id)?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
     setActiveSection(id);
   };
 
