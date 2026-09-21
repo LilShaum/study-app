@@ -72,8 +72,25 @@ interface CourseTreeProps {
 /** Wood that belongs to no section — the bole and the leader — never dims. */
 const isStructural = (limb: Limb) => !limb.sectionId;
 
-/** Beyond this far from any limb (in viewBox units) the pointer is on nothing. */
-const REACH = 26;
+/**
+ * How close the pointer must come to a branch, in SCREEN PIXELS, to be on it.
+ *
+ * This used to be 26 viewBox units, which on a 200x260 tree is 13% of the
+ * whole drawing — and a branch's own stroke is between one and three units.
+ * So a section grabbed the pointer from ten times its own width away, and on
+ * a crown where limbs overlap the nearer one snapped the selection off the
+ * one underneath before you ever reached it. Pointing at a branch has to
+ * mean being ON the branch.
+ *
+ * In pixels rather than viewBox units because the same drawing renders at a
+ * thumbnail and at 68vh: a fixed unit distance is a different physical
+ * target in each. Converted through the CTM at the moment of the test, so
+ * the tolerance is the same on any screen at any size.
+ */
+const REACH_PX = 11;
+
+/** A fingertip is blunter than a cursor and cannot see what it covers. */
+const REACH_PX_COARSE = 20;
 
 /** How far a neighbouring limb swings aside, in degrees, at its closest. */
 const PIVOT = 5;
@@ -89,7 +106,7 @@ const PIVOT_REACH = 60;
  * churns. Holding what you have until something is clearly nearer is what
  * makes it feel like pointing at a thing rather than sweeping a field.
  */
-const STICK = 1.7;
+const STICK = 1.2;
 
 /** The first point of a path — where a limb leaves the wood it grew from. */
 function startOf(d: string): [number, number] | null {
@@ -278,8 +295,10 @@ export function CourseTree({
       if (typeof el.getTotalLength !== 'function') return;
       const sectionId = el.dataset.section!;
       const length = el.getTotalLength();
-      // Roughly every 6 units, and never fewer than the two ends.
-      const steps = Math.max(2, Math.ceil(length / 6));
+      // Every ~2 units. With a grab radius of a few units, a 6-unit sample
+      // spacing left scallops between samples where the line tested as
+      // further away than it is.
+      const steps = Math.max(2, Math.ceil(length / 2));
       for (let i = 0; i <= steps; i++) {
         const { x, y } = el.getPointAtLength((length * i) / steps);
         samples.push({ x, y, sectionId });
@@ -297,8 +316,12 @@ export function CourseTree({
     point.x = event.clientX;
     point.y = event.clientY;
     const { x, y } = point.matrixTransform(ctm.inverse());
+    // One screen pixel is this many viewBox units at the size we are drawn.
+    const perPx = Math.hypot(ctm.a, ctm.b) || 1;
+    const wantPx = window.matchMedia?.('(pointer: coarse)').matches ? REACH_PX_COARSE : REACH_PX;
+    const reach = wantPx / perPx;
     let best: string | null = null;
-    let bestDist = REACH * REACH;
+    let bestDist = reach * reach;
     let heldDist = Infinity;
     for (const s of cloud.current) {
       const d = (s.x - x) * (s.x - x) + (s.y - y) * (s.y - y);
@@ -309,7 +332,7 @@ export function CourseTree({
       }
     }
     // Keep what is already selected unless the new one is clearly nearer.
-    if (holding && best !== holding && heldDist < bestDist * STICK * STICK && heldDist < REACH * REACH) {
+    if (holding && best !== holding && heldDist < bestDist * STICK * STICK && heldDist < reach * reach) {
       return holding;
     }
     return best;
@@ -341,7 +364,12 @@ export function CourseTree({
     // overlapped its neighbours' — which is exactly the complaint that
     // aiming at one branch lands two over. The generator now marks the
     // unbroken leader chain, so a section is one stroke to point at.
-    'data-section': tracking && limb.spine && limb.kind !== 'leaf' ? limb.sectionId : undefined,
+    //
+    // And only the BRANCH-weight part of that chain. The spine carries on
+    // into twig weight out at the tip, where it is a hair thick and has
+    // wandered in among the limbs it grew past — so those last segments were
+    // claiming pointer that was nowhere near anything you could see.
+    'data-section': tracking && limb.spine && limb.kind === 'branch' ? limb.sectionId : undefined,
     opacity: active && !isStructural(limb) && limb.sectionId !== active ? 0.4 : undefined,
   });
 
