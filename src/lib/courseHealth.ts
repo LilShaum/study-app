@@ -243,6 +243,8 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       id: 'length-tell',
       severity: 'problem',
       message: `The right answer is the longest of the four options ${pct}% of the time — it should be about 25%. Guessing the longest beats guessing at random here, so some of these are scoring length rather than knowledge.`,
+      // The blatant cases, so a repair can target them one by one.
+      items: quality.length.giveaway,
     });
   }
 
