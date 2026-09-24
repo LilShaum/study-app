@@ -18,10 +18,14 @@ import { useCoursesStore } from '@/store/courses';
 function useLocationName(): string {
   const { pathname } = useLocation();
   const params = useParams();
-  const courses = useCoursesStore((s) => s.courses);
   const id = params.id;
-  const course = id ? courses[id] : undefined;
-  const title = course?.metadata.course_code || course?.metadata.title;
+  // Select the one string the head shows. Subscribing to the whole courses
+  // map re-rendered the shell — and everything under its Outlet — whenever
+  // any course anywhere changed. A primitive only changes when this does.
+  const title = useCoursesStore((s) => {
+    const course = id ? s.courses[id] : undefined;
+    return course?.metadata.course_code || course?.metadata.title;
+  });
 
   if (pathname === '/help') return 'Using Arborous';
   if (pathname.startsWith('/session/')) return title ?? 'Session';

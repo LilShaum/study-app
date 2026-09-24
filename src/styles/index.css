@@ -331,6 +331,31 @@
     }
   }
 
+  /* ---- a long list that only pays for what is on screen ----
+     Browse lays out an entire course in one document: a real 498-item course
+     measured 168,640px tall. Every entry was styled, laid out and painted on
+     load and on every relayout, though a phone shows perhaps four of them.
+
+     content-visibility lets the browser skip that work for entries outside
+     the viewport. It is chosen over a virtualised list on purpose: a virtual
+     list REMOVES off-screen entries from the document, which breaks
+     find-in-page and hides them from a screen reader, and both matter on a
+     page whose whole purpose is looking things up. Skipped entries here stay
+     in the DOM, stay searchable, and stay in the accessibility tree.
+
+     `auto` in the intrinsic size makes the browser remember each entry's
+     real height once it has been drawn, so the scrollbar settles instead of
+     jumping as you scroll back over entries it has already measured. The
+     315px placeholder is the measured median of a real course's entries;
+     the closer it is, the less the page shifts as entries render in.
+
+     Section jumps on this page scroll instantly for the same reason — see
+     scrollToSection in BrowseSession. */
+  .browse-entry {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 315px;
+  }
+
   /* ---- dot leaders ----
      The dots that carry the eye from an entry to its figure across a table
      of contents. Drawn as a repeating gradient rather than a dotted border,

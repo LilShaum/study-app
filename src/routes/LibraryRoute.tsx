@@ -258,7 +258,6 @@ export function LibraryRoute() {
                         course={course}
                         progress={allProgress[id] ?? EMPTY_PROGRESS}
                         className="entry-art h-12 w-12 sm:h-16 sm:w-16"
-                        on="card"
                       />
                       <span className="entry-body min-w-0">
                         {course.metadata.course_code && (
