@@ -113,6 +113,10 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
             stateClasses = 'border-text';
           }
           const rationale = revealed ? rationales?.[i] || undefined : undefined;
+          // Only when the key can be trusted. With a broken key nothing is
+          // known to be right, so telling the student their pick is wrong
+          // would be a claim the file cannot support.
+          const chosenWrong = isSelected && !isCorrectOpt && !keyBroken;
           return (
             <div key={i}>
               <button
@@ -138,13 +142,13 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
                    buries the only feedback that was earned. */
                 <div
                   className={
-                    isSelected
+                    chosenWrong
                       ? 'mt-1.5 border-l-2 border-error py-0.5 pl-3 text-small text-text-2'
                       : 'mt-1 pl-3 text-xs text-text-3'
                   }
                 >
-                  <span className={isSelected ? 'text-error' : 'text-text-2'}>
-                    {isSelected ? 'Why that is wrong: ' : 'Why not: '}
+                  <span className={chosenWrong ? 'text-error' : 'text-text-2'}>
+                    {chosenWrong ? 'Why that is wrong: ' : 'Why not: '}
                   </span>
                   {rationale}
                 </div>

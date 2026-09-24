@@ -101,6 +101,8 @@ describe('isSourceCued', () => {
     'According to the notes, where does the disturbance act?',
     'Give the four example steroids on the Chemical Messengers slide.',
     'Which two are listed together on one line?',
+    'What does this slide say about gap junctions?',
+    'What do the slides show about Ras activation?',
   ])('flags %s', (q) => expect(isSourceCued(q)).toBe(true));
 
   it.each([
@@ -108,6 +110,9 @@ describe('isSourceCued', () => {
     'What happens to Kd when affinity falls?',
     // "note" inside another word must not trigger it
     'Which receptor is noted for binding noradrenaline?',
+    // In histology a slide is the specimen, not the lecture deck.
+    'Which stain is applied to the slide before imaging the section?',
+    'Why are tissue sections mounted on slides before staining?',
   ])('leaves %s alone', (q) => expect(isSourceCued(q)).toBe(false));
 });
 

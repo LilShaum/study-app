@@ -200,6 +200,14 @@
     --shadow-md: 0 1px 0 #0f1113, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
 
     /* Grain has to lighten on dark stock, or it just muddies it. */
+    /* Dark carries its OWN grain image, not just its own opacity. It used to
+       inherit the image from :root, so when light moved to the
+       contrast-stretched L6 noise, dark changed with it — silently, and
+       away from D, which was chosen for dark on purpose. The two modes
+       are tuned separately because they blend differently. */
+    --paper-grain:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)' opacity='.5'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.22' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='.34'/%3E%3C/svg%3E");
     --paper-grain-opacity: 0.18;
     --paper-grain-blend: screen;
   }
@@ -245,6 +253,14 @@
   --shadow: 0 1px 0 #0f1113, 2px 3px 0 -1px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 1px 0 #0f1113, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
 
+  /* Dark carries its OWN grain image, not just its own opacity. It used to
+     inherit the image from :root, so when light moved to the
+     contrast-stretched L6 noise, dark changed with it — silently, and
+     away from D, which was chosen for dark on purpose. The two modes
+     are tuned separately because they blend differently. */
+  --paper-grain:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)' opacity='.5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.22' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='.34'/%3E%3C/svg%3E");
   --paper-grain-opacity: 0.18;
   --paper-grain-blend: screen;
 }

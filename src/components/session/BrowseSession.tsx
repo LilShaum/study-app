@@ -4,7 +4,6 @@ import type { Course } from '@/schema/course';
 import { sortedSections } from '@/lib/sortedSections';
 import { EditableItem } from '@/components/items/EditableItem';
 import { AddItemButton } from '@/components/items/AddItemButton';
-import { scrollBehavior } from '@/lib/motion';
 
 interface BrowseSessionProps {
   courseId: string;
@@ -41,7 +40,41 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
   }, [course]);
 
   const scrollToSection = (id: string) => {
-    sectionRefs.current.get(id)?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+    // Always an instant jump, whatever the motion preference, because a smooth
+    // one lands in the wrong place here. Entries off screen are not laid out
+    // (see .browse-entry), so a smooth scroll aims at a position computed from
+    // their estimated heights and then renders every entry it passes, each
+    // growing to its real size and pushing the target further down: measured,
+    // a jump to the last section stopped 9,488px short. An instant jump never
+    // renders the entries above the target, so the target stays where it was
+    // aimed. Across tens of thousands of pixels a smooth scroll was a blur
+    // anyway, not motion anyone could follow.
+    const target = sectionRefs.current.get(id);
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'auto', block: 'start' });
+    // Where the jump put it — the scroll margin — which is where it should stay.
+    const want = target.getBoundingClientRect().top;
+    // Then keep checking, a frame at a time, and re-aim if it has drifted.
+    // Entries the jump brought into the browser's render margin take their
+    // real heights a few frames later, and going UP they sit above the target
+    // and push it down by about one entry. The check has to read the position
+    // at the START of a frame: measured straight after scrollIntoView it still
+    // reports the aimed position, because that layout has not happened yet —
+    // an earlier version of this loop checked there, saw it "stable", and
+    // stopped one frame before the shift. Stops once on target for three
+    // frames running, or after thirty regardless.
+    let onTarget = 0;
+    let frames = 0;
+    const settle = () => {
+      if (Math.abs(target.getBoundingClientRect().top - want) > 1) {
+        target.scrollIntoView({ behavior: 'auto', block: 'start' });
+        onTarget = 0;
+      } else {
+        onTarget += 1;
+      }
+      if (onTarget < 3 && ++frames < 30) requestAnimationFrame(settle);
+    };
+    requestAnimationFrame(settle);
     setActiveSection(id);
   };
 
@@ -116,7 +149,9 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
               {section.description && <p className="mt-1 text-sm text-text-2">{section.description}</p>}
               <div className="mt-4 space-y-4">
                 {section.items.map((item) => (
-                  <EditableItem key={item.id} courseId={courseId} sectionId={section.id} item={item} />
+                  <div key={item.id} className="browse-entry">
+                    <EditableItem courseId={courseId} sectionId={section.id} item={item} />
+                  </div>
                 ))}
                 <AddItemButton courseId={courseId} sectionId={section.id} />
               </div>

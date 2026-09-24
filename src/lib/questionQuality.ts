@@ -149,9 +149,15 @@ export function restatement(item: StudyItem): number {
  * These are grounded — they are about something really in the source — and
  * still worthless, because what they teach is the layout of a document the
  * student will not have in the exam. The worst of them test typesetting.
+ *
+ * "Slide" is matched only in phrasings that point at a DOCUMENT: this slide,
+ * on the X slide, the slides show. A bare "the slide" is left alone, because
+ * in histology and neuroanatomy a slide is the specimen — "what stain is
+ * applied to the slide" is a real question about the subject, and an earlier
+ * version of this pattern flagged it.
  */
 const SOURCE_CUED =
-  /\b(?:the notes|per the notes|according to the notes|in the notes|listed in the notes|the slides?\b|on the [a-z ]{0,30}slide|on one line|in figure \d|the figure above)\b/i;
+  /\b(?:the notes|per the notes|according to the notes|in the notes|listed in the notes|(?:this|previous|next|last|same) slide|on the [a-z ]{0,30}slide|the slides? (?:say|says|show|shows|list|lists|state|states)|on one line|in figure \d|the figure above)\b/i;
 
 export const isSourceCued = (text: string) => SOURCE_CUED.test(text);
 

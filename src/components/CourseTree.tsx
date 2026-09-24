@@ -33,12 +33,6 @@ interface CourseTreeProps {
    */
   className?: string;
   /**
-   * Which surface the drawing sits on. Foliage is filled with it so leaves
-   * occlude the branches behind them, so a tree on a card and a tree on the
-   * page need different fills — get it wrong and every leaf is a hole.
-   */
-  on?: 'page' | 'card';
-  /**
    * Limbs become live: pointing at one lights it and pivots its neighbours
    * aside. Off by default — a thumbnail on a library card is a picture of a
    * course, not a way into its eleventh section.
@@ -145,7 +139,6 @@ export function CourseTree({
   course,
   progress,
   className = 'h-40',
-  on = 'page',
   interactive = false,
   highlight = null,
   animate = false,
@@ -250,6 +243,12 @@ export function CourseTree({
 
   const svgRef = useRef<SVGSVGElement>(null);
   const cloud = useRef<Sample[]>([]);
+  /**
+   * What the last press came from. A tap fires `click` with no pointermove
+   * before it, and React's synthetic click carries no pointerType, so without
+   * this a finger tapping a branch was measured against the cursor's radius.
+   */
+  const lastPointer = useRef('mouse');
   const navigate = useNavigate();
 
   /*
@@ -307,7 +306,8 @@ export function CourseTree({
     cloud.current = samples;
   }, [tree, tracking]);
 
-  const nearest = useCallback((event: { clientX: number; clientY: number }, holding: string | null): string | null => {
+  const nearest = useCallback(
+    (event: { clientX: number; clientY: number; pointerType?: string }, holding: string | null): string | null => {
     const svg = svgRef.current;
     if (!svg) return null;
     const ctm = svg.getScreenCTM();
@@ -318,7 +318,11 @@ export function CourseTree({
     const { x, y } = point.matrixTransform(ctm.inverse());
     // One screen pixel is this many viewBox units at the size we are drawn.
     const perPx = Math.hypot(ctm.a, ctm.b) || 1;
-    const wantPx = window.matchMedia?.('(pointer: coarse)').matches ? REACH_PX_COARSE : REACH_PX;
+    // Ask the event what is pointing, not the device. A media query was
+    // allocated here on every move, and it answered the wrong question: a
+    // touchscreen laptop reports a fine pointer, so a finger on it got the
+    // cursor's 11px target. pointerType says what THIS event came from.
+    const wantPx = event.pointerType === 'touch' ? REACH_PX_COARSE : REACH_PX;
     const reach = wantPx / perPx;
     let best: string | null = null;
     let bestDist = reach * reach;
@@ -395,19 +399,30 @@ export function CourseTree({
       // every one of those links from a screen reader.
       role={tracking ? 'group' : 'img'}
       aria-label={label}
+      onPointerDown={
+        tracking
+          ? (e) => {
+              lastPointer.current = e.pointerType;
+            }
+          : undefined
+      }
       onPointerMove={tracking ? (e) => setPointed((held) => nearest(e, held)) : undefined}
       onPointerLeave={tracking ? () => setPointed(null) : undefined}
       onClick={
         tracking
           ? (e) => {
-              const id = nearest(e, pointed);
+              const id = nearest(
+                { clientX: e.clientX, clientY: e.clientY, pointerType: lastPointer.current },
+                pointed,
+              );
               if (id) navigate(`/study/${courseId}/section/${encodeURIComponent(id)}`);
             }
           : undefined
       }
-      className={`w-auto shrink-0 text-text ${
-        on === 'card' ? '[&_.lf]:fill-[var(--color-surface)]' : '[&_.lf]:fill-[var(--color-bg)]'
-      } ${animate ? 'tree-grow' : ''} ${
+      // Leaves are filled with the paper they sit on so they hide the wood
+      // behind them. Every tree now sits on the page itself — the library row
+      // that used to be a card is a ruled entry — so there is one fill.
+      className={`w-auto shrink-0 text-text [&_.lf]:fill-[var(--color-bg)] ${animate ? 'tree-grow' : ''} ${
         interactive ? (mode === 'preview' ? 'cursor-zoom-in' : pointed ? 'cursor-pointer' : '') : ''
       } ${className}`}
     >
