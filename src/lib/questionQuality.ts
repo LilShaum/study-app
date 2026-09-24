@@ -54,7 +54,22 @@ export interface LengthBias {
   z: number;
   /** MCQs whose longest option runs past twice the mean of the four. */
   lopsided: string[];
+  /**
+   * MCQs whose correct option is strictly the longest AND at least
+   * GIVEAWAY_RATIO times the mean of its distractors — the individual
+   * questions behind the course-wide tell, which can be repaired one by one.
+   */
+  giveaway: string[];
 }
+
+/**
+ * How much longer than its distractors a right answer has to be before that
+ * question is named as giving itself away. Deliberately conservative: at 1.5x
+ * it catches only blatant cases (46 of 128 on the course this was measured
+ * on); 1.3x would have named 57, taking in answers that are merely a little
+ * wordier.
+ */
+export const GIVEAWAY_RATIO = 1.5;
 
 /**
  * Whether a student who knows nothing can beat chance by picking the longest
@@ -79,6 +94,7 @@ export function lengthBias(course: Course): LengthBias {
   let distractorTotal = 0;
   let distractorCount = 0;
   const lopsided: string[] = [];
+  const giveaway: string[] = [];
 
   for (const m of mcqs) {
     const lens = m.options.map((o) => String(o).length);
@@ -92,6 +108,11 @@ export function lengthBias(course: Course): LengthBias {
     });
     const mean = lens.reduce((a, b) => a + b, 0) / Math.max(1, lens.length);
     if (mean > 0 && Math.max(...lens) > mean * 2) lopsided.push(m.id);
+    const others = lens.filter((_, i) => i !== m.correct_index);
+    const othersMean = others.reduce((a, b) => a + b, 0) / Math.max(1, others.length);
+    if (others.length && correct > Math.max(...others) && correct >= othersMean * GIVEAWAY_RATIO) {
+      giveaway.push(m.id);
+    }
   }
 
   const expected = n * 0.25;
@@ -102,6 +123,7 @@ export function lengthBias(course: Course): LengthBias {
     ratio: distractorCount > 0 && n > 0 ? correctTotal / n / (distractorTotal / distractorCount) : 1,
     z: sd > 0 ? (longestIsCorrect - expected) / sd : 0,
     lopsided,
+    giveaway,
   };
 }
 

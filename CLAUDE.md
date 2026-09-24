@@ -104,7 +104,7 @@ suggestions:
 
 | Inventory entry | Must produce |
 |---|---|
-| Each technical term | a `definition` item — no exceptions |
+| Each technical term | a `definition` item — no exceptions, as long as the source says what it means |
 | Each stated learning objective | at least one `mcq` or `flashcard` that would demonstrate it is met |
 | Each flagged key concept | at least one `mcq` or `flashcard` |
 | Each formula | a `definition` (what it computes, what the symbols mean) **and** an `mcq` applying it |
@@ -113,6 +113,12 @@ suggestions:
 | Each comparison | an `mcq` that forces the student to discriminate between the two |
 | Each caveat or flagged misconception | an `mcq` whose distractors encode that specific misconception |
 | Each meaningful figure | a `graphic` item, if a diagram genuinely clarifies it |
+
+A term the source only *names* — used in passing, never explained — still
+goes in the inventory, but gets no definition item: writing one would mean
+supplying a meaning from your own knowledge, and obligation 1 wins that
+conflict. Listing it keeps it visible; the app will ask whether it deserved
+more.
 
 One passage can and should yield several items. A paragraph defining a term,
 giving its formula and working an example is three or four items, not one —
@@ -257,9 +263,10 @@ clear as text.
   "difficulty", "tags", "source_excerpt" }
 ```
 
-**Diagram colors — this matters.** Arborous has four themes and most of them
-are dark. A diagram with hardcoded dark strokes (`#000`, `#222`, `stroke="black"`)
-renders as a nearly invisible smudge on a dark background.
+**Diagram colors — this matters.** Arborous has a light and a dark mode, and
+the same diagram is drawn in both. A diagram with hardcoded dark strokes
+(`#000`, `#222`, `stroke="black"`) renders as a nearly invisible smudge in
+dark mode.
 
 - Use `currentColor` for every stroke and for text fills, so the diagram
   inherits the reader's theme.
@@ -332,10 +339,10 @@ both produce items that are perfectly grounded and still worthless:
 
 Restating is not banned — a definition has to use its own term's words. The
 rule is that a fact stated as a rule should also be **asked as a rule**. The
-source above says hydrophilic messengers cannot cross the membrane, so
+same slide says hydrophilic messengers bind transmembrane receptors, so
 besides recalling that, ask it: given a new messenger that is hydrophilic,
-where is its receptor? Same passage, same grounding, and now the student has
-to use it. Reuse the source's terms; don't reuse its sentences. The app
+where is its receptor? Same passage, same grounding — nothing added that the
+slide does not say — and now the student has to use it. Reuse the source's terms; don't reuse its sentences. The app
 measures this overlap across the whole course and reports the share.
 
 **Only `mcq` and `flashcard` items are graded.** Definitions, examples and

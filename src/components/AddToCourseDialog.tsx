@@ -244,8 +244,11 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                     )}
                     {fixes.faultyItems.length > 0 && (
                       <li>
-                        repair {plural(fixes.faultyItems.length, 'question')} with a broken answer
-                        key, a misaligned explanation or the wrong number of options
+                        repair {plural(fixes.faultyItems.length, 'question')}
+                        {fixes.totalFaulty > fixes.faultyItems.length &&
+                          ` — the most serious of ${fixes.totalFaulty}; run this again afterwards for the rest`}
+                        : broken answer keys first, then answers that give themselves away by length and
+                        questions that point at your notes instead of the subject
                       </li>
                     )}
                   </ul>

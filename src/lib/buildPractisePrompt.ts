@@ -1,10 +1,17 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { sortedSections } from './sortedSections';
 import { analyseCourseGaps } from './courseGaps';
+import { ITEM_TYPES_SPEC, QUALITY_BAR_SPEC } from './generatorSpec';
 
 /** Keeps a very large course's prompt inside a sane clipboard paste. */
 const MAX_EXCERPTS_PER_SECTION = 40;
-const MAX_PROMPTS_PER_SECTION = 40;
+/**
+ * Higher than the excerpt cap on purpose. These are what the model checks
+ * for duplicates against, and a stem is short — at 40 a 77-item section hid
+ * 37 of its existing questions while the prompt told the model it could see
+ * them all.
+ */
+const MAX_PROMPTS_PER_SECTION = 120;
 
 function promptOf(item: StudyItem): string {
   switch (item.type) {
@@ -57,10 +64,14 @@ export function buildPractisePrompt(course: Course): string {
         ),
       ].slice(0, MAX_EXCERPTS_PER_SECTION);
 
-      const covered = s.items
-        .slice(0, MAX_PROMPTS_PER_SECTION)
-        .map((i) => `    - [${i.type}] ${promptOf(i)}`)
-        .join('\n');
+      const shown = s.items.slice(0, MAX_PROMPTS_PER_SECTION);
+      const covered = shown.map((i) => `    - [${i.type}] ${promptOf(i)}`).join('\n');
+      // Say so when the list is cut, rather than let the model believe it
+      // has seen everything it must not duplicate.
+      const cut =
+        s.items.length > shown.length
+          ? `\n    (…and ${s.items.length - shown.length} more not listed — avoid the obvious rephrasings of the ones above)`
+          : '';
 
       return [
         `### Section "${s.id}" — ${s.title}  (${s.items.length} items)`,
@@ -69,7 +80,7 @@ export function buildPractisePrompt(course: Course): string {
         excerpts.map((e) => `    • ${e}`).join('\n') || '    (none recorded)',
         '',
         '  Already tested here — do NOT rewrite these, write different ones:',
-        covered || '    (nothing yet)',
+        (covered || '    (nothing yet)') + cut,
       ].join('\n');
     })
     .join('\n\n');
@@ -113,8 +124,8 @@ What I want back:
 - Harder than what is already there. The existing items are the floor.
 - Mostly \`mcq\` and \`flashcard\`, because those are the only types the app
   scores. A definition I cannot be tested on does not help me here.
-- Nothing that duplicates an existing item. Every item's prompt is listed
-  below so you can check.
+- Nothing that duplicates an existing item. The existing prompts are listed
+  under each section below so you can check.
 
 ${priorities.length ? `Priorities for this round — the app worked these out from the course itself:\n\n${priorities.join('\n')}\n` : ''}
 Return ONLY JSON in this shape — just the sections you are adding to, each
@@ -126,11 +137,20 @@ holding ONLY the new items. Do not return the whole course:
   ]
 }
 
-Follow the same item format as the rest of the course: every item needs a
-unique \`id\`, a \`type\`, and a \`source_excerpt\`; every \`mcq\` needs exactly four
-\`options\`, a 0-based \`correct_index\`, an \`explanation\`, and a
-\`distractor_rationale\` with one entry per option (empty string in the correct
-answer's slot).
+Every item needs a unique \`id\`, a \`type\` and a \`source_excerpt\`. The exact
+shape of each type, and the rules for what makes an item good rather than
+merely valid, are below — they are the same rules the course was generated
+under, and the app checks the result against them. Harder questions are
+where the right answer most wants to grow a qualifying clause its
+distractors lack, so the section on option shape matters most in this round.
+
+════════ ITEM FORMAT ════════
+
+${ITEM_TYPES_SPEC}
+
+════════ QUALITY RULES ════════
+
+${QUALITY_BAR_SPEC}
 
 ════════ THE COURSE ════════
 

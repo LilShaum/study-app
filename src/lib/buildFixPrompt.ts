@@ -1,19 +1,29 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { sortedSections } from './sortedSections';
 import { analyseCourseHealth } from './courseHealth';
+import { QUALITY_BAR_SPEC } from './generatorSpec';
 
 /** Keeps a very large course's prompt inside a sane clipboard paste. */
 const MAX_EXCERPTS = 60;
 const MAX_FAULTY_ITEMS = 25;
 
-/** The faults a model can actually repair, as opposed to ones the app fixes itself. */
-const CORRECTABLE = new Set([
+/**
+ * The faults a model can actually repair, as opposed to ones the app fixes
+ * itself — in the order they are worth fixing. The prompt caps how many items
+ * it carries, so the ones that are BROKEN go before the ones that merely
+ * teach less well: a question with no valid answer key scores nothing at all.
+ */
+const CORRECTABLE = [
   'correct-index-out-of-range',
+  'option-count',
   'rationale-misaligned',
   'no-explanation',
   'filler-options',
-  'option-count',
-]);
+  'length-tell',
+  'lopsided-options',
+  'cued-to-source',
+];
+const RANK = new Map(CORRECTABLE.map((id, n) => [id, n]));
 
 const FAULT_LABELS: Record<string, string> = {
   'correct-index-out-of-range': 'the answer key points outside the options, so no option can be marked correct',
@@ -21,6 +31,11 @@ const FAULT_LABELS: Record<string, string> = {
   'no-explanation': 'there is no explanation shown after answering',
   'filler-options': 'it uses "all/none of the above" as an option',
   'option-count': "it doesn't have the four options the contract asks for",
+  'length-tell':
+    'the right answer is noticeably longer than every wrong one, so a student can pick it without knowing the material — bring the options to similar length, usually by giving the distractors the qualifier the right answer has, not by stripping the right answer',
+  'lopsided-options': 'one option is more than twice the length of the others, which draws the eye whether or not it is right',
+  'cued-to-source':
+    'the question refers to "the notes", "the slide" or a figure — ask the same thing about the subject itself, since that cue will not exist in the exam',
 };
 
 function itemJson(item: StudyItem): string {
@@ -34,6 +49,8 @@ export interface FixPromptPlan {
   missingTerms: string[];
   untestedTerms: string[];
   faultyItems: { item: StudyItem; sectionId: string; faults: string[] }[];
+  /** How many items had a correctable fault — more than faultyItems when capped. */
+  totalFaulty: number;
   /** True when there is nothing for a model to do. */
   empty: boolean;
 }
@@ -49,7 +66,7 @@ export function planFixes(course: Course): FixPromptPlan {
   const faultsByItem = new Map<string, string[]>();
 
   for (const finding of health.findings) {
-    if (!CORRECTABLE.has(finding.id)) continue;
+    if (!RANK.has(finding.id)) continue;
     for (const id of finding.items ?? []) {
       faultsByItem.set(id, [...(faultsByItem.get(id) ?? []), finding.id]);
     }
@@ -66,9 +83,14 @@ export function planFixes(course: Course): FixPromptPlan {
   const missingTerms = health.declaredTermCoverage?.missing ?? [];
   const untestedTerms = health.gaps.untestedTerms;
 
+  // Worst fault first, then course order, before the cap is applied.
+  const worst = (faults: string[]) => Math.min(...faults.map((f) => RANK.get(f) ?? 99));
+  faultyItems.sort((a, b) => worst(a.faults) - worst(b.faults));
+
   return {
     missingTerms,
     untestedTerms,
+    totalFaulty: faultyItems.length,
     faultyItems: faultyItems.slice(0, MAX_FAULTY_ITEMS),
     empty: missingTerms.length === 0 && untestedTerms.length === 0 && faultyItems.length === 0,
   };
@@ -161,7 +183,11 @@ export function buildFixPrompt(course: Course): string {
   if (fix.faultyItems.length) {
     blocks.push(
       [
-        `## ${blocks.length + 1}. Questions with something wrong with them (${fix.faultyItems.length})`,
+        `## ${blocks.length + 1}. Questions with something wrong with them (${
+          fix.totalFaulty > fix.faultyItems.length
+            ? `the ${fix.faultyItems.length} most serious of ${fix.totalFaulty} — I will send the rest in another round`
+            : fix.faultyItems.length
+        })`,
         '',
         'Each of these is reproduced in full below with what the app found wrong.',
         'Return a FIXED version of each, keeping its `id` exactly as it is — that',
@@ -225,6 +251,16 @@ Both keys are optional — send only the ones you have something for.
 - Every \`mcq\` needs exactly four \`options\`, a 0-based \`correct_index\`, an
   \`explanation\`, and a \`distractor_rationale\` with one entry per option in the
   same order, with an empty string in the correct answer's slot.
+- A corrected question must still pass the rules below. Fixing a broken key by
+  adding a long, qualified right answer beside three short wrong ones swaps one
+  fault for another.
+
+════════ QUALITY RULES ════════
+
+These are the rules the course was generated under, and the ones the app
+checks the result against. Anything you write or correct should meet them.
+
+${QUALITY_BAR_SPEC}
 
 ════════ THE COURSE ════════
 
