@@ -33,10 +33,14 @@ export function buildAddPrompt(course: Course): string {
     ? tags.map((t) => `"${t}"`).join(', ')
     : '(none yet — pick a small, reusable set)';
 
+  // A prefix no existing id uses, rather than a list of taken ids. The list
+  // was cut at 60 of however many there were ("…and 438 more"), so the model
+  // was told to avoid ids it was never shown. One rule it can follow beats a
+  // partial list it cannot; planMerge still renames any collision.
   const existingIds = items.map((i) => i.id);
-  const idLine = existingIds.length
-    ? `${existingIds.slice(0, 60).join(', ')}${existingIds.length > 60 ? `, …and ${existingIds.length - 60} more` : ''}`
-    : '(none yet)';
+  let k = 1;
+  while (existingIds.some((id) => id.startsWith(`add${k}_`))) k++;
+  const prefix = `add${k}_`;
 
   const prompts = items.slice(0, 40).map((i) => `- ${promptOf(i)}`);
 
@@ -46,7 +50,8 @@ material.
 
 Return ONLY JSON in this shape — just the sections I'm adding to or creating,
 each holding ONLY the new items. Do not repeat items the course already has,
-and do not return the whole course:
+and do not return the whole course. Where the spec below describes the output
+as a whole course file (schema_version, metadata), this shape replaces it:
 
 {
   "sections": [
@@ -67,11 +72,17 @@ Tag vocabulary already in use — reuse these spellings rather than inventing
 near-duplicates:
 ${tagLine}
 
-Item ids already taken (yours must not collide with any of these):
-${idLine}
+Item ids: start every new id with "${prefix}" (e.g. "${prefix}def_1"). No id
+already in the course begins that way, so none of yours can collide.
 
-Prompts already covered — do NOT write another item testing the same fact:
-${prompts.join('\n') || '(none yet)'}${items.length > 40 ? `\n…and ${items.length - 40} more.` : ''}
+${
+  items.length > 40
+    ? `A sample of what the course already asks — the first 40 of ${items.length}. Don't write
+another item testing the same fact as one of these; exact repeats of anything
+in the course are skipped when the new items are merged in.`
+    : 'What the course already asks — do NOT write another item testing the same fact:'
+}
+${prompts.join('\n') || '(none yet)'}
 
 ════════ GENERATOR SPEC ════════
 
