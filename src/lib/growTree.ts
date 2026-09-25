@@ -69,11 +69,17 @@ export interface Limb {
   ink?: boolean;
   /**
    * A leaf this section has lost to forgetting, drawn where it grew. Not
-   * shown on the tree; the renderer outlines them when the section is
-   * pointed at, so the shape of what was known is visible against what is
-   * still held.
+   * shown as such: the renderer uses these to animate the loss — the leaves
+   * falling from their places when the section is selected.
    */
   ghost?: boolean;
+  /**
+   * Which leaf this is, stable across every state of the tree: section,
+   * clump and place in the clump. A leaf that falls and grows back has the
+   * same key on the branch, as a ghost, and on the branch again — which is
+   * how the end of a session can tell a leaf regrown from a leaf new.
+   */
+  leafKey?: string;
   /** A lost leaf lying on the ground under the branch it fell from. */
   fallen?: boolean;
 }
@@ -662,6 +668,7 @@ export function growTree(seed: string, sections: TreeSection[]): Tree {
             weight: 0.7,
             kind: 'leaf',
             ghost: true,
+            leafKey: `${key}/${c}/${k}`,
             sectionId,
           });
         }
@@ -682,6 +689,7 @@ export function growTree(seed: string, sections: TreeSection[]): Tree {
             weight: 0.7,
             kind: 'leaf',
             solid: true,
+            leafKey: `${key}/${c}/${k}`,
             sectionId,
           });
         } else if (k % 8 === 0) {
@@ -701,6 +709,7 @@ export function growTree(seed: string, sections: TreeSection[]): Tree {
             kind: 'leaf',
             solid: true,
             fallen: true,
+            leafKey: `${key}/${c}/${k}`,
             sectionId,
           });
         }

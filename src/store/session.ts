@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { Course } from '@/schema/course';
 import { examTime } from '@/lib/memory';
 import { buildSessionItems, recallId, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
-import { useProgressStore } from './progress';
+import { useProgressStore, type ItemResult } from './progress';
 
 interface SessionState {
   courseId: string | null;
@@ -14,6 +14,12 @@ interface SessionState {
   answeredIndices: Set<number>;
   /** What each answered index was recorded as, so an override knows what it is correcting. */
   results: Map<number, boolean>;
+  /**
+   * The course's progress as the session began, so its end can show what the
+   * session changed on the tree. Progress records are replaced, never
+   * mutated, so holding the object is a true snapshot.
+   */
+  startProgress: Record<string, ItemResult>;
   /** True once the student has advanced past the last item. */
   finished: boolean;
   /** True when this session started from a saved bookmark rather than item 1. */
@@ -58,6 +64,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   activeSectionId: null,
   answeredIndices: new Set(),
   results: new Map(),
+  startProgress: {},
   finished: false,
   resumed: false,
   sectionId: null,
@@ -99,6 +106,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       activeSectionId: items[index]?._sectionId ?? null,
       answeredIndices: new Set(),
       results: new Map(),
+      startProgress: progress,
       finished: false,
     });
   },

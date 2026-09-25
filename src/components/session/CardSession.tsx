@@ -173,6 +173,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
   // locally it had to be reset from an effect, which meant a setState during
   // an effect body and an extra render pass on every session start.
   const finished = useSessionStore((s) => s.finished);
+  const startProgress = useSessionStore((s) => s.startProgress);
   const finish = useSessionStore((s) => s.finish);
   const resumed = useSessionStore((s) => s.resumed);
   const activeSectionId = useSessionStore((s) => s.activeSectionId);
@@ -329,7 +330,10 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           course={course}
           progress={progress}
           className="h-44 sm:h-56"
-          animate
+          // What this session changed, shown on the tree: leaves won back
+          // rise from the ground, new ones grow. It replaced a draw-on of the
+          // whole tree, which looked the same whatever the session had done.
+          grewFrom={startProgress}
         />
         <Fleuron className="mt-4" />
         <h1 className="mt-3 font-display text-title font-semibold text-text">

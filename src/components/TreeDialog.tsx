@@ -98,8 +98,8 @@ export function TreeDialog({ courseId, course, progress, onClose }: TreeDialogPr
                 below.
               </p>
               <p className="mt-1.5">
-                Choose a branch to see its name. Dotted outlines show where its fallen leaves were.
-                Review the section and they grow back.
+                Choose a branch to see its name, and the leaves it has lost will fall. Review the
+                section and they grow back.
               </p>
               <p className="mt-1.5">
                 {coarse

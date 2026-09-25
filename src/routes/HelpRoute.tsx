@@ -181,8 +181,8 @@ const SECTIONS: HelpSection[] = [
         </ul>
         <p className="mt-2">
           Tap the tree on a course page to open it larger. Choose a branch to see its name, how many
-          items are due, and a button to review just that section. Dotted outlines show where its
-          fallen leaves were.
+          items are due, and a button to review just that section; the leaves it has lost fall as
+          you choose it. At the end of a session, the leaves you won back rise from the ground.
         </p>
       </>
     ),
