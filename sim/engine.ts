@@ -1,0 +1,303 @@
+import type { Course } from '@/schema/course';
+import { recallId, type SessionItem } from '@/lib/buildSessionItems';
+import { examTime, isDueFor, retrievability } from '@/lib/memory';
+import { nextSectionToLearn } from '@/lib/nextToLearn';
+import { scoredEntries } from '@/lib/scored';
+import { sortedSections } from '@/lib/sortedSections';
+import { useProgressStore } from '@/store/progress';
+import { useSessionStore } from '@/store/session';
+import { makeCourse, SHAPES } from './course';
+import { rng, type Rand } from './random';
+import { chanceRight, FIRST_TIME, MEMORY, SECONDS } from './student';
+
+const DAY = 864e5;
+const MIN = 6e4;
+const COURSE_ID = 'sim';
+/** Day 0 is a Saturday evening, a month before a late-October midterm. */
+const START = new Date(2026, 8, 26, 19).getTime();
+
+export interface Scenario {
+  name: string;
+  /** What this scenario is for, in a line. */
+  why: string;
+  shape: keyof typeof SHAPES | string;
+  memory: keyof typeof MEMORY | string;
+  /** Days of study before exam morning. */
+  days: number;
+  /** Minutes studied on a given day. */
+  minutes: (day: number, r: Rand) => number;
+  /** Sections released so far: `atStart`, then one every `everyDays`. */
+  release: { atStart: number; everyDays: number };
+  /** Whether the student gave the app the exam date. */
+  examDate: boolean;
+  /** Which sections the exam covers (0-based). All when omitted. */
+  scope?: number[];
+  policy: keyof typeof POLICIES | string;
+}
+
+export interface DayRow {
+  day: number;
+  minutes: number;
+  available: number;
+  dueAtStart: number;
+  reviewed: number;
+  learnedNew: number;
+  studied: number;
+}
+
+export interface Metrics {
+  /** Expected exam score on the scope, 0-1: MCQs get the guessing floor, the rest do not. */
+  expectedScore: number;
+  /** Share of scope items still held at R >= 0.8 on exam morning. */
+  held: number;
+  /** Share of scope items never answered once. */
+  neverStudied: number;
+  /** What the app itself would have estimated the expected score to be. */
+  appEstimate: number;
+  /** Total minutes studied, and the share of them spent in Review. */
+  minutes: number;
+  reviewShare: number;
+  /** Share of review answers given while the item was still >= 0.95 (too early to help much). */
+  earlyReviews: number;
+  /** Share of review answers given after it had fallen below 0.5 (too late: relearning). */
+  lateReviews: number;
+  /** The most items due at the start of any one day. */
+  peakDue: number;
+  /** Day every scope section had been opened, or null if one never was. */
+  allStartedDay: number | null;
+  /** Expected score per scope section, in course order. */
+  bySection: number[];
+}
+
+export interface RunResult {
+  scenario: string;
+  seed: number;
+  metrics: Metrics;
+  days: DayRow[];
+}
+
+interface Truth {
+  s: number;
+  last: number;
+}
+
+/** The context a policy gets each day: its budget and the app's two doors. */
+export interface Day {
+  day: number;
+  budgetMs: number;
+  usedMs: () => number;
+  /** Sections released so far. */
+  available: number;
+  /** Open Review, as the course page does, and study until it ends or time does. */
+  review: (capMs?: number) => 'done' | 'out' | 'empty';
+  /** Open Learn on the section the course page suggests. False when there is none to learn. */
+  learn: (capMs?: number) => boolean;
+  /** Scored items released but never answered. */
+  unseen: () => number;
+  daysLeft: number;
+}
+
+export type Policy = (d: Day) => void;
+
+export const POLICIES: Record<string, Policy> = {
+  /**
+   * What the app suggests today: Review leads the course page while
+   * anything is due, then Learn carries on with the next section.
+   */
+  'follow-app': (d) => {
+    for (let k = 0; k < 20 && d.usedMs() < d.budgetMs; k++) if (d.review() !== 'done') break;
+    while (d.usedMs() < d.budgetMs && d.learn()) {
+      /* keep learning */
+    }
+  },
+  /**
+   * An experiment: give new material its share first — what is unseen,
+   * spread over the days left — then review. Tested 2026-09-25 and found far
+   * worse at 30-45 min/day; kept as a reference point.
+   */
+  'learn-quota-first': (d) => {
+    const perItemMs = 1.2 * MIN;
+    const quota = Math.min(d.budgetMs * 0.7, (d.unseen() / Math.max(1, d.daysLeft - 2)) * perItemMs * 1.3);
+    while (d.usedMs() < quota && d.learn(quota)) {
+      /* keep learning */
+    }
+    for (let k = 0; k < 20 && d.usedMs() < d.budgetMs; k++) if (d.review() !== 'done') break;
+    while (d.usedMs() < d.budgetMs && d.learn()) {
+      /* keep learning */
+    }
+  },
+};
+
+export function simulate(sc: Scenario, seed: number): RunResult {
+  const shape = SHAPES[sc.shape];
+  const memory = MEMORY[sc.memory];
+  const policy = POLICIES[sc.policy];
+  if (!shape || !memory || !policy) throw new Error(`${sc.name}: unknown shape, memory or policy`);
+
+  const course: Course = makeCourse(shape, 1);
+  const examDay = new Date(START + sc.days * DAY);
+  const examIso = `${examDay.getFullYear()}-${String(examDay.getMonth() + 1).padStart(2, '0')}-${String(examDay.getDate()).padStart(2, '0')}`;
+  if (sc.examDate) course.metadata.exam_date = examIso;
+  const examAt = examTime(examIso)!;
+  const appExam = sc.examDate ? examAt : null;
+
+  const sections = sortedSections(course);
+  const idsOf = (i: number) => scoredEntries(sections[i].items).map((e) => e.id);
+  const scope = sc.scope ?? sections.map((_, i) => i);
+  const scopeIds = scope.flatMap(idsOf);
+  const typeOf = new Map(sections.flatMap((s) => scoredEntries(s.items).map((e) => [e.id, e.item.type] as const)));
+
+  const r = rng(seed * 7919 + 17);
+  // How easy each item is for this student, 0.5-1.5.
+  const ease = new Map<string, number>();
+  const easeOf = (id: string) => ease.get(id) ?? (ease.set(id, 0.5 + r()), ease.get(id)!);
+  const truth = new Map<string, Truth>();
+  const primed = new Map<string, number>();
+  const recallAt = (id: string, t: number) => {
+    const T = truth.get(id);
+    return T ? Math.exp(-(t - T.last) / (T.s * DAY)) : null;
+  };
+
+  useProgressStore.setState({ byCourse: {} });
+  const store = useSessionStore.getState;
+  let now = START;
+  Date.now = () => now;
+
+  const rows: DayRow[] = [];
+  let reviewMs = 0;
+  let totalMs = 0;
+  let reviews = 0;
+  let early = 0;
+  let late = 0;
+  let peakDue = 0;
+  let allStartedDay: number | null = null;
+  let resume: { section: string; item: string } | null = null;
+
+  for (let day = 0; day < sc.days; day++) {
+    now = START + day * DAY;
+    const available = Math.min(sections.length, sc.release.atStart + Math.floor(day / sc.release.everyDays));
+    const budgetMs = sc.minutes(day, r) * MIN;
+    let used = 0;
+    let reviewed = 0;
+    let learnedNew = 0;
+    const progAtStart = useProgressStore.getState().getProgress(COURSE_ID);
+    const dueAtStart = Object.keys(progAtStart).filter((id) => isDueFor(progAtStart[id], now, appExam)).length;
+    peakDue = Math.max(peakDue, dueAtStart);
+
+    const answer = (item: SessionItem, mode: string) => {
+      const R = recallAt(item.id, now);
+      let p: number;
+      if (R != null) p = chanceRight(item, R);
+      else if (item.type === 'recall') {
+        const at = primed.get(item.id);
+        p = at != null ? FIRST_TIME.primedRecall * Math.exp(-(now - at) / (FIRST_TIME.primedFadeMinutes * MIN)) : FIRST_TIME.coldRecall;
+      } else p = item.type === 'mcq' ? FIRST_TIME.mcq : FIRST_TIME.flashcard;
+      const got = r() < p;
+      const e = easeOf(item.id);
+      const T = truth.get(item.id);
+      if (mode === 'review' && R != null) {
+        reviews++;
+        if (R >= 0.95) early++;
+        if (R < 0.5) late++;
+      }
+      if (T == null) learnedNew++;
+      else if (mode === 'review') reviewed++;
+      truth.set(item.id, {
+        s: got ? (T ? memory.grow(T.s, R ?? 0, e) : memory.first(e)) : memory.lapse(T?.s ?? null, e),
+        last: now,
+      });
+      store().record(got);
+    };
+
+    const run = (mode: 'review' | 'learn', capMs: number, sectionId?: string, resumeId?: string) => {
+      store().init(COURSE_ID, course, mode, sectionId, resumeId);
+      if (!store().items.length) return 'empty' as const;
+      for (;;) {
+        if (used >= capMs) return 'out' as const;
+        const item = store().current()!;
+        const ms = SECONDS[item.type] * 1000;
+        now += ms;
+        used += ms;
+        if (mode === 'review') reviewMs += ms;
+        if (item.type === 'definition') primed.set(recallId(item.id), now);
+        if (item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall') answer(item, mode);
+        if (!store().next()) return 'done' as const;
+      }
+    };
+
+    const d: Day = {
+      day,
+      budgetMs,
+      usedMs: () => used,
+      available,
+      daysLeft: sc.days - day,
+      review: (capMs = budgetMs) => run('review', capMs),
+      learn: (capMs = budgetMs) => {
+        const next = nextSectionToLearn(course, useProgressStore.getState().getProgress(COURSE_ID));
+        if (!next || next.index >= available || used >= capMs) return false;
+        const out = run('learn', capMs, next.section.id, resume?.section === next.section.id ? resume.item : undefined);
+        resume = out === 'out' ? { section: next.section.id, item: store().current()!.id } : null;
+        return out === 'done';
+      },
+      unseen: () => {
+        const prog = useProgressStore.getState().getProgress(COURSE_ID);
+        let n = 0;
+        for (let i = 0; i < available; i++) for (const id of idsOf(i)) if (!prog[id]) n++;
+        return n;
+      },
+    };
+    if (budgetMs > 0) policy(d);
+    totalMs += used;
+
+    const prog = useProgressStore.getState().getProgress(COURSE_ID);
+    if (allStartedDay == null && scope.every((i) => idsOf(i).some((id) => prog[id]))) allStartedDay = day;
+    rows.push({
+      day,
+      minutes: Math.round(used / MIN),
+      available,
+      dueAtStart,
+      reviewed,
+      learnedNew,
+      studied: Object.keys(prog).length,
+    });
+  }
+
+  // Exam morning.
+  const score = (id: string, R: number) => (typeOf.get(id) === 'mcq' ? R + (1 - R) * 0.25 : R);
+  const prog = useProgressStore.getState().getProgress(COURSE_ID);
+  let expected = 0;
+  let held = 0;
+  let never = 0;
+  let app = 0;
+  for (const id of scopeIds) {
+    const R = recallAt(id, examAt) ?? 0;
+    expected += score(id, R);
+    if (R >= 0.8) held++;
+    if (!truth.has(id)) never++;
+    app += score(id, retrievability(prog[id], examAt) ?? 0);
+  }
+  const n = scopeIds.length || 1;
+  const bySection = scope.map((i) => {
+    const ids = idsOf(i);
+    return ids.reduce((sum, id) => sum + score(id, recallAt(id, examAt) ?? 0), 0) / (ids.length || 1);
+  });
+
+  return {
+    scenario: sc.name,
+    seed,
+    days: rows,
+    metrics: {
+      expectedScore: expected / n,
+      held: held / n,
+      neverStudied: never / n,
+      appEstimate: app / n,
+      minutes: Math.round(totalMs / MIN),
+      reviewShare: totalMs ? reviewMs / totalMs : 0,
+      earlyReviews: reviews ? early / reviews : 0,
+      lateReviews: reviews ? late / reviews : 0,
+      peakDue,
+      allStartedDay,
+      bySection,
+    },
+  };
+}
