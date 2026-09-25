@@ -496,6 +496,10 @@
   .tree-grow .lf {
     animation: tree-leaf 700ms ease-out 650ms both;
   }
+  /* A fill cannot be drawn on like a stroke; the trunk comes up first. */
+  .tree-grow .ink {
+    animation: tree-leaf 400ms ease-out both;
+  }
 
   /* A section of the tree swinging aside while another is pointed at. The
      transform itself is set per section in CourseTree; this is only how it

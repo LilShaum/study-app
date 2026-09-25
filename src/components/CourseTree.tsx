@@ -386,10 +386,13 @@ export function CourseTree({
     // alone had to be so deep to register that the whole crown went to a
     // ghost, and a tree you cannot see is not locating anything.
     strokeWidth: active && limb.sectionId === active ? limb.weight * 1.5 : limb.weight,
-    className: limb.solid ? 'lf' : 'wd',
+    className: limb.solid ? 'lf' : limb.ink ? 'ink' : 'wd',
+    // The trunk is a filled outline in the line colour (see growTree).
+    fill: limb.ink ? 'currentColor' : undefined,
+    stroke: limb.ink ? 'none' : undefined,
     // Normalised length, so one dash rule can draw on a path of any size
     // without knowing how long it is.
-    pathLength: animate && !limb.solid ? 1 : undefined,
+    pathLength: animate && !limb.solid && !limb.ink ? 1 : undefined,
     // Only a section's MAIN LINE is a target.
     //
     // Filtering on kind was not enough and this is why: kind comes from
