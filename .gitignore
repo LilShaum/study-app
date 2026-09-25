@@ -16,3 +16,6 @@ Thumbs.db
 # Logs
 npm-debug.log*
 screenshots/
+
+# Simulator output (the baseline in sim/baseline.json is committed)
+sim/results/

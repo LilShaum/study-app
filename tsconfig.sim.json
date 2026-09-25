@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.sim.tsbuildinfo"
+  },
+  "include": ["src", "sim"],
+  "exclude": ["src/sw.ts"]
+}
