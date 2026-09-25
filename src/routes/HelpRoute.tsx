@@ -24,7 +24,7 @@ const MODE_ROWS: { icon: IconName; name: string; what: string; scored: boolean }
   {
     icon: 'target',
     name: 'Learn',
-    what: 'Teaches one section at a time: first the definitions and examples, then flashcards and typing the terms, then the questions. From the course page it starts at the next section you have not done.',
+    what: 'Teaches a section a few terms at a time. Each step: read the terms, type them from memory, then answer questions that use them. Anything you get wrong comes back a few cards later. After each step you can stop, and Learn picks up at the next one.',
     scored: true,
   },
   {

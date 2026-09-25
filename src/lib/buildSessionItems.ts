@@ -5,6 +5,7 @@ import { sortedSections } from './sortedSections';
 import { recallId } from './scored';
 import { isDueFor, reviewUrgency } from './memory';
 import { acceptedForms, normalise } from './typedAnswer';
+import { stepSection } from './learnSteps';
 
 export const STUDY_MODES = [
   'browse',
@@ -77,6 +78,18 @@ export type SessionItem = AnyItem & {
   _sectionTitle: string;
   _sectionId: string;
   _sectionOrder: number;
+  /** Learn only: which step of its section this is, of how many (see lib/learnSteps). */
+  _step?: number;
+  _steps?: number;
+  /**
+   * Learn only: the step this card sits in, as "section#step". A missed card
+   * that comes back is placed a few cards on and takes the block of wherever
+   * it lands, so a pause between steps falls where the steps change on
+   * screen, not where the item came from.
+   */
+  _block?: string;
+  /** How many times this card has come back after a miss in this sitting. */
+  _again?: number;
 };
 
 function toRecall(item: SessionItem & DefinitionItem, pool: readonly DefinitionItem[], original: DefinitionItem): SessionItem {
@@ -107,75 +120,27 @@ export interface SessionOptions {
   examAt?: number | null;
 }
 
-/**
- * Learn mode's three stages.
- *
- * The order is the point: a student meets a term, sees it used, recalls it
- * from a prompt, then applies it under exam conditions. Everything here is
- * built from items the generator already produced — no new content, no AI.
- */
-export const LEARN_STAGES = [
-  { key: 'learn', label: 'Learn', hint: 'Read the terms, examples and diagrams', types: ['definition', 'example', 'graphic'] },
-  { key: 'recall', label: 'Recall', hint: 'Pull it back from memory', types: ['flashcard', 'recall'] },
-  { key: 'apply', label: 'Apply', hint: 'Use it on exam-style questions', types: ['mcq'] },
-] as const;
-
-export type LearnStage = (typeof LEARN_STAGES)[number];
-
-/** Which learn stage an item belongs to; -1 for a type no stage claims. */
-export function learnStageIndex(type: AnyItem['type']): number {
-  return LEARN_STAGES.findIndex((s) => (s.types as readonly string[]).includes(type));
-}
-
-// Definitions come before the examples and diagrams that use them, so the
-// first thing a student meets in a section is the vocabulary for it. In the
-// recall stage the typed terms come AFTER the flashcards, so there is a run of
-// other questions between reading a definition and being asked for it —
-// recalling it straight after reading it would test the last ten seconds.
-const WITHIN_STAGE: Partial<Record<AnyItem['type'], number>> = {
-  definition: 0,
-  example: 1,
-  graphic: 2,
-  flashcard: 0,
-  recall: 1,
-};
-
 const isGradable = (i: AnyItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall';
 
 /**
- * Order a section's items as a taught sequence rather than a filter.
+ * Order the items as a taught sequence rather than a filter.
  *
  * Every other card mode answers "show me one type"; this one answers "teach
  * me this section", which is the question a student actually has. Sections
- * stay in their authored order, so studying the whole course in learn mode
- * walks it section by section instead of front-loading every definition in
- * the course before a single question.
+ * stay in their authored order, and each is taught in steps of a few terms
+ * (see lib/learnSteps), so studying the whole course walks it section by
+ * section, a few terms at a time.
  */
-function learnOrder(items: SessionItem[]): SessionItem[] {
-  // Grouped by section first, then ordered inside each group: the sections
-  // are already in authored order, and sorting across a section boundary
-  // would put every definition in the course ahead of every question.
+function learnOrder(items: SessionItem[], progress?: Record<string, ItemResult>): SessionItem[] {
+  // Grouped by section first: the sections are already in authored order,
+  // and ordering across a boundary would put the whole course's terms first.
   const groups = new Map<string, SessionItem[]>();
   for (const item of items) {
     const group = groups.get(item._sectionId);
     if (group) group.push(item);
     else groups.set(item._sectionId, [item]);
   }
-
-  return [...groups.values()].flatMap((group) =>
-    group
-      .map((item, i) => ({ item, i }))
-      .sort((a, b) => {
-        const stageA = learnStageIndex(a.item.type);
-        const stageB = learnStageIndex(b.item.type);
-        if (stageA !== stageB) return stageA - stageB;
-        const withinA = WITHIN_STAGE[a.item.type] ?? 0;
-        const withinB = WITHIN_STAGE[b.item.type] ?? 0;
-        if (withinA !== withinB) return withinA - withinB;
-        return a.i - b.i;
-      })
-      .map((e) => e.item),
-  );
+  return [...groups.values()].flatMap((group) => stepSection(group, progress));
 }
 
 /**
@@ -364,8 +329,8 @@ export function buildSessionItems(
       items = shuffle(asTyped(asRecall(items)));
       break;
     case 'learn':
-      // Read the definition in the Learn stage, recall it in the Recall stage.
-      items = learnOrder(withRecall(items));
+      // Read the definition, then recall it a few cards later in its step.
+      items = learnOrder(withRecall(items), progress);
       break;
     case 'weakest':
       items = weakestFirst(asTyped(asRecall(items)), progress);

@@ -170,3 +170,87 @@ describe('agedProgress (testing tool)', () => {
     expect(agedProgress({ a: r }, 7).a).toEqual({ ...r, lastSeen: 3 * DAY, before: { stability: 1, lastSeen: 1 * DAY } });
   });
 });
+
+describe('session store: Learn brings a missed card back', () => {
+  const terms = ['Alpha', 'Beta', 'Gamma', 'Delta'];
+  const learnCourse = {
+    schema_version: '1.0',
+    metadata: { title: 'L' },
+    sections: [
+      {
+        id: 's1',
+        title: 'One',
+        items: [
+          ...terms.map((t, n) => ({ id: `d${n}`, type: 'definition', term: t, definition: `meaning ${n}` })),
+          mcq('q1', 'Which is Alpha?'),
+          mcq('q2', 'Which is Beta?'),
+          mcq('q3', 'Which is Gamma?'),
+          mcq('q4', 'Which is Delta?'),
+          mcq('q5', 'Which is Alpha again?'),
+        ],
+      },
+    ],
+  } as unknown as Course;
+
+  const s = () => useSessionStore.getState();
+  const goTo = (id: string) => {
+    while (s().current()?.id !== id) if (!s().next()) throw new Error(`${id} not reached`);
+  };
+  /** On to the next card with this id, past the one showing now. */
+  const onTo = (id: string) => {
+    s().next();
+    goTo(id);
+  };
+
+  beforeEach(() => {
+    useProgressStore.setState({ byCourse: {} });
+    s().init('learn-c', learnCourse, 'learn');
+  });
+
+  it('puts it back a few cards on, until it is right once', () => {
+    goTo('q1');
+    const at = s().index;
+    const before = s().items.length;
+    s().record(false);
+    expect(s().items).toHaveLength(before + 1);
+    expect(s().items[at + 4]).toMatchObject({ id: 'q1', _again: 1 });
+    s().next(); s().next(); s().next(); s().next();
+    expect(s().current()?.id).toBe('q1');
+    s().record(true);
+    expect(s().items).toHaveLength(before + 1);
+  });
+
+  it('counts the first attempt only, and a miss put right is not still missed', () => {
+    goTo('q1');
+    s().record(false);
+    onTo('q1');
+    s().record(true);
+    expect(s().score).toEqual({ got: 0, missed: 1 });
+    expect(s().stillMissed()).toEqual([]);
+  });
+
+  it('gives up after three returns and leaves it to Review', () => {
+    goTo('q1');
+    for (let n = 0; n < 4; n++) {
+      s().record(false);
+      if (n < 3) onTo('q1');
+    }
+    expect(s().items.filter((i) => i.id === 'q1')).toHaveLength(4);
+    expect(s().stillMissed()).toEqual(['q1']);
+  });
+
+  it('takes the copy back when the miss is overruled', () => {
+    goTo('q1');
+    const before = s().items.length;
+    s().record(false);
+    s().setResult(true);
+    expect(s().items).toHaveLength(before);
+  });
+
+  it('does not do this outside Learn', () => {
+    s().init('learn-c', learnCourse, 'quiz');
+    const before = s().items.length;
+    s().record(false);
+    expect(s().items).toHaveLength(before);
+  });
+});
