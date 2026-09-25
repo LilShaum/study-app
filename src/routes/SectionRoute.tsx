@@ -5,7 +5,6 @@ import { examTime, isDueFor } from '@/lib/memory';
 import { useCoursesStore } from '@/store/courses';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { availableModes, findSection, sectionStats } from '@/lib/sectionStats';
-import { Icon, type IconName } from '@/components/Icon';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { CourseTree } from '@/components/CourseTree';
 
@@ -68,19 +67,19 @@ export function SectionRoute() {
     return r && r.missed > r.got;
   }).length;
 
-  const MODE_LINKS: { mode: string; label: string; icon: IconName; count: number; lead?: boolean; unit?: string }[] = [
+  const MODE_LINKS: { mode: string; label: string; count: number; lead?: boolean; unit?: string }[] = [
     // Review leads while it has work and is absent when it has none, as on
     // the course page.
     ...(due > 0
-      ? [{ mode: 'review', label: 'Review', icon: 'repeat' as IconName, count: due, lead: true, unit: `${due} due` }]
+      ? [{ mode: 'review', label: 'Review', count: due, lead: true, unit: `${due} due` }]
       : []),
-    { mode: 'learn', label: 'Learn', icon: 'target', count: modes.learn, lead: true },
-    { mode: 'quiz', label: 'Quiz', icon: 'help-circle', count: modes.quiz },
-    { mode: 'flashcards', label: 'Flashcards', icon: 'layers', count: modes.flashcards },
-    { mode: 'definitions', label: 'Terms', icon: 'file-text', count: modes.definitions },
-    { mode: 'mixed', label: 'Mixed', icon: 'shuffle', count: modes.mixed },
-    { mode: 'weakest', label: 'Weakest first', icon: 'bar-chart', count: modes.weakest },
-    ...(missed > 0 ? [{ mode: 'missed', label: 'Review missed', icon: 'repeat' as IconName, count: missed }] : []),
+    { mode: 'learn', label: 'Learn', count: modes.learn, lead: true },
+    { mode: 'quiz', label: 'Quiz', count: modes.quiz },
+    { mode: 'flashcards', label: 'Flashcards', count: modes.flashcards },
+    { mode: 'definitions', label: 'Terms', count: modes.definitions },
+    { mode: 'mixed', label: 'Mixed', count: modes.mixed },
+    { mode: 'weakest', label: 'Weakest first', count: modes.weakest },
+    ...(missed > 0 ? [{ mode: 'missed', label: 'Review missed', count: missed }] : []),
   ];
 
   return (
@@ -165,9 +164,6 @@ export function SectionRoute() {
                     to={`/session/${id}/${m.mode}?section=${encodeURIComponent(section.id)}`}
                     className="group tap-safe flex items-baseline gap-3 py-3"
                   >
-                    <span className="w-5 shrink-0 text-text-3">
-                      <Icon name={m.icon} size={15} />
-                    </span>
                     <span
                       className={`font-display text-text group-hover:text-accent ${
                         m.lead ? 'text-heading font-semibold' : 'text-body'
@@ -180,9 +176,6 @@ export function SectionRoute() {
                   </Link>
                 ) : (
                   <div aria-disabled="true" className="flex items-baseline gap-3 py-3 text-text-3">
-                    <span className="w-5 shrink-0">
-                      <Icon name={m.icon} size={15} />
-                    </span>
                     <span className="font-display text-body">{m.label}</span>
                     <span className="leaders hidden sm:block" aria-hidden="true" />
                     <span className="mark shrink-0">none here</span>

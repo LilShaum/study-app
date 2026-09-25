@@ -5,7 +5,7 @@ import { useCoursesStore } from '@/store/courses';
 import { agedProgress, studiedProgress, useProgressStore } from '@/store/progress';
 import { useFallenStore } from '@/store/fallen';
 import { toast } from '@/store/toast';
-import { Icon, type IconName } from '@/components/Icon';
+import { Icon } from '@/components/Icon';
 import { useOnboardingStore } from '@/store/onboarding';
 import { storageUsage } from '@/lib/safeStorage';
 import { scrollToAnchor } from '@/lib/scrollToAnchor';
@@ -20,52 +20,44 @@ interface HelpSection {
 // use it. An earlier version explained the app's design decisions instead —
 // why a button exists, what a figure is not — which read as filler and
 // answered questions nobody asked.
-const MODE_ROWS: { icon: IconName; name: string; what: string; scored: boolean }[] = [
+const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   {
-    icon: 'target',
     name: 'Learn',
     what: 'Teaches a section a few terms at a time. Each step: read the terms, type them from memory, then answer questions that use them. Anything you get wrong comes back a few cards later. After each step you can stop, and Learn picks up at the next one.',
     scored: true,
   },
   {
-    icon: 'help-circle',
     name: 'Quiz',
     what: 'Multiple-choice questions, with an explanation after each one. A question you have already got right may come back without its options, and you type the answer.',
     scored: true,
   },
   {
-    icon: 'layers',
     name: 'Flashcards',
     what: 'Read the front, think of the answer, flip the card, and mark whether you got it.',
     scored: true,
   },
   {
-    icon: 'file-text',
     name: 'Terms',
     what: 'You are shown a definition and type the term. Small typos are accepted; a different term is not. If you think it marked you wrongly, tap to change it.',
     scored: true,
   },
-  { icon: 'shuffle', name: 'Mixed', what: 'Everything in the course, shuffled.', scored: true },
+  { name: 'Mixed', what: 'Everything in the course, shuffled.', scored: true },
   {
-    icon: 'bar-chart',
     name: 'Weakest first',
     what: 'Everything you can be scored on, starting with what you get wrong most often. Things you have not tried yet come in the middle.',
     scored: true,
   },
   {
-    icon: 'repeat',
     name: 'Review',
     what: 'Brings back what you have studied as you start to forget it, most forgotten first, 50 at a time. If you set an exam date in Edit details, it also makes sure things are fresh on the day.',
     scored: true,
   },
   {
-    icon: 'repeat',
     name: 'Review missed',
     what: 'Only the items you have got wrong more often than right.',
     scored: true,
   },
   {
-    icon: 'book-open',
     name: 'Browse',
     what: 'The whole course to read through. You can edit, delete or add items here.',
     scored: false,
@@ -119,9 +111,6 @@ const SECTIONS: HelpSection[] = [
       <ul className="space-y-3">
         {MODE_ROWS.map((m) => (
           <li key={m.name} className="flex gap-3">
-            <span className="mt-0.5 shrink-0 text-text-3">
-              <Icon name={m.icon} size={18} />
-            </span>
             <span>
               <span className="font-medium text-text">{m.name}</span>
               <span className="mark ml-2 text-text-3">{m.scored ? 'scored' : 'reading'}</span>

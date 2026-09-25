@@ -8,7 +8,7 @@ import { scoredEntries } from '@/lib/scored';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
-import { Icon, type IconName } from '@/components/Icon';
+import { Icon } from '@/components/Icon';
 import { CourseTree } from '@/components/CourseTree';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
 import { TreeDialog } from '@/components/TreeDialog';
@@ -24,7 +24,6 @@ interface ModeCard {
   mode: StudyMode;
   label: string;
   desc?: string;
-  icon: IconName;
   /** How many items this mode would serve, for the count under the label. */
   count: (c: Counts) => number;
 }
@@ -56,7 +55,6 @@ const LEARN: ModeCard = {
   mode: 'learn',
   label: 'Learn',
   desc: 'A few terms at a time: read them, recall them, then answer questions on them',
-  icon: 'target',
   // Every item, plus the typed-recall question each definition adds.
   count: (c) => c.total + c.definition,
 };
@@ -68,12 +66,12 @@ const LEARN: ModeCard = {
  * Six labels this plain do not need captioning.
  */
 const PRACTICE: ModeCard[] = [
-  { mode: 'quiz', label: 'Quiz', icon: 'help-circle', count: (c) => c.mcq },
-  { mode: 'flashcards', label: 'Flashcards', icon: 'layers', count: (c) => c.flashcard },
-  { mode: 'definitions', label: 'Terms', icon: 'file-text', count: (c) => c.definition },
-  { mode: 'mixed', label: 'Mixed', icon: 'shuffle', count: (c) => c.total },
-  { mode: 'weakest', label: 'Weakest first', icon: 'bar-chart', count: (c) => c.gradable },
-  { mode: 'missed', label: 'Review missed', icon: 'repeat', count: (c) => c.missed },
+  { mode: 'quiz', label: 'Quiz', count: (c) => c.mcq },
+  { mode: 'flashcards', label: 'Flashcards', count: (c) => c.flashcard },
+  { mode: 'definitions', label: 'Terms', count: (c) => c.definition },
+  { mode: 'mixed', label: 'Mixed', count: (c) => c.total },
+  { mode: 'weakest', label: 'Weakest first', count: (c) => c.gradable },
+  { mode: 'missed', label: 'Review missed', count: (c) => c.missed },
 ];
 
 const MODE_LABELS: Record<string, string> = Object.fromEntries(
@@ -326,16 +324,13 @@ export function CourseRoute() {
             <li className="border-b border-border">
               <Link to={`/session/${id}/review`} className="group block py-4">
                 <span className="flex items-baseline gap-3">
-                  <span className="w-5 shrink-0 text-text-3">
-                    <Icon name="repeat" size={16} />
-                  </span>
                   <span className="font-display text-heading font-semibold text-text group-hover:text-accent">
                     Review
                   </span>
                   <span className="leaders hidden sm:block" aria-hidden="true" />
                   <span className="mark shrink-0 tabular-nums text-text-2">{counts.due} due</span>
                 </span>
-                <span className="mt-0.5 block text-small text-text-2 sm:pl-8">
+                <span className="mt-0.5 block text-small text-text-2">
                   {course.metadata.exam_date
                     ? 'What you have studied that would be faint by the exam, faintest first'
                     : 'What you have studied and are starting to lose, faintest first'}
@@ -357,9 +352,6 @@ export function CourseRoute() {
               className="group block py-4"
             >
               <span className="flex items-baseline gap-3">
-                <span className="w-5 shrink-0 text-text-3">
-                  <Icon name={LEARN.icon} size={16} />
-                </span>
                 <span className="font-display text-heading font-semibold text-text group-hover:text-accent">
                   {LEARN.label}
                 </span>
@@ -368,7 +360,7 @@ export function CourseRoute() {
                   {plural(nextUp ? availableModes(nextUp.section).learn : LEARN.count(counts), 'item')}
                 </span>
               </span>
-              <span className="mt-0.5 block text-small text-text-2 sm:pl-8">
+              <span className="mt-0.5 block text-small text-text-2">
                 {nextUp ? (
                   <>
                     Next: section {nextUp.index + 1}, {nextUp.section.title}
@@ -381,7 +373,7 @@ export function CourseRoute() {
             {nextUp && (
               <Link
                 to={`/session/${id}/${LEARN.mode}`}
-                className="tap-safe -mt-2 mb-2 inline-flex items-center text-small text-text-3 hover:text-text sm:ml-8"
+                className="tap-safe -mt-2 mb-2 inline-flex items-center text-small text-text-3 hover:text-text"
               >
                 or the whole course, {plural(LEARN.count(counts), 'item')}
               </Link>
@@ -393,9 +385,6 @@ export function CourseRoute() {
                 to={`/session/${id}/${m.mode}`}
                 className="group tap-safe flex items-baseline gap-3 py-3"
               >
-                <span className="w-5 shrink-0 text-text-3">
-                  <Icon name={m.icon} size={15} />
-                </span>
                 <span className="font-display text-body text-text group-hover:text-accent">
                   {m.label}
                 </span>
@@ -409,38 +398,39 @@ export function CourseRoute() {
         </ul>
       </section>
 
-      {/* Two rows by purpose. Seven links in one wrapping run broke into
-          three ragged lines on a phone, with no sense of which were for
-          studying and which for looking after the course. */}
+      {/* Two rows by purpose, each labelled. Seven links in one wrapping run
+          broke into three ragged lines on a phone. The first row went
+          unlabelled, and Diagrams in it read as a mode that had been left
+          out of the list above; it is a page to look at, like Browse, and
+          the label says so. No icons: every link here is a word, and a
+          14px picture beside each word only added noise. */}
       <div className="mt-6 space-y-1 text-small">
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+        <div className="flex items-baseline gap-x-3">
+          <span className="mark w-16 shrink-0 text-text-3">View</span>
+          <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
           <ToolLink to={`/study/${id}/progress`}>
-            <Icon name="trend" size={14} />
             Progress
           </ToolLink>
           <ToolLink to={`/session/${id}/browse`}>
-            <Icon name="book-open" size={14} />
             Browse and edit
           </ToolLink>
           {counts.graphic > 0 && (
             <ToolLink to={`/study/${id}/diagrams`}>
-              <Icon name="diagram" size={14} />
               Diagrams ({counts.graphic})
             </ToolLink>
           )}
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
-          <span className="mark text-text-3">Course</span>
+        <div className="flex items-baseline gap-x-3">
+          <span className="mark w-16 shrink-0 text-text-3">Course</span>
+          <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
           <ToolButton onClick={() => setAdding('material')}>
-            <Icon name="plus" size={14} />
             Add material
           </ToolButton>
           <ToolButton onClick={() => setAdding('practice')}>
-            <Icon name="question-plus" size={14} />
             More practice
           </ToolButton>
           <ToolButton onClick={() => setEditingDetails(true)}>
-            <Icon name="edit" size={14} />
             Edit details
           </ToolButton>
           <ToolButton
@@ -449,9 +439,9 @@ export function CourseRoute() {
               toast('Course exported.', { type: 'success' });
             }}
           >
-            <Icon name="download" size={14} />
             Export
           </ToolButton>
+          </div>
         </div>
       </div>
 
