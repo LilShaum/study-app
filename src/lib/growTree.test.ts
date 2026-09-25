@@ -218,3 +218,16 @@ describe('growTree — the outline of what was known', () => {
     for (const g of ghosts) expect(freshPaths.has(g.d)).toBe(true);
   });
 });
+
+describe('growTree — every branch is a section', () => {
+  it('grows no leaf that belongs to no section', () => {
+    const t = growTree('lead', sections(5, 0.8));
+    expect(t.limbs.filter((l) => l.kind === 'leaf' && !l.sectionId)).toHaveLength(0);
+  });
+
+  it('grows the last section as the leader, with a main line that can be selected', () => {
+    const t = growTree('lead', sections(5, 0.8));
+    const spine = t.limbs.filter((l) => l.sectionId === 's4' && l.spine && l.kind === 'branch');
+    expect(spine.length).toBeGreaterThan(0);
+  });
+});

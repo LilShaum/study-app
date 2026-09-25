@@ -536,7 +536,14 @@ export function growTree(seed: string, sections: TreeSection[]): Tree {
   });
 
   let side = rand() < 0.5 ? -1 : 1;
+  // The last section is the crown: it grows as the leader, the trunk's own
+  // continuation upward, rather than as one more limb off the side. The
+  // leader used to belong to no section — it could not be selected, never
+  // dimmed with the rest, and leafed on the whole course's average — so the
+  // most prominent branch on every tree was the one that meant nothing.
+  const crown = sections.length ? sections[sections.length - 1] : null;
   sections.forEach((section, i) => {
+    if (section === crown) return;
     const t = heights[i];
     const idx = Math.min(trunkPts.length - 1, Math.max(2, Math.round(t * TSTEPS)));
     const origin = trunkPts[idx];
@@ -568,17 +575,19 @@ export function growTree(seed: string, sections: TreeSection[]): Tree {
     side = rand() < 0.22 ? side : -side;
   });
 
-  /* ---- the leader: the trunk carries on as one more limb, so the crown
-     closes over instead of leaving a bare spike ---- */
+  /* ---- the leader: the trunk carries on upward as the last section, so
+     the crown closes over instead of leaving a bare spike ---- */
   const leaderAnchors: Anchor[] = [];
   grow(
-    { limbs, anchors: leaderAnchors, rand, traits },
+    { limbs, anchors: leaderAnchors, rand, traits, sectionId: crown?.id },
     trunkPts[trunkPts.length - 1],
     ta + (rand() - 0.5) * 0.3,
     36 + rand() * 10,
     2.6,
     3,
+    !!crown,
   );
+  if (crown) anchorsBySection.set(crown.id, leaderAnchors);
 
   /* ---- foliage: the only thing study changes ----
 
@@ -699,19 +708,6 @@ export function growTree(seed: string, sections: TreeSection[]): Tree {
     }
   };
 
-  // The leader belongs to no section. It leafs with the course as a whole,
-  // or the top of every crown is a bare spike poking through the leaves.
-  const overall = (pick: (x: TreeSection) => number) =>
-    sections.length ? sections.reduce((n, x) => n + clamp01(pick(x)), 0) / sections.length : 0;
-  leafy(
-    '~leader',
-    leaderAnchors,
-    2,
-    overall((x) => x.mastery),
-    overall((x) => Math.max(x.mastery, x.learned ?? x.mastery)),
-    undefined,
-    [0.7, 0.5],
-  );
 
   sections.forEach((section) => {
     const held = clamp01(section.mastery);
