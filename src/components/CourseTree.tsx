@@ -5,6 +5,8 @@ import type { ItemResult } from '@/store/progress';
 import { sortedSections } from '@/lib/sortedSections';
 import { sectionStats } from '@/lib/sectionStats';
 import { growTree, type Limb } from '@/lib/growTree';
+import { scoredEntries } from '@/lib/scored';
+import { retrievability } from '@/lib/memory';
 
 /**
  * How much of a section counts as known.
@@ -19,6 +21,29 @@ function mastery(studied: number, gradable: number, accuracy: number | null): nu
   const coverage = studied / gradable;
   const confidence = accuracy === null ? 0.5 : 0.35 + (accuracy / 100) * 0.65;
   return Math.max(0, Math.min(1, coverage * confidence));
+}
+
+/**
+ * How much of what a section learned would still be recalled now: the mean
+ * recall chance (lib/memory.ts) over the items studied in it. 1 straight
+ * after studying, falling as they fade, rising again when they are reviewed.
+ * Items never studied are not counted — unseen is not forgotten; that is
+ * what the bare wood already says.
+ */
+function heldShare(
+  items: Course['sections'][number]['items'],
+  progress: Record<string, ItemResult>,
+  now: number,
+): number {
+  let sum = 0;
+  let n = 0;
+  for (const { id } of scoredEntries(items)) {
+    const R = retrievability(progress[id], now);
+    if (R == null) continue;
+    sum += R;
+    n++;
+  }
+  return n ? sum / n : 1;
 }
 
 interface CourseTreeProps {
@@ -146,6 +171,10 @@ export function CourseTree({
   onExpand,
 }: CourseTreeProps) {
   const [pointed, setPointed] = useState<string | null>(null);
+  // Fading is judged as of when the tree was drawn: rendering must not read
+  // the clock, and a canopy that shed leaves while you looked at it would be
+  // a strange thing to watch.
+  const [now] = useState(Date.now);
 
   /*
    * Only the expanded drawing follows the pointer.
@@ -163,17 +192,19 @@ export function CourseTree({
   const { tree, sections } = useMemo(() => {
     const sections = sortedSections(course).map((section) => {
       const stats = sectionStats(section, progress);
+      const learned = mastery(stats.studied, stats.gradable, stats.accuracy);
       return {
         id: section.id,
         title: section.title,
         items: section.items.length,
         accuracy: stats.accuracy,
         weight: section.items.length,
-        mastery: mastery(stats.studied, stats.gradable, stats.accuracy),
+        learned,
+        mastery: learned * heldShare(section.items, progress, now),
       };
     });
     return { tree: growTree(courseId, sections), sections };
-  }, [courseId, course, progress]);
+  }, [courseId, course, progress, now]);
 
   /*
    * The limbs, grouped twice: by layer, then by section.

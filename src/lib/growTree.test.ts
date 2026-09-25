@@ -133,3 +133,43 @@ describe('growTree — foliage is mass, not decoration', () => {
 
 
 });
+
+describe('growTree — fading', () => {
+  const leavesOf = (t: ReturnType<typeof growTree>, id: string) =>
+    t.limbs.filter((l) => l.kind === 'leaf' && l.sectionId === id).map((l) => l.d);
+  const one = (mastery: number, learned?: number): TreeSection[] => [
+    { id: 'a', weight: 10, mastery, learned },
+    { id: 'b', weight: 10, mastery: 0.6 },
+  ];
+
+  it('moves no leaf in one section when another section changes', () => {
+    const before = leavesOf(growTree('c', one(0.2)), 'b');
+    const after = leavesOf(growTree('c', one(0.9)), 'b');
+    expect(after).toEqual(before);
+  });
+
+  it('regrows exactly the leaves that fell', () => {
+    const fresh = growTree('c', one(1, 1));
+    const faded = growTree('c', one(0.3, 1));
+    const reviewed = growTree('c', one(1, 1));
+    expect(leavesOf(reviewed, 'a')).toEqual(leavesOf(fresh, 'a'));
+    expect(leavesOf(faded, 'a')).not.toEqual(leavesOf(fresh, 'a'));
+  });
+
+  it('never goes bare once studied, however faded', () => {
+    const t = growTree('c', one(0, 0.8));
+    const onTree = t.limbs.filter((l) => l.kind === 'leaf' && l.sectionId === 'a');
+    expect(onTree.length).toBeGreaterThan(0);
+  });
+
+  it('puts what faded on the ground, and nothing there when nothing has', () => {
+    const ground = (t: ReturnType<typeof growTree>) =>
+      t.limbs.filter((l) => l.kind === 'leaf' && l.sectionId === 'a' && Number(/^M-?[\d.]+ (-?[\d.]+)/.exec(l.d)![1]) > t.height - 14);
+    expect(ground(growTree('c', one(0.8)))).toHaveLength(0);
+    expect(ground(growTree('c', one(0.1, 0.8))).length).toBeGreaterThan(0);
+  });
+
+  it('draws a section never studied as bare wood', () => {
+    expect(leavesOf(growTree('c', one(0)), 'a')).toHaveLength(0);
+  });
+});

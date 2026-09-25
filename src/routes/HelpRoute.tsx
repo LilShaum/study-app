@@ -196,6 +196,33 @@ const SECTIONS: HelpSection[] = [
     ),
   },
   {
+    id: 'tree',
+    title: 'Reading the tree',
+    body: (
+      <>
+        <p>
+          Every course grows its own tree, and its shape comes from the course: one branch per
+          section, longer for bigger sections. That part never changes. What changes is the leaves.
+        </p>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>A section you have never studied is bare wood.</li>
+          <li>
+            Studying it puts it in leaf — more of the section, answered well, means a fuller crown.
+          </li>
+          <li>
+            As what you learned starts to fade, the leaves droop and fall, and they lie on the ground
+            under the branch. A studied branch never goes completely bare.
+          </li>
+          <li>Reviewing brings them back, in the same places they fell from.</li>
+        </ul>
+        <p className="mt-2">
+          The fading uses the same estimate as <strong>Review</strong>, so a tree losing its leaves
+          and a Review list with items in it are the same news.
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'scoring',
     title: 'What counts as progress',
     body: (
