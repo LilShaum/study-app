@@ -500,52 +500,68 @@ export function CourseTree({
   });
 
   /*
-   * Which branch's leaves are falling. Not simply the selected one: moving
-   * across the tree selects branch after branch, and a fall on every branch
-   * crossed is motion for its own sake. It plays once the selection has
-   * rested a quarter of a second, and once per branch each time the tree is
-   * opened — a thing you see often should not keep repeating itself.
+   * The falls playing now. Tested at human speeds, the first version failed
+   * in ways a frame-by-frame look did not show: moving to another branch cut
+   * the first branch's leaves off in mid-air, all fifty at once; returning to
+   * a branch did nothing, because each branch fell only once per opening, so
+   * the same act got a different answer; and the first leaf took half a
+   * second to move.
+   *
+   * So a fall, once started, always finishes, and several can be under way
+   * together. A branch falls again whenever you come back to it after its
+   * last fall has ended. And it starts after a short rest — long enough that
+   * brushing quickly across the crown does not shake every branch it
+   * crosses, short enough to feel like an answer to stopping.
    */
-  const [fallFor, setFallFor] = useState<string | null>(null);
-  const fallen = useRef(new Set<string>());
+  const FALL_REST_MS = 180;
+  const FALL_LASTS_MS = 3600;
+  const [falls, setFalls] = useState<{ sid: string; at: number }[]>([]);
+  const lastFall = useRef(new Map<string, number>());
   useEffect(() => {
-    if (!active || fallen.current.has(active)) return;
+    if (!active) return;
     const t = setTimeout(() => {
-      fallen.current.add(active);
-      setFallFor(active);
-    }, 250);
+      const at = Date.now();
+      if (at - (lastFall.current.get(active) ?? -Infinity) < FALL_LASTS_MS) return;
+      lastFall.current.set(active, at);
+      // Three at once at most; the oldest is nearly done by then anyway.
+      setFalls((now) => [...now.filter((f) => at - f.at < FALL_LASTS_MS).slice(-2), { sid: active, at }]);
+      setTimeout(() => setFalls((now) => now.filter((f) => f.at !== at)), FALL_LASTS_MS);
+    }, FALL_REST_MS);
     return () => clearTimeout(t);
   }, [active]);
 
-  /** The lost leaves of the branch whose fall is playing, with where each lands. */
-  const falling = useMemo(() => {
-    if (!fallFor) return [];
-    const ghosts = layers.ghosts.get(fallFor) ?? [];
-    const step = Math.max(1, Math.ceil(ghosts.length / MAX_MOVING));
-    return ghosts
-      .filter((_, i) => i % step === 0)
-      .map((l) => {
-        const h = leafHash(l.leafKey ?? l.d);
-        const at = startOf(l.d);
-        const ground = tree.height - 12 + (h % 7);
-        return {
-          d: l.d,
-          style: {
-            // Each leaf its own drift, swing, turn and speed: falling
-            // together at one speed read as a column, not as leaves.
-            '--dx': `${((h >> 3) % 41) - 20}px`,
-            // Which way its first swing goes is its own, too — all to one
-            // side read as a gust carrying the whole lot off.
-            '--sway': `${(h & 1 ? 1 : -1) * (6 + ((h >> 9) % 10))}px`,
-            '--dy': `${at ? ground - at[1] : 60}px`,
-            // A tilt to land at, not a spin: leaves flutter, they do not tumble.
-            '--rot': `${((h >> 6) % 70) - 35}deg`,
-            animationDuration: `${2200 + ((h >> 12) % 1000)}ms`,
-            animationDelay: `${h % 900}ms`,
-          } as Record<string, string>,
-        };
-      });
-  }, [fallFor, layers, tree.height]);
+  /** A branch's lost leaves, each with where it lands and how it gets there. */
+  const fallingFor = useCallback(
+    (sid: string) => {
+      const ghosts = layers.ghosts.get(sid) ?? [];
+      const step = Math.max(1, Math.ceil(ghosts.length / MAX_MOVING));
+      return ghosts
+        .filter((_, i) => i % step === 0)
+        .map((l) => {
+          const h = leafHash(l.leafKey ?? l.d);
+          const at = startOf(l.d);
+          const ground = tree.height - 12 + (h % 7);
+          return {
+            d: l.d,
+            style: {
+              // Each leaf its own drift, swing, turn and speed: falling
+              // together at one speed read as a column, not as leaves.
+              '--dx': `${((h >> 3) % 41) - 20}px`,
+              // Which way its first swing goes is its own, too — all to one
+              // side read as a gust carrying the whole lot off.
+              '--sway': `${(h & 1 ? 1 : -1) * (6 + ((h >> 9) % 10))}px`,
+              '--dy': `${at ? ground - at[1] : 60}px`,
+              // A tilt to land at, not a spin: leaves flutter, they do not tumble.
+              '--rot': `${((h >> 6) % 70) - 35}deg`,
+              animationDuration: `${2200 + ((h >> 12) % 800)}ms`,
+              // The first go almost at once; the rest follow over half a second.
+              animationDelay: `${h % 550}ms`,
+            } as Record<string, string>,
+          };
+        });
+    },
+    [layers, tree.height],
+  );
 
   const swing = (id: string) => {
     const geo = layers.geometry.get(id);
@@ -666,13 +682,13 @@ export function CourseTree({
           fell from here. It replays for each branch you choose. With reduced
           motion it does not play, and the thinned branch and the pile under
           it carry the same news. */}
-      {fallFor && falling.length > 0 && (
-        <g key={fallFor} aria-hidden="true">
-          {falling.map((f, i) => (
-            <path key={i} d={f.d} className="lf leaf-fall" strokeWidth={0.7} style={f.style} />
+      {falls.map((f) => (
+        <g key={f.at} data-fall={f.sid} aria-hidden="true">
+          {fallingFor(f.sid).map((leaf, i) => (
+            <path key={i} d={leaf.d} className="lf leaf-fall" strokeWidth={0.7} style={leaf.style} />
           ))}
         </g>
-      )}
+      ))}
 
       {/* Keyboard and screen-reader access to the same sections. These carry
           no pointer events — pointing is handled above, by distance — so they
