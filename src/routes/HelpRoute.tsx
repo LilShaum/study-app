@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { scoredEntries } from '@/lib/scored';
 import { useCoursesStore } from '@/store/courses';
 import { agedProgress, studiedProgress, useProgressStore } from '@/store/progress';
+import { useFallenStore } from '@/store/fallen';
 import { toast } from '@/store/toast';
 import { Icon, type IconName } from '@/components/Icon';
 import { useOnboardingStore } from '@/store/onboarding';
@@ -392,7 +393,8 @@ function TestingTools() {
       <p className="text-small text-text-2">
         A test copy is a separate course with every item marked as answered right, so its tree is in
         leaf; your real course is not touched. Aging a course moves its answer times back, so its
-        leaves fall; that cannot be undone.
+        leaves fall; that cannot be undone. A leaf falls once; Fall again lets a course's lost leaves
+        fall one more time.
       </p>
       <ul className="mt-3 border-t border-border">
         {Object.entries(courses).map(([id, c]) => (
@@ -410,6 +412,16 @@ function TestingTools() {
               </button>
               <button type="button" className="press tap-safe" onClick={() => age(id, c.metadata.title, 7)}>
                 A week later
+              </button>
+              <button
+                type="button"
+                className="press tap-safe"
+                onClick={() => {
+                  useFallenStore.getState().clear(id);
+                  toast(`${c.metadata.title}: lost leaves will fall again.`, { type: 'success' });
+                }}
+              >
+                Fall again
               </button>
             </span>
           </li>
