@@ -161,3 +161,12 @@ describe('progress store: remembering a mix-up', () => {
     expect(useProgressStore.getState().byCourse.c).toBeUndefined();
   });
 });
+
+describe('agedProgress (testing tool)', () => {
+  it('moves every answer time back and changes nothing else', async () => {
+    const { agedProgress } = await import('./progress');
+    const DAY = 86_400_000;
+    const r = { got: 2, missed: 1, lastSeen: 10 * DAY, stability: 3, before: { stability: 1, lastSeen: 8 * DAY } };
+    expect(agedProgress({ a: r }, 7).a).toEqual({ ...r, lastSeen: 3 * DAY, before: { stability: 1, lastSeen: 1 * DAY } });
+  });
+});

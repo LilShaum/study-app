@@ -152,3 +152,22 @@ export const useProgressStore = create<ProgressState>()(
     },
   ),
 );
+
+/**
+ * Move a course's whole study history back in time, as if `days` had passed
+ * since every answer. For testing only (Help, with ?tools): forgetting takes
+ * real days, and without this the falling and regrowing leaves cannot be
+ * seen on the day they are built. Nothing but the timestamps changes.
+ */
+export function agedProgress(progress: Record<string, ItemResult>, days: number): Record<string, ItemResult> {
+  const ms = days * 86_400_000;
+  const out: Record<string, ItemResult> = {};
+  for (const [id, r] of Object.entries(progress)) {
+    out[id] = {
+      ...r,
+      lastSeen: r.lastSeen == null ? null : r.lastSeen - ms,
+      ...(r.before ? { before: { ...r.before, lastSeen: r.before.lastSeen - ms } } : {}),
+    };
+  }
+  return out;
+}
