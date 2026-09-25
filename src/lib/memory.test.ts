@@ -5,6 +5,8 @@ import {
   isDue,
   isDueFor,
   memoryBefore,
+  nextDueAt,
+  whenLabel,
   nextStability,
   retrievability,
   stabilityOf,
@@ -108,5 +110,31 @@ describe('with an exam date', () => {
     expect([t.getFullYear(), t.getMonth(), t.getDate(), t.getHours()]).toEqual([2026, 10, 12, 9]);
     expect(examTime('12/11/2026')).toBeNull();
     expect(examTime(undefined)).toBeNull();
+  });
+});
+
+describe('nextDueAt', () => {
+  it('is when isDueFor turns true', () => {
+    const r: ItemResult = { got: 1, missed: 0, lastSeen: T0, stability: 3 };
+    for (const examAt of [null, T0 + 2 * DAY, T0 + 40 * DAY]) {
+      const at = nextDueAt(r, T0, examAt)!;
+      expect(isDueFor(r, at - 60_000, examAt)).toBe(false);
+      expect(isDueFor(r, at + 60_000, examAt)).toBe(true);
+    }
+  });
+
+  it('is null for an item never answered', () => {
+    expect(nextDueAt(undefined, T0, null)).toBeNull();
+  });
+});
+
+describe('whenLabel', () => {
+  const at = (y: number, m: number, d: number, h: number) => new Date(y, m, d, h).getTime();
+  it('speaks in calendar days', () => {
+    const now = at(2026, 8, 24, 22); // Thursday 10pm
+    expect(whenLabel(at(2026, 8, 24, 23), now)).toBe('later today');
+    expect(whenLabel(at(2026, 8, 25, 9), now)).toBe('tomorrow');
+    expect(whenLabel(at(2026, 8, 28, 9), now)).toMatch(/^on \w+/);
+    expect(whenLabel(at(2026, 9, 20, 9), now)).toMatch(/^on /);
   });
 });

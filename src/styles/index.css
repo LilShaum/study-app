@@ -37,7 +37,7 @@
   body {
     /* A book is set entirely in its text face. Fraunces carries an optical
        size axis (9–144), so at body size it is a text cut, not the display
-       cut shrunk down; controls stay on the system stack further down.
+       cut shrunk down. Controls inherit it too (see below).
 
        The subset carries four axes: opsz 9–144, wght 100–900, SOFT 0–100
        (default 0) and WONK 0–1 (default 1). WONK is what gives this face
@@ -74,12 +74,21 @@
   th {
     overflow-wrap: normal;
   }
-  /* Controls are the app's own furniture, not the printed matter. */
+  /* Controls set in the page's own face.
+
+     They used to be "the app's own furniture": the system sans, while the
+     page around them was set in Fraunces. After the redesign made the serif
+     the voice of everything, those controls were the only sans left — answer
+     options, the typed-answer line, the section menu, tag filters — and
+     read as unstyled defaults rather than a choice. Key caps keep the
+     system face: they are drawings of keys, not text. */
   button,
   input,
   select,
   option,
-  textarea,
+  textarea {
+    font-family: inherit;
+  }
   kbd {
     font-family: var(--font);
   }
@@ -258,7 +267,7 @@
     border-radius: 0;
     padding: 0.4em 0.1em;
     color: var(--color-text);
-    font-family: var(--font);
+    font-family: inherit;
   }
   /* The rule inks up when you write on it. The focus outline is
      deliberately left alone: the global :focus-visible ring is the

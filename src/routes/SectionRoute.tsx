@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { scoredEntries } from '@/lib/scored';
+import { examTime, isDueFor } from '@/lib/memory';
 import { useCoursesStore } from '@/store/courses';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { availableModes, findSection, sectionStats } from '@/lib/sectionStats';
@@ -37,6 +40,8 @@ export function SectionRoute() {
   // new snapshot on every store read, which is the render loop EMPTY_PROGRESS
   // exists to prevent.
   const progress = useProgressStore((s) => (id ? s.getProgress(id) : EMPTY_PROGRESS));
+  // Judged as of opening the page; rendering must not read the clock.
+  const [now] = useState(Date.now);
 
   if (!id || !sectionId) return <Navigate to="/" replace />;
 
@@ -55,18 +60,32 @@ export function SectionRoute() {
   const stats = sectionStats(section, progress);
   const modes = availableModes(section);
 
-  const MODE_LINKS: { mode: string; label: string; icon: IconName; count: number }[] = [
-    { mode: 'learn', label: 'Learn', icon: 'target', count: modes.learn },
+  const scored = scoredEntries(section.items);
+  const examAt = examTime(course.metadata.exam_date);
+  const due = scored.filter(({ id: itemId }) => isDueFor(progress[itemId], now, examAt)).length;
+  const missed = scored.filter(({ id: itemId }) => {
+    const r = progress[itemId];
+    return r && r.missed > r.got;
+  }).length;
+
+  const MODE_LINKS: { mode: string; label: string; icon: IconName; count: number; lead?: boolean; unit?: string }[] = [
+    // Review leads while it has work and is absent when it has none, as on
+    // the course page.
+    ...(due > 0
+      ? [{ mode: 'review', label: 'Review', icon: 'repeat' as IconName, count: due, lead: true, unit: `${due} due` }]
+      : []),
+    { mode: 'learn', label: 'Learn', icon: 'target', count: modes.learn, lead: true },
     { mode: 'quiz', label: 'Quiz', icon: 'help-circle', count: modes.quiz },
     { mode: 'flashcards', label: 'Flashcards', icon: 'layers', count: modes.flashcards },
     { mode: 'definitions', label: 'Terms', icon: 'file-text', count: modes.definitions },
     { mode: 'mixed', label: 'Mixed', icon: 'shuffle', count: modes.mixed },
     { mode: 'weakest', label: 'Weakest first', icon: 'bar-chart', count: modes.weakest },
+    ...(missed > 0 ? [{ mode: 'missed', label: 'Review missed', icon: 'repeat' as IconName, count: missed }] : []),
   ];
 
   return (
     <div>
-      <Link to={`/study/${id}`} className="text-sm text-text-2 hover:text-text">
+      <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
         ← {course.metadata.title}
       </Link>
       {/* The course's own tree with this section's limb lit and the rest
@@ -107,7 +126,7 @@ export function SectionRoute() {
             </span>
           ) : (
             <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
-              <span className="font-medium text-text">{stats.accuracy}% accuracy here</span>
+              <span className="font-medium text-text">{stats.accuracy}% accuracy</span>
               <span className="text-text-2">
                 {stats.studied} of {stats.gradable} studied
               </span>
@@ -133,35 +152,45 @@ export function SectionRoute() {
           <h2 className="mb-3 mt-8 font-display text-title font-semibold text-text">
             Study just this section
           </h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {MODE_LINKS.map((m) =>
-              m.count > 0 ? (
-                <Link
-                  key={m.mode}
-                  to={`/session/${id}/${m.mode}?section=${encodeURIComponent(section.id)}`}
-                  className="border-b border-border py-4 transition-colors hover:border-text-3"
-                >
-                  <span className="mb-2 block text-accent">
-                    <Icon name={m.icon} size={20} />
-                  </span>
-                  <div className="font-medium text-text">{m.label}</div>
-                  <div className="text-sm text-text-3">{plural(m.count, 'item')}</div>
-                </Link>
-              ) : (
-                <div
-                  key={m.mode}
-                  aria-disabled="true"
-                  className="border-b border-dashed border-border py-4 opacity-50"
-                >
-                  <span className="mb-2 block text-text-3">
-                    <Icon name={m.icon} size={20} />
-                  </span>
-                  <div className="font-medium text-text-2">{m.label}</div>
-                  <div className="text-sm text-text-3">none here</div>
-                </div>
-              ),
-            )}
-          </div>
+          {/* The same ruled list the course page uses. This was a grid of
+              tiles — icon, then label, then count, stacked — so on a phone
+              each mode was a quarter of a screen tall and six of them ran on
+              for two screens, in a different style from the page that led
+              here. */}
+          <ul className="border-t border-border">
+            {MODE_LINKS.map((m) => (
+              <li key={m.mode} className="border-b border-border">
+                {m.count > 0 ? (
+                  <Link
+                    to={`/session/${id}/${m.mode}?section=${encodeURIComponent(section.id)}`}
+                    className="group tap-safe flex items-baseline gap-3 py-3"
+                  >
+                    <span className="w-5 shrink-0 text-text-3">
+                      <Icon name={m.icon} size={15} />
+                    </span>
+                    <span
+                      className={`font-display text-text group-hover:text-accent ${
+                        m.lead ? 'text-heading font-semibold' : 'text-body'
+                      }`}
+                    >
+                      {m.label}
+                    </span>
+                    <span className="leaders hidden sm:block" aria-hidden="true" />
+                    <span className="mark shrink-0 tabular-nums text-text-3">{m.unit ?? plural(m.count, 'item')}</span>
+                  </Link>
+                ) : (
+                  <div aria-disabled="true" className="flex items-baseline gap-3 py-3 text-text-3">
+                    <span className="w-5 shrink-0">
+                      <Icon name={m.icon} size={15} />
+                    </span>
+                    <span className="font-display text-body">{m.label}</span>
+                    <span className="leaders hidden sm:block" aria-hidden="true" />
+                    <span className="mark shrink-0">none here</span>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
         </>
       )}
 

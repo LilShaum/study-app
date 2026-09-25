@@ -39,6 +39,13 @@ interface SessionState {
   jumpToSection: (sectionId: string) => void;
   /** Marks the session complete; cleared by init(). */
   finish: () => void;
+  /**
+   * Go straight back over what this session got wrong: the same items, just
+   * the missed ones, as a fresh run. Answers are recorded as usual — and the
+   * memory model gives an answer seconds after the last one almost no credit,
+   * so a retry cannot inflate how well an item is held; it only teaches it.
+   */
+  retryMissed: () => void;
 }
 
 /** Ephemeral, in-memory only — an active study session is not persisted. */
@@ -157,4 +164,25 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   },
 
   finish: () => set({ finished: true }),
+
+  retryMissed: () => {
+    const { items, results } = get();
+    const seen = new Set<string>();
+    const missed = items.filter((item, i) => {
+      if (results.get(i) !== false || seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+    if (!missed.length) return;
+    set({
+      items: missed,
+      index: 0,
+      resumed: false,
+      score: { got: 0, missed: 0 },
+      activeSectionId: missed[0]._sectionId,
+      answeredIndices: new Set(),
+      results: new Map(),
+      finished: false,
+    });
+  },
 }));

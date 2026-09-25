@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useDialog } from '@/lib/useDialog';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
 import { persisted } from '@/lib/safeStorage';
@@ -30,6 +31,7 @@ const FIELD = 'field w-full text-sm';
  * student's whole history for that course.
  */
 export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetailsDialogProps) {
+  useDialog(onClose);
   const updateCourse = useCoursesStore((s) => s.updateCourse);
   const allCourses = useCoursesStore((s) => s.courses);
 
@@ -110,7 +112,7 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
       <form onSubmit={save} className="my-8 w-full max-w-lg rounded-sm border border-border-strong bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <h2 className="font-semibold text-text">Course details</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="text-text-3 hover:text-text">
+          <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">
             <Icon name="x" size={18} />
           </button>
         </div>

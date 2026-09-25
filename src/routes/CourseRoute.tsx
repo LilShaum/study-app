@@ -212,7 +212,7 @@ export function CourseRoute() {
 
   return (
     <div>
-      <Link to="/" className="text-sm text-text-2 hover:text-text">
+      <Link to="/" className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
         ← Library
       </Link>
 
@@ -380,42 +380,50 @@ export function CourseRoute() {
         </ul>
       </section>
 
-      <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-1 text-small">
-        <ToolLink to={`/study/${id}/progress`}>
-          <Icon name="bar-chart" size={14} />
-          Progress
-        </ToolLink>
-        <ToolLink to={`/session/${id}/browse`}>
-          <Icon name="book-open" size={14} />
-          Browse and edit
-        </ToolLink>
-        {counts.graphic > 0 && (
-          <ToolLink to={`/study/${id}/diagrams`}>
-            <Icon name="layers" size={14} />
-            Diagrams ({counts.graphic})
+      {/* Two rows by purpose. Seven links in one wrapping run broke into
+          three ragged lines on a phone, with no sense of which were for
+          studying and which for looking after the course. */}
+      <div className="mt-6 space-y-1 text-small">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+          <ToolLink to={`/study/${id}/progress`}>
+            <Icon name="bar-chart" size={14} />
+            Progress
           </ToolLink>
-        )}
-        <ToolButton onClick={() => setAdding('material')}>
-          <Icon name="plus" size={14} />
-          Add material
-        </ToolButton>
-        <ToolButton onClick={() => setAdding('practice')}>
-          <Icon name="repeat" size={14} />
-          More practice
-        </ToolButton>
-        <ToolButton onClick={() => setEditingDetails(true)}>
-          <Icon name="edit" size={14} />
-          Edit details
-        </ToolButton>
-        <ToolButton
-          onClick={() => {
-            exportCourse(id, course);
-            toast('Course exported.', { type: 'success' });
-          }}
-        >
-          <Icon name="download" size={14} />
-          Export
-        </ToolButton>
+          <ToolLink to={`/session/${id}/browse`}>
+            <Icon name="book-open" size={14} />
+            Browse and edit
+          </ToolLink>
+          {counts.graphic > 0 && (
+            <ToolLink to={`/study/${id}/diagrams`}>
+              <Icon name="layers" size={14} />
+              Diagrams ({counts.graphic})
+            </ToolLink>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+          <span className="mark text-text-3">Course</span>
+          <ToolButton onClick={() => setAdding('material')}>
+            <Icon name="plus" size={14} />
+            Add material
+          </ToolButton>
+          <ToolButton onClick={() => setAdding('practice')}>
+            <Icon name="repeat" size={14} />
+            More practice
+          </ToolButton>
+          <ToolButton onClick={() => setEditingDetails(true)}>
+            <Icon name="edit" size={14} />
+            Edit details
+          </ToolButton>
+          <ToolButton
+            onClick={() => {
+              exportCourse(id, course);
+              toast('Course exported.', { type: 'success' });
+            }}
+          >
+            <Icon name="download" size={14} />
+            Export
+          </ToolButton>
+        </div>
       </div>
 
       <Fleuron className="mt-10" />
@@ -464,7 +472,7 @@ export function CourseRoute() {
                       >
                         {stats.accuracy}%
                       </span>
-                      <span className="text-text-3"> of {stats.studied}</span>
+                      <span className="text-text-3"> · {stats.studied} studied</span>
                     </span>
                   )}
                 </span>

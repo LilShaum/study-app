@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useDialog } from '@/lib/useDialog';
 import type { Course } from '@/schema/course';
 import { parseFragment } from '@/schema/fragment';
 import { planMerge, type MergePlan } from '@/lib/mergeFragment';
@@ -47,6 +48,7 @@ function plural(n: number, word: string): string {
  * anything touches their course.
  */
 export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'material' }: AddToCourseDialogProps) {
+  useDialog(onClose);
   const [mode, setMode] = useState<AddMode>(initialMode);
   const [pasted, setPasted] = useState('');
   const [skipDuplicates, setSkipDuplicates] = useState(true);
@@ -148,7 +150,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="text-text-3 hover:text-text"
+            className="tap-safe -m-2 p-2 text-text-3 hover:text-text"
           >
             <Icon name="x" size={18} />
           </button>
