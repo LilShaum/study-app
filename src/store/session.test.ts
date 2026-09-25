@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
 import { useSessionStore } from './session';
+import { useProgressStore } from './progress';
 
 function mcq(id: string, question: string): StudyItem {
   return {
@@ -57,5 +58,46 @@ describe('session store: finished', () => {
     expect(useSessionStore.getState().next()).toBe(true); // 0 → 1
     expect(useSessionStore.getState().next()).toBe(false); // no item 2
     expect(useSessionStore.getState().finished).toBe(false); // next() alone doesn't finish
+  });
+});
+
+describe('session store: overriding a verdict', () => {
+  beforeEach(() => {
+    useProgressStore.setState({ byCourse: {} });
+    useSessionStore.getState().init('ov', course, 'quiz');
+  });
+
+  const stored = () => useProgressStore.getState().byCourse.ov?.q1;
+
+  it('corrects the recorded attempt instead of adding a second one', () => {
+    const s = useSessionStore.getState();
+    s.record(false);
+    s.setResult(true);
+    expect(useSessionStore.getState().score).toEqual({ got: 1, missed: 0 });
+    expect(stored()).toMatchObject({ got: 1, missed: 0 });
+  });
+
+  it('can be flipped back, and repeating the same call changes nothing', () => {
+    const s = useSessionStore.getState();
+    s.record(true);
+    s.setResult(false);
+    s.setResult(false);
+    s.setResult(true);
+    expect(useSessionStore.getState().score).toEqual({ got: 1, missed: 0 });
+    expect(stored()).toMatchObject({ got: 1, missed: 0 });
+  });
+
+  it('keeps the history from earlier sessions', () => {
+    useProgressStore.setState({ byCourse: { ov: { q1: { got: 4, missed: 0, lastSeen: 1 } } } });
+    const s = useSessionStore.getState();
+    s.record(false);
+    s.setResult(true);
+    expect(stored()).toMatchObject({ got: 5, missed: 0 });
+  });
+
+  it('records normally when nothing was recorded yet', () => {
+    useSessionStore.getState().setResult(true);
+    expect(useSessionStore.getState().score).toEqual({ got: 1, missed: 0 });
+    expect(stored()).toMatchObject({ got: 1, missed: 0 });
   });
 });

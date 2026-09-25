@@ -38,17 +38,31 @@ describe('buildSessionItems', () => {
     expect(items.map((i) => i.id)).toEqual(['f1', 'f2']);
   });
 
-  it('filters to definitions', () => {
-    expect(buildSessionItems(course, 'definitions').map((i) => i.id)).toEqual(['d1']);
+  it('asks for each definition’s term in definitions (Terms) mode', () => {
+    const items = buildSessionItems(course, 'definitions');
+    expect(items.map((i) => i.id)).toEqual(['d1~recall']);
+    expect(items[0]).toMatchObject({ type: 'recall', target: { id: 'd1' } });
+  });
+
+  it('gives every recall item the whole course’s definitions, as the original objects', () => {
+    const [item] = buildSessionItems(course, 'definitions', { sectionId: 's2' });
+    if (item.type !== 'recall') throw new Error('expected recall');
+    expect(item.target).toBe(course.sections[1].items[0]);
+    expect(item.pool).toHaveLength(1);
   });
 
   it('keeps every item unfiltered for browse', () => {
     expect(buildSessionItems(course, 'browse')).toHaveLength(4);
   });
 
-  it('keeps every item for mixed (shuffled, so compare as a set)', () => {
+  it('keeps every item for mixed, a definition asked rather than shown (shuffled, so compare as a set)', () => {
     const items = buildSessionItems(course, 'mixed');
-    expect(items.map((i) => i.id).sort()).toEqual(['d1', 'f1', 'f2', 'q1']);
+    expect(items.map((i) => i.id).sort()).toEqual(['d1~recall', 'f1', 'f2', 'q1']);
+  });
+
+  it('brings a missed recall question back in Review Missed', () => {
+    const items = buildSessionItems(course, 'missed', { missedIds: new Set(['d1~recall']) });
+    expect(items.map((i) => i.id)).toEqual(['d1~recall']);
   });
 
   it('returns only previously-missed items for missed mode', () => {
@@ -97,9 +111,11 @@ const mixedCourse = {
 } as unknown as Course;
 
 describe('buildSessionItems — learn mode', () => {
-  it('orders a section definition → example/diagram → flashcard → mcq', () => {
+  it('orders a section definition → example/diagram → flashcard → typed recall → mcq', () => {
+    // The typed recall comes after the flashcards so it is not asked the
+    // moment the definition has been read.
     const items = buildSessionItems(mixedCourse, 'learn', { sectionId: 'sa' });
-    expect(items.map((i) => i.id)).toEqual(['a_def', 'a_eg', 'a_gfx', 'a_card', 'a_mcq']);
+    expect(items.map((i) => i.id)).toEqual(['a_def', 'a_eg', 'a_gfx', 'a_card', 'a_def~recall', 'a_mcq']);
   });
 
   it('finishes one section before starting the next', () => {
@@ -107,11 +123,14 @@ describe('buildSessionItems — learn mode', () => {
     // definition in front of every question, so you would read the entire
     // course before answering anything.
     const items = buildSessionItems(mixedCourse, 'learn');
-    expect(items.map((i) => i.id)).toEqual(['a_def', 'a_eg', 'a_gfx', 'a_card', 'a_mcq', 'b_def', 'b_mcq']);
+    expect(items.map((i) => i.id)).toEqual([
+      'a_def', 'a_eg', 'a_gfx', 'a_card', 'a_def~recall', 'a_mcq',
+      'b_def', 'b_def~recall', 'b_mcq',
+    ]);
   });
 
-  it('drops nothing — it reorders rather than filters', () => {
-    expect(buildSessionItems(mixedCourse, 'learn')).toHaveLength(7);
+  it('drops nothing — it reorders, and adds a recall question per definition', () => {
+    expect(buildSessionItems(mixedCourse, 'learn')).toHaveLength(9);
   });
 });
 
@@ -120,15 +139,15 @@ describe('buildSessionItems — weakest first', () => {
 
   it('ranks by accuracy, worst first', () => {
     const items = buildSessionItems(mixedCourse, 'weakest', {
-      progress: { a_mcq: at(1, 3), b_mcq: at(4, 0), a_card: at(2, 2) },
+      progress: { a_mcq: at(1, 3), b_mcq: at(4, 0), a_card: at(2, 2), 'a_def~recall': at(3, 1), 'b_def~recall': at(0, 1) },
     });
-    expect(items.map((i) => i.id)).toEqual(['a_mcq', 'a_card', 'b_mcq']);
+    expect(items.map((i) => i.id)).toEqual(['b_def~recall', 'a_mcq', 'a_card', 'a_def~recall', 'b_mcq']);
   });
 
   it('keeps an item you get right more often than wrong, unlike Review Missed', () => {
     // 3/5 never appears in Review Missed (missed is not > got) but is exactly
     // the item most likely to cost marks.
-    const progress = { a_mcq: at(3, 2), b_mcq: at(5, 0), a_card: at(5, 0) };
+    const progress = { a_mcq: at(3, 2), b_mcq: at(5, 0), a_card: at(5, 0), 'a_def~recall': at(5, 0), 'b_def~recall': at(5, 0) };
     expect(buildSessionItems(mixedCourse, 'weakest', { progress })[0].id).toBe('a_mcq');
     expect(buildSessionItems(mixedCourse, 'missed', { missedIds: new Set() })).toHaveLength(0);
   });
@@ -137,23 +156,24 @@ describe('buildSessionItems — weakest first', () => {
     const items = buildSessionItems(mixedCourse, 'weakest', {
       progress: { a_mcq: at(0, 2), b_mcq: at(3, 0) },
     });
-    // a_card has no history at all.
-    expect(items.map((i) => i.id)).toEqual(['a_mcq', 'a_card', 'b_mcq']);
+    // a_card and both recall questions have no history at all.
+    expect(items.map((i) => i.id)).toEqual(['a_mcq', 'a_card', 'a_def~recall', 'b_def~recall', 'b_mcq']);
   });
 
-  it('serves only gradable items', () => {
+  it('serves only gradable items, a definition as its recall question', () => {
     const ids = buildSessionItems(mixedCourse, 'weakest').map((i) => i.id);
-    expect(ids.sort()).toEqual(['a_card', 'a_mcq', 'b_mcq']);
+    expect(ids.sort()).toEqual(['a_card', 'a_def~recall', 'a_mcq', 'b_def~recall', 'b_mcq']);
   });
 
   it('is not empty on a course with no history yet', () => {
-    expect(buildSessionItems(mixedCourse, 'weakest')).toHaveLength(3);
+    expect(buildSessionItems(mixedCourse, 'weakest')).toHaveLength(5);
   });
 
   it('breaks an accuracy tie with the item missed more times', () => {
     const items = buildSessionItems(mixedCourse, 'weakest', {
       progress: { a_mcq: at(1, 1), b_mcq: at(4, 4), a_card: at(9, 0) },
     });
-    expect(items.map((i) => i.id)).toEqual(['b_mcq', 'a_mcq', 'a_card']);
+    // The unseen recall questions also sit at 0.5, but have missed nothing.
+    expect(items.map((i) => i.id)).toEqual(['b_mcq', 'a_mcq', 'a_def~recall', 'b_def~recall', 'a_card']);
   });
 });

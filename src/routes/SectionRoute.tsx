@@ -59,7 +59,7 @@ export function SectionRoute() {
     { mode: 'learn', label: 'Learn', icon: 'target', count: modes.learn },
     { mode: 'quiz', label: 'Quiz', icon: 'help-circle', count: modes.quiz },
     { mode: 'flashcards', label: 'Flashcards', icon: 'layers', count: modes.flashcards },
-    { mode: 'definitions', label: 'Definitions', icon: 'file-text', count: modes.definitions },
+    { mode: 'definitions', label: 'Terms', icon: 'file-text', count: modes.definitions },
     { mode: 'mixed', label: 'Mixed', icon: 'shuffle', count: modes.mixed },
     { mode: 'weakest', label: 'Weakest first', icon: 'bar-chart', count: modes.weakest },
   ];

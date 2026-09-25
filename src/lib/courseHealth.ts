@@ -219,7 +219,10 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     findings.push({
       id: 'untested-terms',
       severity: 'warning',
-      message: `${gaps.untestedTerms.length} defined term${gaps.untestedTerms.length === 1 ? ' is' : 's are'} never asked about in a question, so you read them but are never tested: ${gaps.untestedTerms.slice(0, 6).join(', ')}${gaps.untestedTerms.length > 6 ? '…' : ''}.`,
+      // Terms mode now asks for every defined term by name, so these ARE
+      // tested — but only as recall of the word. No question makes the
+      // student use them, which is the gap worth closing.
+      message: `${gaps.untestedTerms.length} term${gaps.untestedTerms.length === 1 ? ' is' : 's are'} only ever asked for by name — no question makes you use ${gaps.untestedTerms.length === 1 ? 'it' : 'them'}: ${gaps.untestedTerms.slice(0, 6).join(', ')}${gaps.untestedTerms.length > 6 ? '…' : ''}.`,
     });
   }
 
@@ -227,7 +230,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     findings.push({
       id: 'low-gradable',
       severity: 'warning',
-      message: `Only ${Math.round(gaps.gradableRatio * 100)}% of items can be scored — the rest are read but never tested.`,
+      message: `Only ${Math.round(gaps.gradableRatio * 100)}% of items are questions. Terms mode quizzes the definitions by name, but most of this course never asks you to apply anything.`,
     });
   }
 

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Course } from '@/schema/course';
-import { buildSessionItems, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
+import { buildSessionItems, recallId, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { useProgressStore } from './progress';
 
 interface SessionState {
@@ -11,6 +11,8 @@ interface SessionState {
   score: { got: number; missed: number };
   activeSectionId: string | null;
   answeredIndices: Set<number>;
+  /** What each answered index was recorded as, so an override knows what it is correcting. */
+  results: Map<number, boolean>;
   /** True once the student has advanced past the last item. */
   finished: boolean;
   /** True when this session started from a saved bookmark rather than item 1. */
@@ -27,6 +29,12 @@ interface SessionState {
   prev: () => boolean;
   /** Records the current item's result exactly once per index, mirroring Session.record. */
   record: (got: boolean) => void;
+  /**
+   * The student overruling a verdict on the current item. Corrects the
+   * recorded attempt — in the session tally and in stored progress — instead
+   * of adding a second one. Records normally if nothing was recorded yet.
+   */
+  setResult: (got: boolean) => void;
   jumpToSection: (sectionId: string) => void;
   /** Marks the session complete; cleared by init(). */
   finish: () => void;
@@ -41,6 +49,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   score: { got: 0, missed: 0 },
   activeSectionId: null,
   answeredIndices: new Set(),
+  results: new Map(),
   finished: false,
   resumed: false,
   sectionId: null,
@@ -56,7 +65,16 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     // and Weakest First reorders as accuracy changes, so a saved index would
     // land on a different item. An id the list no longer holds (the item was
     // edited away, or the mode now filters it out) falls back to the start.
-    const resumeIndex = resumeItemId ? items.findIndex((i) => i.id === resumeItemId) : -1;
+    // A bookmark saved before typed recall existed points at a DEFINITION, and
+    // the modes that now ask for definitions rather than show them serve its
+    // recall question under a different id. Without the second lookup those
+    // bookmarks silently restarted from item 1.
+    const find = (id: string) => items.findIndex((i) => i.id === id);
+    const resumeIndex = resumeItemId
+      ? find(resumeItemId) >= 0
+        ? find(resumeItemId)
+        : find(recallId(resumeItemId))
+      : -1;
     const index = resumeIndex >= 0 ? resumeIndex : 0;
     set({
       courseId,
@@ -68,6 +86,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       score: { got: 0, missed: 0 },
       activeSectionId: items[index]?._sectionId ?? null,
       answeredIndices: new Set(),
+      results: new Map(),
       finished: false,
     });
   },
@@ -103,9 +122,31 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
 
     set((s) => ({
       answeredIndices: new Set(s.answeredIndices).add(index),
+      results: new Map(s.results).set(index, got),
       score: { got: s.score.got + (got ? 1 : 0), missed: s.score.missed + (got ? 0 : 1) },
     }));
     useProgressStore.getState().recordResult(courseId, item.id, got);
+  },
+
+  setResult: (got) => {
+    const state = get();
+    const item = state.current();
+    const { courseId, index } = state;
+    if (!item || !courseId) return;
+    const was = state.results.get(index);
+    if (was === undefined) {
+      state.record(got);
+      return;
+    }
+    if (was === got) return;
+    set((s) => ({
+      results: new Map(s.results).set(index, got),
+      score: {
+        got: s.score.got + (got ? 1 : -1),
+        missed: s.score.missed + (got ? -1 : 1),
+      },
+    }));
+    useProgressStore.getState().reviseResult(courseId, item.id, got);
   },
 
   jumpToSection: (sectionId) => {

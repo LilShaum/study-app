@@ -1,11 +1,12 @@
-import type { Course, Section, StudyItem } from '@/schema/course';
+import type { Course, Section } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
+import { scoredEntries } from './scored';
 
 export interface SectionStats {
   id: string;
   title: string;
   total: number;
-  /** Items that can be scored — only mcq and flashcard are. */
+  /** Things that can be scored: each mcq and flashcard, and each definition's typed recall. */
   gradable: number;
   /** Gradable items with at least one recorded attempt. */
   studied: number;
@@ -16,8 +17,6 @@ export interface SectionStats {
   byType: Record<string, number>;
 }
 
-const isGradable = (i: StudyItem) => i.type === 'mcq' || i.type === 'flashcard';
-
 /**
  * Per-section progress.
  *
@@ -26,13 +25,13 @@ const isGradable = (i: StudyItem) => i.type === 'mcq' || i.type === 'flashcard';
  * the same map. That is why a section drill-down needs no migration.
  */
 export function sectionStats(section: Section, progress: Record<string, ItemResult>): SectionStats {
-  const gradable = section.items.filter(isGradable);
+  const gradable = scoredEntries(section.items);
 
   let got = 0;
   let missed = 0;
   let studied = 0;
-  for (const item of gradable) {
-    const r = progress[item.id];
+  for (const { id } of gradable) {
+    const r = progress[id];
     if (!r || (r.got === 0 && r.missed === 0)) continue;
     studied++;
     got += r.got;
@@ -67,13 +66,14 @@ export function availableModes(section: Section): {
 } {
   const count = (type: string) => section.items.filter((i) => i.type === type).length;
   return {
-    learn: section.items.length,
+    // Learn reads each definition and later asks for it, so it serves both.
+    learn: section.items.length + count('definition'),
     quiz: count('mcq'),
     flashcards: count('flashcard'),
     definitions: count('definition'),
     mixed: section.items.length,
     // Weakest First only ranks what can be scored.
-    weakest: section.items.filter(isGradable).length,
+    weakest: scoredEntries(section.items).length,
   };
 }
 

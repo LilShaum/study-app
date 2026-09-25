@@ -4,6 +4,7 @@ import { useCoursesStore } from '@/store/courses';
 import { exportCourse } from '@/lib/exportCourse';
 import { sortedSections } from '@/lib/sortedSections';
 import { sectionStats } from '@/lib/sectionStats';
+import { scoredEntries } from '@/lib/scored';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
@@ -48,9 +49,10 @@ interface Counts {
 const LEARN: ModeCard = {
   mode: 'learn',
   label: 'Learn',
-  desc: 'Definitions, then flashcards, then questions',
+  desc: 'Definitions, then flashcards and terms to recall, then questions',
   icon: 'target',
-  count: (c) => c.total,
+  // Every item, plus the typed-recall question each definition adds.
+  count: (c) => c.total + c.definition,
 };
 
 /**
@@ -62,7 +64,7 @@ const LEARN: ModeCard = {
 const PRACTICE: ModeCard[] = [
   { mode: 'quiz', label: 'Quiz', icon: 'help-circle', count: (c) => c.mcq },
   { mode: 'flashcards', label: 'Flashcards', icon: 'layers', count: (c) => c.flashcard },
-  { mode: 'definitions', label: 'Definitions', icon: 'file-text', count: (c) => c.definition },
+  { mode: 'definitions', label: 'Terms', icon: 'file-text', count: (c) => c.definition },
   { mode: 'mixed', label: 'Mixed', icon: 'shuffle', count: (c) => c.total },
   { mode: 'weakest', label: 'Weakest first', icon: 'bar-chart', count: (c) => c.gradable },
   { mode: 'missed', label: 'Review missed', icon: 'repeat', count: (c) => c.missed },
@@ -121,7 +123,7 @@ export function CourseRoute() {
   const counts = useMemo<Counts>(() => {
     const items = course?.sections.flatMap((s) => s.items) ?? [];
     const byType = (type: string) => items.filter((i) => i.type === type).length;
-    const gradableIds = items.filter((i) => i.type === 'mcq' || i.type === 'flashcard').map((i) => i.id);
+    const gradableIds = scoredEntries(items).map((e) => e.id);
     let got = 0;
     let attempts = 0;
     for (const itemId of gradableIds) {

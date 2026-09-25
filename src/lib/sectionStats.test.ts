@@ -17,13 +17,13 @@ const progress: Record<string, ItemResult> = {
   a1: { got: 3, missed: 1, lastSeen: 1 },
   a2: { got: 0, missed: 2, lastSeen: 1 },
   b1: { got: 1, missed: 1, lastSeen: 1 },
-  // a3/b2 are definitions — never scored, so never appear here.
+  // a3/b2 are definitions: scored only under their recall ids, and not yet.
 };
 
 describe('sectionStats', () => {
   it('scores only the gradable items in the section', () => {
     const st = sectionStats(s1, progress);
-    expect(st).toMatchObject({ id: 's1', total: 3, gradable: 2, studied: 2, got: 3, missed: 3 });
+    expect(st).toMatchObject({ id: 's1', total: 3, gradable: 3, studied: 2, got: 3, missed: 3 });
     expect(st.accuracy).toBe(50); // 3 of 6 attempts
   });
 
@@ -42,11 +42,16 @@ describe('sectionStats', () => {
   it('counts items by type', () => {
     expect(sectionStats(s1, progress).byType).toEqual({ mcq: 1, flashcard: 1, definition: 1 });
   });
+
+  it('scores a definition by its recall question, not its own id', () => {
+    const st = sectionStats(s1, { ...progress, 'a3~recall': { got: 1, missed: 1, lastSeen: 1 }, a3: { got: 9, missed: 0, lastSeen: 1 } });
+    expect(st).toMatchObject({ studied: 3, got: 4, missed: 4 });
+  });
 });
 
 describe('availableModes', () => {
   it('reports what each mode would actually serve', () => {
-    expect(availableModes(s1)).toEqual({ learn: 3, quiz: 1, flashcards: 1, definitions: 1, mixed: 3, weakest: 2 });
+    expect(availableModes(s1)).toEqual({ learn: 4, quiz: 1, flashcards: 1, definitions: 1, mixed: 3, weakest: 3 });
   });
 
   it('reports zero for a mode with nothing in this section', () => {
@@ -76,7 +81,7 @@ describe('buildSessionItems — section scoping', () => {
 
   it('applies the mode filter within the section', () => {
     expect(buildSessionItems(course, 'quiz', { sectionId: 's1' }).map((i) => i.id)).toEqual(['a1']);
-    expect(buildSessionItems(course, 'definitions', { sectionId: 's2' }).map((i) => i.id)).toEqual(['b2']);
+    expect(buildSessionItems(course, 'definitions', { sectionId: 's2' }).map((i) => i.id)).toEqual(['b2~recall']);
   });
 
   it('returns nothing for a mode the section cannot fill', () => {
