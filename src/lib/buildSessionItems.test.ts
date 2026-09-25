@@ -276,3 +276,18 @@ describe('buildSessionItems — a question answered right comes back typed', () 
     expect(items.map((i) => i.type)).toEqual(['recall', 'mcq', 'mcq']);
   });
 });
+
+describe('buildSessionItems — a review sitting has a size', () => {
+  it('serves the most urgent, up to one sitting', async () => {
+    const { REVIEW_SITTING } = await import('./buildSessionItems');
+    const items = Array.from({ length: REVIEW_SITTING + 20 }, (_, i) => ({ id: `q${i}`, type: 'flashcard', front: 'f', back: 'b' }));
+    const big = { schema_version: '1.0', metadata: { title: 'T' }, sections: [{ id: 's', title: 'S', order: 1, items }] } as unknown as Course;
+    const DAY = 86_400_000;
+    const now = 100 * DAY;
+    const progress = Object.fromEntries(items.map((it, i) => [it.id, { got: 1, missed: 0, lastSeen: now - (1 + i / 10) * DAY, stability: 1 }]));
+    const served = buildSessionItems(big, 'review', { progress, now });
+    expect(served).toHaveLength(REVIEW_SITTING);
+    // Faintest first: the longest-unseen items lead.
+    expect(served[0].id).toBe(`q${REVIEW_SITTING + 19}`);
+  });
+});

@@ -46,7 +46,7 @@ const MODE_ROWS: { icon: IconName; name: string; what: string; scored: boolean }
   {
     icon: 'repeat',
     name: 'Review',
-    what: 'Appears on a course once something you have studied starts to fade. The app estimates, item by item, how likely you are to still recall it — rising each time you get it right after a gap, falling when you miss — and brings back the faintest first. Give the course an exam date (Course details) and it aims for the day of the exam instead: items that would be faint by then come back shortly before it.',
+    what: 'Appears on a course once something you have studied starts to fade. The app estimates, item by item, how likely you are to still recall it — rising each time you get it right after a gap, falling when you miss — and brings back the faintest first. Give the course an exam date (Course details) and it aims for the day of the exam instead: items that would be faint by then come back shortly before it. A sitting is the 50 most urgent; the end of one offers the next.',
     scored: true,
   },
   {
