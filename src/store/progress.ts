@@ -155,7 +155,7 @@ export const useProgressStore = create<ProgressState>()(
 
 /**
  * Move a course's whole study history back in time, as if `days` had passed
- * since every answer. For testing only (Help, with ?tools): forgetting takes
+ * since every answer. For testing only (Help, with ?devtools): forgetting takes
  * real days, and without this the falling and regrowing leaves cannot be
  * seen on the day they are built. Nothing but the timestamps changes.
  */
@@ -170,4 +170,13 @@ export function agedProgress(progress: Record<string, ItemResult>, days: number)
     };
   }
   return out;
+}
+
+/**
+ * Progress for a test copy of a course: every one of `ids` answered right
+ * once, `daysAgo` days ago. For the testing tools only (Help, ?devtools).
+ */
+export function studiedProgress(ids: string[], daysAgo: number): Record<string, ItemResult> {
+  const at = Date.now() - daysAgo * 86_400_000;
+  return Object.fromEntries(ids.map((id) => [id, { got: 1, missed: 0, lastSeen: at, stability: 2, before: null }]));
 }

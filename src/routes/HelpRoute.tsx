@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { scoredEntries } from '@/lib/scored';
 import { useCoursesStore } from '@/store/courses';
-import { agedProgress, useProgressStore } from '@/store/progress';
+import { agedProgress, studiedProgress, useProgressStore } from '@/store/progress';
 import { toast } from '@/store/toast';
 import { Icon, type IconName } from '@/components/Icon';
 import { useOnboardingStore } from '@/store/onboarding';
@@ -352,36 +353,65 @@ function ReplayWelcome() {
 }
 
 /**
- * Testing tools, shown only at #/help?tools. Forgetting takes real days, so
- * without a way to fast-forward, the leaves falling and growing back cannot
- * be tried on the day they are built. Pretending time has passed moves the
- * course's answer times back; it changes nothing else.
+ * Testing tools, shown only at #/help?devtools and linked from nowhere, so
+ * students never see them. Forgetting takes real days, so without a way to
+ * fast-forward, the leaves falling and growing back cannot be tried on the
+ * day they are built.
+ *
+ * A test copy is its own course, so the real one and its progress are never
+ * touched: every scorable item is marked answered right, just now or a week
+ * ago. "A day later" / "A week later" then age any course's answer times.
  */
 function TestingTools() {
   const courses = useCoursesStore((s) => s.courses);
+  const addCourse = useCoursesStore((s) => s.addCourse);
+  const navigate = useNavigate();
+
   const age = (id: string, title: string, days: number) => {
     useProgressStore.setState((s) => ({
       byCourse: { ...s.byCourse, [id]: agedProgress(s.byCourse[id] ?? {}, days) },
     }));
     toast(`${title}: moved ${days === 1 ? 'a day' : `${days} days`} into the future.`, { type: 'success' });
   };
+
+  const testCopy = (id: string, daysAgo: number) => {
+    const course = courses[id];
+    const copy = { ...course, metadata: { ...course.metadata, title: `${course.metadata.title} (test copy)` } };
+    const copyId = addCourse(copy);
+    const seeded = studiedProgress(
+      scoredEntries(course.sections.flatMap((s) => s.items)).map((e) => e.id),
+      daysAgo,
+    );
+    useProgressStore.setState((s) => ({ byCourse: { ...s.byCourse, [copyId]: seeded } }));
+    navigate(`/study/${copyId}`);
+  };
+
   return (
     <section className="mt-8 border-t border-border pt-6">
       <h2 className="mb-2 font-display text-heading font-semibold text-text">Testing</h2>
       <p className="text-small text-text-2">
-        Pretend time has passed since you studied, to see leaves fall and then grow back when you
-        review. This moves your answer times back; it cannot be undone.
+        A test copy is a separate course with every item marked as answered right, so its tree is in
+        leaf; your real course is not touched. Aging a course moves its answer times back, so its
+        leaves fall; that cannot be undone.
       </p>
       <ul className="mt-3 border-t border-border">
         {Object.entries(courses).map(([id, c]) => (
-          <li key={id} className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border py-3">
-            <span className="w-full min-w-0 text-small text-text sm:w-auto sm:flex-1">{c.metadata.title}</span>
-            <button type="button" className="press tap-safe" onClick={() => age(id, c.metadata.title, 1)}>
-              A day later
-            </button>
-            <button type="button" className="press tap-safe" onClick={() => age(id, c.metadata.title, 7)}>
-              A week later
-            </button>
+          <li key={id} className="border-b border-border py-3">
+            <span className="block text-small text-text">{c.metadata.title}</span>
+            <span className="mt-2 flex flex-wrap gap-2">
+              <button type="button" className="press tap-safe" onClick={() => testCopy(id, 0)}>
+                Test copy, studied now
+              </button>
+              <button type="button" className="press tap-safe" onClick={() => testCopy(id, 7)}>
+                Test copy, studied a week ago
+              </button>
+              <button type="button" className="press tap-safe" onClick={() => age(id, c.metadata.title, 1)}>
+                A day later
+              </button>
+              <button type="button" className="press tap-safe" onClick={() => age(id, c.metadata.title, 7)}>
+                A week later
+              </button>
+            </span>
           </li>
         ))}
       </ul>
@@ -398,7 +428,7 @@ export function HelpRoute() {
         ← Library
       </Link>
       <h1 className="mt-3 font-display text-display font-semibold text-text">Help</h1>
-      {search.has('tools') && <TestingTools />}
+      {search.has('devtools') && <TestingTools />}
 
       <div className="mt-4">
         <ReplayWelcome />
