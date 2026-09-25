@@ -79,6 +79,13 @@ export function TreeDialog({ courseId, course, progress, onClose }: TreeDialogPr
           interactive
           mode="navigate"
         />
+        {/* The one place the picture is explained. Short, because the tree
+            has to read without it — this is for the first time you look. */}
+        <p className="mt-3 max-w-prose text-center text-small text-text-3">
+          Each branch is a section. Its leaves are what you still remember: they fall as it fades
+          and grow back when you review. What lies on the ground is what has faded. Tap a branch
+          to open its section.
+        </p>
       </div>
     </div>
   );

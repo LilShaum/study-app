@@ -73,8 +73,18 @@ export interface TreeSection {
   id: string;
   /** Relative size — drives how long and thick this branch is. */
   weight: number;
-  /** 0..1, how well this section is known. Drives foliage, and only foliage. */
+  /**
+   * 0..1, how much of this section is held NOW — what it has learned, times
+   * how much of that it would still recall today. Drives the leaves on the
+   * tree, and only foliage.
+   */
   mastery: number;
+  /**
+   * 0..1, how much of it was ever learned. The gap between this and `mastery`
+   * is what has faded: those leaves lie on the ground under the section, and
+   * the ones next to fall droop. Defaults to `mastery` — nothing faded.
+   */
+  learned?: number;
 }
 
 /**
@@ -447,90 +457,126 @@ export function growTree(seed: string, sections: TreeSection[]): Tree {
     3,
   );
 
-  /* ---- the leader's share of the canopy ----
-     It belongs to no section, so the per-section loop below never reached it
-     and the top of every crown was left as a bare spike poking through the
-     leaves. It leafs with the course's overall progress. ---- */
-  const overall = sections.length
-    ? sections.reduce((n, x) => n + Math.max(0, Math.min(1, x.mastery)), 0) / sections.length
-    : 0;
-  if (overall > 0 && leaderAnchors.length) {
-    const order = leaderAnchors.map((a, n) => ({ a, k: rand(), n })).sort((x, y) => x.k - y.k);
-    const clumps = Math.max(1, Math.round(overall * Math.max(2, leaderAnchors.length / 3)));
-    for (let c = 0; c < clumps; c++) {
-      const host = order[c % order.length].a;
-      const spreadR = traits.clumpSize * (0.7 + rand() * 0.5);
-      const leaves = traits.clumpDensity + Math.floor(rand() * traits.clumpDensity * 0.6);
-      for (let k = 0; k < leaves; k++) {
-        const fill = Math.sqrt(rand());
-        const r = spreadR * fill * (0.6 + rand() * 0.7);
-        const theta = rand() * Math.PI * 2;
-        limbs.push({
-          d: leafPath(
-            { x: host.at.x + Math.cos(theta) * r, y: host.at.y + Math.sin(theta) * r * 0.85 },
-            theta + Math.PI / 2 + (rand() - 0.5) * 2.4,
-            traits.leafLength * (0.5 + fill * 0.5 + rand() * 0.4),
-            rand,
-          ),
-          weight: 0.7,
-          kind: 'leaf',
-          solid: true,
-        });
-      }
-    }
-  }
-
   /* ---- foliage: the only thing study changes ----
 
      Built as CLUMPS, not as scattered leaves. A canopy is mass: many marks
      packed tightly enough to read as tone and to hide the wood behind them.
-     The previous version hung a few dozen outlines on the whole tree, which
-     is why every species still read as a winter skeleton however well the
-     course was known. ---- */
-  sections.forEach((section) => {
-    const anchors = anchorsBySection.get(section.id) ?? [];
-    if (!anchors.length) return;
-    const mastery = Math.max(0, Math.min(1, section.mastery));
-    if (mastery <= 0) return;
 
-    // Clumps sit ON the anchors — the twig tips — so the canopy covers the
-    // wood that made it rather than floating near it, and it scales with how
-    // much wood there is. Taking anchors in a shuffled order without repeats
-    // spreads the crown instead of piling several clumps on one twig.
-    const order = anchors.map((a, n) => ({ a, k: rand(), n })).sort((x, y) => x.k - y.k);
-    const clumps = Math.max(1, Math.round(mastery * Math.max(traits.clumps, anchors.length / 3)));
-    for (let c = 0; c < clumps; c++) {
+     Every clump a section could ever carry is laid out first, from a random
+     stream of its OWN, and how well the section is held decides how many of
+     them show. Two reasons. Leaves drawn from the tree's shared stream moved
+     every time any section's count changed — one answer re-scattered the
+     whole canopy. And a leaf that falls has to grow back where it fell from,
+     or regrowth is not visibly the reverse of loss. ---- */
+  const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
+
+  const leafy = (
+    key: string,
+    anchors: Anchor[],
+    minClumps: number,
+    held: number,
+    learned: number,
+    sectionId: string | undefined,
+    sizes: [number, number],
+  ) => {
+    if (!anchors.length || learned <= 0) return;
+    const r = rng(hashSeed(`${seed}/leaves/${key}`));
+    const capacity = Math.max(minClumps, Math.round(anchors.length / 3));
+    // A section that has been studied is never bare: forgetting thins it to
+    // its last clump, and the ground under it says what it had.
+    const shown = Math.min(capacity, Math.max(1, Math.round(held * capacity)));
+    const had = Math.min(capacity, Math.max(shown, Math.round(learned * capacity)));
+    // How far along it is in losing the next clump — 0 when nothing has
+    // faded, which is what keeps a small, freshly studied section upright.
+    const fading = clamp01(((learned - held) * capacity) / 1.5);
+
+    const order = anchors.map((a) => ({ a, k: r() })).sort((x, y) => x.k - y.k);
+    for (let c = 0; c < had; c++) {
       const host = order[c % order.length].a;
-      const spreadR = traits.clumpSize * (0.75 + rand() * 0.55);
-      const leaves = traits.clumpDensity + Math.floor(rand() * traits.clumpDensity * 0.6);
+      const spreadR = traits.clumpSize * (sizes[0] + r() * sizes[1]);
+      const leaves = traits.clumpDensity + Math.floor(r() * traits.clumpDensity * 0.6);
+      const onTree = c < shown;
+      // The last clumps still on the branch are the next to go; they droop,
+      // the outermost most.
+      const droop = onTree ? fading * clamp01(1 - (shown - 1 - c) / 1.5) : 0;
       for (let k = 0; k < leaves; k++) {
         // Pack toward the centre so a clump has a dense middle and a ragged
         // edge, the way a mass of leaves actually reads.
-        const fill = Math.sqrt(rand());
-        const r = spreadR * fill * (0.6 + rand() * 0.7);
-        const theta = rand() * Math.PI * 2;
-        const at = {
-          x: host.at.x + Math.cos(theta) * r,
-          y: host.at.y + Math.sin(theta) * r * 0.85,
-        };
-        limbs.push({
-          d: leafPath(
-            at,
-            // Leaves in a clump fan outward from its centre, with enough
-            // scatter that no two sit parallel.
-            theta + Math.PI / 2 + (rand() - 0.5) * 2.4,
-            // Larger toward the outside of a clump: the big leaves draw the
-            // silhouette, the small ones pack the shaded core.
-            traits.leafLength * (0.5 + fill * 0.5 + rand() * 0.4),
-            rand,
-          ),
-          weight: 0.7,
-          kind: 'leaf',
-          solid: true,
-          sectionId: section.id,
-        });
+        const fill = Math.sqrt(r());
+        const radius = spreadR * fill * (0.6 + r() * 0.7);
+        const theta = r() * Math.PI * 2;
+        // Leaves in a clump fan outward from its centre, with enough scatter
+        // that no two sit parallel. Larger toward the outside: the big leaves
+        // draw the silhouette, the small ones pack the shaded core.
+        const own = theta + Math.PI / 2 + (r() - 0.5) * 2.4;
+        const length = traits.leafLength * (0.5 + fill * 0.5 + r() * 0.4);
+        const shape = r();
+        const fallX = r();
+        const fallY = r();
+        const fallTurn = r();
+        // Every leaf consumes the same draws whether it shows, droops or
+        // lies on the ground, so no state moves any other leaf.
+        const leafRand = rng(hashSeed(`${key}/${c}/${k}/${shape}`));
+
+        if (onTree) {
+          // Droop turns each leaf part of the way from ITS OWN angle toward
+          // hanging straight down. Not a shared rotation: a clump of leaves
+          // all swung to one angle reads as a clump drawn upside down.
+          const down = Math.PI;
+          const delta = Math.atan2(Math.sin(down - own), Math.cos(down - own));
+          limbs.push({
+            d: leafPath(
+              { x: host.at.x + Math.cos(theta) * radius, y: host.at.y + Math.sin(theta) * radius * 0.85 },
+              own + delta * 0.7 * droop,
+              length,
+              leafRand,
+            ),
+            weight: 0.7,
+            kind: 'leaf',
+            solid: true,
+            sectionId,
+          });
+        } else if (k % 8 === 0) {
+          // Fallen: one leaf in eight, lying flat on the ground under where it
+          // grew. Enough to read as leaf litter, not so many that a
+          // badly-faded course is a carpet — one in four was.
+          const x = Math.min(width - 8, Math.max(8, host.at.x + (fallX - 0.5) * 18));
+          const y = baseY + 1 + fallY * (height - baseY - 4);
+          limbs.push({
+            d: leafPath(
+              { x, y },
+              (fallTurn < 0.5 ? -1 : 1) * (Math.PI / 2 + (fallTurn - 0.5) * 0.5),
+              length * 0.8,
+              leafRand,
+            ),
+            weight: 0.7,
+            kind: 'leaf',
+            solid: true,
+            sectionId,
+          });
+        }
       }
     }
+  };
+
+  // The leader belongs to no section. It leafs with the course as a whole,
+  // or the top of every crown is a bare spike poking through the leaves.
+  const overall = (pick: (x: TreeSection) => number) =>
+    sections.length ? sections.reduce((n, x) => n + clamp01(pick(x)), 0) / sections.length : 0;
+  leafy(
+    '~leader',
+    leaderAnchors,
+    2,
+    overall((x) => x.mastery),
+    overall((x) => Math.max(x.mastery, x.learned ?? x.mastery)),
+    undefined,
+    [0.7, 0.5],
+  );
+
+  sections.forEach((section) => {
+    const held = clamp01(section.mastery);
+    const learned = Math.max(held, clamp01(section.learned ?? held));
+    leafy(section.id, anchorsBySection.get(section.id) ?? [], traits.clumps, held, learned, section.id, [0.75, 0.55]);
   });
 
   return { width, height, limbs };
