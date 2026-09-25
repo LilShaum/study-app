@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
@@ -47,7 +47,30 @@ interface CourseTreeProps {
    * loads is a loading spinner with extra steps.
    */
   animate?: boolean;
+  /**
+   * The course's progress when a session began. Given, the tree shows what
+   * the session changed: leaves it won back rise from the ground to where
+   * they fell from, and leaves for newly learned material grow in place.
+   * For the end of a session.
+   */
+  grewFrom?: Record<string, ItemResult>;
 }
+
+/** A small stable hash, to give each moving leaf its own path and timing. */
+function leafHash(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/** The clump a leaf belongs to, from its key: section/clump/leaf. */
+const clumpOf = (key: string) => Number(key.split('/').at(-2)) || 0;
+
+/** The most leaves that move at once. Past this the motion reads as noise, and costs frames on a phone. */
+const MAX_MOVING = 60;
 
 /** Wood that belongs to no section — the bole and the leader — never dims. */
 const isStructural = (limb: Limb) => !limb.sectionId;
@@ -128,6 +151,7 @@ export function CourseTree({
   interactive = false,
   highlight = null,
   animate = false,
+  grewFrom,
   mode = 'navigate',
   onExpand,
 }: CourseTreeProps) {
@@ -168,6 +192,79 @@ export function CourseTree({
     });
     return { tree: growTree(courseId, sections), sections };
   }, [courseId, course, progress, now]);
+
+  /*
+   * What a session changed, leaf by leaf: the same tree grown from the
+   * progress it started with, compared by each leaf's stable key.
+   *
+   * Leaves that are on the branch now and were not then bud and unfurl from
+   * their own stems, staggered — whether they were won back or are new.
+   * They do NOT fly back up off the ground: nothing a tree does looks like
+   * that. What shows a leaf was won back is the ground instead: the section's
+   * fallen leaves that are no longer fallen fade from the pile as the branch
+   * fills in, so the pile shrinks while the crown grows.
+   */
+  const motion = useMemo(() => {
+    const grow = new Map<string, { className: string; style: Record<string, string> }>();
+    const clearing: { d: string; style: Record<string, string> }[] = [];
+    const changed = new Set<string>();
+    if (!grewFrom) return { grow, clearing, changed };
+    const before = growTree(
+      courseId,
+      sortedSections(course).map((section) => {
+        const m = sectionMemory(section, grewFrom, now, course.metadata.exam_date);
+        return { id: section.id, weight: section.items.length, learned: m.learned, mastery: m.held };
+      }),
+    );
+    const was = new Set<string>();
+    const nowFallen = new Set<string>();
+    for (const l of before.limbs) if (l.leafKey && l.solid && !l.fallen) was.add(l.leafKey);
+    for (const l of tree.limbs) if (l.leafKey && l.fallen) nowFallen.add(l.leafKey);
+
+    const budding = tree.limbs.filter((l) => l.leafKey && l.solid && !l.fallen && !was.has(l.leafKey));
+    const step = Math.max(1, Math.ceil(budding.length / MAX_MOVING));
+    for (const l of budding) if (l.sectionId) changed.add(l.sectionId);
+    budding.forEach((l, i) => {
+      if (i % step) return;
+      const h = leafHash(l.leafKey!);
+      const at = startOf(l.d);
+      grow.set(l.leafKey!, {
+        className: 'lf leaf-bud',
+        style: {
+          // Unfurl from the stem, not from the leaf's middle.
+          transformOrigin: at ? `${at[0]}px ${at[1]}px` : 'center',
+          // Clump by clump, each leaf a little after its neighbours, so the
+          // branch fills in rather than every leaf popping at once.
+          animationDelay: `${400 + clumpOf(l.leafKey!) * 140 + (h % 260)}ms`,
+        },
+      });
+    });
+
+    const cleared = before.limbs.filter((l) => l.leafKey && l.fallen && !nowFallen.has(l.leafKey));
+    const cstep = Math.max(1, Math.ceil(cleared.length / MAX_MOVING));
+    for (const l of cleared) if (l.sectionId) changed.add(l.sectionId);
+    cleared.forEach((l, i) => {
+      if (i % cstep) return;
+      clearing.push({ d: l.d, style: { animationDelay: `${200 + (leafHash(l.leafKey!) % 600)}ms` } });
+    });
+    return { grow, clearing, changed };
+  }, [grewFrom, courseId, course, now, tree]);
+
+  /*
+   * While a session's regrowth plays, the sections it did not touch step
+   * back, so the branch filling in is the thing you see. Measured on a real
+   * course: one section budding inside an otherwise full crown was
+   * invisible — every frame looked the same. Once it has grown, the rest of
+   * the tree comes back up.
+   */
+  const [spotlight, setSpotlight] = useState(true);
+  useEffect(() => {
+    if (!grewFrom) return;
+    const t = setTimeout(() => setSpotlight(false), 2800);
+    return () => clearTimeout(t);
+  }, [grewFrom]);
+  const stepsBack = (limb: Limb) =>
+    !!grewFrom && spotlight && motion.changed.size > 0 && !!limb.sectionId && !motion.changed.has(limb.sectionId);
 
   /*
    * The limbs, grouped twice: by layer, then by section.
@@ -393,8 +490,62 @@ export function CourseTree({
     // Deeper in the large view: there the pointed section's lost leaves are
     // outlined, and at 0.4 its neighbours' real leaves read as the same
     // faint marks as that outline.
-    opacity: active && !isStructural(limb) && limb.sectionId !== active ? (tracking ? 0.2 : 0.4) : undefined,
+    opacity: stepsBack(limb)
+      ? 0.25
+      : active && !isStructural(limb) && limb.sectionId !== active
+        ? tracking
+          ? 0.2
+          : 0.4
+        : undefined,
   });
+
+  /*
+   * Which branch's leaves are falling. Not simply the selected one: moving
+   * across the tree selects branch after branch, and a fall on every branch
+   * crossed is motion for its own sake. It plays once the selection has
+   * rested a quarter of a second, and once per branch each time the tree is
+   * opened — a thing you see often should not keep repeating itself.
+   */
+  const [fallFor, setFallFor] = useState<string | null>(null);
+  const fallen = useRef(new Set<string>());
+  useEffect(() => {
+    if (!active || fallen.current.has(active)) return;
+    const t = setTimeout(() => {
+      fallen.current.add(active);
+      setFallFor(active);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [active]);
+
+  /** The lost leaves of the branch whose fall is playing, with where each lands. */
+  const falling = useMemo(() => {
+    if (!fallFor) return [];
+    const ghosts = layers.ghosts.get(fallFor) ?? [];
+    const step = Math.max(1, Math.ceil(ghosts.length / MAX_MOVING));
+    return ghosts
+      .filter((_, i) => i % step === 0)
+      .map((l) => {
+        const h = leafHash(l.leafKey ?? l.d);
+        const at = startOf(l.d);
+        const ground = tree.height - 12 + (h % 7);
+        return {
+          d: l.d,
+          style: {
+            // Each leaf its own drift, swing, turn and speed: falling
+            // together at one speed read as a column, not as leaves.
+            '--dx': `${((h >> 3) % 41) - 20}px`,
+            // Which way its first swing goes is its own, too — all to one
+            // side read as a gust carrying the whole lot off.
+            '--sway': `${(h & 1 ? 1 : -1) * (6 + ((h >> 9) % 10))}px`,
+            '--dy': `${at ? ground - at[1] : 60}px`,
+            // A tilt to land at, not a spin: leaves flutter, they do not tumble.
+            '--rot': `${((h >> 6) % 70) - 35}deg`,
+            animationDuration: `${2200 + ((h >> 12) % 1000)}ms`,
+            animationDelay: `${h % 900}ms`,
+          } as Record<string, string>,
+        };
+      });
+  }, [fallFor, layers, tree.height]);
 
   const swing = (id: string) => {
     const geo = layers.geometry.get(id);
@@ -466,6 +617,8 @@ export function CourseTree({
       // behind them. Every tree now sits on the page itself — the library row
       // that used to be a card is a ruled entry — so there is one fill.
       className={`w-auto shrink-0 text-text [&_.lf]:fill-[var(--color-bg)] ${animate ? 'tree-grow' : ''} ${
+        grewFrom ? 'tree-spotlight' : ''
+      } ${
         interactive ? (mode === 'preview' ? 'cursor-zoom-in' : pointed ? 'cursor-pointer' : '') : ''
       } ${className}`}
     >
@@ -492,21 +645,31 @@ export function CourseTree({
         {[...layers.foliage].map(([id, limbs]) => (
           <g key={id} data-sid={id} data-held={id === active || undefined} className="limb-set" style={swing(id)}>
             {limbs.map((limb, i) => (
-              <path key={i} {...paint(limb)} />
+              <path key={i} {...paint(limb)} {...(limb.leafKey ? motion.grow.get(limb.leafKey) : undefined)} />
             ))}
           </g>
         ))}
       </g>
 
-      {/* The shape of what was known. The pointed section's lost leaves,
-          outlined where they grew: the solid leaves are what is held, the
-          outline around them is what has gone, and what a review grows
-          back. No count — the gap is the measure. */}
-      {active && layers.ghosts.get(active) && (
-        <g key={active} className="tree-ghost" aria-hidden="true">
-          {layers.ghosts.get(active)!.map((limb, i) => (
-            // Dotted: the line for something that was here and is not.
-            <path key={i} d={limb.d} strokeWidth={0.35} strokeDasharray="0.7 0.8" />
+      {/* Fallen leaves the session won back, leaving the pile. */}
+      {motion.clearing.length > 0 && (
+        <g aria-hidden="true">
+          {motion.clearing.map((c, i) => (
+            <path key={i} d={c.d} className="lf leaf-clear" strokeWidth={0.7} style={c.style} />
+          ))}
+        </g>
+      )}
+
+      {/* The selected section's lost leaves, falling. They start where they
+          grew, hang there a moment, then drop into the pile on the ground —
+          which is the one thing a still drawing could not say: that these
+          fell from here. It replays for each branch you choose. With reduced
+          motion it does not play, and the thinned branch and the pile under
+          it carry the same news. */}
+      {fallFor && falling.length > 0 && (
+        <g key={fallFor} aria-hidden="true">
+          {falling.map((f, i) => (
+            <path key={i} d={f.d} className="lf leaf-fall" strokeWidth={0.7} style={f.style} />
           ))}
         </g>
       )}
