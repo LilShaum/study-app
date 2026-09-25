@@ -182,7 +182,10 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
           )}
           {item.explanation && <div className="mt-1 text-sm text-text-2">{item.explanation}</div>}
           {onNext && (
-            <button type="button" onClick={onNext} className="press tap-safe mt-3">
+            // Desktop only. On a phone the Prev/Next bar sits just below and
+            // two Next buttons one above the other read as a mistake; on a
+            // desktop this one stays, beside the explanation you just read.
+            <button type="button" onClick={onNext} className="press tap-safe mt-3 hidden sm:inline-flex">
               Next
             </button>
           )}
