@@ -67,6 +67,15 @@ export interface Limb {
    * into the ground is a pole stuck in it.
    */
   ink?: boolean;
+  /**
+   * A leaf this section has lost to forgetting, drawn where it grew. Not
+   * shown on the tree; the renderer outlines them when the section is
+   * pointed at, so the shape of what was known is visible against what is
+   * still held.
+   */
+  ghost?: boolean;
+  /** A lost leaf lying on the ground under the branch it fell from. */
+  fallen?: boolean;
 }
 
 export interface Tree {
@@ -632,6 +641,22 @@ export function growTree(seed: string, sections: TreeSection[]): Tree {
         // lies on the ground, so no state moves any other leaf.
         const leafRand = rng(hashSeed(`${key}/${c}/${k}/${shape}`));
 
+        if (!onTree) {
+          // Where it grew, unturned: the outline of what was known.
+          limbs.push({
+            d: leafPath(
+              { x: host.at.x + Math.cos(theta) * radius, y: host.at.y + Math.sin(theta) * radius * 0.85 },
+              own,
+              length,
+              rng(hashSeed(`${key}/${c}/${k}/${shape}`)),
+            ),
+            weight: 0.7,
+            kind: 'leaf',
+            ghost: true,
+            sectionId,
+          });
+        }
+
         if (onTree) {
           // Droop turns each leaf part of the way from ITS OWN angle toward
           // hanging straight down. Not a shared rotation: a clump of leaves
@@ -666,6 +691,7 @@ export function growTree(seed: string, sections: TreeSection[]): Tree {
             weight: 0.7,
             kind: 'leaf',
             solid: true,
+            fallen: true,
             sectionId,
           });
         }

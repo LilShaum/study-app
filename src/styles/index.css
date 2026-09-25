@@ -496,6 +496,20 @@
   .tree-grow .lf {
     animation: tree-leaf 700ms ease-out 650ms both;
   }
+  /* The outline of a pointed section's lost leaves: pencil, not ink. */
+  .tree-ghost {
+    opacity: 0.8;
+    animation: tree-ghost 220ms ease-out both;
+  }
+  @keyframes tree-ghost {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 0.8;
+    }
+  }
+
   /* A fill cannot be drawn on like a stroke; the trunk comes up first. */
   .tree-grow .ink {
     animation: tree-leaf 400ms ease-out both;
