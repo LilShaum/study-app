@@ -214,6 +214,11 @@ const SECTIONS: HelpSection[] = [
             under the branch. A studied branch never goes completely bare.
           </li>
           <li>Reviewing brings them back, in the same places they fell from.</li>
+          <li>
+            Tap the tree on a course page to open it large. Pick a branch there and dotted leaves
+            show where it has lost leaves, with its name, how much is due, and a button to review
+            just that section.
+          </li>
         </ul>
         <p className="mt-2">
           The fading uses the same estimate as <strong>Review</strong>, so a tree losing its leaves

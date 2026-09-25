@@ -49,7 +49,9 @@
      old separations were large because they had to read across a card
      edge and a shadow; on one continuous field they only have to read as
      a second sheet. */
-  --color-bg: #f3f1e8;
+  /* Set a little lighter than the paper is meant to read: the grain
+     multiplies over it and brings the page back down to about #f3f1e8. */
+  --color-bg: #faf8f0;
   --color-surface: #fbf9f3;
   --color-surface-raised: #fffefa;
   --color-surface-sunken: #e6e3d7;
@@ -137,15 +139,21 @@
      `screen` on near-black is a large relative change and carries easily,
      while `multiply` on near-white barely moves the luminance at all, so
      the light page was effectively untextured at any opacity that did not
-     also grey it. Light therefore uses `overlay`, which puts specks both
-     lighter AND darker the way real tooth does, at a LOWER opacity than
-     dark rather than a higher one. */
+     also grey it.
+
+     Light then moved to `overlay`, and that did not work either: on
+     near-white, overlay barely moves the luminance too. Measured from
+     screenshots, the light page's brightness varied by 0.43 levels — flat
+     — against 2.1 in dark. It now multiplies, at a strength that gives a
+     variation of about 3.3, and the paper colour underneath is set lighter
+     to pay for the darkening, so the page reads at the brightness it did
+     before, now with tooth. */
   --paper-grain:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.4' intercept='-0.700'/%3E%3CfeFuncG type='linear' slope='2.4' intercept='-0.700'/%3E%3CfeFuncB type='linear' slope='2.4' intercept='-0.700'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)' opacity='.55'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.22' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.0' intercept='-0.500'/%3E%3CfeFuncG type='linear' slope='2.0' intercept='-0.500'/%3E%3CfeFuncB type='linear' slope='2.0' intercept='-0.500'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='.36'/%3E%3C/svg%3E");
   --paper-grain-size: 220px 220px, 380px 380px;
-  --paper-grain-opacity: 0.26;
-  --paper-grain-blend: overlay;
+  --paper-grain-opacity: 0.25;
+  --paper-grain-blend: multiply;
 
   --sidebar-w: 240px;
   --header-h: 56px;

@@ -80,7 +80,7 @@ export function Onboarding() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
-      <div className="my-6 w-full max-w-md rounded-sm border border-border-strong bg-surface p-6 shadow-md">
+      <div className="my-6 w-full max-w-md paper-grain rounded-sm border border-border-strong bg-surface p-6 shadow-md">
         <div className="flex justify-center text-text">
           <Sprig size={40} />
         </div>
