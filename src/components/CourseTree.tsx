@@ -6,6 +6,7 @@ import { sortedSections } from '@/lib/sortedSections';
 import { sectionStats } from '@/lib/sectionStats';
 import { growTree, type Limb } from '@/lib/growTree';
 import { sectionMemory } from '@/lib/sectionMemory';
+import { useFallenStore } from '@/store/fallen';
 
 interface CourseTreeProps {
   courseId: string;
@@ -508,32 +509,42 @@ export function CourseTree({
    * second to move.
    *
    * So a fall, once started, always finishes, and several can be under way
-   * together. A branch falls again whenever you come back to it after its
-   * last fall has ended. And it starts after a short rest — long enough that
-   * brushing quickly across the crown does not shake every branch it
-   * crosses, short enough to feel like an answer to stopping.
+   * together. It starts after a short rest — long enough that brushing
+   * quickly across the crown does not shake every branch it crosses, short
+   * enough to feel like an answer to stopping.
+   *
+   * And a leaf falls once. Replaying the fall on every return made it a
+   * hover effect: the branch shed the same leaves however often you chose
+   * it. Now only leaves lost since you last saw that branch fall; the rest
+   * are already on the ground. Which have fallen is kept per course, so it
+   * holds across visits too (see store/fallen).
    */
   const FALL_REST_MS = 180;
   const FALL_LASTS_MS = 3600;
-  const [falls, setFalls] = useState<{ sid: string; at: number }[]>([]);
-  const lastFall = useRef(new Map<string, number>());
+  type Falling = { d: string; style: Record<string, string> };
+  const [falls, setFalls] = useState<{ sid: string; at: number; leaves: Falling[] }[]>([]);
+  const fellFrom = useFallenStore((s) => s.byCourse[courseId]);
+  const fell = useFallenStore((s) => s.fell);
+  const syncFallen = useFallenStore((s) => s.sync);
+
+  // Where each section's lost leaves begin now: the first clump not on the
+  // branch, or null when it has lost nothing. Regrowth moves this up, and
+  // leaves that grew back can fall again.
+  const shownBySection = useMemo(() => {
+    const out: Record<string, number | null> = {};
+    for (const sid of layers.foliage.keys()) out[sid] = null;
+    for (const [sid, ghosts] of layers.ghosts) {
+      out[sid] = Math.min(...ghosts.map((l) => clumpOf(l.leafKey ?? '')));
+    }
+    return out;
+  }, [layers]);
   useEffect(() => {
-    if (!active) return;
-    const t = setTimeout(() => {
-      const at = Date.now();
-      if (at - (lastFall.current.get(active) ?? -Infinity) < FALL_LASTS_MS) return;
-      lastFall.current.set(active, at);
-      // Three at once at most; the oldest is nearly done by then anyway.
-      setFalls((now) => [...now.filter((f) => at - f.at < FALL_LASTS_MS).slice(-2), { sid: active, at }]);
-      setTimeout(() => setFalls((now) => now.filter((f) => f.at !== at)), FALL_LASTS_MS);
-    }, FALL_REST_MS);
-    return () => clearTimeout(t);
-  }, [active]);
+    syncFallen(courseId, shownBySection);
+  }, [courseId, shownBySection, syncFallen]);
 
   /** A branch's lost leaves, each with where it lands and how it gets there. */
   const fallingFor = useCallback(
-    (sid: string) => {
-      const ghosts = layers.ghosts.get(sid) ?? [];
+    (ghosts: Limb[]): Falling[] => {
       const step = Math.max(1, Math.ceil(ghosts.length / MAX_MOVING));
       return ghosts
         .filter((_, i) => i % step === 0)
@@ -560,8 +571,28 @@ export function CourseTree({
           };
         });
     },
-    [layers, tree.height],
+    [tree.height],
   );
+
+  useEffect(() => {
+    if (!active) return;
+    const t = setTimeout(() => {
+      const ghosts = layers.ghosts.get(active) ?? [];
+      const seenFrom = fellFrom?.[active] ?? Infinity;
+      const fresh = ghosts.filter((l) => clumpOf(l.leafKey ?? '') < seenFrom);
+      if (!fresh.length) return;
+      fell(courseId, active, shownBySection[active] ?? 0);
+      const at = Date.now();
+      const leaves = fallingFor(fresh);
+      // Three at once at most; the oldest is nearly done by then anyway.
+      setFalls((now) => [...now.filter((f) => at - f.at < FALL_LASTS_MS).slice(-2), { sid: active, at, leaves }]);
+      setTimeout(() => setFalls((now) => now.filter((f) => f.at !== at)), FALL_LASTS_MS);
+    }, FALL_REST_MS);
+    return () => clearTimeout(t);
+    // Only a change of branch starts a fall; the record changing because of
+    // this very fall must not start another.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
 
   const swing = (id: string) => {
     const geo = layers.geometry.get(id);
@@ -684,7 +715,7 @@ export function CourseTree({
           it carry the same news. */}
       {falls.map((f) => (
         <g key={f.at} data-fall={f.sid} aria-hidden="true">
-          {fallingFor(f.sid).map((leaf, i) => (
+          {f.leaves.map((leaf, i) => (
             <path key={i} d={leaf.d} className="lf leaf-fall" strokeWidth={0.7} style={leaf.style} />
           ))}
         </g>

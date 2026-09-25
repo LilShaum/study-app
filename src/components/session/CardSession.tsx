@@ -13,7 +13,6 @@ import {
 import { useSessionStore } from '@/store/session';
 import { useResumeStore } from '@/store/resume';
 import { CourseTree } from '@/components/CourseTree';
-import { Fleuron } from '@/components/Fleuron';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { SectionJump } from './SectionJump';
@@ -335,8 +334,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           // whole tree, which looked the same whatever the session had done.
           grewFrom={startProgress}
         />
-        <Fleuron className="mt-4" />
-        <h1 className="mt-3 font-display text-title font-semibold text-text">
+        <h1 className="mt-5 font-display text-title font-semibold text-text">
           {MODE_LABELS[mode]} finished
         </h1>
         <div className="mt-3 flex justify-center gap-5 text-small tabular-nums">

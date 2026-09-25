@@ -11,7 +11,6 @@ import { toast } from '@/store/toast';
 import { Icon, type IconName } from '@/components/Icon';
 import { CourseTree } from '@/components/CourseTree';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
-import { Fleuron } from '@/components/Fleuron';
 import { TreeDialog } from '@/components/TreeDialog';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
@@ -388,7 +387,7 @@ export function CourseRoute() {
               </Link>
             )}
           </li>
-          {PRACTICE.map((m) => (
+          {PRACTICE.filter((m) => m.mode !== 'missed' || counts.missed > 0).map((m) => (
             <li key={m.mode} className="border-b border-border">
               <Link
                 to={`/session/${id}/${m.mode}`}
@@ -416,7 +415,7 @@ export function CourseRoute() {
       <div className="mt-6 space-y-1 text-small">
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
           <ToolLink to={`/study/${id}/progress`}>
-            <Icon name="bar-chart" size={14} />
+            <Icon name="trend" size={14} />
             Progress
           </ToolLink>
           <ToolLink to={`/session/${id}/browse`}>
@@ -425,7 +424,7 @@ export function CourseRoute() {
           </ToolLink>
           {counts.graphic > 0 && (
             <ToolLink to={`/study/${id}/diagrams`}>
-              <Icon name="layers" size={14} />
+              <Icon name="diagram" size={14} />
               Diagrams ({counts.graphic})
             </ToolLink>
           )}
@@ -437,7 +436,7 @@ export function CourseRoute() {
             Add material
           </ToolButton>
           <ToolButton onClick={() => setAdding('practice')}>
-            <Icon name="repeat" size={14} />
+            <Icon name="question-plus" size={14} />
             More practice
           </ToolButton>
           <ToolButton onClick={() => setEditingDetails(true)}>
@@ -456,8 +455,10 @@ export function CourseRoute() {
         </div>
       </div>
 
-      <Fleuron className="mt-10" />
-      <h2 className="mb-3 mt-4 border-b-2 border-border-strong pb-1 font-display text-title font-semibold text-text">
+      {/* No ornament above this heading. A single leaf used to sit here as a
+          printer's fleuron; at 18px it read as a stray "0", and the heavy
+          rule under the heading already marks where the contents begin. */}
+      <h2 className="mb-3 mt-12 border-b-2 border-border-strong pb-1 font-display text-title font-semibold text-text">
         Sections
       </h2>
       {/* The course's own contents list, set the way the library's is: the
