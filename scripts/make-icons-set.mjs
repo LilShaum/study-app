@@ -205,6 +205,31 @@ const GLYPHS = {
     o(blob([[14.8, 20.3], [15.1, 10.4], [18.6, 10.1], [18.4, 20.3]])),
     i(stroke(3.3, 20.7, 20.6, 20.5, 'bc-base', 0.2)),
   ],
+  // A line over time, for the progress page. It used to borrow bar-chart,
+  // which is Weakest first's glyph, so two neighbouring links on the course
+  // page wore the same picture.
+  trend: [
+    o(smooth([[3.6, 17.2], [7.6, 12.6], [11, 14.6], [15.2, 8.8], [20.4, 5.6]])),
+    i(stroke(3.3, 20.7, 20.6, 20.5, 'trend-base', 0.2)),
+    i(smooth([[16.6, 4.7], [20.6, 5.4], [19.9, 9.3]])),
+  ],
+  // A figure: two parts in a frame and the relation between them. Diagrams
+  // used the flashcards' stacked cards, so the link read as a second
+  // Flashcards.
+  diagram: [
+    o(blob([[5.3, 3.7], [18.8, 3.5], [20.5, 5.2], [20.6, 18.7], [18.9, 20.5], [5.1, 20.4], [3.4, 18.8], [3.5, 5.4]])),
+    i(ring(8.4, 15.4, 2.1, 'dg-a', 0.12)),
+    i(ring(15.7, 8.7, 2.1, 'dg-b', 0.12)),
+    i(stroke(9.9, 13.8, 14.2, 10.3, 'dg-link', 0.25)),
+  ],
+  // A question and one more: for asking the AI for more practice. It wore
+  // Review's arrow before, which says "again", not "more".
+  'question-plus': [
+    o(smooth([[5.2, 9.1], [6.4, 5.9], [9.6, 4.6], [12.8, 5.9], [13.4, 9.1], [11.1, 11.6], [9.5, 13.7], [9.4, 15.6]])),
+    i(stroke(9.3, 19.4, 9.6, 19.7, 'qp-dot', 0.05)),
+    i(stroke(17.6, 11.8, 17.7, 20.2, 'qp-v', 0.2)),
+    i(stroke(13.5, 16, 21.8, 16.1, 'qp-h', 0.2)),
+  ],
   'book-open': [
     o(smooth([[12, 6.4], [8.7, 4.3], [3.4, 4.1], [3.2, 18.4], [8.4, 18.7], [12, 20.6]])),
     o(smooth([[12, 6.4], [15.4, 4.2], [20.7, 4.2], [20.8, 18.5], [15.5, 18.6], [12, 20.6]])),
@@ -214,6 +239,13 @@ const GLYPHS = {
     o(ring(12, 12, 9.2, 'help')),
     i(smooth([[9.1, 9.3], [10.2, 7.2], [12.8, 7], [14.6, 8.5], [14.2, 10.6], [12.1, 12], [11.9, 14.2]])),
     i(stroke(11.8, 17, 12.1, 17.3, 'help-dot', 0.05)),
+  ],
+  // The help circle's own hand-drawn ring, with a lower-case i: stem
+  // slightly off vertical, the dot a short stroke rather than a disc.
+  info: [
+    o(ring(12, 12, 9.2, 'help')),
+    i(stroke(11.9, 10.6, 12.1, 16.9, 'info-stem', 0.2)),
+    i(stroke(11.8, 7.4, 12.1, 7.7, 'help-dot', 0.05)),
   ],
   layers: [
     o(blob([[12, 3.1], [20.6, 8.2], [12.1, 13.3], [3.3, 8.3]])),

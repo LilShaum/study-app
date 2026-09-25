@@ -149,7 +149,7 @@ export function DiagramsRoute() {
       {plates.length === 0 ? (
         <div className="mt-6 border-y border-border py-8 text-center">
           <span className="inline-flex text-text-3">
-            <Icon name="layers" size={28} />
+            <Icon name="diagram" size={28} />
           </span>
           <p className="mt-3 text-text-2">This course has no diagrams.</p>
           <p className="mx-auto mt-1 max-w-md text-sm text-text-3">
