@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { growTree, type TreeSection } from './growTree';
+import { growTree, type Limb, type TreeSection } from './growTree';
 
 const sections = (n: number, mastery = 0): TreeSection[] =>
   Array.from({ length: n }, (_, i) => ({ id: `s${i}`, weight: 8 + i, mastery }));
@@ -190,5 +190,31 @@ describe('growTree — the base', () => {
       .filter((l) => !l.sectionId && !l.solid && !l.ink)
       .flatMap((l) => [...l.d.matchAll(/(-?[\d.]+)[ ,](-?[\d.]+)/g)].map((m) => Number(m[2])));
     expect(Math.max(...ys)).toBeLessThanOrEqual(t.height - 14 + 1);
+  });
+});
+
+describe('growTree — the outline of what was known', () => {
+  const secs = (held: number, learned: number): TreeSection[] => [
+    { id: 'a', weight: 12, mastery: held, learned },
+    { id: 'b', weight: 10, mastery: 0.5 },
+  ];
+  const of = (t: ReturnType<typeof growTree>, pick: (l: Limb) => boolean | undefined) =>
+    t.limbs.filter((l) => l.sectionId === 'a' && pick(l));
+
+  it('has no outline where nothing has faded', () => {
+    expect(of(growTree('g', secs(0.9, 0.9)), (l) => l.ghost)).toHaveLength(0);
+  });
+
+  it('outlines exactly the leaves that fell, where they grew', () => {
+    const fresh = growTree('g', secs(0.9, 0.9));
+    const faded = growTree('g', secs(0.3, 0.9));
+    const onTree = (t: ReturnType<typeof growTree>) => of(t, (l) => l.solid && !l.fallen);
+    const ghosts = of(faded, (l) => l.ghost);
+    expect(ghosts.length).toBeGreaterThan(0);
+    // Every leaf of the fresh crown is either still on the faded tree or
+    // outlined in its place — and an outline is the leaf as it was.
+    expect(onTree(faded).length + ghosts.length).toBe(onTree(fresh).length);
+    const freshPaths = new Set(onTree(fresh).map((l) => l.d));
+    for (const g of ghosts) expect(freshPaths.has(g.d)).toBe(true);
   });
 });

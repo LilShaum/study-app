@@ -75,16 +75,17 @@ export function TreeDialog({ courseId, course, progress, onClose }: TreeDialogPr
           courseId={courseId}
           course={course}
           progress={progress}
-          className="h-[68vh]"
+          // Shorter on a phone, so the caption and the line under it fit.
+          className="h-[50vh] sm:h-[62vh]"
           interactive
           mode="navigate"
         />
         {/* The one place the picture is explained. Short, because the tree
             has to read without it — this is for the first time you look. */}
         <p className="mt-3 max-w-prose text-center text-small text-text-3">
-          Each branch is a section. Its leaves are what you still remember: they fall as it fades
-          and grow back when you review. What lies on the ground is what has faded. Tap a branch
-          to open its section.
+          Each branch is a section. Its leaves are what you still remember: they fall as it fades,
+          and a review grows them back. The outline around a branch you point at is what it has
+          lost.
         </p>
       </div>
     </div>

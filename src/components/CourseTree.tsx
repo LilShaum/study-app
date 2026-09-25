@@ -1,12 +1,12 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { sortedSections } from '@/lib/sortedSections';
 import { sectionStats } from '@/lib/sectionStats';
 import { growTree, type Limb } from '@/lib/growTree';
 import { scoredEntries } from '@/lib/scored';
-import { retrievability } from '@/lib/memory';
+import { examTime, isDueFor, retrievability } from '@/lib/memory';
 
 /**
  * How much of a section counts as known.
@@ -190,6 +190,7 @@ export function CourseTree({
   const active = (tracking ? pointed : null) ?? highlight;
 
   const { tree, sections } = useMemo(() => {
+    const examAt = examTime(course.metadata.exam_date);
     const sections = sortedSections(course).map((section) => {
       const stats = sectionStats(section, progress);
       const learned = mastery(stats.studied, stats.gradable, stats.accuracy);
@@ -201,6 +202,8 @@ export function CourseTree({
         weight: section.items.length,
         learned,
         mastery: learned * heldShare(section.items, progress, now),
+        studied: stats.studied,
+        due: scoredEntries(section.items).filter(({ id }) => isDueFor(progress[id], now, examAt)).length,
       };
     });
     return { tree: growTree(courseId, sections), sections };
@@ -223,9 +226,26 @@ export function CourseTree({
   const layers = useMemo(() => {
     const wood = new Map<string, Limb[]>();
     const foliage = new Map<string, Limb[]>();
+    const ghosts = new Map<string, Limb[]>();
     const structural: Limb[] = [];
     const structuralFoliage: Limb[] = [];
+    // On the ground, so it never swings with its branch; it still dims and
+    // lights with its section, which is how you tell whose litter is whose.
+    const litter: Limb[] = [];
     for (const limb of tree.limbs) {
+      if (limb.fallen) {
+        litter.push(limb);
+        continue;
+      }
+      if (limb.ghost) {
+        // The leader's lost leaves belong to no section and are never
+        // pointed at, so they are never drawn.
+        if (!limb.sectionId) continue;
+        const list = ghosts.get(limb.sectionId);
+        if (list) list.push(limb);
+        else ghosts.set(limb.sectionId, [limb]);
+        continue;
+      }
       if (!limb.sectionId) {
         // Split by layer, not just set aside. The leader carries foliage and
         // belongs to no section, so filing all of it as "structural" and
@@ -250,7 +270,7 @@ export function CourseTree({
       const cx = starts.reduce((n, p) => n + p[0], 0) / starts.length;
       geometry.set(id, { anchor, cx });
     }
-    return { wood, foliage, structural, structuralFoliage, geometry };
+    return { wood, foliage, ghosts, litter, structural, structuralFoliage, geometry };
   }, [tree]);
 
   /** How far each section swings while another is being pointed at. */
@@ -374,7 +394,7 @@ export function CourseTree({
   }, []);
 
   const inLeaf = useMemo(
-    () => new Set(tree.limbs.filter((l) => l.kind === 'leaf').map((l) => l.sectionId)).size,
+    () => new Set(tree.limbs.filter((l) => l.solid && !l.fallen).map((l) => l.sectionId)).size,
     [tree],
   );
 
@@ -408,7 +428,10 @@ export function CourseTree({
     // wandered in among the limbs it grew past — so those last segments were
     // claiming pointer that was nowhere near anything you could see.
     'data-section': tracking && limb.spine && limb.kind === 'branch' ? limb.sectionId : undefined,
-    opacity: active && !isStructural(limb) && limb.sectionId !== active ? 0.4 : undefined,
+    // Deeper in the large view: there the pointed section's lost leaves are
+    // outlined, and at 0.4 its neighbours' real leaves read as the same
+    // faint marks as that outline.
+    opacity: active && !isStructural(limb) && limb.sectionId !== active ? (tracking ? 0.2 : 0.4) : undefined,
   });
 
   const swing = (id: string) => {
@@ -419,7 +442,6 @@ export function CourseTree({
       transformOrigin: `${geo.anchor[0]}px ${geo.anchor[1]}px`,
     };
   };
-  const pointedTitle = tracking ? sections.find((s) => s.id === pointed)?.title : undefined;
 
   const svg = (
     <svg
@@ -440,8 +462,21 @@ export function CourseTree({
             }
           : undefined
       }
-      onPointerMove={tracking ? (e) => setPointed((held) => nearest(e, held)) : undefined}
-      onPointerLeave={tracking ? () => setPointed(null) : undefined}
+      // The selection STAYS: moving off a branch, or off the drawing, keeps
+      // the last one pointed at, so the caption under the tree can be reached
+      // and used. It changes only when another branch is pointed at.
+      //
+      // A finger does not hover, so touch never selects by moving: a stray
+      // pointermove during a tap would otherwise select and then open in one
+      // go, and on a phone you would never see the caption at all.
+      onPointerMove={
+        tracking
+          ? (e) => {
+              if (e.pointerType === 'touch') return;
+              setPointed((held) => nearest(e, held) ?? held);
+            }
+          : undefined
+      }
       onClick={
         tracking
           ? (e) => {
@@ -449,7 +484,17 @@ export function CourseTree({
                 { clientX: e.clientX, clientY: e.clientY, pointerType: lastPointer.current },
                 pointed,
               );
-              if (id) navigate(`/study/${courseId}/section/${encodeURIComponent(id)}`);
+              if (!id) {
+                setPointed(null);
+                return;
+              }
+              // On touch the first tap shows the branch — its outline and its
+              // caption — and the second opens it.
+              if (lastPointer.current === 'touch' && id !== pointed) {
+                setPointed(id);
+                return;
+              }
+              navigate(`/study/${courseId}/section/${encodeURIComponent(id)}`);
             }
           : undefined
       }
@@ -474,6 +519,9 @@ export function CourseTree({
         ))}
       </g>
       <g>
+        {layers.litter.map((limb, i) => (
+          <path key={`l${i}`} {...paint(limb)} />
+        ))}
         {layers.structuralFoliage.map((limb, i) => (
           <path key={`sf${i}`} {...paint(limb)} />
         ))}
@@ -485,6 +533,19 @@ export function CourseTree({
           </g>
         ))}
       </g>
+
+      {/* The shape of what was known. The pointed section's lost leaves,
+          outlined where they grew: the solid leaves are what is held, the
+          outline around them is what has gone, and what a review grows
+          back. No count — the gap is the measure. */}
+      {active && layers.ghosts.get(active) && (
+        <g key={active} className="tree-ghost" aria-hidden="true">
+          {layers.ghosts.get(active)!.map((limb, i) => (
+            // Dotted: the line for something that was here and is not.
+            <path key={i} d={limb.d} strokeWidth={0.35} strokeDasharray="0.7 0.8" />
+          ))}
+        </g>
+      )}
 
       {/* Keyboard and screen-reader access to the same sections. These carry
           no pointer events — pointing is handled above, by distance — so they
@@ -498,7 +559,6 @@ export function CourseTree({
               section.accuracy === null ? ', not yet studied' : `, ${section.accuracy}% correct`
             }`}
             onFocus={() => setPointed(section.id)}
-            onBlur={() => setPointed(null)}
             style={{ pointerEvents: 'none' }}
           >
             {/* A zero-area shape: the anchor needs a child to be focusable at
@@ -524,17 +584,55 @@ export function CourseTree({
     );
   }
 
-  /* Named before it is clicked. Aiming at a limb inside eleven interleaved
-     crowns picks the right section about 60% of the time, measured — so the
-     name of whatever the pointer is nearest sits under the drawing, and a
-     miss is a moved mouse rather than a wrong page. The line is reserved so
-     nothing jumps. */
+  /* The plate caption.
+
+     Botanical plates key a drawing with a numbered caption beneath it, and
+     that is what this is: the figure number, the section's name in full,
+     one line of plain fact, and the two things worth doing from here. It
+     replaced a line of small grey text holding the name alone — which told
+     you what you were pointing at and nothing you could act on.
+
+     Its height is reserved, so pointing at branches never moves the page. */
+  const chosen = tracking ? sections.findIndex((s) => s.id === (pointed ?? highlight)) : -1;
+  const sel = chosen >= 0 ? sections[chosen] : null;
+  const fact = !sel
+    ? null
+    : !sel.studied
+      ? 'not studied yet'
+      : sel.due
+        ? `${sel.due} due for review`
+        : 'nothing due';
+  const at = (path: string) => `/study/${courseId}${path}`;
+
   return (
-    <span className="inline-flex flex-col items-center">
+    <div className="flex w-full flex-col items-center">
       {svg}
-      <span className="mt-1 h-4 max-w-full truncate text-micro text-text-2" aria-hidden="true">
-        {pointedTitle ?? ''}
-      </span>
-    </span>
+      <div className="mt-3 flex min-h-[7.5rem] w-full max-w-md flex-col items-center text-center" aria-live="polite">
+        {sel ? (
+          <>
+            <span className="mark text-text-3">Fig. {chosen + 1}</span>
+            <span className="mt-0.5 line-clamp-2 font-display text-heading text-text">{sel.title}</span>
+            <span className="mt-1 flex flex-wrap items-baseline justify-center gap-x-4 gap-y-1 text-small">
+              <span className="text-text-2">
+                {sel.items} item{sel.items === 1 ? '' : 's'} · {fact}
+              </span>
+              <Link to={at(`/section/${encodeURIComponent(sel.id)}`)} className="text-accent hover:underline">
+                Open section
+              </Link>
+              {sel.due > 0 && (
+                <Link
+                  to={`/session/${courseId}/review?section=${encodeURIComponent(sel.id)}`}
+                  className="text-accent hover:underline"
+                >
+                  Review {sel.due}
+                </Link>
+              )}
+            </span>
+          </>
+        ) : (
+          <span className="mt-6 text-small text-text-3">Point at a branch, or tap one, to see what it holds.</span>
+        )}
+      </div>
+    </div>
   );
 }
