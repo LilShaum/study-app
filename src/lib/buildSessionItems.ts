@@ -4,6 +4,7 @@ import { shuffle } from './shuffle';
 import { sortedSections } from './sortedSections';
 import { recallId } from './scored';
 import { isDueFor, reviewUrgency } from './memory';
+import { acceptedForms, normalise } from './typedAnswer';
 
 export const STUDY_MODES = [
   'browse',
@@ -49,6 +50,15 @@ export interface RecallItem {
   target: DefinitionItem;
   /** Every definition in the course, shared by all recall items. */
   pool: readonly DefinitionItem[];
+  /**
+   * Set when this asks a multiple-choice QUESTION with its options taken
+   * away, rather than asking for a term by its definition: the question's
+   * text, its right option as written, and its explanation. The id is then
+   * the question's own, so it is scored as the same question.
+   */
+  question?: string;
+  answer?: string;
+  explanation?: string;
 }
 
 export type AnyItem = StudyItem | RecallItem;
@@ -270,6 +280,44 @@ export function buildSessionItems(
    * is of that. So a pair the student actually mixed up comes back as a
    * pair, one after the other, until they stop mixing it up.
    */
+  /*
+   * A multiple-choice question, asked again without its options.
+   *
+   * Only once it has been answered right as multiple choice — recognising
+   * the answer comes first, producing it is the step after, and the harder
+   * retrieval is the one that sticks (docs/evidence.md). And only when its
+   * right option is itself a term the course defines, so the grader knows
+   * every name the answer goes by and which near misses are other terms.
+   * Stems that lean on the options ("which of these…") cannot stand alone
+   * and are left as they are.
+   */
+  const defByForm = new Map<string, DefinitionItem>();
+  for (const d of pool) for (const f of acceptedForms(d)) if (!defByForm.has(f.norm)) defByForm.set(f.norm, d);
+  const NEEDS_OPTIONS = /\b(of these|the following|which option|options?\b)/i;
+  const typedFrom = (item: SessionItem): SessionItem | null => {
+    if (item.type !== 'mcq' || !progress?.[item.id]?.got) return null;
+    if (NEEDS_OPTIONS.test(item.question)) return null;
+    const answer = item.options[item.correct_index];
+    const target = answer ? defByForm.get(normalise(answer)) : undefined;
+    if (!answer || !target) return null;
+    return {
+      id: item.id,
+      type: 'recall',
+      source_excerpt: item.source_excerpt,
+      difficulty: item.difficulty,
+      tags: item.tags,
+      target,
+      pool,
+      question: item.question,
+      answer,
+      explanation: item.explanation,
+      _sectionTitle: item._sectionTitle,
+      _sectionId: item._sectionId,
+      _sectionOrder: item._sectionOrder,
+    };
+  };
+  const asTyped = (list: SessionItem[]) => list.map((i) => typedFrom(i) ?? i);
+
   const pairConfusions = (list: SessionItem[]): SessionItem[] => {
     const byId = new Map(list.map((i) => [i.id, i]));
     const placed = new Set<string>();
@@ -293,7 +341,7 @@ export function buildSessionItems(
 
   switch (mode) {
     case 'quiz':
-      items = items.filter((i) => i.type === 'mcq');
+      items = asTyped(items.filter((i) => i.type === 'mcq'));
       break;
     case 'flashcards':
       items = items.filter((i) => i.type === 'flashcard');
@@ -305,20 +353,20 @@ export function buildSessionItems(
       break;
     case 'mixed':
       // Practice, so a definition is asked for rather than shown.
-      items = shuffle(asRecall(items));
+      items = shuffle(asTyped(asRecall(items)));
       break;
     case 'learn':
       // Read the definition in the Learn stage, recall it in the Recall stage.
       items = learnOrder(withRecall(items));
       break;
     case 'weakest':
-      items = weakestFirst(asRecall(items), progress);
+      items = weakestFirst(asTyped(asRecall(items)), progress);
       break;
     case 'review':
       // What has been studied and is fading, faintest first — or, with an
       // exam date, what would be faintest on the day (see lib/memory.ts).
       // Never-seen items are not here: new material comes through Learn.
-      items = asRecall(items)
+      items = asTyped(asRecall(items))
         .filter(isGradable)
         .filter((i) => isDueFor(progress?.[i.id], now, examAt))
         .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, examAt) }))

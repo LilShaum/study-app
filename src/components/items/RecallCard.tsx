@@ -20,17 +20,17 @@ interface RecallCardProps {
 }
 
 /** What the verdict says, in the words a student needs to read next. */
-function verdictLine(v: Verdict, term: string): string {
+function verdictLine(v: Verdict, answer: string, asked: 'term' | 'question'): string {
   switch (v.kind) {
     case 'exact':
-      return `✓ Correct — ${term}`;
+      return `✓ Correct — ${answer}`;
     case 'typo':
       // Accepted, but the right spelling is worth seeing once.
       return `✓ Accepted — it is spelled ${v.spelled}`;
     case 'confused':
-      return `✗ That is ${v.with}. This one is ${term}.`;
+      return asked === 'term' ? `✗ That is ${v.with}. This one is ${answer}.` : `✗ That is ${v.with}. The answer is ${answer}.`;
     case 'wrong':
-      return `✗ The answer is ${term}.`;
+      return `✗ The answer is ${answer}.`;
   }
 }
 
@@ -101,24 +101,28 @@ export function RecallCard({
     onOverride?.(next);
   };
 
-  const term = item.target.term;
+  // Asked as a question (a multiple-choice question without its options) or
+  // for a term by its definition.
+  const asked = item.question ? 'question' : 'term';
+  const answer = item.answer ?? item.target.term;
   const overruled = verdict !== null && counted !== verdict.correct;
 
   return (
     <div className={FRAME[frame]}>
       <div className="mark mb-3 flex items-center gap-2 text-text-3">
-        Name the term
+        {asked === 'question' ? 'Type the answer' : 'Name the term'}
         <DifficultyBadge difficulty={item.difficulty} />
       </div>
 
       {/* Blanked where it names its own term, until answered: then shown whole. */}
       <p className="font-display text-heading text-text">
-        {verdict ? item.target.definition : maskTerm(item.target.definition, item.target)}
+        {item.question ??
+          (verdict ? item.target.definition : maskTerm(item.target.definition, item.target))}
       </p>
 
       <form onSubmit={check} className="mt-5 flex items-baseline gap-3">
         <label htmlFor={inputId} className="sr-only">
-          The term
+          {asked === 'question' ? 'Your answer' : 'The term'}
         </label>
         <input
           id={inputId}
@@ -126,7 +130,7 @@ export function RecallCard({
           value={typed}
           onChange={(e) => setTyped(e.target.value)}
           readOnly={verdict !== null}
-          placeholder="Type the term"
+          placeholder={asked === 'question' ? 'Type the answer' : 'Type the term'}
           // A spellchecker would underline a wrong answer and autocorrect
           // would rewrite a right one: both are the device answering for you.
           spellCheck={false}
@@ -146,7 +150,8 @@ export function RecallCard({
         <div className="mt-4" aria-live="polite">
           {/* The verdict keeps its own colour when overruled: a green ✗ reads
               as a contradiction. What is counted shows in the answer line. */}
-          <p className={`font-medium ${verdict.correct ? 'text-success' : 'text-error'}`}>{verdictLine(verdict, term)}</p>
+          <p className={`font-medium ${verdict.correct ? 'text-success' : 'text-error'}`}>{verdictLine(verdict, answer, asked)}</p>
+          {verdict && item.explanation && <p className="mt-2 text-small text-text-2">{item.explanation}</p>}
           {mixedUp && (
             <p className="mt-2 border-l-2 border-border-strong pl-3 text-small text-text-2">
               <span className="mr-1.5 font-semibold uppercase tracking-wider text-text">{mixedUp.term}.</span>

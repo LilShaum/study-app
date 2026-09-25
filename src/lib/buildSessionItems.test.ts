@@ -241,3 +241,38 @@ describe('buildSessionItems — terms that were mixed up come back together', ()
     expect(ids).toEqual(['exo~recall', 'endo~recall']);
   });
 });
+
+describe('buildSessionItems — a question answered right comes back typed', () => {
+  const qc = {
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: [
+      {
+        id: 's1',
+        title: 'One',
+        order: 1,
+        items: [
+          { id: 'pla2', type: 'definition', term: 'Phospholipase A2', definition: 'releases arachidonic acid' },
+          { id: 'q1', type: 'mcq', question: 'Which enzyme releases arachidonic acid?', options: ['Phospholipase C', 'Phospholipase A2', 'COX', 'PKC'], correct_index: 1, explanation: 'PLA2 does.' },
+          { id: 'q2', type: 'mcq', question: 'Which of these is an enzyme?', options: ['Phospholipase A2', 'b', 'c', 'd'], correct_index: 0 },
+          { id: 'q3', type: 'mcq', question: 'Which enzyme is it?', options: ['Not a term', 'b', 'c', 'd'], correct_index: 0 },
+        ],
+      },
+    ],
+  } as unknown as Course;
+  const right = { got: 1, missed: 0, lastSeen: 1 };
+
+  it('asks it without its options once it has been answered right', () => {
+    const [q1] = buildSessionItems(qc, 'quiz', { progress: { q1: right } });
+    expect(q1).toMatchObject({ id: 'q1', type: 'recall', question: 'Which enzyme releases arachidonic acid?', answer: 'Phospholipase A2' });
+  });
+
+  it('keeps it multiple choice until then', () => {
+    expect(buildSessionItems(qc, 'quiz', { progress: {} })[0].type).toBe('mcq');
+  });
+
+  it('leaves questions that need their options, or whose answer is not a course term', () => {
+    const items = buildSessionItems(qc, 'quiz', { progress: { q1: right, q2: right, q3: right } });
+    expect(items.map((i) => i.type)).toEqual(['recall', 'mcq', 'mcq']);
+  });
+});

@@ -21,7 +21,7 @@ const MODE_ROWS: { icon: IconName; name: string; what: string; scored: boolean }
   {
     icon: 'help-circle',
     name: 'Quiz',
-    what: 'Multiple-choice questions one at a time, with the explanation after you answer.',
+    what: 'Multiple-choice questions one at a time, with the explanation after you answer. Once you have got one right, it can come back without its options, for you to type the answer — where the answer is a term the course defines.',
     scored: true,
   },
   {

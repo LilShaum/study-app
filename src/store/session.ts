@@ -67,10 +67,10 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     const missedIds = mode === 'missed' ? progressStore.missedIds(courseId) : undefined;
     // Weakest-first ranks by the student's own history, so it is the one mode
     // that needs the full per-item record rather than a set of ids.
-    // Weakest and Review rank by history; Terms needs it to pair the terms a
-    // student has mixed up.
-    const progress =
-      mode === 'weakest' || mode === 'review' || mode === 'definitions' ? progressStore.getProgress(courseId) : undefined;
+    // Weakest and Review rank by history, Terms pairs mixed-up terms from it,
+    // and a question already answered right comes back typed — so every mode
+    // that builds from it gets it.
+    const progress = progressStore.getProgress(courseId);
     const examAt = examTime(course.metadata.exam_date);
     const items = buildSessionItems(course, mode, { missedIds, sectionId, progress, examAt });
     // Resume by id, not position: Mixed and Review Missed reshuffle each start
