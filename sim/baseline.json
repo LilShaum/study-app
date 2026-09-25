@@ -312,5 +312,185 @@
     0.21189530405064846
    ]
   }
+ },
+ "steady-30-cutoff": {
+  "scenario": "steady-30-cutoff",
+  "why": "Lectures run up to the exam; the last week of them is not on it.",
+  "seeds": 5,
+  "scoreSd": 0.02593439140347383,
+  "mean": {
+   "expectedScore": 0.5909886056598702,
+   "held": 0.5497797356828195,
+   "neverStudied": 0.3898678414096916,
+   "appEstimate": 0.5892580428116467,
+   "minutes": 936,
+   "reviewShare": 0.81024083125444,
+   "earlyReviews": 0.04335824584666449,
+   "lateReviews": 0.4843641565829942,
+   "peakDue": 158,
+   "allStartedDay": null,
+   "bySection": [
+    0.9361719671183077,
+    0.9392006901701834,
+    0.939238609169341,
+    0.9278287175240113,
+    0.9031784944408552,
+    0.7161919219380237,
+    0.0875,
+    0.09,
+    0.09,
+    0.08967391304347826
+   ]
+  }
+ },
+ "steady-30-cutoff-no-date": {
+  "scenario": "steady-30-cutoff-no-date",
+  "why": "As steady-30-cutoff, without telling the app the exam date.",
+  "seeds": 5,
+  "scoreSd": 0.02917328269948776,
+  "mean": {
+   "expectedScore": 0.6287243010447714,
+   "held": 0.5814977973568282,
+   "neverStudied": 0.28678414096916305,
+   "appEstimate": 0.6196013540931743,
+   "minutes": 935.6,
+   "reviewShare": 0.7783467682473687,
+   "earlyReviews": 0,
+   "lateReviews": 0.5302141144987667,
+   "peakDue": 101.4,
+   "allStartedDay": null,
+   "bySection": [
+    0.8864547538323796,
+    0.8759084579620247,
+    0.8981582007150791,
+    0.8933129484387754,
+    0.8801785057413234,
+    0.79967640961468,
+    0.623445386109189,
+    0.3644879828267741,
+    0.14849917339611376,
+    0.08967391304347826
+   ]
+  }
+ },
+ "steady-45-cutoff": {
+  "scenario": "steady-45-cutoff",
+  "why": "As steady-30-cutoff at 45 min/day.",
+  "seeds": 5,
+  "scoreSd": 0.01354948577734293,
+  "mean": {
+   "expectedScore": 0.765379156778194,
+   "held": 0.7440528634361233,
+   "neverStudied": 0.18458149779735683,
+   "appEstimate": 0.758424576531785,
+   "minutes": 1299.6,
+   "reviewShare": 0.8177808309621148,
+   "earlyReviews": 0.08037341763923862,
+   "lateReviews": 0.4431556477810316,
+   "peakDue": 158.2,
+   "allStartedDay": null,
+   "bySection": [
+    0.9389071515840746,
+    0.9271348256723231,
+    0.9356457480877085,
+    0.9247945651221514,
+    0.927993250893782,
+    0.9175414306132831,
+    0.9123371124923851,
+    0.8856115771970602,
+    0.881485660137918,
+    0.1587397728769356
+   ]
+  }
+ },
+ "steady-45-cutoff-no-date": {
+  "scenario": "steady-45-cutoff-no-date",
+  "why": "As steady-45-cutoff, without the exam date.",
+  "seeds": 5,
+  "scoreSd": 0.011206559349265318,
+  "mean": {
+   "expectedScore": 0.8430318911172077,
+   "held": 0.8154185022026432,
+   "neverStudied": 0.003964757709251102,
+   "appEstimate": 0.8357180387969961,
+   "minutes": 1299.8,
+   "reviewShare": 0.7748279552479462,
+   "earlyReviews": 0,
+   "lateReviews": 0.5167850464156413,
+   "peakDue": 145.2,
+   "allStartedDay": 23,
+   "bySection": [
+    0.8862848678306439,
+    0.8819824485261967,
+    0.883402032922526,
+    0.903405884352703,
+    0.8952014239636714,
+    0.876768529275056,
+    0.8482467317002703,
+    0.8126936012873351,
+    0.8152901654795407,
+    0.7173187852741105
+   ]
+  }
+ },
+ "steady-45-cutoff-harsh": {
+  "scenario": "steady-45-cutoff-harsh",
+  "why": "Sensitivity for the exam-date finding: steady-45-cutoff, harsh forgetting.",
+  "seeds": 5,
+  "scoreSd": 0.004215227001338957,
+  "mean": {
+   "expectedScore": 0.20325201231016726,
+   "held": 0.042731277533039645,
+   "neverStudied": 0.5462555066079295,
+   "appEstimate": 0.3636276980834595,
+   "minutes": 1352,
+   "reviewShare": 0.9007611014451662,
+   "earlyReviews": 0,
+   "lateReviews": 0.9370027979302142,
+   "peakDue": 190.2,
+   "allStartedDay": null,
+   "bySection": [
+    0.3323989284057324,
+    0.35723293621870733,
+    0.36191349451939747,
+    0.31196034825945196,
+    0.3060229607539688,
+    0.08974358974358974,
+    0.0875,
+    0.09,
+    0.09,
+    0.08967391304347826
+   ]
+  }
+ },
+ "steady-45-cutoff-harsh-no-date": {
+  "scenario": "steady-45-cutoff-harsh-no-date",
+  "why": "As steady-45-cutoff-harsh, without the exam date.",
+  "seeds": 5,
+  "scoreSd": 0.006731421664900704,
+  "mean": {
+   "expectedScore": 0.20963373260586265,
+   "held": 0.04537444933920705,
+   "neverStudied": 0.5317180616740087,
+   "appEstimate": 0.36828942498232003,
+   "minutes": 1348.8,
+   "reviewShare": 0.8971414468273334,
+   "earlyReviews": 0,
+   "lateReviews": 0.9507433298385071,
+   "peakDue": 162.2,
+   "allStartedDay": null,
+   "bySection": [
+    0.3130486481402114,
+    0.34642710201787574,
+    0.3514340058353053,
+    0.36093537594500547,
+    0.32815402092636164,
+    0.09626261023295592,
+    0.0875,
+    0.09,
+    0.09,
+    0.08967391304347826
+   ]
+  }
  }
 }

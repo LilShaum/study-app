@@ -32,6 +32,12 @@ export interface Scenario {
   examDate: boolean;
   /** Which sections the exam covers (0-based). All when omitted. */
   scope?: number[];
+  /**
+   * The exam covers only sections released at least this many days before
+   * it: what is taught in the last days before a test is usually not on it.
+   * Ignored when `scope` is given.
+   */
+  scopeCutoffDays?: number;
   policy: keyof typeof POLICIES | string;
 }
 
@@ -143,7 +149,11 @@ export function simulate(sc: Scenario, seed: number): RunResult {
 
   const sections = sortedSections(course);
   const idsOf = (i: number) => scoredEntries(sections[i].items).map((e) => e.id);
-  const scope = sc.scope ?? sections.map((_, i) => i);
+  const releasedOn = (i: number) =>
+    i < sc.release.atStart ? 0 : Math.ceil((i - sc.release.atStart + 1) * sc.release.everyDays);
+  const scope =
+    sc.scope ??
+    sections.map((_, i) => i).filter((i) => sc.scopeCutoffDays == null || releasedOn(i) <= sc.days - sc.scopeCutoffDays);
   const scopeIds = scope.flatMap(idsOf);
   const typeOf = new Map(sections.flatMap((s) => scoredEntries(s.items).map((e) => [e.id, e.item.type] as const)));
 
