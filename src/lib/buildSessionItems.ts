@@ -2,6 +2,7 @@ import type { Course, StudyItem } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { shuffle } from './shuffle';
 import { sortedSections } from './sortedSections';
+import { recallId } from './scored';
 
 export const STUDY_MODES = [
   'browse',
@@ -15,13 +16,63 @@ export const STUDY_MODES = [
 ] as const;
 export type StudyMode = (typeof STUDY_MODES)[number];
 
-// StudyItem is a discriminated union, so this must be an intersection
-// (an `interface extends` can't add fields to a non-object union type).
-export type SessionItem = StudyItem & {
+type DefinitionItem = Extract<StudyItem, { type: 'definition' }>;
+
+export { recallId } from './scored';
+
+/**
+ * A question the APP writes, from a definition the generator wrote: here is
+ * the meaning, type the term.
+ *
+ * It exists because definitions were half of a generated course and none of
+ * them could be scored — read, never retrieved. And recall is the stronger
+ * kind of practice: the testing-effect meta-analysis in docs/evidence.md
+ * finds recall tests beat recognition tests, and every other gradable item in
+ * the app is either multiple choice or a self-graded flip.
+ *
+ * It lives only in a session and never in the course file, so it cannot leak
+ * into an export or fail an import — and asks nothing more of the generator.
+ * It carries the ORIGINAL definition object and the course's whole list of
+ * them, both by reference: the grader caches each term's accepted forms
+ * against the object, and it needs every term in the course to tell a slipped
+ * key from a confused term.
+ */
+export interface RecallItem {
+  id: string;
+  type: 'recall';
+  source_excerpt?: string;
+  difficulty?: DefinitionItem['difficulty'];
+  tags?: string[];
+  /** The definition this asks for. */
+  target: DefinitionItem;
+  /** Every definition in the course, shared by all recall items. */
+  pool: readonly DefinitionItem[];
+}
+
+export type AnyItem = StudyItem | RecallItem;
+
+// A discriminated union, so this must be an intersection (an `interface
+// extends` can't add fields to a non-object union type).
+export type SessionItem = AnyItem & {
   _sectionTitle: string;
   _sectionId: string;
   _sectionOrder: number;
 };
+
+function toRecall(item: SessionItem & DefinitionItem, pool: readonly DefinitionItem[], original: DefinitionItem): SessionItem {
+  return {
+    id: recallId(item.id),
+    type: 'recall',
+    source_excerpt: item.source_excerpt,
+    difficulty: item.difficulty,
+    tags: item.tags,
+    target: original,
+    pool,
+    _sectionTitle: item._sectionTitle,
+    _sectionId: item._sectionId,
+    _sectionOrder: item._sectionOrder,
+  };
+}
 
 export interface SessionOptions {
   /** Item ids the student has missed more often than got. Only 'missed' uses it. */
@@ -41,22 +92,31 @@ export interface SessionOptions {
  */
 export const LEARN_STAGES = [
   { key: 'learn', label: 'Learn', hint: 'Read the terms, examples and diagrams', types: ['definition', 'example', 'graphic'] },
-  { key: 'recall', label: 'Recall', hint: 'Pull it back from memory', types: ['flashcard'] },
+  { key: 'recall', label: 'Recall', hint: 'Pull it back from memory', types: ['flashcard', 'recall'] },
   { key: 'apply', label: 'Apply', hint: 'Use it on exam-style questions', types: ['mcq'] },
 ] as const;
 
 export type LearnStage = (typeof LEARN_STAGES)[number];
 
 /** Which learn stage an item belongs to; -1 for a type no stage claims. */
-export function learnStageIndex(type: StudyItem['type']): number {
+export function learnStageIndex(type: AnyItem['type']): number {
   return LEARN_STAGES.findIndex((s) => (s.types as readonly string[]).includes(type));
 }
 
 // Definitions come before the examples and diagrams that use them, so the
-// first thing a student meets in a section is the vocabulary for it.
-const WITHIN_STAGE: Partial<Record<StudyItem['type'], number>> = { definition: 0, example: 1, graphic: 2 };
+// first thing a student meets in a section is the vocabulary for it. In the
+// recall stage the typed terms come AFTER the flashcards, so there is a run of
+// other questions between reading a definition and being asked for it —
+// recalling it straight after reading it would test the last ten seconds.
+const WITHIN_STAGE: Partial<Record<AnyItem['type'], number>> = {
+  definition: 0,
+  example: 1,
+  graphic: 2,
+  flashcard: 0,
+  recall: 1,
+};
 
-const isGradable = (i: StudyItem) => i.type === 'mcq' || i.type === 'flashcard';
+const isGradable = (i: AnyItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall';
 
 /**
  * Order a section's items as a taught sequence rather than a filter.
@@ -161,6 +221,25 @@ export function buildSessionItems(
     })),
   );
 
+  // The pool is the WHOLE course's definitions even when the session is one
+  // section: a term confused with one from another section is still a
+  // confusion. Built from the course's own objects, so the grader's cache of
+  // accepted forms survives from one question to the next.
+  const pool: DefinitionItem[] = course.sections.flatMap((s) =>
+    s.items.filter((i): i is DefinitionItem => i.type === 'definition'),
+  );
+  const originals = new Map(pool.map((d) => [d.id, d]));
+  const recallFor = (item: SessionItem): SessionItem | null =>
+    item.type === 'definition' ? toRecall(item, pool, originals.get(item.id) ?? item) : null;
+  /** Each definition followed by its recall question. */
+  const withRecall = (list: SessionItem[]) =>
+    list.flatMap((i) => {
+      const r = recallFor(i);
+      return r ? [i, r] : [i];
+    });
+  /** Each definition REPLACED by its recall question. */
+  const asRecall = (list: SessionItem[]) => list.map((i) => recallFor(i) ?? i);
+
   switch (mode) {
     case 'quiz':
       items = items.filter((i) => i.type === 'mcq');
@@ -169,19 +248,23 @@ export function buildSessionItems(
       items = items.filter((i) => i.type === 'flashcard');
       break;
     case 'definitions':
-      items = items.filter((i) => i.type === 'definition');
+      // Terms: type the word from its meaning. Reading the glossary is what
+      // Browse is for.
+      items = asRecall(items.filter((i) => i.type === 'definition'));
       break;
     case 'mixed':
-      items = shuffle(items);
+      // Practice, so a definition is asked for rather than shown.
+      items = shuffle(asRecall(items));
       break;
     case 'learn':
-      items = learnOrder(items);
+      // Read the definition in the Learn stage, recall it in the Recall stage.
+      items = learnOrder(withRecall(items));
       break;
     case 'weakest':
-      items = weakestFirst(items, progress);
+      items = weakestFirst(asRecall(items), progress);
       break;
     case 'missed':
-      items = shuffle(items.filter((i) => missedIds?.has(i.id)));
+      items = shuffle(asRecall(items).filter((i) => missedIds?.has(i.id)));
       break;
     case 'browse':
       // Browse renders straight from course.sections and only uses this

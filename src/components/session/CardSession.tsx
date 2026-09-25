@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
-import type { Course, StudyItem } from '@/schema/course';
-import { LEARN_STAGES, learnStageIndex, type StudyMode } from '@/lib/buildSessionItems';
+import type { Course } from '@/schema/course';
+import { LEARN_STAGES, learnStageIndex, type AnyItem, type StudyMode } from '@/lib/buildSessionItems';
 import { useSessionStore } from '@/store/session';
 import { useResumeStore } from '@/store/resume';
 import { CourseTree } from '@/components/CourseTree';
@@ -12,7 +12,6 @@ import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { SectionJump } from './SectionJump';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
-type StudyItemType = StudyItem['type'];
 
 interface CardSessionProps {
   courseId: string;
@@ -29,7 +28,7 @@ const MODE_LABELS: Record<CardMode, string> = {
   weakest: 'Weakest first',
   quiz: 'Quiz',
   flashcards: 'Flashcards',
-  definitions: 'Definitions',
+  definitions: 'Terms',
   mixed: 'Mixed',
   missed: 'Review Missed',
 };
@@ -67,7 +66,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
     { keys: ['M'], label: 'missed it' },
     ...NAV_HINTS,
   ],
-  definitions: [{ keys: ['Enter'], label: 'reveal / next' }, ...NAV_HINTS],
+  definitions: [{ keys: ['Enter'], label: 'check / next' }, ...NAV_HINTS],
   mixed: [
     { keys: ['1', '–', '4'], label: 'select' },
     { keys: ['Space'], label: 'flip' },
@@ -114,7 +113,7 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
  * only visible difference from Mixed is that the cards happen to arrive in a
  * better order. Naming the stage is what makes the sequence teachable.
  */
-function LearnStageBanner({ item }: { item: { type: StudyItemType; _sectionTitle: string } }) {
+function LearnStageBanner({ item }: { item: { type: AnyItem['type']; _sectionTitle: string } }) {
   const stage = learnStageIndex(item.type);
   if (stage < 0) return null;
   const { label, hint } = LEARN_STAGES[stage];
@@ -154,6 +153,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
   const next = useSessionStore((s) => s.next);
   const prev = useSessionStore((s) => s.prev);
   const record = useSessionStore((s) => s.record);
+  const setResult = useSessionStore((s) => s.setResult);
   // `finished` lives in the session store rather than in local state: it
   // describes the session, so init() clears it as part of starting one. Held
   // locally it had to be reset from an effect, which meant a setState during
@@ -370,7 +370,6 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           key={current.id}
           item={current}
           frame="sheet"
-          revealMode={mode === 'definitions'}
           onAnswered={record}
           // Grading a flashcard also advances it, as the vanilla app did —
           // otherwise the card just flips back and looks like nothing happened.
@@ -382,6 +381,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
             record(false);
             handleNext();
           }}
+          onOverride={setResult}
           onNext={handleNext}
           keyboardEnabled
         />

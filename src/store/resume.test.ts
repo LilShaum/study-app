@@ -62,9 +62,18 @@ describe('useResumeStore', () => {
 
 describe('session init — resuming', () => {
   it('starts at the bookmarked item', () => {
+    // Learn serves a, b, a's recall question, then c.
     useSessionStore.getState().init('c1', course, 'learn', undefined, 'c');
-    expect(useSessionStore.getState().index).toBe(2);
+    expect(useSessionStore.getState().index).toBe(3);
     expect(useSessionStore.getState().resumed).toBe(true);
+  });
+
+  it('resumes a bookmark on a definition at its recall question, in modes that ask rather than show', () => {
+    // Bookmarks saved before typed recall existed point at the definition.
+    useSessionStore.getState().init('c1', course, 'weakest', undefined, 'a');
+    const { items, index, resumed } = useSessionStore.getState();
+    expect(resumed).toBe(true);
+    expect(items[index].id).toBe('a~recall');
   });
 
   it('falls back to the start when the item is gone', () => {

@@ -26,6 +26,15 @@ interface ProgressState {
   getProgress: (courseId: string) => CourseProgress;
   missedIds: (courseId: string) => Set<string>;
   recordResult: (courseId: string, itemId: string, got: boolean) => void;
+  /**
+   * Correct an attempt already recorded, rather than record another one.
+   *
+   * The override after a typed answer — "I was right, count it" — must MOVE
+   * one attempt from missed to got (or back). Recording a fresh result
+   * instead would log two attempts for one answer, and a student overruling a
+   * grader that marked them wrong would still carry the miss.
+   */
+  reviseResult: (courseId: string, itemId: string, got: boolean) => void;
   removeCourseProgress: (courseId: string) => void;
 
   /** Bulk-replace, used only by the one-time legacy-data migration. */
@@ -64,6 +73,23 @@ export const useProgressStore = create<ProgressState>()(
               [courseId]: { ...course, [itemId]: next },
             },
           };
+        });
+      },
+
+      reviseResult: (courseId, itemId, got) => {
+        set((state) => {
+          const course = state.byCourse[courseId];
+          const prev = course?.[itemId];
+          // Nothing to revise: the caller should have recorded instead.
+          if (!prev) return state;
+          const from = got ? prev.missed : prev.got;
+          if (from <= 0) return state;
+          const next: ItemResult = {
+            ...prev,
+            got: prev.got + (got ? 1 : -1),
+            missed: prev.missed + (got ? -1 : 1),
+          };
+          return { byCourse: { ...state.byCourse, [courseId]: { ...course, [itemId]: next } } };
         });
       },
 

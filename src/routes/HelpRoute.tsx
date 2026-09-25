@@ -15,7 +15,7 @@ const MODE_ROWS: { icon: IconName; name: string; what: string; scored: boolean }
   {
     icon: 'target',
     name: 'Learn',
-    what: 'Walks a section as a taught sequence — definitions and examples first, then flashcards, then questions. Built from the items you already have; nothing is generated.',
+    what: 'Walks a section as a taught sequence — definitions and examples first, then flashcards and typing each term from its meaning, then questions. Built from the items you already have; nothing is generated.',
     scored: true,
   },
   {
@@ -32,15 +32,15 @@ const MODE_ROWS: { icon: IconName; name: string; what: string; scored: boolean }
   },
   {
     icon: 'file-text',
-    name: 'Definitions',
-    what: 'Term first, meaning revealed on Enter. Reading practice, not a test.',
-    scored: false,
+    name: 'Terms',
+    what: 'The meaning is shown; you type the term. Slips of the keyboard are forgiven, a different term is not — and if the grader gets it wrong, one tap overrules it.',
+    scored: true,
   },
-  { icon: 'shuffle', name: 'Mixed', what: 'Every item type, shuffled — closest to exam conditions.', scored: true },
+  { icon: 'shuffle', name: 'Mixed', what: 'Every item type, shuffled — closest to exam conditions. Definitions are asked for, not shown.', scored: true },
   {
     icon: 'bar-chart',
     name: 'Weakest First',
-    what: 'Questions and flashcards ordered by your own accuracy, shakiest first. Items you have never seen sit in the middle — ahead of what you have nailed, behind what you keep getting wrong.',
+    what: 'Questions, flashcards and terms ordered by your own accuracy, shakiest first. Items you have never seen sit in the middle — ahead of what you have nailed, behind what you keep getting wrong.',
     scored: true,
   },
   {
@@ -59,7 +59,7 @@ const MODE_ROWS: { icon: IconName; name: string; what: string; scored: boolean }
 
 const SHORTCUTS: { keys: string; what: string }[] = [
   { keys: '1 – 4', what: 'Pick an option on a multiple-choice question' },
-  { keys: 'Enter', what: 'Check your answer, reveal a definition, or move on' },
+  { keys: 'Enter', what: 'Check your answer or move on' },
   { keys: 'Space', what: 'Flip a flashcard' },
   { keys: 'G / M', what: 'Grade a flipped flashcard: got it / missed it' },
   { keys: '← →', what: 'Previous / next item' },
@@ -195,8 +195,9 @@ const SECTIONS: HelpSection[] = [
     body: (
       <>
         <p>
-          Only <strong>multiple-choice questions and flashcards are scored</strong>. Definitions,
-          worked examples and diagrams are read, not marked — they never appear in an accuracy
+          <strong>Multiple-choice questions, flashcards and typed terms are scored</strong>. A
+          definition is scored through its term: shown the meaning, you type the word. Worked
+          examples and diagrams are read, not marked — they never appear in an accuracy
           figure, and they never turn up in Review Missed.
         </p>
         <p className="mt-2">

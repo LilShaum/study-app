@@ -12,7 +12,7 @@ const course = {
       title: 'Strong',
       items: [
         { id: 'q1', type: 'mcq', question: 'q', options: ['a', 'b'], correct_index: 0, tags: ['easy-topic'] },
-        // Definitions are not gradable and must not dilute the denominator.
+        // A definition is scored through its typed-recall question.
         { id: 'd1', type: 'definition', term: 't', definition: 'd' },
       ],
     },
@@ -29,7 +29,7 @@ const r = (got: number, missed: number): ItemResult => ({ got, missed, lastSeen:
 describe('computeCourseStats', () => {
   it('counts only gradable items and reports zero progress cleanly', () => {
     const stats = computeCourseStats(course, {});
-    expect(stats.gradableCount).toBe(2); // mcq + flashcard, not the definition
+    expect(stats.gradableCount).toBe(3); // mcq + flashcard + the definition's recall
     expect(stats.studiedCount).toBe(0);
     expect(stats.accuracyPct).toBeNull();
     expect(stats.weakestSections).toHaveLength(0);

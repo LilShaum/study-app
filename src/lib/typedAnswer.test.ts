@@ -1,7 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { acceptedForms, allowedSlips, editDistance, gradeTyped, normalise, type Answerable } from './typedAnswer';
+import {
+  acceptedForms,
+  allowedSlips,
+  BLANK,
+  editDistance,
+  gradeTyped,
+  maskTerm,
+  normalise,
+  type Answerable,
+} from './typedAnswer';
 
-const t = (term: string, also_known_as?: string[]): Answerable => ({ term, also_known_as });
+const t = (term: string, also_known_as?: string[]): Answerable => ({
+  term,
+  also_known_as,
+});
 
 // A slice of the real cell-signalling course, including its traps.
 const COURSE: Answerable[] = [
@@ -18,8 +30,7 @@ const COURSE: Answerable[] = [
   t('Arginine vasopressin (AVP)', ['Vasopressin']),
   t('Receptor'),
 ];
-const grade = (input: string, term: string) =>
-  gradeTyped(input, COURSE.find((a) => a.term === term)!, COURSE);
+const grade = (input: string, term: string) => gradeTyped(input, COURSE.find((a) => a.term === term)!, COURSE);
 
 describe('normalise', () => {
   it.each([
@@ -71,8 +82,16 @@ describe('gradeTyped', () => {
     ])('"%s" for %s', (input, term) => expect(grade(input, term)).toEqual({ correct: true, kind: 'exact' }));
 
     it('accepts a slipped key and shows the right spelling', () => {
-      expect(grade('exocytossis', 'Exocytosis')).toEqual({ correct: true, kind: 'typo', spelled: 'Exocytosis' });
-      expect(grade('recpetor', 'Receptor')).toEqual({ correct: true, kind: 'typo', spelled: 'Receptor' });
+      expect(grade('exocytossis', 'Exocytosis')).toEqual({
+        correct: true,
+        kind: 'typo',
+        spelled: 'Exocytosis',
+      });
+      expect(grade('recpetor', 'Receptor')).toEqual({
+        correct: true,
+        kind: 'typo',
+        spelled: 'Receptor',
+      });
     });
 
     it('accepts "Kd" for EITHER dissociation constant, though both carry it', () => {
@@ -85,11 +104,18 @@ describe('gradeTyped', () => {
 
   describe('never forgives a confusion', () => {
     it('refuses endocytosis for exocytosis, though they are two edits apart', () => {
-      expect(grade('endocytosis', 'Exocytosis')).toEqual({ correct: false, kind: 'confused', with: 'Endocytosis' });
+      expect(grade('endocytosis', 'Exocytosis')).toEqual({
+        correct: false,
+        kind: 'confused',
+        with: 'Endocytosis',
+      });
     });
 
     it('refuses a typo that lands nearer to a different term', () => {
-      expect(grade('endocytossis', 'Exocytosis')).toMatchObject({ correct: false, kind: 'confused' });
+      expect(grade('endocytossis', 'Exocytosis')).toMatchObject({
+        correct: false,
+        kind: 'confused',
+      });
     });
 
     it('refuses rough ER when smooth ER was asked', () => {
@@ -110,7 +136,40 @@ describe('gradeTyped', () => {
   });
 
   it('marks an empty or unrelated answer wrong', () => {
-    expect(grade('   ', 'Exocytosis')).toEqual({ correct: false, kind: 'wrong' });
-    expect(grade('mitochondria', 'Exocytosis')).toEqual({ correct: false, kind: 'wrong' });
+    expect(grade('   ', 'Exocytosis')).toEqual({
+      correct: false,
+      kind: 'wrong',
+    });
+    expect(grade('mitochondria', 'Exocytosis')).toEqual({
+      correct: false,
+      kind: 'wrong',
+    });
+  });
+});
+
+describe('maskTerm', () => {
+  it('blanks the term where the definition names it, in any case', () => {
+    expect(maskTerm('An amino acid messenger; glycine receptors are ligand-gated.', t('Glycine'))).toBe(
+      `An amino acid messenger; ${BLANK} receptors are ligand-gated.`,
+    );
+  });
+
+  it('blanks abbreviations and other names, the longest form first', () => {
+    expect(
+      maskTerm('A hormone (vasopressin); processed into AVP.', t('Arginine vasopressin (AVP)', ['Vasopressin'])),
+    ).toBe(`A hormone (${BLANK}); processed into ${BLANK}.`);
+  });
+
+  it('takes a plural with it, and matches a hyphen for an en dash', () => {
+    expect(maskTerm('Half of a gap junction; two hemichannels meet.', t('Hemichannel'))).toBe(
+      `Half of a gap junction; two ${BLANK} meet.`,
+    );
+    expect(maskTerm('Solved by michaelis-menten kinetics.', t('Michaelis–Menten'))).toBe(
+      `Solved by ${BLANK} kinetics.`,
+    );
+  });
+
+  it('leaves a term inside a longer word alone', () => {
+    expect(maskTerm('Rasterised figure of the pathway.', t('Ras'))).toBe('Rasterised figure of the pathway.');
   });
 });

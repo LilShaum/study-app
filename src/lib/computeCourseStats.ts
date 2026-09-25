@@ -1,5 +1,6 @@
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
+import { scoredEntries } from './scored';
 
 export interface StatRow {
   label: string;
@@ -18,12 +19,10 @@ export interface CourseStats {
   weakestTags: StatRow[];
 }
 
-/** Ports the vanilla dashboard's accuracy/weak-spot breakdown (mcq + flashcard items only). */
+/** Accuracy and weak spots across everything scorable — see scoredEntries. */
 export function computeCourseStats(course: Course, progress: Record<string, ItemResult>): CourseStats {
   const gradable = course.sections.flatMap((section) =>
-    section.items
-      .filter((item) => item.type === 'mcq' || item.type === 'flashcard')
-      .map((item) => ({ item, sectionId: section.id, sectionTitle: section.title })),
+    scoredEntries(section.items).map(({ id, item }) => ({ id, item, sectionId: section.id, sectionTitle: section.title })),
   );
 
   let totalGot = 0;
@@ -33,8 +32,8 @@ export function computeCourseStats(course: Course, progress: Record<string, Item
   const tagStats = new Map<string, { got: number; missed: number }>();
   const sectionStats = new Map<string, { title: string; got: number; missed: number }>();
 
-  for (const { item, sectionId, sectionTitle } of gradable) {
-    const r = progress[item.id];
+  for (const { id, item, sectionId, sectionTitle } of gradable) {
+    const r = progress[id];
     if (!r || (r.got === 0 && r.missed === 0)) continue;
     studiedCount++;
     totalGot += r.got;

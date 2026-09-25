@@ -208,3 +208,34 @@ export function gradeTyped(input: string, target: Answerable, others: readonly A
   }
   return { correct: true, kind: 'typo', spelled: best.shown };
 }
+
+/** What stands in for the answer where a definition names its own term. */
+export const BLANK = '_____';
+
+/**
+ * The definition with every name of its own term blanked out.
+ *
+ * A definition written to be read often uses its own term — "Glycine: an
+ * amino acid messenger; glycine receptors are ligand-gated ion channels" —
+ * and asked as a question it would then print the answer. One in twelve
+ * definitions in a real generated course did. Every accepted form is blanked,
+ * longest first so "Arginine vasopressin" goes before "vasopressin" can split
+ * it, with a plural ending taken along, and any run of spaces or dashes in a
+ * form matching any other, as the grader already treats them.
+ */
+export function maskTerm(text: string, target: Answerable): string {
+  const forms = acceptedForms(target)
+    .map((f) => f.shown)
+    .sort((a, b) => b.length - a.length);
+  let out = text;
+  for (const form of forms) {
+    const pattern = form
+      .split(/[\s‐-―−-]+/)
+      .filter(Boolean)
+      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('[\\s‐-―−-]+');
+    if (!pattern) continue;
+    out = out.replace(new RegExp(`(?<![\\p{L}\\p{N}])${pattern}(?:e?s)?(?![\\p{L}\\p{N}])`, 'giu'), BLANK);
+  }
+  return out;
+}

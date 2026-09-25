@@ -246,6 +246,13 @@ covers the wrong answers is ambiguous about which slot is which.)
   "related_terms": string[]?, "also_known_as": string[]?,
   "difficulty", "tags", "source_excerpt" }
 ```
+The app turns every definition into a question — it shows the definition and
+the student types the term — so write the `definition` so that it identifies
+its term without naming it, and fill `also_known_as` with every other name
+**the source itself uses** for the thing (an abbreviation, a synonym, the
+full form of an acronym). That list is what a typed answer is accepted
+against, so a name missing from it marks a right answer wrong; a name the
+source never uses does not belong in it.
 
 **`example`** — a worked, step-by-step example pulled from the source.
 ```
