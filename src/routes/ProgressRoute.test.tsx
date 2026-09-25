@@ -64,8 +64,10 @@ describe('ProgressRoute', () => {
     // 75% legitimately appears twice — the accuracy tile and the section bar.
     expect(screen.getAllByText('75%').length).toBeGreaterThan(0);
     expect(screen.getByText('Accuracy')).toBeTruthy();
-    expect(screen.getByText('Weakest sections')).toBeTruthy();
-    expect(screen.getByText('Membranes')).toBeTruthy();
+    expect(screen.getByText('Least accurate sections')).toBeTruthy();
+    // Twice: once in "Still remembered", once in the accuracy ranking.
+    expect(screen.getAllByText('Membranes')).toHaveLength(2);
+    expect(screen.getByText('Still remembered')).toBeTruthy();
   });
 
   it('handles a course id that does not exist', () => {

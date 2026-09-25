@@ -5,46 +5,7 @@ import type { ItemResult } from '@/store/progress';
 import { sortedSections } from '@/lib/sortedSections';
 import { sectionStats } from '@/lib/sectionStats';
 import { growTree, type Limb } from '@/lib/growTree';
-import { scoredEntries } from '@/lib/scored';
-import { examTime, isDueFor, retrievability } from '@/lib/memory';
-
-/**
- * How much of a section counts as known.
- *
- * Coverage times confidence: studying every scorable item badly is not the
- * same as studying half of them well, and neither is mastery. The floor of
- * 0.35 on the accuracy term means work always shows — a branch you have
- * struggled with still leafs, just thinly.
- */
-function mastery(studied: number, gradable: number, accuracy: number | null): number {
-  if (!gradable || !studied) return 0;
-  const coverage = studied / gradable;
-  const confidence = accuracy === null ? 0.5 : 0.35 + (accuracy / 100) * 0.65;
-  return Math.max(0, Math.min(1, coverage * confidence));
-}
-
-/**
- * How much of what a section learned would still be recalled now: the mean
- * recall chance (lib/memory.ts) over the items studied in it. 1 straight
- * after studying, falling as they fade, rising again when they are reviewed.
- * Items never studied are not counted — unseen is not forgotten; that is
- * what the bare wood already says.
- */
-function heldShare(
-  items: Course['sections'][number]['items'],
-  progress: Record<string, ItemResult>,
-  now: number,
-): number {
-  let sum = 0;
-  let n = 0;
-  for (const { id } of scoredEntries(items)) {
-    const R = retrievability(progress[id], now);
-    if (R == null) continue;
-    sum += R;
-    n++;
-  }
-  return n ? sum / n : 1;
-}
+import { sectionMemory } from '@/lib/sectionMemory';
 
 interface CourseTreeProps {
   courseId: string;
@@ -190,20 +151,19 @@ export function CourseTree({
   const active = (tracking ? pointed : null) ?? highlight;
 
   const { tree, sections } = useMemo(() => {
-    const examAt = examTime(course.metadata.exam_date);
     const sections = sortedSections(course).map((section) => {
       const stats = sectionStats(section, progress);
-      const learned = mastery(stats.studied, stats.gradable, stats.accuracy);
+      const memory = sectionMemory(section, progress, now, course.metadata.exam_date);
       return {
         id: section.id,
         title: section.title,
         items: section.items.length,
         accuracy: stats.accuracy,
         weight: section.items.length,
-        learned,
-        mastery: learned * heldShare(section.items, progress, now),
-        studied: stats.studied,
-        due: scoredEntries(section.items).filter(({ id }) => isDueFor(progress[id], now, examAt)).length,
+        learned: memory.learned,
+        mastery: memory.held,
+        studied: memory.studied,
+        due: memory.due,
       };
     });
     return { tree: growTree(courseId, sections), sections };
