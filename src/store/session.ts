@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Course } from '@/schema/course';
+import { examTime } from '@/lib/memory';
 import { buildSessionItems, recallId, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { useProgressStore } from './progress';
 
@@ -59,8 +60,9 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     const missedIds = mode === 'missed' ? progressStore.missedIds(courseId) : undefined;
     // Weakest-first ranks by the student's own history, so it is the one mode
     // that needs the full per-item record rather than a set of ids.
-    const progress = mode === 'weakest' ? progressStore.getProgress(courseId) : undefined;
-    const items = buildSessionItems(course, mode, { missedIds, sectionId, progress });
+    const progress = mode === 'weakest' || mode === 'review' ? progressStore.getProgress(courseId) : undefined;
+    const examAt = examTime(course.metadata.exam_date);
+    const items = buildSessionItems(course, mode, { missedIds, sectionId, progress, examAt });
     // Resume by id, not position: Mixed and Review Missed reshuffle each start
     // and Weakest First reorders as accuracy changes, so a saved index would
     // land on a different item. An id the list no longer holds (the item was

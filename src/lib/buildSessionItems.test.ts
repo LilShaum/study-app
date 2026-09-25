@@ -177,3 +177,31 @@ describe('buildSessionItems — weakest first', () => {
     expect(items.map((i) => i.id)).toEqual(['b_mcq', 'a_mcq', 'a_def~recall', 'b_def~recall', 'a_card']);
   });
 });
+
+describe('buildSessionItems — review', () => {
+  const DAY = 86_400_000;
+  const now = 100 * DAY;
+  const seen = (daysAgo: number, stability: number) => ({ got: 1, missed: 0, lastSeen: now - daysAgo * DAY, stability });
+
+  it('serves only studied items that have faded, faintest first', () => {
+    const items = buildSessionItems(mixedCourse, 'review', {
+      now,
+      progress: {
+        a_mcq: seen(2, 2), // R ≈ 0.37
+        a_card: seen(0.1, 5), // fresh
+        'b_def~recall': seen(3, 1), // R ≈ 0.05
+      },
+    });
+    expect(items.map((i) => i.id)).toEqual(['b_def~recall', 'a_mcq']);
+  });
+
+  it('is empty on a course never studied — new material is Learn’s job', () => {
+    expect(buildSessionItems(mixedCourse, 'review', { now, progress: {} })).toHaveLength(0);
+  });
+
+  it('brings an item forward for an exam it would be faint at', () => {
+    const progress = { a_mcq: seen(0.2, 4) };
+    expect(buildSessionItems(mixedCourse, 'review', { now, progress })).toHaveLength(0);
+    expect(buildSessionItems(mixedCourse, 'review', { now, progress, examAt: now + 1.3 * DAY })).toHaveLength(1);
+  });
+});
