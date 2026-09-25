@@ -4,6 +4,7 @@ import { shuffle } from './shuffle';
 import { sortedSections } from './sortedSections';
 import { recallId } from './scored';
 import { isDueFor, reviewUrgency } from './memory';
+import { acceptedForms, normalise } from './typedAnswer';
 
 export const STUDY_MODES = [
   'browse',
@@ -49,6 +50,15 @@ export interface RecallItem {
   target: DefinitionItem;
   /** Every definition in the course, shared by all recall items. */
   pool: readonly DefinitionItem[];
+  /**
+   * Set when this asks a multiple-choice QUESTION with its options taken
+   * away, rather than asking for a term by its definition: the question's
+   * text, its right option as written, and its explanation. The id is then
+   * the question's own, so it is scored as the same question.
+   */
+  question?: string;
+  answer?: string;
+  explanation?: string;
 }
 
 export type AnyItem = StudyItem | RecallItem;
@@ -81,7 +91,7 @@ export interface SessionOptions {
   missedIds?: ReadonlySet<string>;
   /** Restrict the session to one section. Undefined studies the whole course. */
   sectionId?: string;
-  /** Per-item history. 'weakest' and 'review' use it. */
+  /** Per-item history. 'weakest' and 'review' rank by it; 'definitions' and 'review' pair confused terms from it. */
   progress?: Record<string, ItemResult>;
   /** The time to judge "due" at. 'review' only; defaults to the clock. */
   now?: number;
@@ -246,9 +256,92 @@ export function buildSessionItems(
   /** Each definition REPLACED by its recall question. */
   const asRecall = (list: SessionItem[]) => list.map((i) => recallFor(i) ?? i);
 
+  // Every definition in the course with its section, so a term can be asked
+  // for next to the one it was mistaken for even when that one lives in
+  // another section, or is not otherwise due.
+  const placedDefs = new Map<string, SessionItem>();
+  for (const section of course.sections) {
+    for (const item of section.items) {
+      if (item.type !== 'definition') continue;
+      placedDefs.set(item.id, {
+        ...item,
+        _sectionTitle: section.title,
+        _sectionId: section.id,
+        _sectionOrder: section.order ?? 0,
+      });
+    }
+  }
+  /**
+   * Put each term straight after the one it has been mistaken for.
+   *
+   * The interleaving meta-analysis in docs/evidence.md finds that setting
+   * things side by side helps most when they are easy to confuse — and a
+   * typed answer that named the wrong term is the most direct evidence there
+   * is of that. So a pair the student actually mixed up comes back as a
+   * pair, one after the other, until they stop mixing it up.
+   */
+  /*
+   * A multiple-choice question, asked again without its options.
+   *
+   * Only once it has been answered right as multiple choice — recognising
+   * the answer comes first, producing it is the step after, and the harder
+   * retrieval is the one that sticks (docs/evidence.md). And only when its
+   * right option is itself a term the course defines, so the grader knows
+   * every name the answer goes by and which near misses are other terms.
+   * Stems that lean on the options ("which of these…") cannot stand alone
+   * and are left as they are.
+   */
+  const defByForm = new Map<string, DefinitionItem>();
+  for (const d of pool) for (const f of acceptedForms(d)) if (!defByForm.has(f.norm)) defByForm.set(f.norm, d);
+  const NEEDS_OPTIONS = /\b(of these|the following|which option|options?\b)/i;
+  const typedFrom = (item: SessionItem): SessionItem | null => {
+    if (item.type !== 'mcq' || !progress?.[item.id]?.got) return null;
+    if (NEEDS_OPTIONS.test(item.question)) return null;
+    const answer = item.options[item.correct_index];
+    const target = answer ? defByForm.get(normalise(answer)) : undefined;
+    if (!answer || !target) return null;
+    return {
+      id: item.id,
+      type: 'recall',
+      source_excerpt: item.source_excerpt,
+      difficulty: item.difficulty,
+      tags: item.tags,
+      target,
+      pool,
+      question: item.question,
+      answer,
+      explanation: item.explanation,
+      _sectionTitle: item._sectionTitle,
+      _sectionId: item._sectionId,
+      _sectionOrder: item._sectionOrder,
+    };
+  };
+  const asTyped = (list: SessionItem[]) => list.map((i) => typedFrom(i) ?? i);
+
+  const pairConfusions = (list: SessionItem[]): SessionItem[] => {
+    const byId = new Map(list.map((i) => [i.id, i]));
+    const placed = new Set<string>();
+    const out: SessionItem[] = [];
+    for (const item of list) {
+      if (placed.has(item.id)) continue;
+      out.push(item);
+      placed.add(item.id);
+      for (const defId of progress?.[item.id]?.confusedWith ?? []) {
+        const rid = recallId(defId);
+        if (placed.has(rid)) continue;
+        const def = placedDefs.get(defId);
+        const partner = byId.get(rid) ?? (def ? recallFor(def) : null);
+        if (!partner) continue;
+        out.push(partner);
+        placed.add(rid);
+      }
+    }
+    return out;
+  };
+
   switch (mode) {
     case 'quiz':
-      items = items.filter((i) => i.type === 'mcq');
+      items = asTyped(items.filter((i) => i.type === 'mcq'));
       break;
     case 'flashcards':
       items = items.filter((i) => i.type === 'flashcard');
@@ -256,29 +349,30 @@ export function buildSessionItems(
     case 'definitions':
       // Terms: type the word from its meaning. Reading the glossary is what
       // Browse is for.
-      items = asRecall(items.filter((i) => i.type === 'definition'));
+      items = pairConfusions(asRecall(items.filter((i) => i.type === 'definition')));
       break;
     case 'mixed':
       // Practice, so a definition is asked for rather than shown.
-      items = shuffle(asRecall(items));
+      items = shuffle(asTyped(asRecall(items)));
       break;
     case 'learn':
       // Read the definition in the Learn stage, recall it in the Recall stage.
       items = learnOrder(withRecall(items));
       break;
     case 'weakest':
-      items = weakestFirst(asRecall(items), progress);
+      items = weakestFirst(asTyped(asRecall(items)), progress);
       break;
     case 'review':
       // What has been studied and is fading, faintest first — or, with an
       // exam date, what would be faintest on the day (see lib/memory.ts).
       // Never-seen items are not here: new material comes through Learn.
-      items = asRecall(items)
+      items = asTyped(asRecall(items))
         .filter(isGradable)
         .filter((i) => isDueFor(progress?.[i.id], now, examAt))
         .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, examAt) }))
         .sort((a, b) => a.u - b.u || a.i - b.i)
         .map((e) => e.item);
+      items = pairConfusions(items);
       break;
     case 'missed':
       items = shuffle(asRecall(items).filter((i) => missedIds?.has(i.id)));

@@ -15,6 +15,12 @@ export interface ItemResult {
    * rather than stacking a second update on the first.
    */
   before?: { stability: number; lastSeen: number } | null;
+  /**
+   * Definitions this item's term has been mistaken for, most recent first —
+   * a typed answer that named one of them. Sessions put the two side by side
+   * until the difference sticks.
+   */
+  confusedWith?: string[];
 }
 
 type CourseProgress = Record<string, ItemResult>;
@@ -44,6 +50,8 @@ interface ProgressState {
    * grader that marked them wrong would still carry the miss.
    */
   reviseResult: (courseId: string, itemId: string, got: boolean) => void;
+  /** Note that the answer to `itemId` was mistaken for definition `otherId`. */
+  noteConfusion: (courseId: string, itemId: string, otherId: string) => void;
   removeCourseProgress: (courseId: string) => void;
 
   /** Bulk-replace, used only by the one-time legacy-data migration. */
@@ -108,6 +116,20 @@ export const useProgressStore = create<ProgressState>()(
               : {}),
           };
           return { byCourse: { ...state.byCourse, [courseId]: { ...course, [itemId]: next } } };
+        });
+      },
+
+      noteConfusion: (courseId, itemId, otherId) => {
+        set((state) => {
+          const course = state.byCourse[courseId];
+          const prev = course?.[itemId];
+          // Recorded straight after the answer that revealed it; without that
+          // record there is nothing to attach it to.
+          if (!prev) return state;
+          // Three is plenty: a term confused with more than that is not
+          // confused with anything in particular.
+          const confusedWith = [otherId, ...(prev.confusedWith ?? []).filter((id) => id !== otherId)].slice(0, 3);
+          return { byCourse: { ...state.byCourse, [courseId]: { ...course, [itemId]: { ...prev, confusedWith } } } };
         });
       },
 

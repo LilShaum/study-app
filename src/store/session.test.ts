@@ -145,3 +145,19 @@ describe('session store: retrying what was missed', () => {
     expect(useSessionStore.getState().finished).toBe(true);
   });
 });
+
+describe('progress store: remembering a mix-up', () => {
+  beforeEach(() => useProgressStore.setState({ byCourse: {} }));
+
+  it('keeps the latest three, newest first, without repeats', () => {
+    const s = useProgressStore.getState();
+    s.recordResult('c', 'a~recall', false);
+    for (const other of ['b', 'c', 'b', 'd', 'e']) useProgressStore.getState().noteConfusion('c', 'a~recall', other);
+    expect(useProgressStore.getState().byCourse.c['a~recall'].confusedWith).toEqual(['e', 'd', 'b']);
+  });
+
+  it('has nothing to attach to before an answer is recorded', () => {
+    useProgressStore.getState().noteConfusion('c', 'never', 'b');
+    expect(useProgressStore.getState().byCourse.c).toBeUndefined();
+  });
+});
