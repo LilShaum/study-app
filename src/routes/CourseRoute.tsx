@@ -17,6 +17,7 @@ import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog'
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
 import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
 import type { StudyMode } from '@/lib/buildSessionItems';
+import { examTime, isDueFor } from '@/lib/memory';
 
 interface ModeCard {
   mode: StudyMode;
@@ -35,6 +36,10 @@ interface Counts {
   graphic: number;
   gradable: number;
   missed: number;
+  /** Studied items due for review now (see lib/memory.ts). */
+  due: number;
+  /** Scorable items answered at least once. */
+  studied: number;
   accuracy: number | null;
 }
 
@@ -71,8 +76,29 @@ const PRACTICE: ModeCard[] = [
 ];
 
 const MODE_LABELS: Record<string, string> = Object.fromEntries(
-  [LEARN, ...PRACTICE, { mode: 'browse', label: 'Browse' }].map((m) => [m.mode, m.label]),
+  [LEARN, ...PRACTICE, { mode: 'browse', label: 'Browse' }, { mode: 'review', label: 'Review' }].map((m) => [
+    m.mode,
+    m.label,
+  ]),
 );
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+/** "Thu 12 Nov · in 48 days" — the date and the distance, which is the part that matters. */
+function examLabel(date: string | undefined): string | null {
+  const at = examTime(date);
+  if (at == null) return null;
+  const day = new Date(at).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const exam = new Date(at);
+  exam.setHours(0, 0, 0, 0);
+  const days = Math.round((exam.getTime() - today.getTime()) / 86_400_000);
+  if (days < 0) return `${day} · passed`;
+  if (days === 0) return `${day} · today`;
+  if (days === 1) return `${day} · tomorrow`;
+  return `${day} · in ${days} days`;
+}
 
 /** "5 minutes ago" — precise enough to tell you whether this is today's work. */
 function ago(ts: number): string {
@@ -119,16 +145,22 @@ export function CourseRoute() {
   const bookmark = useResumeStore((s) => (id ? s.byCourse[id] : undefined));
   const clearBookmark = useResumeStore((s) => s.clear);
   const progress = useProgressStore((s) => (id ? s.getProgress(id) : EMPTY_PROGRESS));
+  // What is due is judged as of opening the page: rendering must not read the
+  // clock, and a count that shifted while you looked at it would be worse.
+  const [now] = useState(Date.now);
 
   const counts = useMemo<Counts>(() => {
     const items = course?.sections.flatMap((s) => s.items) ?? [];
     const byType = (type: string) => items.filter((i) => i.type === type).length;
     const gradableIds = scoredEntries(items).map((e) => e.id);
+    const examAt = examTime(course?.metadata.exam_date);
     let got = 0;
     let attempts = 0;
+    let studied = 0;
     for (const itemId of gradableIds) {
       const r = progress[itemId];
       if (!r) continue;
+      if (r.got + r.missed > 0) studied++;
       got += r.got;
       attempts += r.got + r.missed;
     }
@@ -145,9 +177,11 @@ export function CourseRoute() {
         const r = progress[itemId];
         return r && r.missed > r.got;
       }).length,
+      studied,
+      due: gradableIds.filter((itemId) => isDueFor(progress[itemId], now, examAt)).length,
       accuracy: attempts > 0 ? Math.round((got / attempts) * 100) : null,
     };
-  }, [course, progress]);
+  }, [course, progress, now]);
 
   // A bookmark outlives the item it points at — the item can be edited away,
   // the section deleted — so it is only offered when it still resolves.
@@ -209,6 +243,7 @@ export function CourseRoute() {
             rows={[
               { label: 'Code', value: course.metadata.course_code },
               { label: 'Subject', value: course.metadata.subject },
+              { label: 'Exam', value: examLabel(course.metadata.exam_date) },
               {
                 label: 'Contents',
                 value: `${counts.total} item${counts.total === 1 ? '' : 's'} in ${
@@ -220,9 +255,10 @@ export function CourseRoute() {
                 value:
                   counts.accuracy === null
                     ? 'Not yet'
-                    : `${counts.accuracy}% correct over ${counts.gradable} scorable item${
-                        counts.gradable === 1 ? '' : 's'
-                      }`,
+                    : // "over 474 scorable items" read as though all 474 had
+                      // been studied, when the accuracy covers only those
+                      // that have.
+                      `${counts.accuracy}% correct · ${counts.studied} of ${counts.gradable} studied`,
               },
               { label: 'Tags', value: tags.length ? tags.join(', ') : null },
             ]}
@@ -281,6 +317,30 @@ export function CourseRoute() {
           {/* The recommended path, set as the leading entry: full ink, a
               gloss underneath, and a heavier rule closing it off from the
               practice modes below. */}
+          {/* Once something studied is fading, bringing it back is worth
+              more than anything new — so Review leads while it has work,
+              and steps aside when it has none. */}
+          {counts.due > 0 && (
+            <li className="border-b border-border">
+              <Link to={`/session/${id}/review`} className="group block py-4">
+                <span className="flex items-baseline gap-3">
+                  <span className="w-5 shrink-0 text-text-3">
+                    <Icon name="repeat" size={16} />
+                  </span>
+                  <span className="font-display text-heading font-semibold text-text group-hover:text-accent">
+                    Review
+                  </span>
+                  <span className="leaders hidden sm:block" aria-hidden="true" />
+                  <span className="mark shrink-0 tabular-nums text-text-2">{counts.due} due</span>
+                </span>
+                <span className="mt-0.5 block text-small text-text-2 sm:pl-8">
+                  {course.metadata.exam_date
+                    ? 'What you have studied that would be faint by the exam, faintest first'
+                    : 'What you have studied and are starting to lose, faintest first'}
+                </span>
+              </Link>
+            </li>
+          )}
           <li className="border-b-2 border-text-3">
             <Link to={`/session/${id}/${LEARN.mode}`} className="group block py-4">
               <span className="flex items-baseline gap-3">
@@ -292,7 +352,7 @@ export function CourseRoute() {
                 </span>
                 <span className="leaders hidden sm:block" aria-hidden="true" />
                 <span className="mark shrink-0 tabular-nums text-text-2">
-                  {LEARN.count(counts)} items
+                  {plural(LEARN.count(counts), 'item')}
                 </span>
               </span>
               <span className="mt-0.5 block text-small text-text-2 sm:pl-8">{LEARN.desc}</span>
@@ -312,7 +372,7 @@ export function CourseRoute() {
                 </span>
                 <span className="leaders hidden sm:block" aria-hidden="true" />
                 <span className="mark shrink-0 tabular-nums text-text-3">
-                  {m.count(counts)} items
+                  {plural(m.count(counts), 'item')}
                 </span>
               </Link>
             </li>

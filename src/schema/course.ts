@@ -117,6 +117,8 @@ export const InventorySchema = z.looseObject({
 export const CourseMetadataSchema = z.looseObject({
   title: z.string(),
   course_code: z.string().optional(),
+  /** YYYY-MM-DD. Set by the student in Course details; drives exam-aware review. */
+  exam_date: z.string().optional(),
   subject: z.string().optional(),
   description: z.string().optional(),
   tags: z.array(z.string()).optional(),

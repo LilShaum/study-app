@@ -31,6 +31,7 @@ const MODE_LABELS: Record<CardMode, string> = {
   definitions: 'Terms',
   mixed: 'Mixed',
   missed: 'Review Missed',
+  review: 'Review',
 };
 
 interface KeyHint {
@@ -55,6 +56,7 @@ const ALL_CARD_KEYS: KeyHint[] = [
 const KEY_HINTS: Record<CardMode, KeyHint[]> = {
   learn: ALL_CARD_KEYS,
   weakest: ALL_CARD_KEYS,
+  review: ALL_CARD_KEYS,
   quiz: [
     { keys: ['1', '–', '4'], label: 'select' },
     { keys: ['Enter'], label: 'check / next' },
@@ -95,8 +97,12 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
     text: "This course doesn't have any Flashcard items yet. Try Browse or Mixed mode.",
   },
   definitions: {
-    title: 'No Definition items',
-    text: "This course doesn't have any Definition items yet. Try Browse or Mixed mode.",
+    title: 'No terms',
+    text: "This course doesn't have any definitions to ask you for yet. Try Browse or Mixed mode.",
+  },
+  review: {
+    title: 'Nothing is due',
+    text: 'Everything you have studied is still fresh. Review brings items back as they start to fade — new material comes through Learn.',
   },
   mixed: { title: 'No items', text: 'This course has no items yet.' },
   missed: {
@@ -359,6 +365,11 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
       )}
 
       {mode === 'learn' && current && <LearnStageBanner item={current} />}
+      {mode === 'review' && (
+        <p className="mb-4 text-xs text-text-3">
+          What you have studied and are starting to lose, faintest first.
+        </p>
+      )}
       {mode === 'weakest' && (
         <p className="mb-4 text-xs text-text-3">
           Ordered by your own accuracy — shakiest first, then anything you haven&rsquo;t seen yet.

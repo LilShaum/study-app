@@ -72,6 +72,36 @@ intervals would be wrong for a paper three months out and a quiz on Friday.
 
 **What it does not license.** A specific ratio. See below.
 
+### Interleaving helps with categories, not with words or prose
+
+Brunmair, M., & Richter, T. (2019). *Similarity matters: A meta-analysis of
+interleaved learning and its moderators.* Psychological Bulletin.
+[10.1037/bul0000209](https://doi.org/10.1037/bul0000209)
+
+Scale, from the abstract: **59 studies, 238 effect sizes, 158 samples.**
+
+> "A multilevel meta-analysis revealed a moderate overall interleaving effect
+> (Hedges' g = 0.42) … Results for studies using mathematical tasks revealed
+> a small interleaving effect (g = 0.34), whereas **results for expository
+> texts and tastes were ambiguous** with nonsignificant overall effects. **An
+> advantage of blocking compared with interleaving was found for studies
+> based on words (g = −0.39).**"
+
+It also finds larger effects when categories are *similar to each other* and
+the material is complex.
+
+**What it licenses in the app.** Not what the old plan assumed. The plan was
+to make Learn interleave sections instead of walking them in order. For this
+app's material — terms and expository notes — the meta-analysis finds no
+reliable benefit, and for words a reliable cost. So Learn keeps teaching a
+section as a block. Interleaving is not the same thing as spacing: reviewing
+old material later, mixed together, is spaced retrieval and is supported
+above. What the similarity finding does support is narrow and targeted:
+putting two *easily confused* items next to each other, which is what the
+confusion pairs proposal does.
+
+**What it does not license.** "Interleave everything", in either direction.
+
 ---
 
 ## Attributed but not verified
@@ -91,13 +121,20 @@ in the scheduler.**
   here.
 - **Expanding intervals beat uniform ones.** Quoted as a Cepeda 2006
   finding. The abstract says expanding ISI effects "were examined" and does
-  not state the direction in the text available here.
+  not state the direction in the text available here. Two single
+  experiments by one group are the best found so far, and they disagree
+  with the simple claim: an expanding schedule won in one
+  ([10.1080/09658211.2014.944916](https://doi.org/10.1080/09658211.2014.944916)),
+  and the follow-up found the advantage **only after weak initial learning,
+  not after practice testing with feedback**
+  ([10.3758/s13421-018-0815-7](https://doi.org/10.3758/s13421-018-0815-7)),
+  attributing it to whether the earlier study is still retrievable at the
+  next one. That points away from a fixed expanding ladder and toward
+  spacing each item by how well *it* is currently remembered — which is what
+  a stability model does. No meta-analysis found.
 
 ## Not yet searched
 
-- Interleaving versus blocking, as a meta-analysis rather than single
-  studies. Relevant to serving Learn in file order, which is currently
-  blocked practice by section.
 - Feedback in multiple choice: whether it reduces the risk that a student
   retains the lure they picked.
 - Matching as a format. It is cheap to derive from the definitions a course

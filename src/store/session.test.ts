@@ -101,3 +101,21 @@ describe('session store: overriding a verdict', () => {
     expect(stored()).toMatchObject({ got: 1, missed: 0 });
   });
 });
+
+describe('session store: an override and the memory model', () => {
+  beforeEach(() => {
+    useProgressStore.setState({ byCourse: {} });
+    useSessionStore.getState().init('mm', course, 'quiz');
+  });
+
+  it('leaves the same stability as answering right in the first place', () => {
+    const s = useSessionStore.getState();
+    s.record(false);
+    s.setResult(true);
+    const overruled = useProgressStore.getState().byCourse.mm.q1.stability;
+    useProgressStore.setState({ byCourse: {} });
+    useSessionStore.getState().init('mm', course, 'quiz');
+    useSessionStore.getState().record(true);
+    expect(overruled).toBe(useProgressStore.getState().byCourse.mm.q1.stability);
+  });
+});

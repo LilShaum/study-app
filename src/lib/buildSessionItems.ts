@@ -3,6 +3,7 @@ import type { ItemResult } from '@/store/progress';
 import { shuffle } from './shuffle';
 import { sortedSections } from './sortedSections';
 import { recallId } from './scored';
+import { isDueFor, reviewUrgency } from './memory';
 
 export const STUDY_MODES = [
   'browse',
@@ -13,6 +14,7 @@ export const STUDY_MODES = [
   'mixed',
   'weakest',
   'missed',
+  'review',
 ] as const;
 export type StudyMode = (typeof STUDY_MODES)[number];
 
@@ -79,8 +81,12 @@ export interface SessionOptions {
   missedIds?: ReadonlySet<string>;
   /** Restrict the session to one section. Undefined studies the whole course. */
   sectionId?: string;
-  /** Per-item history. Only 'weakest' uses it. */
+  /** Per-item history. 'weakest' and 'review' use it. */
   progress?: Record<string, ItemResult>;
+  /** The time to judge "due" at. 'review' only; defaults to the clock. */
+  now?: number;
+  /** When the exam is, as ms, if the course has a date. 'review' only. */
+  examAt?: number | null;
 }
 
 /**
@@ -206,7 +212,7 @@ function weakestFirst(items: SessionItem[], progress?: Record<string, ItemResult
 export function buildSessionItems(
   course: Course,
   mode: StudyMode,
-  { missedIds, sectionId, progress }: SessionOptions = {},
+  { missedIds, sectionId, progress, now = Date.now(), examAt = null }: SessionOptions = {},
 ): SessionItem[] {
   const sections = sectionId
     ? sortedSections(course).filter((s) => s.id === sectionId)
@@ -262,6 +268,17 @@ export function buildSessionItems(
       break;
     case 'weakest':
       items = weakestFirst(asRecall(items), progress);
+      break;
+    case 'review':
+      // What has been studied and is fading, faintest first — or, with an
+      // exam date, what would be faintest on the day (see lib/memory.ts).
+      // Never-seen items are not here: new material comes through Learn.
+      items = asRecall(items)
+        .filter(isGradable)
+        .filter((i) => isDueFor(progress?.[i.id], now, examAt))
+        .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, examAt) }))
+        .sort((a, b) => a.u - b.u || a.i - b.i)
+        .map((e) => e.item);
       break;
     case 'missed':
       items = shuffle(asRecall(items).filter((i) => missedIds?.has(i.id)));

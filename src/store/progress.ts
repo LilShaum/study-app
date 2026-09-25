@@ -1,11 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { safeJSONStorage } from '@/lib/safeStorage';
+import { memoryBefore, nextStability } from '@/lib/memory';
 
 export interface ItemResult {
   got: number;
   missed: number;
   lastSeen: number | null;
+  /** Days for recall to fade to ~37% (see lib/memory.ts). Absent on records older than the model. */
+  stability?: number;
+  /**
+   * The memory state just before the latest answer — null if it was the
+   * first. Kept so an override can recompute stability from where it was,
+   * rather than stacking a second update on the first.
+   */
+  before?: { stability: number; lastSeen: number } | null;
 }
 
 type CourseProgress = Record<string, ItemResult>;
@@ -62,10 +71,14 @@ export const useProgressStore = create<ProgressState>()(
         set((state) => {
           const course = state.byCourse[courseId] ?? {};
           const prev = course[itemId] ?? { got: 0, missed: 0, lastSeen: null };
+          const now = Date.now();
+          const before = memoryBefore(prev);
           const next: ItemResult = {
             got: prev.got + (got ? 1 : 0),
             missed: prev.missed + (got ? 0 : 1),
-            lastSeen: Date.now(),
+            lastSeen: now,
+            stability: nextStability(before, got, now),
+            before,
           };
           return {
             byCourse: {
@@ -88,6 +101,11 @@ export const useProgressStore = create<ProgressState>()(
             ...prev,
             got: prev.got + (got ? 1 : -1),
             missed: prev.missed + (got ? -1 : 1),
+            // Redo the latest update the other way. A record from before the
+            // model has no snapshot to redo it from, and keeps what it has.
+            ...(prev.before !== undefined && prev.lastSeen != null
+              ? { stability: nextStability(prev.before, got, prev.lastSeen) }
+              : {}),
           };
           return { byCourse: { ...state.byCourse, [courseId]: { ...course, [itemId]: next } } };
         });
