@@ -61,6 +61,12 @@ export interface Limb {
    * is what a person means when they point at a branch.
    */
   spine?: boolean;
+  /**
+   * A filled shape in the line colour rather than a stroke. Only the trunk:
+   * a stroke cannot widen toward its end, and a trunk that does not widen
+   * into the ground is a pole stuck in it.
+   */
+  ink?: boolean;
 }
 
 export interface Tree {
@@ -354,6 +360,54 @@ function grow(
  * you have never opened is a bare branch, and that is the honest signal the
  * picture exists to give.
  */
+/**
+ * The trunk as one filled outline: the spine offset either side by a width
+ * that tapers from foot to crown and swells in the last few units above the
+ * ground — each side by its own amount, because a real flare is lopsided.
+ */
+function trunkOutline(spine: Pt[], foot: number, top: number, flareL: number, flareR: number): Limb {
+  // Resampled finer than the spine: the flare happens in the lowest few
+  // units, and the spine's first segment alone is longer than that.
+  const pts: Pt[] = [];
+  const PER = 4;
+  for (let i = 0; i < spine.length - 1; i++) {
+    for (let j = 0; j < PER; j++) {
+      const t = j / PER;
+      pts.push({
+        x: spine[i].x + (spine[i + 1].x - spine[i].x) * t,
+        y: spine[i].y + (spine[i + 1].y - spine[i].y) * t,
+      });
+    }
+  }
+  pts.push(spine[spine.length - 1]);
+
+  const base = spine[0];
+  const left: Pt[] = [];
+  const right: Pt[] = [];
+  pts.forEach((p, i) => {
+    const q = pts[Math.min(pts.length - 1, i + 1)];
+    const o = pts[Math.max(0, i - 1)];
+    const len = Math.hypot(q.x - o.x, q.y - o.y) || 1;
+    // Unit normal to the spine, pointing to its left.
+    const nx = -(q.y - o.y) / len;
+    const ny = (q.x - o.x) / len;
+    const along = i / (pts.length - 1);
+    const half = (foot + (top - foot) * along) / 2;
+    const rise = Math.max(0, base.y - p.y);
+    // The swell dies away over about six units: wide at the ground, trunk
+    // width by the height of a person's knee on a tree this size.
+    const swell = Math.exp(-rise / 2.6);
+    left.push({ x: p.x - nx * (half + flareL * swell), y: p.y - ny * (half + flareL * swell) });
+    right.push({ x: p.x + nx * (half + flareR * swell), y: p.y + ny * (half + flareR * swell) });
+  });
+
+  const tip = spine[spine.length - 1];
+  const ring = [...left, { x: tip.x, y: tip.y - top * 0.35 }, ...right.reverse()];
+  // Weight is the width at the foot: not stroked, but still the heaviest
+  // mark in the drawing, and what anything comparing weights should see.
+  return { d: `${smooth(ring)}Z`, weight: foot, kind: 'trunk', ink: true };
+}
+
 export function growTree(seed: string, sections: TreeSection[]): Tree {
   const traits = TRAITS;
   const rand = rng(hashSeed(seed));
@@ -382,23 +436,83 @@ export function growTree(seed: string, sections: TreeSection[]): Tree {
     ta += (rand() - 0.5) * 0.09 - trunkLean * 0.06;
     tp = { x: tp.x + Math.sin(ta) * (trunkLen / TSTEPS), y: tp.y - Math.cos(ta) * (trunkLen / TSTEPS) };
   }
-  limbs.push(...taperedLimb(trunkPts, 5.2, 3.1, 'trunk'));
+  /* ---- the base ----
 
-  /* ---- root flare: two unequal buttresses so the trunk meets the ground ---- */
-  for (const dir of [-1, 1]) {
-    const reach = (9 + rand() * 7) * dir;
+     The first version drew the trunk as four strokes of stepping width
+     standing on two stick roots that left it partway up: a pole on a tripod,
+     with a round cap poking out underneath and notches down its length where
+     the widths changed. A trunk is one mass that swells into the ground, so
+     it is drawn as one filled outline, flaring at the foot; surface roots run
+     out of that swelling along the ground, and a broken ground line gives it
+     something to stand on.
+
+     All of it draws from a stream of its own. The four draws the old roots
+     took from the main stream are still taken, in the same order, so the
+     crown above — seeded from that stream — is exactly the tree it was. ---- */
+  const kept = [rand(), rand(), rand(), rand()];
+  const br = rng(hashSeed(`${seed}/base`));
+  limbs.push(trunkOutline(trunkPts, 5.2, 3.1, 3.4 + br() * 2.4, 3.4 + br() * 2.4));
+
+  const footW = 5.2 / 2;
+  /** Where the ground line runs: a fraction below the foot, so the trunk sits in it. */
+  const GROUND = baseY + 0.4;
+  for (const [n, dir] of [
+    [0, -1],
+    [1, 1],
+  ] as const) {
+    // Reach and dip come from the old roots' own draws, so a course keeps the
+    // proportions its roots always had.
+    const reach = (11 + kept[n * 2] * 8) * dir;
+    const dip = kept[n * 2 + 1];
+    // Out of the swelling, arching a little above the ground, and sinking
+    // into it at the end — a root lying flat along the ground reads as part
+    // of the ground line.
     limbs.push(
       ...taperedLimb(
         [
-          { x: baseX + dir * 1.2, y: baseY - 9 },
-          { x: baseX + reach * 0.55, y: baseY - 3 + rand() * 1.5 },
-          { x: baseX + reach, y: baseY + 2.5 },
+          { x: baseX + dir * (footW + 0.4), y: baseY - 2.8 },
+          { x: baseX + reach * 0.4, y: baseY - 1.3 - dip * 0.4 },
+          { x: baseX + reach * 0.75, y: baseY - 0.3 },
+          { x: baseX + reach, y: GROUND },
         ],
-        2.8,
-        0.9,
+        2.0,
+        0.45,
         'trunk',
       ),
     );
+  }
+  // A third, shorter root on one side only: two matched roots are a pair of
+  // feet. It never goes below the ground line — one that did read as a stray
+  // tick rather than a root.
+  {
+    const dir = br() < 0.5 ? -1 : 1;
+    const reach = (6 + br() * 4) * dir;
+    limbs.push(
+      ...taperedLimb(
+        [
+          { x: baseX + dir * footW * 0.7, y: baseY - 1.6 },
+          { x: baseX + reach * 0.55, y: baseY - 0.5 },
+          { x: baseX + reach, y: GROUND },
+        ],
+        1.3,
+        0.4,
+        'trunk',
+      ),
+    );
+  }
+
+  // The ground: a hairline in a few broken pieces, never one ruled line.
+  for (const [a0, a1] of [
+    [-46 - br() * 8, -30 + br() * 4],
+    [-26 + br() * 3, 24 + br() * 3],
+    [29 + br() * 4, 44 + br() * 8],
+  ]) {
+    const pts: Pt[] = [];
+    const steps = 4;
+    for (let i = 0; i <= steps; i++) {
+      pts.push({ x: baseX + a0 + ((a1 - a0) * i) / steps, y: GROUND + (br() - 0.5) * 0.6 });
+    }
+    limbs.push({ d: smooth(pts), weight: 0.55, kind: 'twig' });
   }
 
   const totalWeight = sections.reduce((n, s) => n + Math.max(1, s.weight), 0) || 1;

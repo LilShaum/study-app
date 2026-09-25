@@ -173,3 +173,22 @@ describe('growTree — fading', () => {
     expect(leavesOf(growTree('c', one(0)), 'a')).toHaveLength(0);
   });
 });
+
+describe('growTree — the base', () => {
+  const t = growTree('base', sections(6, 0.5));
+
+  it('draws the trunk as one filled outline, not a stack of strokes', () => {
+    const ink = t.limbs.filter((l) => l.ink);
+    expect(ink).toHaveLength(1);
+    expect(ink[0].d.endsWith('Z')).toBe(true);
+  });
+
+  it('keeps every root and the ground line at or above the ground', () => {
+    // The first roots left the trunk partway up and a small one dipped under
+    // the ground line: a tripod with a stray tick.
+    const ys = t.limbs
+      .filter((l) => !l.sectionId && !l.solid && !l.ink)
+      .flatMap((l) => [...l.d.matchAll(/(-?[\d.]+)[ ,](-?[\d.]+)/g)].map((m) => Number(m[2])));
+    expect(Math.max(...ys)).toBeLessThanOrEqual(t.height - 14 + 1);
+  });
+});
