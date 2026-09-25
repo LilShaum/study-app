@@ -208,7 +208,8 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     if (missing.length) {
       findings.push({
         id: 'declared-terms-missing',
-        severity: 'problem',
+        // A gap, not a fault: nothing already in the course is wrong.
+        severity: 'warning',
         message: `${missing.length} of ${declared.length} terms the generator listed as being in your notes never got a definition: ${missing.slice(0, 8).join(', ')}${missing.length > 8 ? `, +${missing.length - 8} more` : ''}.`,
       });
     }
@@ -244,7 +245,12 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     const pct = Math.round((quality.length.longestIsCorrect / quality.length.mcqs) * 100);
     findings.push({
       id: 'length-tell',
-      severity: 'problem',
+      // Serious, but it weakens questions rather than breaking the course.
+      // "Problem" — the red cross on the course page — is kept for what
+      // corrupts scoring: shared ids, answer keys pointing nowhere,
+      // explanations under the wrong option. Flagging a clean, fully covered
+      // course red for an answer-length pattern alarmed more than it told.
+      severity: 'warning',
       message: `The right answer is the longest of the four options ${pct}% of the time — it should be about 25%. Guessing the longest beats guessing at random here, so some of these are scoring length rather than knowledge.`,
       // The blatant cases, so a repair can target them one by one.
       items: quality.length.giveaway,
