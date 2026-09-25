@@ -86,7 +86,7 @@ export function Onboarding() {
         </div>
         <h1 className="mt-2 text-center font-display text-title font-semibold text-text">Welcome to Arborous</h1>
         <p className="mt-1 text-center text-small text-text-2">
-          Your own notes, turned into practice that remembers what you are forgetting.
+          Make a study course from your own notes, then practise it.
         </p>
 
         {/* The whole loop, once. "The app gives you the prompt" used to be

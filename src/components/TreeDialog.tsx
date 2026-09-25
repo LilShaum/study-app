@@ -27,6 +27,8 @@ export function TreeDialog({ courseId, course, progress, onClose }: TreeDialogPr
   const closeRef = useRef<HTMLButtonElement>(null);
   useDialog(onClose);
   const [about, setAbout] = useState(false);
+  const aboutRef = useRef<HTMLDivElement>(null);
+  const aboutButton = useRef<HTMLButtonElement>(null);
   // Whether the reader is using a finger, for the one line that says how to
   // pick a branch. Read once; it does not change while the dialog is open.
   const [coarse] = useState(() => window.matchMedia?.('(pointer: coarse)').matches ?? false);
@@ -44,16 +46,24 @@ export function TreeDialog({ courseId, course, progress, onClose }: TreeDialogPr
     >
       <div
         className="flex max-h-full w-full max-w-2xl flex-col items-center paper-grain rounded border border-border bg-bg p-6 shadow-md"
-        // The backdrop closes; the sheet itself does not.
-        onClick={(e) => e.stopPropagation()}
+        // The backdrop closes; the sheet itself does not. A click anywhere
+        // on the sheet outside the info card puts the card away.
+        onClick={(e) => {
+          e.stopPropagation();
+          const t = e.target as Node;
+          if (about && !aboutRef.current?.contains(t) && !aboutButton.current?.contains(t)) setAbout(false);
+        }}
       >
-        <div className="mb-2 flex w-full items-start justify-between gap-4">
+        {/* Above the drawing: the info card hangs from this row over the tree,
+            and the sheet stacks its children in document order. */}
+        <div className="relative z-10 mb-2 flex w-full items-start justify-between gap-4">
           <span className="font-display text-heading font-semibold text-text">
             {course.metadata.title}
           </span>
           <span className="flex shrink-0 items-center gap-3">
             <button
               type="button"
+              ref={aboutButton}
               onClick={() => setAbout((open) => !open)}
               aria-label="How to read the tree"
               aria-expanded={about}
@@ -72,6 +82,32 @@ export function TreeDialog({ courseId, course, progress, onClose }: TreeDialogPr
               <Icon name="x" size={18} />
             </button>
           </span>
+          {/* A card from the info button, over the drawing, the way an info
+              button is expected to behave. It first opened as a paragraph
+              under the tree, which only made the dialog longer and was cut
+              off at the bottom of a phone screen. */}
+          {about && (
+            <div
+              id="tree-about"
+              ref={aboutRef}
+              className="paper-grain absolute right-0 top-full z-20 mt-2 w-72 max-w-full rounded-sm border border-border-strong bg-surface p-4 text-small text-text-2 shadow-md"
+            >
+              <p>Each branch is one section of the course.</p>
+              <p className="mt-1.5">
+                Its leaves grow as you study that section. As you forget it, they fall to the ground
+                below.
+              </p>
+              <p className="mt-1.5">
+                Choose a branch to see its name. Dotted outlines show where its fallen leaves were.
+                Review the section and they grow back.
+              </p>
+              <p className="mt-1.5">
+                {coarse
+                  ? 'Drag your finger over the tree to choose a branch. Tap it again to open it.'
+                  : 'Move over the tree to choose a branch. Click it to open it.'}
+              </p>
+            </div>
+          )}
         </div>
 
         <CourseTree
@@ -83,27 +119,6 @@ export function TreeDialog({ courseId, course, progress, onClose }: TreeDialogPr
           interactive
           mode="navigate"
         />
-        {/* How to read the tree, for whoever asks. It used to sit under the
-            drawing for everyone, every time, as a paragraph of explanation
-            nobody had asked for. */}
-        {about && (
-          <div id="tree-about" className="mt-3 w-full max-w-md border-t border-border pt-3 text-small text-text-2">
-            <p>Each branch is one section of the course.</p>
-            <p className="mt-1.5">
-              Leaves grow as you study a section. When you start to forget it they fall, and you can
-              see them on the ground under the tree.
-            </p>
-            <p className="mt-1.5">
-              Pick a branch to see its name. Dotted leaves show where it has lost leaves. Reviewing
-              that section grows them back in the same places.
-            </p>
-            <p className="mt-1.5">
-              {coarse
-                ? 'Drag your finger across the tree to pick a branch, and tap it again to open it.'
-                : 'Move over the tree to pick a branch, and click it to open it.'}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
