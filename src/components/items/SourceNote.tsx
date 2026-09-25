@@ -13,7 +13,7 @@ export function SourceNote({ excerpt }: { excerpt?: string }) {
 
   return (
     <details className="group/src mt-3 border-t border-border-light pt-2">
-      <summary className="cursor-pointer list-none text-xs text-text-3 hover:text-text-2">
+      <summary className="tap-safe flex cursor-pointer list-none items-center text-xs text-text-3 hover:text-text-2">
         <span className="group-open/src:hidden">From your notes ▸</span>
         <span className="hidden group-open/src:inline">From your notes ▾</span>
       </summary>

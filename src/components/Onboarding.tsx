@@ -37,9 +37,7 @@ function inFrame(): boolean {
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <li className="flex gap-2.5">
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border-strong text-[11px] font-semibold text-text-2">
-        {n}
-      </span>
+      <span className="mark w-4 shrink-0 pt-1 text-text-3">{n}</span>
       <span className="flex-1 pt-0.5">{children}</span>
     </li>
   );
@@ -82,14 +80,30 @@ export function Onboarding() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
-      <div className="my-6 w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-md">
-        <div className="flex justify-center text-accent">
+      <div className="my-6 w-full max-w-md rounded-sm border border-border-strong bg-surface p-6 shadow-md">
+        <div className="flex justify-center text-text">
           <Sprig size={40} />
         </div>
-        <h1 className="mt-2 text-center text-xl font-semibold text-text">Welcome to Arborous</h1>
-        <p className="mt-1 text-center text-sm text-text-2">
-          Turn your lecture notes into a course, then study it. The app gives you the prompt.
+        <h1 className="mt-2 text-center font-display text-title font-semibold text-text">Welcome to Arborous</h1>
+        <p className="mt-1 text-center text-small text-text-2">
+          Your own notes, turned into practice that remembers what you are forgetting.
         </p>
+
+        {/* The whole loop, once. "The app gives you the prompt" used to be
+            all a new student was told — true, and no help working out what
+            to do next. */}
+        <ol className="mt-5 space-y-2 text-small text-text-2">
+          <Step n={1}>
+            <strong className="text-text">New course</strong> gives you a prompt to copy.
+          </Step>
+          <Step n={2}>
+            Paste it into an AI chat with your slides or notes attached. It writes the course.
+          </Step>
+          <Step n={3}>
+            Paste the course back here and study it. The app keeps track of what is fading and
+            brings it back before you lose it.
+          </Step>
+        </ol>
 
         {showInstall && (
           <div className="mt-5 rounded border border-border bg-bg p-3 text-left text-sm text-text-2">
@@ -155,32 +169,15 @@ export function Onboarding() {
           </div>
         )}
 
-        <div className="mt-5 flex justify-center gap-2">
-          <button
-            type="button"
-            onClick={complete}
-            className="press press-ink tap-safe"
-          >
-            Get started
+        {/* One button. There were two — "Get started" beside "Skip", or beside
+            "Continue in the browser" — and both did exactly the same thing,
+            which left a new student choosing between them for nothing. On a
+            phone that should install first, the button says honestly that
+            it carries on without installing. */}
+        <div className="mt-5 flex justify-center">
+          <button type="button" onClick={complete} className="press press-ink tap-safe">
+            {showInstall && phone ? 'Continue in the browser' : 'Start'}
           </button>
-          {showInstall && phone && (
-            <button
-              type="button"
-              onClick={complete}
-              className="press tap-safe"
-            >
-              Continue in the browser
-            </button>
-          )}
-          {!(showInstall && phone) && (
-            <button
-              type="button"
-              onClick={complete}
-              className="press tap-safe"
-            >
-              Skip
-            </button>
-          )}
         </div>
       </div>
     </div>

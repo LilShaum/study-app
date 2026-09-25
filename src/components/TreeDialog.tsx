@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useDialog } from '@/lib/useDialog';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { CourseTree } from './CourseTree';
@@ -24,24 +25,10 @@ interface TreeDialogProps {
  */
 export function TreeDialog({ courseId, course, progress, onClose }: TreeDialogProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
-  const opener = useRef<Element | null>(null);
-
+  useDialog(onClose);
   useEffect(() => {
-    opener.current = document.activeElement;
     closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    // The page behind must not scroll while this is over it.
-    const scroll = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = scroll;
-      (opener.current as HTMLElement | null)?.focus?.();
-    };
-  }, [onClose]);
+  }, []);
 
   return (
     <div

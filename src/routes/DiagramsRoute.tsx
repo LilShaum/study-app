@@ -141,7 +141,7 @@ export function DiagramsRoute() {
 
   return (
     <div>
-      <Link to={`/study/${id}`} className="text-sm text-text-2 hover:text-text">
+      <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
         ← {course.metadata.title}
       </Link>
       <h1 className="mt-3 font-display text-display font-semibold text-text">Diagrams</h1>

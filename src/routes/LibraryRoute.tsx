@@ -10,6 +10,8 @@ import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
 import { Sprig } from '@/components/Sprig';
 import { CourseTree } from '@/components/CourseTree';
+import { scoredEntries } from '@/lib/scored';
+import { examTime, isDueFor } from '@/lib/memory';
 import { sectionStats } from '@/lib/sectionStats';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
 
@@ -39,7 +41,9 @@ function roman(n: number): string {
 }
 
 /** A course's totals, aggregated from the same per-section figures the course page uses. */
-function courseTotals(course: Course, progress: Record<string, ItemResult>) {
+function courseTotals(course: Course, progress: Record<string, ItemResult>, now: number) {
+  const examAt = examTime(course.metadata.exam_date);
+  let due = 0;
   let total = 0;
   let got = 0;
   let attempts = 0;
@@ -48,14 +52,17 @@ function courseTotals(course: Course, progress: Record<string, ItemResult>) {
     total += stats.total;
     got += stats.got;
     attempts += stats.got + stats.missed;
+    for (const { id } of scoredEntries(section.items)) if (isDueFor(progress[id], now, examAt)) due++;
   }
-  return { total, accuracy: attempts > 0 ? Math.round((got / attempts) * 100) : null };
+  return { total, due, accuracy: attempts > 0 ? Math.round((got / attempts) * 100) : null };
 }
 
 /** "/" — the course library: upload, search/tag filter, open, and quietly-hidden delete-with-undo. */
 export function LibraryRoute() {
   const courses = useCoursesStore((s) => s.courses);
   const allProgress = useProgressStore((s) => s.byCourse);
+  // Due is judged as of opening the library; rendering must not read the clock.
+  const [now] = useState(Date.now);
   const importCourse = useCoursesStore((s) => s.importCourse);
   const removeCourse = useCoursesStore((s) => s.removeCourse);
   const updateCourse = useCoursesStore((s) => s.updateCourse);
@@ -216,7 +223,7 @@ export function LibraryRoute() {
                         type="button"
                         onClick={() => toggleTag(tag)}
                         aria-pressed={active}
-                        className={`px-0.5 text-small transition-colors ${
+                        className={`tap-safe px-0.5 text-small transition-colors ${
                           active
                             ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
                             : 'text-text-2 hover:text-text hover:underline hover:underline-offset-4'
@@ -246,7 +253,7 @@ export function LibraryRoute() {
             <ul className="border-t border-border">
               {filteredIds.map((id, index) => {
                 const course = courses[id];
-                const stats = courseTotals(course, allProgress[id] ?? EMPTY_PROGRESS);
+                const stats = courseTotals(course, allProgress[id] ?? EMPTY_PROGRESS, now);
                 return (
                   <li key={id} className="group relative border-b border-border">
                     <Link to={`/study/${id}`} className="entry py-4 pr-8">
@@ -285,6 +292,10 @@ export function LibraryRoute() {
                           {course.sections.length} section{course.sections.length !== 1 ? 's' : ''}
                           {stats.accuracy !== null && <> · {stats.accuracy}%</>}
                         </span>
+                        {/* The library's one line about today: which course has
+                            something slipping. Opening the app should show
+                            where to go before you have picked a course. */}
+                        {stats.due > 0 && <span className="mark block text-text">{stats.due} due</span>}
                       </span>
                     </Link>
                     <button

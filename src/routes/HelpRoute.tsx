@@ -178,8 +178,8 @@ const SECTIONS: HelpSection[] = [
         </p>
         <p className="mt-2">
           Inside a whole-course session there is a section dropdown above the card, showing which
-          section you are in and jumping to any other. It is absent in Mixed, Weakest First and
-          Review Missed, where the items are deliberately not in section order.
+          section you are in and jumping to any other. It is absent in Mixed, Weakest First, Review
+          and Review Missed, where the items are deliberately not in section order.
         </p>
       </>
     ),
@@ -235,9 +235,17 @@ const SECTIONS: HelpSection[] = [
         </p>
         <p className="mt-2">
           Every attempt is stored per item, so the same item studied in three different modes builds
-          one shared record. Two things read that record:
+          one shared record. Four things read that record:
         </p>
         <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>
+            <strong>Review</strong> — an estimate, item by item, of how likely you are to still
+            recall it, which brings items back as they fade.
+          </li>
+          <li>
+            <strong>The tree</strong> — the same estimate, drawn: leaves for what you hold, fallen
+            leaves for what has faded.
+          </li>
           <li>
             <strong>Review Missed</strong> — a yes/no filter: missed more often than got.
           </li>
@@ -247,8 +255,8 @@ const SECTIONS: HelpSection[] = [
           </li>
         </ul>
         <p className="mt-2">
-          <strong>View progress</strong> on a course page breaks the same figures down by section
-          and by item type.
+          <strong>Progress</strong> on a course page breaks the same figures down by section and by
+          tag.
         </p>
       </>
     ),
@@ -258,7 +266,7 @@ const SECTIONS: HelpSection[] = [
     title: 'Adding to a course you already have',
     body: (
       <>
-        <p>Two different buttons on a course page, for two different problems:</p>
+        <p>Three buttons on a course page, for three different problems:</p>
         <ul className="mt-2 list-disc space-y-2 pl-5">
           <li>
             <strong>Add material</strong> — you have new notes (next week&rsquo;s lecture, a tutorial
@@ -276,7 +284,7 @@ const SECTIONS: HelpSection[] = [
           </li>
         </ul>
         <p className="mt-2">
-          Both merge into the existing course: ids that would collide are renamed, and items that ask
+          All three merge into the existing course: ids that would collide are renamed, and items that ask
           the same thing as one you already have are skipped. You see the plan before it applies.
         </p>
       </>
@@ -346,9 +354,8 @@ const SECTIONS: HelpSection[] = [
         </p>
         <p className="mt-2 text-text-3">
           Be clear about what this is: the app never sees your original notes, so it can only hold
-          the generator to the list it declared. Verifying that every item really traces back to your
-          source needs the source, and that check lives in the repository as{' '}
-          <code className="font-mono">npm run audit</code>.
+          the generator to the list it declared. It cannot check that every item really traces back
+          to your notes — only something holding the notes can.
         </p>
       </>
     ),
@@ -454,7 +461,7 @@ function ReplayWelcome() {
 export function HelpRoute() {
   return (
     <div>
-      <Link to="/" className="text-sm text-text-2 hover:text-text">
+      <Link to="/" className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
         ← Library
       </Link>
       <h1 className="mt-3 font-display text-display font-semibold text-text">How Arborous works</h1>
@@ -479,17 +486,25 @@ export function HelpRoute() {
         moves focus as well as the scroll position, or it only works for
         people using a mouse.
       */}
-      <nav className="mt-5 flex flex-wrap gap-2" aria-label="Help topics">
-        {SECTIONS.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => scrollToAnchor(s.id)}
-            className="press tap-safe"
-          >
-            {s.title}
-          </button>
-        ))}
+      {/* Contents, set the way a book sets them: numbered, ruled, one line
+          each. It was twelve stacked buttons — about a thousand pixels of
+          chunky boxes on a phone before a word of help. */}
+      <nav className="mt-6" aria-label="Help topics">
+        <h2 className="mark mb-2 text-text-3">Contents</h2>
+        <ol className="border-t border-border">
+          {SECTIONS.map((s, i) => (
+            <li key={s.id} className="border-b border-border">
+              <button
+                type="button"
+                onClick={() => scrollToAnchor(s.id)}
+                className="group tap-safe flex w-full items-baseline gap-3 py-2 text-left"
+              >
+                <span className="mark w-5 shrink-0 tabular-nums text-text-3">{i + 1}</span>
+                <span className="text-body text-text group-hover:text-accent">{s.title}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
       </nav>
 
       <div className="mt-8 space-y-8">

@@ -36,7 +36,7 @@ function BarRow({ row }: { row: StatRow }) {
       <div className="flex items-baseline justify-between gap-3">
         <span className={`text-small ${needsWork ? 'text-text' : 'text-text-2'}`}>{row.label}</span>
         <span className="shrink-0 whitespace-nowrap text-small tabular-nums text-text-2">
-          {acc}% <span className="text-text-3">of {row.attempts}</span>
+          {acc}% <span className="text-text-3">of {row.attempts} answers</span>
         </span>
       </div>
       <div className="relative mb-1 mt-2.5 h-px w-full bg-border">
@@ -110,7 +110,7 @@ export function ProgressRoute() {
   if (stats.studiedCount === 0) {
     return (
       <div className="py-10 text-center">
-        <Link to={`/study/${id}`} className="text-sm text-text-2 hover:text-text">
+        <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
           ← Back
         </Link>
         <h1 className="mt-4 text-xl font-semibold text-text">No progress yet</h1>
@@ -131,7 +131,7 @@ export function ProgressRoute() {
 
   return (
     <div>
-      <Link to={`/study/${id}`} className="text-sm text-text-2 hover:text-text">
+      <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
         ← Back
       </Link>
       <div className="mt-4 flex items-start gap-5">

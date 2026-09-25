@@ -157,3 +157,35 @@ export function reviewUrgency(r: ItemResult | undefined, now: number, examAt: nu
   const at = examAt != null && examAt > now ? examAt : now;
   return retrievability(r, at) ?? 1;
 }
+
+/**
+ * When a studied item next comes due — the moment isDueFor turns true, if
+ * nothing is answered before then. Null for an item never answered.
+ */
+export function nextDueAt(r: ItemResult | undefined, now: number, examAt: number | null): number | null {
+  const s = stabilityOf(r);
+  if (s == null) return null;
+  const normal = r!.lastSeen! + -Math.log(DUE_BELOW) * s * DAY_MS;
+  if (examAt == null || examAt <= now || retrievability(r, examAt)! >= EXAM_TARGET) return normal;
+  const latest = examAt - (-Math.log(EXAM_TARGET) * s + SITTING_MARGIN_DAYS) * DAY_MS;
+  return Math.min(normal, latest);
+}
+
+/**
+ * "later today", "tomorrow", "on Thursday", "on 12 Nov" — when, in the words
+ * a person plans with. Days are calendar days, not 24-hour spans: something
+ * due at 9am after a 10pm session is tomorrow, not "in 11 hours".
+ */
+export function whenLabel(at: number, now: number): string {
+  const day = (t: number) => {
+    const d = new Date(t);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  };
+  const days = Math.round((day(at) - day(now)) / DAY_MS);
+  if (days <= 0) return 'later today';
+  if (days === 1) return 'tomorrow';
+  const d = new Date(at);
+  if (days < 7) return `on ${d.toLocaleDateString(undefined, { weekday: 'long' })}`;
+  return `on ${d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}`;
+}

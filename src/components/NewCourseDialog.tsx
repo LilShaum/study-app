@@ -1,4 +1,5 @@
 import { useMemo, useState, type ChangeEvent } from 'react';
+import { useDialog } from '@/lib/useDialog';
 import { useNavigate } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { parseCourse } from '@/schema/parseCourse';
@@ -40,6 +41,7 @@ function plural(n: number, word: string): string {
  * nothing.
  */
 export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
+  useDialog(onClose);
   const [pasted, setPasted] = useState('');
   const [copied, setCopied] = useState(false);
   const addCourse = useCoursesStore((s) => s.addCourse);
@@ -133,7 +135,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
       <div className="my-8 w-full max-w-2xl rounded-sm border border-border-strong bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <h2 className="font-semibold text-text">New course</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="text-text-3 hover:text-text">
+          <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">
             <Icon name="x" size={18} />
           </button>
         </div>

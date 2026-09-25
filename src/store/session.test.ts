@@ -119,3 +119,29 @@ describe('session store: an override and the memory model', () => {
     expect(overruled).toBe(useProgressStore.getState().byCourse.mm.q1.stability);
   });
 });
+
+describe('session store: retrying what was missed', () => {
+  beforeEach(() => {
+    useProgressStore.setState({ byCourse: {} });
+    useSessionStore.getState().init('rt', course, 'quiz');
+  });
+
+  it('runs again over only the missed items, from a clean score', () => {
+    const s = useSessionStore.getState();
+    s.record(true);
+    s.next();
+    useSessionStore.getState().record(false);
+    useSessionStore.getState().finish();
+    useSessionStore.getState().retryMissed();
+    const after = useSessionStore.getState();
+    expect(after.items.map((i) => i.id)).toEqual(['q2']);
+    expect(after).toMatchObject({ index: 0, finished: false, score: { got: 0, missed: 0 } });
+  });
+
+  it('does nothing when nothing was missed', () => {
+    useSessionStore.getState().record(true);
+    useSessionStore.getState().finish();
+    useSessionStore.getState().retryMissed();
+    expect(useSessionStore.getState().finished).toBe(true);
+  });
+});

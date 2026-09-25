@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
@@ -10,6 +10,7 @@ import { Fleuron } from '@/components/Fleuron';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { SectionJump } from './SectionJump';
+import { examTime, nextDueAt, whenLabel } from '@/lib/memory';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
 
@@ -202,12 +203,42 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
     init(courseId, course, mode, sectionId);
   };
 
+  /**
+   * When what was just studied comes back, said as a plan: "12 of these come
+   * back tomorrow". Worked out once, at the moment the session ends — from
+   * the answers it just recorded — rather than while rendering, which must
+   * not read the clock.
+   *
+   * This is the app's reason to return, and deliberately not a streak: not
+   * "don't break your chain", but the date on which the things you learned
+   * today will actually be slipping.
+   */
+  const [appointment, setAppointment] = useState<string | null>(null);
+  const appointmentFor = (): string | null => {
+    const { items: done, results } = useSessionStore.getState();
+    const prog = useProgressStore.getState().getProgress(courseId);
+    const now = Date.now();
+    const examAt = examTime(course.metadata.exam_date);
+    const ids = new Set([...results.keys()].map((i) => done[i]?.id).filter(Boolean) as string[]);
+    const dues = [...ids].map((itemId) => nextDueAt(prog[itemId], now, examAt)).filter((t): t is number => t != null);
+    if (!dues.length) return null;
+    const first = Math.min(...dues);
+    const endOfThatDay = new Date(first);
+    endOfThatDay.setHours(23, 59, 59, 999);
+    const n = dues.filter((t) => t <= endOfThatDay.getTime()).length;
+    const when = whenLabel(first, now);
+    if (n === dues.length) return dues.length === 1 ? `This comes back ${when}.` : `These come back ${when}.`;
+    return `${n} of these come back ${when}; the rest later.`;
+  };
+
   const handleNext = () => {
     if (next()) return;
     // Finishing is the one clean end: there is nothing left to come back to.
     useResumeStore.getState().clear(courseId);
+    setAppointment(appointmentFor());
     finish();
   };
+  const retryMissed = useSessionStore((s) => s.retryMissed);
 
   // Session-level keys. The cards own their own shortcuts (1-4, Space, G/M,
   // Enter) since only they know their internal state.
@@ -242,7 +273,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
     const copy = EMPTY_COPY[mode];
     return (
       <div className="mx-auto max-w-2xl p-10 text-center">
-        <Link to={`/study/${courseId}`} className="text-sm text-text-2 hover:text-text">
+        <Link to={`/study/${courseId}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
           ← Back
         </Link>
         <h1 className="mt-4 text-xl font-semibold text-text">{copy.title}</h1>
@@ -288,11 +319,20 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           <span className="text-error">{score.missed} missed</span>
           {attempted > 0 && <span className="text-text-2">{pct}%</span>}
         </div>
-        <div className="mt-6 flex justify-center gap-3">
+        {appointment && <p className="mt-3 max-w-prose text-small text-text-2">{appointment}</p>}
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          {/* Straight back over what went wrong, while the correction is
+              fresh — the most useful next step when there is one, so it
+              leads. */}
+          {score.missed > 0 && (
+            <button type="button" onClick={retryMissed} className="press press-ink tap-safe">
+              Try the {score.missed} you missed again
+            </button>
+          )}
           <button
             type="button"
             onClick={restart}
-            className="press press-ink tap-safe"
+            className={`press tap-safe ${score.missed > 0 ? '' : 'press-ink'}`}
           >
             Study again
           </button>
@@ -322,7 +362,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         />
       </div>
       <div className="mb-4 flex items-center justify-between">
-        <Link to={`/study/${courseId}`} className="text-sm text-text-2 hover:text-text">
+        <Link to={`/study/${courseId}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
           ← Back
         </Link>
         <span className="flex items-baseline gap-2">
