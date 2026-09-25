@@ -37,11 +37,12 @@ function gradableText(item: StudyItem): string {
  * Works out where a course is weak, so a follow-up generation can be aimed at
  * the gaps instead of producing more of whatever it produced last time.
  *
- * Only `mcq` and `flashcard` items are scored by the app — definitions,
- * examples and diagrams are read, never tested. So the sharpest signal is a
- * term the course defines but never asks about: the student is shown it, then
- * never made to retrieve it, and it never counts toward their accuracy or
- * shows up in Review Missed.
+ * Only `mcq` and `flashcard` items ask a student to USE what they learned. A
+ * definition is scored too, but only as its name (Terms mode shows the
+ * meaning, the student types the term), and examples and diagrams are read,
+ * never tested. So the sharpest signal is a term the course defines but no
+ * question ever uses: the student can name it and has never had to apply it.
+ * That is why this counts authored questions only, not the app's recall ones.
  *
  * Matching is per-item and token-based (see termMatch). Whole-phrase matching
  * was wrong in the common case: this generator titles definitions "Michaelis

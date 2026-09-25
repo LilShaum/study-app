@@ -352,11 +352,13 @@ where is its receptor? Same passage, same grounding — nothing added that the
 slide does not say — and now the student has to use it. Reuse the source's terms; don't reuse its sentences. The app
 measures this overlap across the whole course and reports the share.
 
-**Only `mcq` and `flashcard` items are graded.** Definitions, examples and
-diagrams are read, not scored — they never appear in the accuracy figures or
-in Review Missed. So every concept the student must be *tested* on needs an
-MCQ or flashcard, not only a definition. A course that is mostly definitions
-teaches recognition and measures nothing.
+**What is graded.** `mcq` and `flashcard` items are graded, and so is each
+`definition` — but only one way: the app shows the meaning and the student
+types the term. That tests whether they can name a thing, never whether they
+can use it. Examples and diagrams are read, not scored. So every concept the
+student must *apply* needs an MCQ or flashcard, not only a definition. A
+course that is mostly definitions teaches a vocabulary list and measures
+nothing else.
 
 **Across the whole file:**
 - Item `id`s must be unique across the whole course, not just within their
