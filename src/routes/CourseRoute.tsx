@@ -3,7 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { exportCourse } from '@/lib/exportCourse';
 import { sortedSections } from '@/lib/sortedSections';
-import { sectionStats } from '@/lib/sectionStats';
+import { availableModes, sectionStats } from '@/lib/sectionStats';
 import { scoredEntries } from '@/lib/scored';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { useResumeStore } from '@/store/resume';
@@ -18,6 +18,8 @@ import { CourseHealthPanel } from '@/components/CourseHealthPanel';
 import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
 import type { StudyMode } from '@/lib/buildSessionItems';
 import { examTime, isDueFor } from '@/lib/memory';
+import { nextSectionToLearn } from '@/lib/nextToLearn';
+
 
 interface ModeCard {
   mode: StudyMode;
@@ -145,6 +147,7 @@ export function CourseRoute() {
   const bookmark = useResumeStore((s) => (id ? s.byCourse[id] : undefined));
   const clearBookmark = useResumeStore((s) => s.clear);
   const progress = useProgressStore((s) => (id ? s.getProgress(id) : EMPTY_PROGRESS));
+  const nextUp = useMemo(() => (course ? nextSectionToLearn(course, progress) : null), [course, progress]);
   // What is due is judged as of opening the page: rendering must not read the
   // clock, and a count that shifted while you looked at it would be worse.
   const [now] = useState(Date.now);
@@ -341,8 +344,19 @@ export function CourseRoute() {
               </Link>
             </li>
           )}
+          {/* Learn picks up at the next section not yet worked through, and
+              says which. It used to start at item 1 of the whole course every
+              time — one walk of several hundred items from the top, however
+              much was already done. The whole course is still one tap away. */}
           <li className="border-b-2 border-text-3">
-            <Link to={`/session/${id}/${LEARN.mode}`} className="group block py-4">
+            <Link
+              to={
+                nextUp
+                  ? `/session/${id}/learn?section=${encodeURIComponent(nextUp.section.id)}`
+                  : `/session/${id}/${LEARN.mode}`
+              }
+              className="group block py-4"
+            >
               <span className="flex items-baseline gap-3">
                 <span className="w-5 shrink-0 text-text-3">
                   <Icon name={LEARN.icon} size={16} />
@@ -352,11 +366,27 @@ export function CourseRoute() {
                 </span>
                 <span className="leaders hidden sm:block" aria-hidden="true" />
                 <span className="mark shrink-0 tabular-nums text-text-2">
-                  {plural(LEARN.count(counts), 'item')}
+                  {plural(nextUp ? availableModes(nextUp.section).learn : LEARN.count(counts), 'item')}
                 </span>
               </span>
-              <span className="mt-0.5 block text-small text-text-2 sm:pl-8">{LEARN.desc}</span>
+              <span className="mt-0.5 block text-small text-text-2 sm:pl-8">
+                {nextUp ? (
+                  <>
+                    Next: section {nextUp.index + 1}, {nextUp.section.title}
+                  </>
+                ) : (
+                  LEARN.desc
+                )}
+              </span>
             </Link>
+            {nextUp && (
+              <Link
+                to={`/session/${id}/${LEARN.mode}`}
+                className="tap-safe -mt-2 mb-2 inline-flex items-center text-small text-text-3 hover:text-text sm:ml-8"
+              >
+                or the whole course, {plural(LEARN.count(counts), 'item')}
+              </Link>
+            )}
           </li>
           {PRACTICE.map((m) => (
             <li key={m.mode} className="border-b border-border">

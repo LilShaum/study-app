@@ -143,7 +143,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
       aria-modal="true"
       aria-label={`${MODE_TITLES[mode]} — ${course.metadata.title}`}
     >
-      <div className="my-8 w-full max-w-2xl rounded-sm border border-border-strong bg-surface shadow-md">
+      <div className="my-8 w-full max-w-2xl paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <h2 className="font-semibold text-text">{MODE_TITLES[mode]}</h2>
           <button

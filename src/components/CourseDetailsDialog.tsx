@@ -109,7 +109,7 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
       aria-modal="true"
       aria-label="Edit course details"
     >
-      <form onSubmit={save} className="my-8 w-full max-w-lg rounded-sm border border-border-strong bg-surface shadow-md">
+      <form onSubmit={save} className="my-8 w-full max-w-lg paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <h2 className="font-semibold text-text">Course details</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">

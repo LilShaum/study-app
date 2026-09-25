@@ -300,6 +300,8 @@ export function CourseTree({
    * this a finger tapping a branch was measured against the cursor's radius.
    */
   const lastPointer = useRef('mouse');
+  /** Which branch was selected when the current touch began. */
+  const heldAtDown = useRef<string | null>(null);
   const navigate = useNavigate();
 
   /*
@@ -454,29 +456,29 @@ export function CourseTree({
       // A drawing with links inside it is not an image: role="img" would hide
       // every one of those links from a screen reader.
       role={tracking ? 'group' : 'img'}
+      // A finger dragged over the tree selects branches; it must not also
+      // scroll the page underneath it.
+      style={tracking ? { touchAction: 'none' } : undefined}
       aria-label={label}
       onPointerDown={
         tracking
           ? (e) => {
               lastPointer.current = e.pointerType;
-            }
-          : undefined
-      }
-      // The selection STAYS: moving off a branch, or off the drawing, keeps
-      // the last one pointed at, so the caption under the tree can be reached
-      // and used. It changes only when another branch is pointed at.
-      //
-      // A finger does not hover, so touch never selects by moving: a stray
-      // pointermove during a tap would otherwise select and then open in one
-      // go, and on a phone you would never see the caption at all.
-      onPointerMove={
-        tracking
-          ? (e) => {
-              if (e.pointerType === 'touch') return;
+              heldAtDown.current = pointed;
               setPointed((held) => nearest(e, held) ?? held);
             }
           : undefined
       }
+      // The selection STAYS: moving off a branch, or off the drawing, keeps
+      // the last one selected, so the caption under the tree can be reached
+      // and used. It changes only when another branch is selected.
+      //
+      // Touch selects by moving too — dragging a finger across the branches
+      // is the phone's version of moving the mouse over them. An earlier
+      // version ignored touch moves so that a tap could not select and open
+      // in one go; that is handled in onClick instead, and it cost the
+      // gesture that makes the tree worth touching.
+      onPointerMove={tracking ? (e) => setPointed((held) => nearest(e, held) ?? held) : undefined}
       onClick={
         tracking
           ? (e) => {
@@ -488,9 +490,11 @@ export function CourseTree({
                 setPointed(null);
                 return;
               }
-              // On touch the first tap shows the branch — its outline and its
-              // caption — and the second opens it.
-              if (lastPointer.current === 'touch' && id !== pointed) {
+              // On touch, a tap opens a branch only if it was ALREADY the
+              // selected one when the finger came down. Otherwise the tap —
+              // or the drag that ended on it — just selects it, so you see
+              // its name and state before you leave for it.
+              if (lastPointer.current !== 'mouse' && id !== heldAtDown.current) {
                 setPointed(id);
                 return;
               }
@@ -595,6 +599,7 @@ export function CourseTree({
      Its height is reserved, so pointing at branches never moves the page. */
   const chosen = tracking ? sections.findIndex((s) => s.id === (pointed ?? highlight)) : -1;
   const sel = chosen >= 0 ? sections[chosen] : null;
+  const courseDue = sections.reduce((n, s) => n + s.due, 0);
   const fact = !sel
     ? null
     : !sel.studied
@@ -630,7 +635,12 @@ export function CourseTree({
             </span>
           </>
         ) : (
-          <span className="mt-6 text-small text-text-3">Point at a branch, or tap one, to see what it holds.</span>
+          // Nothing selected: the course's own figures, not an instruction.
+          // How to use the tree lives behind the dialog's info button.
+          <span className="mt-6 text-small text-text-3">
+            {sections.length} section{sections.length === 1 ? '' : 's'}
+            {courseDue > 0 ? ` · ${courseDue} due for review` : ''}
+          </span>
         )}
       </div>
     </div>

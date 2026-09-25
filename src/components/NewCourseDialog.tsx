@@ -132,7 +132,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
       aria-modal="true"
       aria-label="Create a new course"
     >
-      <div className="my-8 w-full max-w-2xl rounded-sm border border-border-strong bg-surface shadow-md">
+      <div className="my-8 w-full max-w-2xl paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <h2 className="font-semibold text-text">New course</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">
