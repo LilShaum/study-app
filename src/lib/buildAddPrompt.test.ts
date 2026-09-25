@@ -59,9 +59,19 @@ describe('buildAddPrompt', () => {
     expect(prompt.indexOf('id: "s1"')).toBeLessThan(prompt.indexOf('id: "s2"'));
   });
 
-  it('lists taken item ids so the model avoids collisions', () => {
-    expect(prompt).toContain('q1');
-    expect(prompt).toContain('f1');
+  it('gives the model an id prefix no existing item uses, instead of a partial list of taken ids', () => {
+    expect(prompt).toContain('start every new id with "add1_"');
+    expect(prompt).not.toContain('already taken');
+  });
+
+  it('skips a prefix that an earlier addition already used', () => {
+    const added = course();
+    added.sections[0].items.push({ id: 'add1_def_1', type: 'definition', term: 't', definition: 'd' } as never);
+    expect(buildAddPrompt(added)).toContain('"add2_"');
+  });
+
+  it('says which output shape wins over the whole-course contract in the spec', () => {
+    expect(prompt).toMatch(/this shape replaces it/);
   });
 
   it('lists the existing tag vocabulary', () => {

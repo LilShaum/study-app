@@ -88,7 +88,7 @@ export function buildPractisePrompt(course: Course): string {
   const priorities: string[] = [];
   if (gaps.untestedTerms.length) {
     priorities.push(
-      `- These terms are DEFINED in the course but never appear in any MCQ or flashcard, so the student is shown them and never made to recall them. Write gradable items for these first:\n  ${gaps.untestedTerms.join(', ')}`,
+      `- These terms are DEFINED in the course, and the app asks for each by name, but no MCQ or flashcard makes the student use one — apply it, predict with it, or tell it apart from a neighbour. Write those items for these first:\n  ${gaps.untestedTerms.join(', ')}`,
     );
   }
   if (gaps.thinSections.length) {
@@ -122,8 +122,9 @@ What I want back:
   ask for the case that separates two things the notes contrast; apply a
   formula the course only states.
 - Harder than what is already there. The existing items are the floor.
-- Mostly \`mcq\` and \`flashcard\`, because those are the only types the app
-  scores. A definition I cannot be tested on does not help me here.
+- Mostly \`mcq\` and \`flashcard\`. The app already quizzes every definition
+  by name, so another definition is only another name to recall; what I am
+  short of is questions that make me use what the definitions say.
 - Nothing that duplicates an existing item. The existing prompts are listed
   under each section below so you can check.
 

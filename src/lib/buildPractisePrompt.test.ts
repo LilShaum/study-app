@@ -102,7 +102,7 @@ describe('buildPractisePrompt', () => {
   });
 
   it('names the untested terms as the priority', () => {
-    expect(prompt).toMatch(/never appear in any MCQ or flashcard/i);
+    expect(prompt).toMatch(/no MCQ or flashcard makes the student use one/i);
     expect(prompt).toContain('turnover number');
     expect(prompt).toContain('IC50');
   });

@@ -165,11 +165,12 @@ export function buildFixPrompt(course: Course): string {
   if (fix.untestedTerms.length) {
     blocks.push(
       [
-        `## ${blocks.length + 1}. Terms defined but never tested (${fix.untestedTerms.length})`,
+        `## ${blocks.length + 1}. Terms only ever asked for by name (${fix.untestedTerms.length})`,
         '',
-        'These have a definition in the course, but no MCQ or flashcard ever asks',
-        'about them — so I read them and am never made to recall them. Only `mcq`',
-        'and `flashcard` items are scored by the app.',
+        'These have a definition in the course, and the app quizzes me on the',
+        'name: it shows the definition and I type the term. But no MCQ or',
+        'flashcard ever makes me USE one — apply it, predict with it, or tell it',
+        'apart from a neighbour — so I can name each and still not understand it.',
         '',
         fix.untestedTerms.map((t) => `  - ${t}`).join('\n'),
         '',

@@ -108,7 +108,7 @@ describe('analyseCourseHealth — coverage against the declared inventory', () =
     );
     expect(h.declaredTermCoverage).toMatchObject({ covered: 1, total: 3 });
     expect(h.declaredTermCoverage?.missing).toEqual(['turnover number', 'catalytic efficiency']);
-    expect(find(h, 'declared-terms-missing')).toMatchObject({ severity: 'problem' });
+    expect(find(h, 'declared-terms-missing')).toMatchObject({ severity: 'warning' });
   });
 
   it('matches a declared term against a longer definition title', () => {

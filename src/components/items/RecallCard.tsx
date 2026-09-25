@@ -137,7 +137,9 @@ export function RecallCard({
           )}
           <div className="mt-3 flex flex-wrap items-center gap-3">
             {onNext && (
-              <button ref={nextRef} type="button" onClick={onNext} className="press tap-safe">
+              // Hidden on a phone, where the Prev/Next bar below does the job
+              // (see McqCard). On a desktop it stays: it is where Enter lands.
+              <button ref={nextRef} type="button" onClick={onNext} className="press tap-safe hidden sm:inline-flex">
                 Next
               </button>
             )}

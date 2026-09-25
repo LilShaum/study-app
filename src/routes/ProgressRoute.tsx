@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { sectionMemory } from '@/lib/sectionMemory';
+import { sortedSections } from '@/lib/sortedSections';
 import { useCoursesStore } from '@/store/courses';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { computeCourseStats, type StatRow } from '@/lib/computeCourseStats';
@@ -92,6 +95,8 @@ export function ProgressRoute() {
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
   // Both branches must return stable references — see EMPTY_PROGRESS.
   const progress = useProgressStore((s) => (id ? s.getProgress(id) : EMPTY_PROGRESS));
+  // Fading is judged as of opening the page; rendering must not read the clock.
+  const [now] = useState(Date.now);
 
   if (!id) return <Navigate to="/" replace />;
   if (!course) {
@@ -113,9 +118,10 @@ export function ProgressRoute() {
         <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
           ← Back
         </Link>
-        <h1 className="mt-4 text-xl font-semibold text-text">No progress yet</h1>
+        <h1 className="mt-4 font-display text-title font-semibold text-text">No progress yet</h1>
         <p className="mt-2 text-text-2">
-          Study some Quiz or Flashcard items in &ldquo;{course.metadata.title}&rdquo; to see stats here.
+          Answer some questions, flashcards or terms in &ldquo;{course.metadata.title}&rdquo; and
+          they will show up here.
         </p>
         <Link
           to={`/study/${id}`}
@@ -129,6 +135,16 @@ export function ProgressRoute() {
 
   const lastSeenText = stats.lastSeen ? ago(stats.lastSeen) : '—';
 
+  // What the tree draws, as figures: for each section studied, how much of
+  // what it learned is still held, lowest first. Accuracy says how well you
+  // answered; this says how much of it is still there, which is what decides
+  // what to do next.
+  const fading = sortedSections(course)
+    .map((section) => ({ section, m: sectionMemory(section, progress, now, course.metadata.exam_date) }))
+    .filter(({ m }) => m.studied > 0)
+    .map(({ section, m }) => ({ section, due: m.due, held: Math.round((m.learned ? m.held / m.learned : 1) * 100) }))
+    .sort((a, b) => a.held - b.held || b.due - a.due);
+
   return (
     <div>
       <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
@@ -137,7 +153,7 @@ export function ProgressRoute() {
       <div className="mt-4 flex items-start gap-5">
         <CourseTree courseId={id} course={course} progress={progress} className="h-28 sm:h-36" />
         <div className="min-w-0 flex-1">
-          <p className="text-micro uppercase tracking-wider text-text-3">Progress</p>
+          <p className="mark text-text-3">Progress</p>
           <h1 className="mt-1 font-display text-title font-semibold text-text sm:text-display">
             {course.metadata.title}
           </h1>
@@ -153,10 +169,42 @@ export function ProgressRoute() {
         <Stat num={String(stats.totalMissed)} label="Missed" />
       </div>
 
+      {fading.length > 0 && (
+        <div className="mt-8">
+          <h2 className="mark mb-3 text-text-3">Still remembered</h2>
+          <div className="space-y-3">
+            {fading.map(({ section, due, held }) => (
+              <div key={section.id}>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className={`text-small ${due > 0 ? 'text-text' : 'text-text-2'}`}>{section.title}</span>
+                  <span className="shrink-0 whitespace-nowrap text-small tabular-nums text-text-2">
+                    {held}%
+                    {due > 0 && (
+                      <>
+                        {' · '}
+                        <Link
+                          to={`/session/${id}/review?section=${encodeURIComponent(section.id)}`}
+                          className="text-accent hover:underline"
+                        >
+                          Review {due}
+                        </Link>
+                      </>
+                    )}
+                  </span>
+                </div>
+                <div className="relative mb-1 mt-2.5 h-px w-full bg-border">
+                  <div className={`h-px ${due > 0 ? 'bg-text' : 'bg-text-3'}`} style={{ width: `${held}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {stats.weakestSections.length > 0 && (
         <div className="mt-8">
-          <h2 className="mb-3 text-micro font-semibold uppercase tracking-wider text-text-3">
-            Weakest sections
+          <h2 className="mark mb-3 text-text-3">
+            Least accurate sections
           </h2>
           <div className="space-y-3">
             {stats.weakestSections.map((row) => (
@@ -168,8 +216,8 @@ export function ProgressRoute() {
 
       {stats.weakestTags.length > 0 && (
         <div className="mt-8">
-          <h2 className="mb-3 text-micro font-semibold uppercase tracking-wider text-text-3">
-            Weakest tags
+          <h2 className="mark mb-3 text-text-3">
+            Least accurate tags
           </h2>
           <div className="space-y-3">
             {stats.weakestTags.map((row) => (
