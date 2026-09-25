@@ -25,10 +25,23 @@ import type { ItemResult } from '@/store/progress';
 
 const DAY_MS = 86_400_000;
 
-/** Stability after a first attempt that was right: fades to ~37% in a day. */
-const FIRST_RIGHT_DAYS = 1;
-/** …and after one that was wrong, or the floor after any miss: about five hours. */
-const FLOOR_DAYS = 0.2;
+/*
+ * These two were first set at one day and about five hours, and a simulated
+ * student showed what that did (the whole real course, a section learned a
+ * day, every review done, exam on day 21): a missed item dropped to five
+ * hours, was forgotten again by the next day's sitting, missed again, and
+ * stayed there — reviews climbed past 400 a day and on the exam morning the
+ * average item stood at 27%. The mistake was treating a miss as if nothing
+ * had been learned. After a miss the app shows the right answer, and that is
+ * a fresh encoding: so a miss, like a first wrong attempt, leaves an item
+ * about as strong as learning it the first time. With that, the same student
+ * peaked at 264 reviews a day, falling towards the exam, and averaged 85%
+ * on the morning of it.
+ */
+/** Stability after a first attempt that was right. */
+const FIRST_RIGHT_DAYS = 2;
+/** …after one that was wrong, and the floor after any miss: the answer has just been shown. */
+const FLOOR_DAYS = 1;
 /**
  * How much a right answer can grow stability. The growth is scaled by how
  * much had been forgotten, 1 − R: recalling something you still knew cold
@@ -38,7 +51,7 @@ const FLOOR_DAYS = 0.2;
  */
 const GROWTH = 4;
 /** What a miss keeps of the stability it had. */
-const LAPSE_KEEPS = 0.4;
+const LAPSE_KEEPS = 0.5;
 /** No item's stability passes this: a year is past any course's exam. */
 const CEILING_DAYS = 365;
 

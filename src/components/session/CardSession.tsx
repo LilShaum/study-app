@@ -2,7 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
-import { LEARN_STAGES, learnStageIndex, type AnyItem, type StudyMode } from '@/lib/buildSessionItems';
+import {
+  buildSessionItems,
+  LEARN_STAGES,
+  learnStageIndex,
+  REVIEW_SITTING,
+  type AnyItem,
+  type StudyMode,
+} from '@/lib/buildSessionItems';
 import { useSessionStore } from '@/store/session';
 import { useResumeStore } from '@/store/resume';
 import { CourseTree } from '@/components/CourseTree';
@@ -214,6 +221,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
    * today will actually be slipping.
    */
   const [appointment, setAppointment] = useState<string | null>(null);
+  /** Review only: how many are still due once this sitting is done. */
+  const [moreDue, setMoreDue] = useState(0);
   const appointmentFor = (): string | null => {
     const { items: done, results } = useSessionStore.getState();
     const prog = useProgressStore.getState().getProgress(courseId);
@@ -235,7 +244,19 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
     if (next()) return;
     // Finishing is the one clean end: there is nothing left to come back to.
     useResumeStore.getState().clear(courseId);
-    setAppointment(appointmentFor());
+    if (mode === 'review') {
+      const still = buildSessionItems(course, 'review', {
+        sectionId,
+        progress: useProgressStore.getState().getProgress(courseId),
+        examAt: examTime(course.metadata.exam_date),
+      }).length;
+      setMoreDue(still);
+      // While more is due now, "these come back tomorrow" is not the news.
+      setAppointment(still > 0 ? null : appointmentFor());
+    } else {
+      setMoreDue(0);
+      setAppointment(appointmentFor());
+    }
     finish();
   };
   const retryMissed = useSessionStore((s) => s.retryMissed);
@@ -320,22 +341,39 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           {attempted > 0 && <span className="text-text-2">{pct}%</span>}
         </div>
         {appointment && <p className="mt-3 max-w-prose text-small text-text-2">{appointment}</p>}
+        {moreDue > 0 && (
+          <p className="mt-3 max-w-prose text-small text-text-2">
+            {moreDue} more {moreDue === 1 ? 'is' : 'are'} due.
+          </p>
+        )}
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           {/* Straight back over what went wrong, while the correction is
               fresh — the most useful next step when there is one, so it
               leads. */}
+          {moreDue > 0 && (
+            <button type="button" onClick={restart} className="press press-ink tap-safe">
+              Review the next {Math.min(moreDue, REVIEW_SITTING)}
+            </button>
+          )}
           {score.missed > 0 && (
-            <button type="button" onClick={retryMissed} className="press press-ink tap-safe">
+            <button
+              type="button"
+              onClick={retryMissed}
+              className={`press tap-safe ${moreDue > 0 ? '' : 'press-ink'}`}
+            >
               Try the {score.missed} you missed again
             </button>
           )}
-          <button
-            type="button"
-            onClick={restart}
-            className={`press tap-safe ${score.missed > 0 ? '' : 'press-ink'}`}
-          >
-            Study again
-          </button>
+          {/* In Review with more due, "Review the next" already is this. */}
+          {moreDue === 0 && (
+            <button
+              type="button"
+              onClick={restart}
+              className={`press tap-safe ${score.missed > 0 ? '' : 'press-ink'}`}
+            >
+              Study again
+            </button>
+          )}
           <Link
             to={`/study/${courseId}`}
             className="press tap-safe"

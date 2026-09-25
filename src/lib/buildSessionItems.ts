@@ -19,6 +19,14 @@ export const STUDY_MODES = [
 ] as const;
 export type StudyMode = (typeof STUDY_MODES)[number];
 
+/**
+ * The most a Review sitting holds. A student learning a 474-item course over
+ * two weeks meets two hundred and more due in a day (simulated; see
+ * lib/memory.ts), and a sitting that long is one nobody finishes. The most
+ * urgent come first, and the end of a sitting offers the next.
+ */
+export const REVIEW_SITTING = 50;
+
 type DefinitionItem = Extract<StudyItem, { type: 'definition' }>;
 
 export { recallId } from './scored';
@@ -371,7 +379,8 @@ export function buildSessionItems(
         .filter((i) => isDueFor(progress?.[i.id], now, examAt))
         .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, examAt) }))
         .sort((a, b) => a.u - b.u || a.i - b.i)
-        .map((e) => e.item);
+        .map((e) => e.item)
+        .slice(0, REVIEW_SITTING);
       items = pairConfusions(items);
       break;
     case 'missed':

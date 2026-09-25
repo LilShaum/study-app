@@ -67,14 +67,14 @@ describe('nextStability', () => {
 
   it('shrinks on a miss, but never below the floor', () => {
     expect(nextStability({ stability: 10, lastSeen: T0 }, false, T0 + DAY)).toBeLessThan(10);
-    expect(nextStability({ stability: 0.2, lastSeen: T0 }, false, T0 + DAY)).toBeCloseTo(0.2);
+    expect(nextStability({ stability: 1, lastSeen: T0 }, false, T0 + DAY)).toBeCloseTo(1);
   });
 });
 
 describe('records from before the model', () => {
   it('derives a stability from the counts', () => {
-    expect(stabilityOf({ got: 4, missed: 1, lastSeen: T0 })).toBe(4);
-    expect(stabilityOf({ got: 1, missed: 3, lastSeen: T0 })).toBeCloseTo(0.2);
+    expect(stabilityOf({ got: 4, missed: 1, lastSeen: T0 })).toBe(8);
+    expect(stabilityOf({ got: 1, missed: 3, lastSeen: T0 })).toBeCloseTo(1);
     expect(memoryBefore({ got: 0, missed: 0, lastSeen: null })).toBeNull();
   });
 });
