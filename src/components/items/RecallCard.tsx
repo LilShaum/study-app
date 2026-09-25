@@ -11,6 +11,8 @@ interface RecallCardProps {
   onAnswered?: (correct: boolean) => void;
   /** The student overruling that verdict: corrects the record, never adds to it. */
   onOverride?: (correct: boolean) => void;
+  /** The answer named a different term: its definition's id, to remember the pair. */
+  onConfused?: (otherDefinitionId: string) => void;
   onNext?: () => void;
   /** True only for the one card in a study session. */
   keyboardEnabled?: boolean;
@@ -46,6 +48,7 @@ export function RecallCard({
   item,
   onAnswered,
   onOverride,
+  onConfused,
   onNext,
   keyboardEnabled = false,
   frame = 'card',
@@ -64,8 +67,13 @@ export function RecallCard({
   }, [keyboardEnabled]);
 
   // Once graded, Enter should move on: focus goes to Next, where Enter lands.
+  // On a phone that Next is hidden (the bar below has one), so focus just
+  // leaves the answer line instead — which is also what puts the on-screen
+  // keyboard away so the verdict can be read.
   useEffect(() => {
-    if (verdict) nextRef.current?.focus();
+    if (!verdict) return;
+    if (nextRef.current?.offsetParent) nextRef.current.focus();
+    else inputRef.current?.blur();
   }, [verdict]);
 
   const check = (e: FormEvent) => {
@@ -75,7 +83,16 @@ export function RecallCard({
     setVerdict(v);
     setCounted(v.correct);
     onAnswered?.(v.correct);
+    if (v.kind === 'confused') {
+      const other = item.pool.find((d) => d.term === v.with);
+      if (other) onConfused?.(other.id);
+    }
   };
+  // The term that was typed instead, when there was one — shown with its own
+  // definition, so the two meanings sit side by side while the mix-up is
+  // fresh. "That is endocytosis" names the mistake; seeing what endocytosis
+  // means next to what this one means is what corrects it.
+  const mixedUp = verdict?.kind === 'confused' ? item.pool.find((d) => d.term === verdict.with) : undefined;
 
   const overrule = () => {
     if (counted === null) return;
@@ -130,6 +147,12 @@ export function RecallCard({
           {/* The verdict keeps its own colour when overruled: a green ✗ reads
               as a contradiction. What is counted shows in the answer line. */}
           <p className={`font-medium ${verdict.correct ? 'text-success' : 'text-error'}`}>{verdictLine(verdict, term)}</p>
+          {mixedUp && (
+            <p className="mt-2 border-l-2 border-border-strong pl-3 text-small text-text-2">
+              <span className="mr-1.5 font-semibold uppercase tracking-wider text-text">{mixedUp.term}.</span>
+              {mixedUp.definition}
+            </p>
+          )}
           {overruled && (
             <p className="mt-1 text-small text-text-3">
               Counted as {counted ? 'right' : 'wrong'} — your call, not the grader&rsquo;s.

@@ -81,7 +81,7 @@ export interface SessionOptions {
   missedIds?: ReadonlySet<string>;
   /** Restrict the session to one section. Undefined studies the whole course. */
   sectionId?: string;
-  /** Per-item history. 'weakest' and 'review' use it. */
+  /** Per-item history. 'weakest' and 'review' rank by it; 'definitions' and 'review' pair confused terms from it. */
   progress?: Record<string, ItemResult>;
   /** The time to judge "due" at. 'review' only; defaults to the clock. */
   now?: number;
@@ -246,6 +246,51 @@ export function buildSessionItems(
   /** Each definition REPLACED by its recall question. */
   const asRecall = (list: SessionItem[]) => list.map((i) => recallFor(i) ?? i);
 
+  // Every definition in the course with its section, so a term can be asked
+  // for next to the one it was mistaken for even when that one lives in
+  // another section, or is not otherwise due.
+  const placedDefs = new Map<string, SessionItem>();
+  for (const section of course.sections) {
+    for (const item of section.items) {
+      if (item.type !== 'definition') continue;
+      placedDefs.set(item.id, {
+        ...item,
+        _sectionTitle: section.title,
+        _sectionId: section.id,
+        _sectionOrder: section.order ?? 0,
+      });
+    }
+  }
+  /**
+   * Put each term straight after the one it has been mistaken for.
+   *
+   * The interleaving meta-analysis in docs/evidence.md finds that setting
+   * things side by side helps most when they are easy to confuse — and a
+   * typed answer that named the wrong term is the most direct evidence there
+   * is of that. So a pair the student actually mixed up comes back as a
+   * pair, one after the other, until they stop mixing it up.
+   */
+  const pairConfusions = (list: SessionItem[]): SessionItem[] => {
+    const byId = new Map(list.map((i) => [i.id, i]));
+    const placed = new Set<string>();
+    const out: SessionItem[] = [];
+    for (const item of list) {
+      if (placed.has(item.id)) continue;
+      out.push(item);
+      placed.add(item.id);
+      for (const defId of progress?.[item.id]?.confusedWith ?? []) {
+        const rid = recallId(defId);
+        if (placed.has(rid)) continue;
+        const def = placedDefs.get(defId);
+        const partner = byId.get(rid) ?? (def ? recallFor(def) : null);
+        if (!partner) continue;
+        out.push(partner);
+        placed.add(rid);
+      }
+    }
+    return out;
+  };
+
   switch (mode) {
     case 'quiz':
       items = items.filter((i) => i.type === 'mcq');
@@ -256,7 +301,7 @@ export function buildSessionItems(
     case 'definitions':
       // Terms: type the word from its meaning. Reading the glossary is what
       // Browse is for.
-      items = asRecall(items.filter((i) => i.type === 'definition'));
+      items = pairConfusions(asRecall(items.filter((i) => i.type === 'definition')));
       break;
     case 'mixed':
       // Practice, so a definition is asked for rather than shown.
@@ -279,6 +324,7 @@ export function buildSessionItems(
         .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, examAt) }))
         .sort((a, b) => a.u - b.u || a.i - b.i)
         .map((e) => e.item);
+      items = pairConfusions(items);
       break;
     case 'missed':
       items = shuffle(asRecall(items).filter((i) => missedIds?.has(i.id)));

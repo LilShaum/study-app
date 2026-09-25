@@ -433,6 +433,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
             handleNext();
           }}
           onOverride={setResult}
+          onConfused={(otherId) => useProgressStore.getState().noteConfusion(courseId, current.id, otherId)}
           onNext={handleNext}
           keyboardEnabled
         />

@@ -205,3 +205,39 @@ describe('buildSessionItems — review', () => {
     expect(buildSessionItems(mixedCourse, 'review', { now, progress, examAt: now + 1.3 * DAY })).toHaveLength(1);
   });
 });
+
+describe('buildSessionItems — terms that were mixed up come back together', () => {
+  const terms = {
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: [
+      {
+        id: 's1',
+        title: 'One',
+        order: 1,
+        items: [
+          { id: 'exo', type: 'definition', term: 'Exocytosis', definition: 'out' },
+          { id: 'x', type: 'definition', term: 'X', definition: 'x' },
+          { id: 'y', type: 'definition', term: 'Y', definition: 'y' },
+        ],
+      },
+      { id: 's2', title: 'Two', order: 2, items: [{ id: 'endo', type: 'definition', term: 'Endocytosis', definition: 'in' }] },
+    ],
+  } as unknown as Course;
+  const DAY = 86_400_000;
+  const now = 50 * DAY;
+
+  it('puts a term straight after the one it was mistaken for, in Terms', () => {
+    const progress = { 'exo~recall': { got: 0, missed: 1, lastSeen: now, confusedWith: ['endo'] } };
+    const ids = buildSessionItems(terms, 'definitions', { progress }).map((i) => i.id);
+    expect(ids).toEqual(['exo~recall', 'endo~recall', 'x~recall', 'y~recall']);
+  });
+
+  it('brings the partner into Review even when it is not due itself', () => {
+    const progress = {
+      'exo~recall': { got: 0, missed: 1, lastSeen: now - 3 * DAY, stability: 0.5, confusedWith: ['endo'] },
+    };
+    const ids = buildSessionItems(terms, 'review', { progress, now }).map((i) => i.id);
+    expect(ids).toEqual(['exo~recall', 'endo~recall']);
+  });
+});

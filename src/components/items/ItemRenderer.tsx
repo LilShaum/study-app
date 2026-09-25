@@ -16,6 +16,8 @@ interface ItemRendererProps {
   onMissed?: () => void;
   /** The student overruling a typed answer's verdict. */
   onOverride?: (correct: boolean) => void;
+  /** A typed answer named a different term; its definition's id. */
+  onConfused?: (otherDefinitionId: string) => void;
   /** True only for the one card in a study session — Browse renders many at once. */
   keyboardEnabled?: boolean;
   /** 'sheet' in a session, where the page is the item's boundary. See frame.ts. */
@@ -30,6 +32,7 @@ export function ItemRenderer({
   onGot,
   onMissed,
   onOverride,
+  onConfused,
   keyboardEnabled,
   frame = 'card',
 }: ItemRendererProps) {
@@ -61,6 +64,7 @@ export function ItemRenderer({
           item={item}
           onAnswered={onAnswered}
           onOverride={onOverride}
+          onConfused={onConfused}
           onNext={onNext}
           keyboardEnabled={keyboardEnabled}
           frame={frame}
