@@ -36,6 +36,10 @@ interface SessionState {
   prev: () => boolean;
   /** Records the current item's result exactly once per index, mirroring Session.record. */
   record: (got: boolean) => void;
+  /** Learn only: put a missed card back a few cards on. */
+  requeue: (index: number) => void;
+  /** Take back a requeued copy that has not been reached, when a miss is overruled. */
+  unqueue: (index: number) => void;
   /**
    * The student overruling a verdict on the current item. Corrects the
    * recorded attempt — in the session tally and in stored progress — instead
@@ -52,7 +56,29 @@ interface SessionState {
    * so a retry cannot inflate how well an item is held; it only teaches it.
    */
   retryMissed: () => void;
+  /**
+   * Ids whose latest answer in this sitting was wrong. In Learn a missed card
+   * comes back until it is right, so a first miss that was put right later
+   * is not still missed.
+   */
+  stillMissed: () => string[];
 }
+
+/** How many cards on a missed card comes back in Learn. */
+export const AGAIN_AFTER = 3;
+/** Comes back at most this many times; after that it is left to Review. */
+export const AGAIN_MAX = 3;
+
+/** The by-position answer records, renumbered after a card is added or taken out. */
+function shifted(s: { answeredIndices: Set<number>; results: Map<number, boolean> }, move: (n: number) => number) {
+  return {
+    answeredIndices: new Set([...s.answeredIndices].map(move)),
+    results: new Map([...s.results].map(([n, got]) => [move(n), got] as [number, boolean])),
+  };
+}
+
+const isGradable = (item: SessionItem) =>
+  item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall';
 
 /** Ephemeral, in-memory only — an active study session is not persisted. */
 export const useSessionStore = create<SessionState>()((set, get) => ({
@@ -140,12 +166,48 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     const { courseId, index } = state;
     if (!item || !courseId || state.answeredIndices.has(index)) return;
 
+    // The tally counts first attempts: a card that came back after a miss
+    // and was then got right is one miss, not a miss and a correct answer.
+    const first = !item._again;
     set((s) => ({
       answeredIndices: new Set(s.answeredIndices).add(index),
       results: new Map(s.results).set(index, got),
-      score: { got: s.score.got + (got ? 1 : 0), missed: s.score.missed + (got ? 0 : 1) },
+      score: first
+        ? { got: s.score.got + (got ? 1 : 0), missed: s.score.missed + (got ? 0 : 1) }
+        : s.score,
     }));
     useProgressStore.getState().recordResult(courseId, item.id, got);
+    if (!got) get().requeue(index);
+  },
+
+  requeue: (index) => {
+    const { mode, items } = get();
+    const item = items[index];
+    if (mode !== 'learn' || !item || !isGradable(item) || (item._again ?? 0) >= AGAIN_MAX) return;
+    // Until it is right once, and no more: a higher bar in the first sitting
+    // buys nothing that lasts once it is relearned on a later day (Vaughn,
+    // Dunlosky & Rawson 2016, in docs/evidence.md). Review is that later day.
+    const at = Math.min(index + 1 + AGAIN_AFTER, items.length);
+    const neighbour = items[at - 1];
+    const copy: SessionItem = { ...item, _again: (item._again ?? 0) + 1, _block: neighbour._block };
+    // Answers are kept by position, so anything already answered past the
+    // insertion (reached by going back with Prev) moves along with its card.
+    set((s) => ({
+      items: [...items.slice(0, at), copy, ...items.slice(at)],
+      ...shifted(s, (n) => (n >= at ? n + 1 : n)),
+    }));
+  },
+
+  unqueue: (index) => {
+    const { items } = get();
+    const item = items[index];
+    if (!item) return;
+    const pending = items.findIndex((i, n) => n > index && i.id === item.id && (i._again ?? 0) > (item._again ?? 0));
+    if (pending < 0 || get().answeredIndices.has(pending)) return;
+    set((s) => ({
+      items: items.filter((_, n) => n !== pending),
+      ...shifted(s, (n) => (n > pending ? n - 1 : n)),
+    }));
   },
 
   setResult: (got) => {
@@ -159,14 +221,16 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       return;
     }
     if (was === got) return;
+    const first = !item._again;
     set((s) => ({
       results: new Map(s.results).set(index, got),
-      score: {
-        got: s.score.got + (got ? 1 : -1),
-        missed: s.score.missed + (got ? -1 : 1),
-      },
+      score: first
+        ? { got: s.score.got + (got ? 1 : -1), missed: s.score.missed + (got ? -1 : 1) }
+        : s.score,
     }));
     useProgressStore.getState().reviseResult(courseId, item.id, got);
+    if (got) get().unqueue(index);
+    else get().requeue(index);
   },
 
   jumpToSection: (sectionId) => {
@@ -176,14 +240,27 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
 
   finish: () => set({ finished: true }),
 
-  retryMissed: () => {
+  stillMissed: () => {
     const { items, results } = get();
+    const last = new Map<string, boolean>();
+    for (const [i, got] of [...results].sort((a, b) => a[0] - b[0])) {
+      const item = items[i];
+      if (item) last.set(item.id, got);
+    }
+    return [...last].filter(([, got]) => !got).map(([id]) => id);
+  },
+
+  retryMissed: () => {
+    const { items } = get();
+    const ids = new Set(get().stillMissed());
     const seen = new Set<string>();
-    const missed = items.filter((item, i) => {
-      if (results.get(i) !== false || seen.has(item.id)) return false;
-      seen.add(item.id);
-      return true;
-    });
+    const missed = items
+      .filter((item) => {
+        if (!ids.has(item.id) || seen.has(item.id)) return false;
+        seen.add(item.id);
+        return true;
+      })
+      .map((item) => ({ ...item, _again: undefined }));
     if (!missed.length) return;
     set({
       items: missed,

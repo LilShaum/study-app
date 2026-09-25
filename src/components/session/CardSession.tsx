@@ -2,14 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
-import {
-  buildSessionItems,
-  LEARN_STAGES,
-  learnStageIndex,
-  REVIEW_SITTING,
-  type AnyItem,
-  type StudyMode,
-} from '@/lib/buildSessionItems';
+import { buildSessionItems, REVIEW_SITTING, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
+import { phaseOf, type LearnPhase } from '@/lib/learnSteps';
 import { useSessionStore } from '@/store/session';
 import { useResumeStore } from '@/store/resume';
 import { CourseTree } from '@/components/CourseTree';
@@ -119,34 +113,55 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
   },
 };
 
-/**
- * Where you are in the taught sequence.
- *
- * Learn mode reorders content the student already has, so without this the
- * only visible difference from Mixed is that the cards happen to arrive in a
- * better order. Naming the stage is what makes the sequence teachable.
- */
-function LearnStageBanner({ item }: { item: { type: AnyItem['type']; _sectionTitle: string } }) {
-  const stage = learnStageIndex(item.type);
-  if (stage < 0) return null;
-  const { label, hint } = LEARN_STAGES[stage];
+const PHASES: { key: LearnPhase; label: string }[] = [
+  { key: 'read', label: 'Read' },
+  { key: 'recall', label: 'Recall' },
+  { key: 'apply', label: 'Apply' },
+];
 
+/**
+ * Where you are in Learn: which step of the section, and which part of it.
+ *
+ * Set as a ruled line in the page's own voice. It used to be a boxed panel
+ * naming one of three stages that each lasted forty cards, so it said the
+ * same thing for minutes at a time.
+ */
+function StepLine({ item }: { item: SessionItem }) {
+  const phase = phaseOf(item.type);
+  if (item._step === undefined || !phase) return null;
+  const at = PHASES.findIndex((p) => p.key === phase);
   return (
-    <div className="mb-4 rounded-lg border border-border bg-surface px-4 py-2.5">
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-text">{label}</span>
-        <span className="ml-auto flex gap-1" aria-hidden="true">
-          {LEARN_STAGES.map((s, i) => (
-            <span
-              key={s.key}
-              className={`h-px w-6 ${i <= stage ? 'bg-text' : 'bg-border-strong'}`}
-            />
-          ))}
-        </span>
-      </div>
-      <div className="mt-0.5 text-xs text-text-3">{hint}</div>
+    <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border pb-2 text-small">
+      <span className="mark whitespace-nowrap text-text-3">
+        Step {item._step + 1} of {item._steps}
+      </span>
+      {/* All three parts where there is room; on a phone, the one you are in. */}
+      <span className="flex items-baseline gap-2 whitespace-nowrap" aria-label={`Part: ${PHASES[at].label}`}>
+        {PHASES.map((p, i) => (
+          <span
+            key={p.key}
+            className={i === at ? 'text-text' : 'hidden text-text-3 sm:inline'}
+            aria-hidden="true"
+          >
+            {p.label}
+          </span>
+        ))}
+      </span>
+      {item._again ? <span className="ml-auto whitespace-nowrap text-text-2">Again, from earlier</span> : null}
     </div>
   );
+}
+
+/** What the step just finished covered, for the pause after it. */
+interface Pause {
+  step: number;
+  steps: number;
+  section: string;
+  /** True when the next card is in another section. */
+  sectionDone: boolean;
+  terms: string[];
+  got: number;
+  asked: number;
 }
 
 /** Every mode except Browse — one item at a time. */
@@ -177,6 +192,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
   const resumed = useSessionStore((s) => s.resumed);
   const activeSectionId = useSessionStore((s) => s.activeSectionId);
   const jumpToSection = useSessionStore((s) => s.jumpToSection);
+  const stillMissed = useSessionStore((s) => s.stillMissed);
+  /** Learn: the pause between two steps, while it is showing. */
+  const [pause, setPause] = useState<Pause | null>(null);
 
   useEffect(() => {
     // Read the bookmark rather than subscribing to it: this session writes one
@@ -240,8 +258,36 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
     return `${n} of these come back ${when}; the rest later.`;
   };
 
+  /** The step that ends at the current card, summed up for the pause. */
+  const pauseAfter = (): Pause | null => {
+    const { items: all, index: at, results } = useSessionStore.getState();
+    const here = all[at];
+    const after = all[at + 1];
+    if (mode !== 'learn' || !here?._block || !after || after._block === here._block) return null;
+    const inStep = all.map((item, n) => ({ item, n })).filter(({ item }) => item._block === here._block);
+    const first = inStep.filter(({ item, n }) => !item._again && results.has(n));
+    const owner = inStep.find(({ item }) => !item._again)?.item ?? here;
+    return {
+      step: owner._step ?? 0,
+      steps: owner._steps ?? 1,
+      section: owner._sectionTitle,
+      sectionDone: after._sectionId !== here._sectionId,
+      terms: inStep.flatMap(({ item }) =>
+        item.type === 'definition' || (item.type === 'recall' && !item.question && !item._again)
+          ? [item.type === 'definition' ? item.term : item.target.term]
+          : [],
+      ).filter((t, i, list) => t && list.indexOf(t) === i),
+      got: first.filter(({ n }) => results.get(n)).length,
+      asked: first.length,
+    };
+  };
+
   const handleNext = () => {
-    if (next()) return;
+    const stop = pauseAfter();
+    if (next()) {
+      if (stop) setPause(stop);
+      return;
+    }
     // Finishing is the one clean end: there is nothing left to come back to.
     useResumeStore.getState().clear(courseId);
     if (mode === 'review') {
@@ -268,6 +314,13 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
       if (e.key === 'Escape') {
         e.preventDefault();
         navigate(`/study/${courseId}`);
+        return;
+      }
+      if (pause) {
+        if (e.key === 'Enter' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          setPause(null);
+        }
         return;
       }
       // Inside the MCQ radiogroup, arrows move the selection instead — the
@@ -312,6 +365,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
   if (finished) {
     const attempted = score.got + score.missed;
     const pct = attempted > 0 ? Math.round((score.got / attempted) * 100) : 100;
+    // Not score.missed: in Learn a miss comes back until it is right, and
+    // one put right in the sitting is not still to retry.
+    const missedNow = stillMissed().length;
     return (
       /*
        * The end of a session is where the tree pays off.
@@ -357,13 +413,13 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
               Review the next {Math.min(moreDue, REVIEW_SITTING)}
             </button>
           )}
-          {score.missed > 0 && (
+          {missedNow > 0 && (
             <button
               type="button"
               onClick={retryMissed}
               className={`press tap-safe ${moreDue > 0 ? '' : 'press-ink'}`}
             >
-              Try the {score.missed} you missed again
+              Try the {missedNow} you missed again
             </button>
           )}
           {/* In Review with more due, "Review the next" already is this. */}
@@ -371,7 +427,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
             <button
               type="button"
               onClick={restart}
-              className={`press tap-safe ${score.missed > 0 ? '' : 'press-ink'}`}
+              className={`press tap-safe ${missedNow > 0 ? '' : 'press-ink'}`}
             >
               Study again
             </button>
@@ -444,7 +500,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         </div>
       )}
 
-      {mode === 'learn' && current && <LearnStageBanner item={current} />}
+      {mode === 'learn' && current && !pause && <StepLine item={current} />}
       {mode === 'review' && (
         <p className="mb-4 text-xs text-text-3">
           What you have studied and are starting to lose, faintest first.
@@ -456,9 +512,41 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         </p>
       )}
 
-      {current && (
+      {pause && (
+        /*
+         * A place to stop. Learn used to run a whole section as one sitting
+         * of up to 114 cards with nowhere to put it down; now each step ends
+         * here, says what it covered, and the next one is one key away. Stop
+         * keeps your place: the bookmark already points at the next step.
+         */
+        <div className="border-b border-border pb-8 pt-6 text-center">
+          <p className="mark text-text-3">
+            {pause.sectionDone ? `End of ${pause.section}` : `Step ${pause.step + 1} of ${pause.steps} done`}
+          </p>
+          {pause.asked > 0 && (
+            <p className="mt-2 font-display text-heading font-semibold text-text">
+              {pause.got} of {pause.asked} right first time
+            </p>
+          )}
+          {pause.terms.length > 0 && (
+            <p className="mx-auto mt-2 max-w-prose text-small text-text-2">{pause.terms.join(' · ')}</p>
+          )}
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <button type="button" onClick={() => setPause(null)} className="press press-ink tap-safe" autoFocus>
+              {pause.sectionDone ? 'Next section' : 'Next step'}
+            </button>
+            <Link to={`/study/${courseId}`} className="press tap-safe">
+              Stop here
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {current && !pause && (
         <ItemRenderer
-          key={current.id}
+          // By position as well as id: a missed card that comes back is the
+          // same item, and must start unanswered.
+          key={`${current.id}@${index}`}
           item={current}
           frame="sheet"
           onAnswered={record}
@@ -479,7 +567,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         />
       )}
 
-      <div className="mt-4 flex justify-between">
+      <div className={`mt-4 flex justify-between ${pause ? 'hidden' : ''}`}>
         <button
           type="button"
           disabled={!hasPrev}
@@ -498,7 +586,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
       </div>
 
       {/* Hidden on touch, where there's no keyboard to hint about. */}
-      <p className="mt-4 hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-3 [@media(hover:hover)]:flex">
+      <p
+        className={`mt-4 hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-3 ${pause ? '' : '[@media(hover:hover)]:flex'}`}
+      >
         {KEY_HINTS[mode].map((hint) => (
           <span key={hint.keys.join()} className="flex items-center gap-1">
             {hint.keys.map((k) => (

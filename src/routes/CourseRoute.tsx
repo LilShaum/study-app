@@ -55,7 +55,7 @@ interface Counts {
 const LEARN: ModeCard = {
   mode: 'learn',
   label: 'Learn',
-  desc: 'Definitions, then flashcards and terms to recall, then questions',
+  desc: 'A few terms at a time: read them, recall them, then answer questions on them',
   icon: 'target',
   // Every item, plus the typed-recall question each definition adds.
   count: (c) => c.total + c.definition,
