@@ -79,7 +79,12 @@ export function Onboarding() {
   const phone = platform === 'ios' || platform === 'android';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Welcome to Arborous"
+    >
       <div className="my-6 w-full max-w-md paper-grain rounded-sm border border-border-strong bg-surface p-6 shadow-md">
         <div className="flex justify-center text-text">
           <Sprig size={40} />

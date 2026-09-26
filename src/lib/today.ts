@@ -41,7 +41,9 @@ const CARD_SECONDS: Record<string, number> = {
   mcq: 35,
 };
 
-export const cardSeconds = (item: { type: string }) => CARD_SECONDS[item.type] ?? 20;
+/** Seconds a card takes: measured on this device when there is enough (store/studyLog), guessed otherwise. */
+export const cardSeconds = (item: { type: string }, pace?: Record<string, number>) =>
+  pace?.[item.type] ?? CARD_SECONDS[item.type] ?? 20;
 
 export interface Sitting {
   reviewMinutes: number;

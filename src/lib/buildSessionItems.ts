@@ -124,6 +124,8 @@ export interface SessionOptions {
   exam?: ExamRule;
   /** Minutes the student has today. 'today' only. */
   minutes?: number;
+  /** Measured seconds per card type (store/studyLog). 'today' only. */
+  pace?: Record<string, number>;
 }
 
 const isGradable = (i: AnyItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall';
@@ -201,7 +203,7 @@ function weakestFirst(items: SessionItem[], progress?: Record<string, ItemResult
 export function buildSessionItems(
   course: Course,
   mode: StudyMode,
-  { missedIds, sectionId, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES }: SessionOptions = {},
+  { missedIds, sectionId, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES, pace }: SessionOptions = {},
 ): SessionItem[] {
   const sections = sectionId
     ? sortedSections(course).filter((s) => s.id === sectionId)
@@ -361,14 +363,14 @@ export function buildSessionItems(
       // One sitting sized to the student's minutes: what is due, for Review's
       // share of the time, then Learn's steps for the rest (lib/today.ts).
       const due = dueFirst(items);
-      const plan = splitSitting(course, progress ?? {}, now, minutes, undefined, undefined, due.reduce((n, i) => n + cardSeconds(i), 0));
+      const plan = splitSitting(course, progress ?? {}, now, minutes, undefined, undefined, due.reduce((n, i) => n + cardSeconds(i, pace), 0));
       const review: SessionItem[] = [];
       let spent = 0;
       for (const item of due) {
-        if (review.length && spent + cardSeconds(item) > plan.reviewMinutes * 60) break;
+        if (review.length && spent + cardSeconds(item, pace) > plan.reviewMinutes * 60) break;
         if (plan.reviewMinutes <= 0) break;
         review.push({ ...item, _block: 'review' });
-        spent += cardSeconds(item);
+        spent += cardSeconds(item, pace);
       }
       const learn: SessionItem[] = [];
       let learnSpent = 0;
@@ -388,7 +390,7 @@ export function buildSessionItems(
             return !isGradable(i) || (!!r && r.got + r.missed > 0);
           };
           if (step.every(answered)) continue;
-          const cost = step.reduce((n, i) => n + cardSeconds(i), 0);
+          const cost = step.reduce((n, i) => n + cardSeconds(i, pace), 0);
           // Whole steps only, so the sitting ends where a step does; the
           // first one always fits, or a short sitting would teach nothing.
           if ((learn.length || review.length) && learnSpent + cost > plan.learnMinutes * 60) {
