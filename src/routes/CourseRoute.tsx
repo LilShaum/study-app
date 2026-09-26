@@ -435,18 +435,18 @@ export function CourseRoute() {
           out of the list above; it is a page to look at, like Browse, and
           the label says so. No icons: every link here is a word, and a
           14px picture beside each word only added noise. */}
-      <div className="mt-6 space-y-1 text-small">
-        <div className="flex items-baseline gap-x-3">
-          <span className="mark w-16 shrink-0 text-text-3">View</span>
-          <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+      <div className="mt-6 space-y-4 text-small sm:space-y-1">
+        <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
+          <span className="mark shrink-0 text-text-3 sm:w-16">View</span>
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 sm:gap-x-5">
             <ToolLink to={`/study/${id}/progress`}>Progress</ToolLink>
             <ToolLink to={`/session/${id}/browse`}>Browse and edit</ToolLink>
             {counts.graphic > 0 && <ToolLink to={`/study/${id}/diagrams`}>Diagrams ({counts.graphic})</ToolLink>}
           </div>
         </div>
-        <div className="flex items-baseline gap-x-3">
-          <span className="mark w-16 shrink-0 text-text-3">Course</span>
-          <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+        <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
+          <span className="mark shrink-0 text-text-3 sm:w-16">Course</span>
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 sm:gap-x-5">
             <ToolButton onClick={() => setAdding('material')}>Add material</ToolButton>
             <ToolButton onClick={() => setAdding('practice')}>More practice</ToolButton>
             <ToolButton onClick={() => setEditingDetails(true)}>Edit details</ToolButton>
