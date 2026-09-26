@@ -37,6 +37,10 @@ function useLocationName(): string {
 
 export function RootLayout() {
   const here = useLocationName();
+  const { pathname } = useLocation();
+  // The course page is laid out in two columns on a desktop; head, page and
+  // colophon widen together so the rules still line up.
+  const wide = /^\/study\/[^/]+$/.test(pathname) ? ' is-wide' : '';
 
   return (
     <div className="app-shell paper-grain flex min-h-screen flex-col bg-bg">
@@ -47,7 +51,7 @@ export function RootLayout() {
           printed page's. Here the viewport IS the sheet: the paper runs to
           every edge and the text block is set inside it by its own margins,
           the way a page is trimmed rather than pasted down. */}
-      <header className="app-header page-block shrink-0">
+      <header className={`app-header page-block shrink-0${wide}`}>
         <div className="flex min-h-header items-end justify-between gap-4 pb-2">
           {/* shrink-0 and whitespace-nowrap are both load-bearing. Without
               them a long location on the right squeezed this side until the
@@ -69,7 +73,7 @@ export function RootLayout() {
         <div className="rule-oxford" />
       </header>
 
-      <main className="page-block flex-1 py-8">
+      <main className={`page-block flex-1 py-8${wide}`}>
         <Outlet />
       </main>
 
@@ -83,7 +87,7 @@ export function RootLayout() {
           next, which is what it still does mid-page, while a book ends with
           the printer's own device. Using the leaf for both left an
           unexplained mark at the foot of every page. */}
-      <footer className="page-block shrink-0 pb-8 pt-10">
+      <footer className={`page-block shrink-0 pb-8 pt-10${wide}`}>
         <div className="mb-5 flex justify-center text-text-3">
           <Sprig size={22} />
         </div>

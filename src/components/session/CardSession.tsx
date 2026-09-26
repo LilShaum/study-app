@@ -433,17 +433,26 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
               Review the next {Math.min(moreDue, REVIEW_SITTING)}
             </button>
           )}
+          {mode === 'today' && (
+            <button type="button" onClick={restart} className="press press-ink tap-safe">
+              Keep going
+            </button>
+          )}
           {missedNow > 0 && (
             <button
               type="button"
               onClick={retryMissed}
-              className={`press tap-safe ${moreDue > 0 ? '' : 'press-ink'}`}
+              className={`press tap-safe ${moreDue > 0 || mode === 'today' ? '' : 'press-ink'}`}
             >
               Try the {missedNow} you missed again
             </button>
           )}
+          {/* Today is planned in whole steps, so it usually ends a little
+              short of the time set aside; carrying on is a fresh plan from
+              where things now stand. The simulator found this is what makes
+              Today match its plan (sim/FINDINGS.md). */}
           {/* In Review with more due, "Review the next" already is this. */}
-          {moreDue === 0 && (
+          {moreDue === 0 && mode !== 'today' && (
             <button
               type="button"
               onClick={restart}
