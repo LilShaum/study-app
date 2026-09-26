@@ -84,3 +84,29 @@ export function examRule(course: Course, progress: Record<string, ItemResult>, n
     covering: (itemId) => (at != null && inScope(sections.get(itemId)) ? at : null),
   };
 }
+
+/**
+ * Whether new sections join an upcoming exam, when material is added.
+ *
+ * They used to join silently — a course with every section ticked stored no
+ * list, so anything added later counted as covered. The simulator put that
+ * at about 7 points lost when the late lectures were not on the exam
+ * (sim/FINDINGS.md). So the list is always explicit, and new sections are
+ * counted in by default until the last week before the exam, out by default
+ * after it (what is taught in the last week is usually not on it); either
+ * way the student is told and can flip it with one tap.
+ *
+ * Returns null when there is no upcoming exam or nothing new.
+ */
+export function examAfterAdding(
+  course: Course,
+  newSectionIds: string[],
+  now: number,
+): { examSections: string[]; included: boolean } | null {
+  const at = examTime(course.metadata.exam_date);
+  if (at == null || at <= now || !newSectionIds.length) return null;
+  const fresh = new Set(newSectionIds);
+  const before = course.metadata.exam_sections ?? course.sections.map((s) => s.id).filter((id) => !fresh.has(id));
+  const included = at - now > PROTECT_FROM_DAYS * DAY_MS;
+  return { examSections: included ? [...before, ...newSectionIds] : before, included };
+}
