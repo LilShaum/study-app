@@ -1,5 +1,5 @@
-import type { Course } from '@/lib/schema/course';
-import type { ItemResult } from '@/lib/store/progress';
+import type { Course } from '@/schema/course';
+import type { ItemResult } from '@/store/progress';
 import { examRule } from '@/lib/exam';
 import { examTime, isDueFor, memoryBefore, nextStability, reviewUrgency, stabilityOf } from '@/lib/memory';
 import { sectionsToLearn } from '@/lib/nextToLearn';
