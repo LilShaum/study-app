@@ -2,6 +2,7 @@ import type { Course } from '@/schema/course';
 import { recallId, type SessionItem } from '@/lib/buildSessionItems';
 import { examRule } from '@/lib/exam';
 import { splitSitting } from '@/lib/today';
+import { forecast } from './experiments/forecast';
 import { examTime, isDueFor, retrievability } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
 import { scoredEntries } from '@/lib/scored';
@@ -81,6 +82,16 @@ export interface Metrics {
   allStartedDay: number | null;
   /** Expected score per scope section, in course order. */
   bySection: number[];
+  /**
+   * What the app's forecast (lib/forecast.ts) said on day 0 and day 10, as
+   * [low, high, truth]: truth is the exam score on the sections the app had
+   * when it said it (it cannot know later lectures).
+   */
+  forecast0: [number, number, number] | null;
+  forecast10: [number, number, number] | null;
+  /** Share of the known sections the forecast said would never be studied on day 0 / 10, and the truth: [said, truth]. */
+  unseen0: [number, number] | null;
+  unseen10: [number, number] | null;
 }
 
 export interface RunResult {
@@ -235,6 +246,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
   let peakDue = 0;
   let allStartedDay: number | null = null;
   let resume: { section: string; item: string } | null = null;
+  const forecasts: Record<number, { f: [number, number]; ids: string[]; unseen: number } | null> = {};
 
   for (let day = 0; day < sc.days; day++) {
     now = START + day * DAY;
@@ -319,6 +331,14 @@ export function simulate(sc: Scenario, seed: number): RunResult {
         return n;
       },
     };
+    // What the app would have told the student this morning. The forecast
+    // uses the whole course's released sections; it is scored against the
+    // scenario's true exam scope only when the student told the app.
+    if ((day === 0 || day === 10) && sc.examDate) {
+      const f = forecast(course, progAtStart, now, budgetMs / MIN || 1);
+      const known = course.sections.map((s) => sections.indexOf(s)).filter((i) => !sc.tellsScope || scope.includes(i));
+      forecasts[day] = f ? { f: [f.low, f.high], ids: known.flatMap(idsOf), unseen: f.unseen } : null;
+    }
     if (budgetMs > 0) policy(d);
     totalMs += used;
 
@@ -352,6 +372,15 @@ export function simulate(sc: Scenario, seed: number): RunResult {
     app += score(id, retrievability(prog[id], examAt) ?? 0);
   }
   const n = scopeIds.length || 1;
+  const truthOn = (ids: string[]) => ids.reduce((sum, id) => sum + score(id, recallAt(id, examAt) ?? 0), 0) / (ids.length || 1);
+  const unseenOn = (d: number): [number, number] | null => {
+    const f = forecasts[d];
+    return f ? [f.unseen, f.ids.filter((id) => !truth.has(id)).length / (f.ids.length || 1)] : null;
+  };
+  const scored = (d: number): [number, number, number] | null => {
+    const f = forecasts[d];
+    return f ? [f.f[0], f.f[1], truthOn(f.ids)] : null;
+  };
   const bySection = scope.map((i) => {
     const ids = idsOf(i);
     return ids.reduce((sum, id) => sum + score(id, recallAt(id, examAt) ?? 0), 0) / (ids.length || 1);
@@ -373,6 +402,10 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       peakDue,
       allStartedDay,
       bySection,
+      forecast0: scored(0),
+      forecast10: scored(10),
+      unseen0: unseenOn(0),
+      unseen10: unseenOn(10),
     },
   };
 }

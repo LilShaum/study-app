@@ -10,6 +10,36 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-09-26 — A readiness forecast: not yet
+
+**What was tried** (`sim/experiments/forecast.ts`). A day-by-day projection
+of exam morning with the app's memory model and Today's rules, as a range.
+Checked in the simulator against the truth on the sections the app knew
+about when it forecast (columns *Forecast* and *Unstudied said/true*).
+
+1. **Fixed "forget twice as fast" range**: 25–97% on day 0. Useless.
+2. **Fitted to the student's own answers** (one multiplier on the app's
+   stabilities, from how often reviews came back right): 93–97% on day 10
+   against a truth of 77–86% under `fsrs`, and 91–93% against 24% under
+   `harsh`. The fit itself worked (pace 1.8 for `fsrs`, about 1.0 for
+   `harsh` on the reviews it saw), but the app's model and a real student
+   differ in how much each review *grows* memory, and one multiplier cannot
+   carry that over a month. Expected-value updates made it no better.
+3. **Coverage only** ("which sections you'll reach"): right for sections
+   already added, but it assumes study every day (busy-20: said 1%
+   unstudied, truth 48%) and cannot see lectures not yet added — most of
+   what the question is about.
+
+**Decision.** No forecast in Phase 1. A readiness number that fails its own
+check is the one thing that would mislead a student where they trust the
+app most. Revisit in Phase 2 with the study log: real card times and real
+answer histories to fit a growth law, not only a scale.
+
+**Kept.** The metrics stay in the report so any future forecast is scored
+the same way.
+
+---
+
 ## 2026-09-26 — The real Today button, checked against the plan
 
 **What.** `today` session mode (`buildSessionItems`): due cards for Review's
