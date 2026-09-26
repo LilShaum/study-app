@@ -9,6 +9,7 @@ import { scoredEntries } from '@/lib/scored';
 import { sortedSections } from '@/lib/sortedSections';
 import { useProgressStore } from '@/store/progress';
 import { usePlanStore } from '@/store/plan';
+import { useStudyLogStore } from '@/store/studyLog';
 import { useSessionStore } from '@/store/session';
 import { makeCourse, SHAPES } from './course';
 import { rng, type Rand } from './random';
@@ -246,6 +247,9 @@ export function simulate(sc: Scenario, seed: number): RunResult {
   const reviewing = (item: SessionItem, mode: string) => mode === 'review' || item._block === 'review';
 
   useProgressStore.setState({ byCourse: {} });
+  // The simulated student's card times are the simulator's own assumptions;
+  // logging them would feed them back as "measured" pace.
+  useStudyLogStore.setState({ byCourse: {}, logCard: () => {}, logAnswer: () => {} });
   const store = useSessionStore.getState;
   let now = START;
   Date.now = () => now;

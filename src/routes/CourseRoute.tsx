@@ -23,6 +23,7 @@ import { buildSessionItems } from '@/lib/buildSessionItems';
 import { DEFAULT_MINUTES } from '@/lib/today';
 import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 import { usePlanStore } from '@/store/plan';
+import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { ExamDialog } from '@/components/ExamDialog';
 
 interface ModeCard {
@@ -211,6 +212,8 @@ export function CourseRoute() {
   }, []);
   const [examOpen, setExamOpen] = useState(false);
   const minutes = usePlanStore((s) => (id ? s.minutesFor(id) : DEFAULT_MINUTES));
+  const logs = useStudyLogStore((s) => s.byCourse);
+  const pace = useMemo(() => measuredPace(logs), [logs]);
   /**
    * What pressing Today would give, said before it is pressed: how many
    * reviews, then where new material picks up. Built by the same call the
@@ -223,11 +226,12 @@ export function CourseRoute() {
       now,
       exam: examRule(course, progress, now),
       minutes,
+      pace,
     });
     const review = items.filter((i) => i._block === 'review').length;
     const firstNew = items.find((i) => i._block !== 'review');
     return { review, firstNew, empty: items.length === 0 };
-  }, [course, progress, now, minutes]);
+  }, [course, progress, now, minutes, pace]);
 
   // A bookmark outlives the item it points at — the item can be edited away,
   // the section deleted — so it is only offered when it still resolves.

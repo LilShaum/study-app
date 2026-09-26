@@ -4,6 +4,7 @@ import { scoredEntries } from '@/lib/scored';
 import { useCoursesStore } from '@/store/courses';
 import { agedProgress, studiedProgress, useProgressStore } from '@/store/progress';
 import { useFallenStore } from '@/store/fallen';
+import { useStudyLogStore } from '@/store/studyLog';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
 import { useOnboardingStore } from '@/store/onboarding';
@@ -406,6 +407,19 @@ function TestingTools() {
               </button>
               <button type="button" className="press tap-safe" onClick={() => age(id, c.metadata.title, 7)}>
                 A week later
+              </button>
+              <button
+                type="button"
+                className="press tap-safe"
+                onClick={() => {
+                  const log = useStudyLogStore.getState().byCourse[id];
+                  void navigator.clipboard?.writeText(JSON.stringify(log ?? {}));
+                  toast(log ? `Copied ${log.answers.length} answers and ${log.times.length} card times.` : 'Nothing logged yet.', {
+                    type: 'success',
+                  });
+                }}
+              >
+                Copy study log
               </button>
               <button
                 type="button"

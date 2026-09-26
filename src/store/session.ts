@@ -4,6 +4,23 @@ import { buildSessionItems, recallId, type SessionItem, type StudyMode } from '@
 import { useProgressStore, type ItemResult } from './progress';
 import { examRule } from '@/lib/exam';
 import { usePlanStore } from './plan';
+import { measuredPace, useStudyLogStore } from './studyLog';
+import { retrievability } from '@/lib/memory';
+
+/**
+ * When the current card was put in front of the student. Kept outside the
+ * store: it changes on every card and nothing renders from it.
+ */
+let shownAt = Date.now();
+
+/** Log how long the card now showing was up, as the student leaves it. */
+function logCurrentCard(state: { courseId: string | null; items: SessionItem[]; index: number }) {
+  const item = state.items[state.index];
+  if (!item || !state.courseId) return;
+  const now = Date.now();
+  useStudyLogStore.getState().logCard(state.courseId, item.type, (now - shownAt) / 1000, now);
+  shownAt = now;
+}
 
 interface SessionState {
   courseId: string | null;
@@ -111,7 +128,9 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       progress,
       exam: examRule(course, progress, Date.now()),
       minutes: usePlanStore.getState().minutesFor(courseId),
+      pace: measuredPace(useStudyLogStore.getState().byCourse),
     });
+    shownAt = Date.now();
     // Resume by id, not position: Mixed and Review Missed reshuffle each start
     // and Weakest First reorders as accuracy changes, so a saved index would
     // land on a different item. An id the list no longer holds (the item was
@@ -150,6 +169,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
 
   next: () => {
     if (!get().hasNext()) return false;
+    logCurrentCard(get());
     set((state) => {
       const index = state.index + 1;
       return { index, activeSectionId: state.items[index]?._sectionId ?? null };
@@ -159,6 +179,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
 
   prev: () => {
     if (!get().hasPrev()) return false;
+    logCurrentCard(get());
     set((state) => {
       const index = state.index - 1;
       return { index, activeSectionId: state.items[index]?._sectionId ?? null };
@@ -182,6 +203,22 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
         ? { got: s.score.got + (got ? 1 : 0), missed: s.score.missed + (got ? 0 : 1) }
         : s.score,
     }));
+    const before = useProgressStore.getState().getProgress(courseId)[item.id];
+    const now = Date.now();
+    useStudyLogStore.getState().logAnswer(courseId, {
+      at: now,
+      type: item.type,
+      got,
+      sinceHours: before?.lastSeen != null ? (now - before.lastSeen) / 3_600_000 : null,
+      // The record keeps the memory before its latest answer; stability
+      // that did not rise means that answer was a miss.
+      afterMiss: before
+        ? before.before
+          ? (before.stability ?? 0) <= before.before.stability
+          : before.missed > 0 && before.got === 0
+        : false,
+      predicted: retrievability(before, now),
+    });
     useProgressStore.getState().recordResult(courseId, item.id, got);
     if (!got) get().requeue(index);
   },
@@ -245,7 +282,10 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     if (idx >= 0) set({ index: idx, activeSectionId: sectionId });
   },
 
-  finish: () => set({ finished: true }),
+  finish: () => {
+    logCurrentCard(get());
+    set({ finished: true });
+  },
 
   stillMissed: () => {
     const { items, results } = get();
