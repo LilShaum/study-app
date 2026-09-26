@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course } from '@/schema/course';
 import { buildSessionItems } from './buildSessionItems';
+import type { ExamRule } from './exam';
 
 const course = {
   schema_version: '1.0',
@@ -202,7 +203,8 @@ describe('buildSessionItems — review', () => {
   it('brings an item forward for an exam it would be faint at', () => {
     const progress = { a_mcq: seen(0.2, 4) };
     expect(buildSessionItems(mixedCourse, 'review', { now, progress })).toHaveLength(0);
-    expect(buildSessionItems(mixedCourse, 'review', { now, progress, examAt: now + 1.3 * DAY })).toHaveLength(1);
+    const exam = { forItem: () => now + 1.3 * DAY } as unknown as ExamRule;
+    expect(buildSessionItems(mixedCourse, 'review', { now, progress, exam })).toHaveLength(1);
   });
 });
 
@@ -289,5 +291,55 @@ describe('buildSessionItems — a review sitting has a size', () => {
     expect(served).toHaveLength(REVIEW_SITTING);
     // Faintest first: the longest-unseen items lead.
     expect(served[0].id).toBe(`q${REVIEW_SITTING + 19}`);
+  });
+});
+
+describe('buildSessionItems — today', () => {
+  const DAY_MS = 86_400_000;
+  const now = new Date(2026, 9, 1, 19).getTime();
+  const def = (s: string, n: number) => ({ id: `${s}d${n}`, type: 'definition', term: `Term ${s} ${n}`, definition: `meaning ${n}` });
+  const q = (s: string, n: number) => ({
+    id: `${s}q${n}`,
+    type: 'mcq',
+    question: `About Term ${s} ${n}?`,
+    options: ['a', 'b', 'c', 'd'],
+    correct_index: 0,
+    explanation: 'x',
+  });
+  const course = {
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: ['a', 'b'].map((s) => ({
+      id: s,
+      title: s.toUpperCase(),
+      items: [...[0, 1, 2, 3, 4, 5, 6, 7].map((n) => def(s, n)), ...[0, 1, 2, 3, 4, 5, 6, 7].map((n) => q(s, n))],
+    })),
+  } as unknown as Course;
+  const old = { got: 1, missed: 0, lastSeen: now - 30 * DAY_MS, stability: 2 };
+
+  it('opens with what is due, then teaches, in whole steps', () => {
+    const progress = { aq0: old, aq1: old };
+    const items = buildSessionItems(course, 'today', { now, progress, minutes: 30 });
+    expect(items.slice(0, 2).map((i) => i._block)).toEqual(['review', 'review']);
+    const learn = items.slice(2);
+    expect(learn.length).toBeGreaterThan(0);
+    // Ends where a step ends.
+    const last = learn.at(-1)!;
+    expect(learn.filter((i) => i._block === last._block).length).toBe(
+      buildSessionItems(course, 'learn', { progress, sectionId: last._sectionId }).filter((i) => i._block === last._block).length,
+    );
+  });
+
+  it('carries on after the steps already done', () => {
+    const done = Object.fromEntries(['a0', 'a1', 'a2', 'a3'].flatMap((k) => [[`${k.replace(/(\d)/, 'd$1')}~recall`, { ...old, lastSeen: now }], [k.replace(/(\d)/, 'q$1'), { ...old, lastSeen: now }]]));
+    const items = buildSessionItems(course, 'today', { now, progress: done, minutes: 10 });
+    expect(items[0]._step).toBe(1);
+    expect(items[0]._sectionId).toBe('a');
+  });
+
+  it('fits roughly the minutes asked for', () => {
+    const short = buildSessionItems(course, 'today', { now, progress: {}, minutes: 5 });
+    const long = buildSessionItems(course, 'today', { now, progress: {}, minutes: 60 });
+    expect(long.length).toBeGreaterThan(short.length);
   });
 });

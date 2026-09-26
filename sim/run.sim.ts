@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { simulate } from './engine';
 import { markdown, summarise, type Summary } from './report';
-import { SCENARIOS } from './scenarios';
+import { SCENARIOS, variants } from './scenarios';
 
 /**
  * npm run sim                       the whole suite, 3 seeds, compared with sim/baseline.json
@@ -18,7 +18,8 @@ it('simulate', () => {
   Storage.prototype.setItem = () => {};
   const only = process.env.SIM_ONLY?.split(',').map((s) => s.trim());
   const seeds = Number(process.env.SIM_SEEDS ?? 3);
-  const chosen = SCENARIOS.filter((s) => !only || only.includes(s.name));
+  const pool = process.env.SIM_VARY ? variants(process.env.SIM_VARY) : SCENARIOS;
+  const chosen = pool.filter((s) => !only || only.includes(s.name));
   if (!chosen.length) throw new Error(`No scenario matches SIM_ONLY=${process.env.SIM_ONLY}`);
 
   const realNow = Date.now;

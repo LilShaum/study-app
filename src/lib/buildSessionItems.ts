@@ -6,6 +6,9 @@ import { recallId } from './scored';
 import { isDueFor, reviewUrgency } from './memory';
 import { acceptedForms, normalise } from './typedAnswer';
 import { stepSection } from './learnSteps';
+import { sectionsToLearn } from './nextToLearn';
+import { cardSeconds, DEFAULT_MINUTES, splitSitting } from './today';
+import type { ExamRule } from './exam';
 
 export const STUDY_MODES = [
   'browse',
@@ -17,6 +20,7 @@ export const STUDY_MODES = [
   'weakest',
   'missed',
   'review',
+  'today',
 ] as const;
 export type StudyMode = (typeof STUDY_MODES)[number];
 
@@ -116,8 +120,10 @@ export interface SessionOptions {
   progress?: Record<string, ItemResult>;
   /** The time to judge "due" at. 'review' only; defaults to the clock. */
   now?: number;
-  /** When the exam is, as ms, if the course has a date. 'review' only. */
-  examAt?: number | null;
+  /** How the exam steers Review (lib/exam.ts). 'review' and 'today'. */
+  exam?: ExamRule;
+  /** Minutes the student has today. 'today' only. */
+  minutes?: number;
 }
 
 const isGradable = (i: AnyItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall';
@@ -195,7 +201,7 @@ function weakestFirst(items: SessionItem[], progress?: Record<string, ItemResult
 export function buildSessionItems(
   course: Course,
   mode: StudyMode,
-  { missedIds, sectionId, progress, now = Date.now(), examAt = null }: SessionOptions = {},
+  { missedIds, sectionId, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES }: SessionOptions = {},
 ): SessionItem[] {
   const sections = sectionId
     ? sortedSections(course).filter((s) => s.id === sectionId)
@@ -312,6 +318,19 @@ export function buildSessionItems(
     return out;
   };
 
+  /**
+   * What has been studied and is fading, faintest first — or, with an exam
+   * date, what would be faintest on the day (see lib/memory.ts). Never-seen
+   * items are not here: new material comes through Learn.
+   */
+  const dueFirst = (list: SessionItem[]) =>
+    asTyped(asRecall(list))
+      .filter(isGradable)
+      .filter((i) => isDueFor(progress?.[i.id], now, exam?.forItem(i.id) ?? null))
+      .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, exam?.forItem(item.id) ?? null) }))
+      .sort((a, b) => a.u - b.u || a.i - b.i)
+      .map((e) => e.item);
+
   switch (mode) {
     case 'quiz':
       items = asTyped(items.filter((i) => i.type === 'mcq'));
@@ -336,18 +355,46 @@ export function buildSessionItems(
       items = weakestFirst(asTyped(asRecall(items)), progress);
       break;
     case 'review':
-      // What has been studied and is fading, faintest first — or, with an
-      // exam date, what would be faintest on the day (see lib/memory.ts).
-      // Never-seen items are not here: new material comes through Learn.
-      items = asTyped(asRecall(items))
-        .filter(isGradable)
-        .filter((i) => isDueFor(progress?.[i.id], now, examAt))
-        .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, examAt) }))
-        .sort((a, b) => a.u - b.u || a.i - b.i)
-        .map((e) => e.item)
-        .slice(0, REVIEW_SITTING);
-      items = pairConfusions(items);
+      items = pairConfusions(dueFirst(items).slice(0, REVIEW_SITTING));
       break;
+    case 'today': {
+      // One sitting sized to the student's minutes: what is due, for Review's
+      // share of the time, then Learn's steps for the rest (lib/today.ts).
+      const due = dueFirst(items);
+      const plan = splitSitting(course, progress ?? {}, now, minutes, undefined, undefined, due.reduce((n, i) => n + cardSeconds(i), 0));
+      const review: SessionItem[] = [];
+      let spent = 0;
+      for (const item of due) {
+        if (review.length && spent + cardSeconds(item) > plan.reviewMinutes * 60) break;
+        if (plan.reviewMinutes <= 0) break;
+        review.push({ ...item, _block: 'review' });
+        spent += cardSeconds(item);
+      }
+      const learn: SessionItem[] = [];
+      let learnSpent = 0;
+      for (const { section } of sectionsToLearn(course, progress ?? {}, now)) {
+        const steps = learnOrder(withRecall(items.filter((i) => i._sectionId === section.id)), progress);
+        for (let s = 0; s < (steps[0]?._steps ?? 0); s++) {
+          const step = steps.filter((i) => i._step === s);
+          // Carry on where Learn left off: a step whose every question has
+          // been answered is done, and Review brings it back when it fades.
+          const answered = (i: SessionItem) => {
+            const r = progress?.[i.id];
+            return !isGradable(i) || (!!r && r.got + r.missed > 0);
+          };
+          if (step.every(answered)) continue;
+          const cost = step.reduce((n, i) => n + cardSeconds(i), 0);
+          // Whole steps only, so the sitting ends where a step does; the
+          // first one always fits, or a short sitting would teach nothing.
+          if ((learn.length || review.length) && learnSpent + cost > plan.learnMinutes * 60) break;
+          learn.push(...step);
+          learnSpent += cost;
+        }
+        if (learnSpent >= plan.learnMinutes * 60) break;
+      }
+      items = [...pairConfusions(review), ...learn];
+      break;
+    }
     case 'missed':
       items = shuffle(asRecall(items).filter((i) => missedIds?.has(i.id)));
       break;

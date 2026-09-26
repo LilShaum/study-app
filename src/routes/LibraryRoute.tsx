@@ -11,9 +11,10 @@ import { Icon } from '@/components/Icon';
 import { Sprig } from '@/components/Sprig';
 import { CourseTree } from '@/components/CourseTree';
 import { scoredEntries } from '@/lib/scored';
-import { examTime, isDueFor } from '@/lib/memory';
+import { isDueFor } from '@/lib/memory';
 import { sectionStats } from '@/lib/sectionStats';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
+import { examRule } from '@/lib/exam';
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
@@ -42,7 +43,7 @@ function roman(n: number): string {
 
 /** A course's totals, aggregated from the same per-section figures the course page uses. */
 function courseTotals(course: Course, progress: Record<string, ItemResult>, now: number) {
-  const examAt = examTime(course.metadata.exam_date);
+  const exam = examRule(course, progress, now);
   let due = 0;
   let total = 0;
   let got = 0;
@@ -52,7 +53,7 @@ function courseTotals(course: Course, progress: Record<string, ItemResult>, now:
     total += stats.total;
     got += stats.got;
     attempts += stats.got + stats.missed;
-    for (const { id } of scoredEntries(section.items)) if (isDueFor(progress[id], now, examAt)) due++;
+    for (const { id } of scoredEntries(section.items)) if (isDueFor(progress[id], now, exam.forItem(id))) due++;
   }
   return { total, due, accuracy: attempts > 0 ? Math.round((got / attempts) * 100) : null };
 }

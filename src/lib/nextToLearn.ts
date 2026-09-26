@@ -2,6 +2,7 @@ import type { Course, Section } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { scoredEntries } from './scored';
 import { sortedSections } from './sortedSections';
+import { examTime } from './memory';
 
 /**
  * The section Learn should teach next: the first, in course order, holding
@@ -18,15 +19,28 @@ import { sortedSections } from './sortedSections';
 export function nextSectionToLearn(
   course: Course,
   progress: Record<string, ItemResult>,
+  now = Date.now(),
 ): { section: Section; index: number } | null {
+  return sectionsToLearn(course, progress, now)[0] ?? null;
+}
+
+/** Every section with something never answered, in the order Learn takes them. */
+export function sectionsToLearn(
+  course: Course,
+  progress: Record<string, ItemResult>,
+  now = Date.now(),
+): { section: Section; index: number }[] {
   const sections = sortedSections(course);
-  for (let index = 0; index < sections.length; index++) {
-    const section = sections[index];
-    const unanswered = scoredEntries(section.items).some(({ id }) => {
+  // Sections an upcoming exam covers come first: learning something that is
+  // not on it can wait until after.
+  const onExam = new Set(course.metadata.exam_sections ?? []);
+  const upcoming = onExam.size > 0 && (examTime(course.metadata.exam_date) ?? 0) > now;
+  const order = sections.map((section, index) => ({ section, index }));
+  if (upcoming) order.sort((a, b) => Number(onExam.has(b.section.id)) - Number(onExam.has(a.section.id)) || a.index - b.index);
+  return order.filter(({ section }) =>
+    scoredEntries(section.items).some(({ id }) => {
       const r = progress[id];
       return !r || r.got + r.missed === 0;
-    });
-    if (unanswered) return { section, index };
-  }
-  return null;
+    }),
+  );
 }

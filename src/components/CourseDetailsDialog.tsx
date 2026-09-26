@@ -38,7 +38,6 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
   const [title, setTitle] = useState(course.metadata.title ?? '');
   const [code, setCode] = useState(course.metadata.course_code ?? '');
   const [subject, setSubject] = useState(course.metadata.subject ?? '');
-  const [examDate, setExamDate] = useState(course.metadata.exam_date ?? '');
   const [description, setDescription] = useState(course.metadata.description ?? '');
   const [tags, setTags] = useState<string[]>(course.metadata.tags ?? []);
   const [tagDraft, setTagDraft] = useState('');
@@ -83,7 +82,7 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
     const metadata = { ...course.metadata, title: trimmedTitle };
     // Empty means "not set" rather than "set to an empty string", so optional
     // fields are dropped instead of being written as "".
-    const optional = { course_code: code, subject, description, exam_date: examDate };
+    const optional = { course_code: code, subject, description };
     for (const [key, value] of Object.entries(optional)) {
       const v = value.trim();
       if (v) (metadata as Record<string, unknown>)[key] = v;
@@ -145,18 +144,6 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
             </label>
           </div>
 
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-text">Exam date</span>
-            <span className="mb-2 block text-xs text-text-3">
-              Review then aims to have what you have studied strong on the day, not just today.
-            </span>
-            <input
-              type="date"
-              value={examDate}
-              onChange={(e) => setExamDate(e.target.value)}
-              className={`${FIELD} sm:w-1/2`}
-            />
-          </label>
 
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-text">Description</span>

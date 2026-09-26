@@ -7,6 +7,7 @@ import { sectionStats } from '@/lib/sectionStats';
 import { growTree, type Limb } from '@/lib/growTree';
 import { sectionMemory } from '@/lib/sectionMemory';
 import { useFallenStore } from '@/store/fallen';
+import { examRule } from '@/lib/exam';
 
 interface CourseTreeProps {
   courseId: string;
@@ -178,7 +179,7 @@ export function CourseTree({
   const { tree, sections } = useMemo(() => {
     const sections = sortedSections(course).map((section) => {
       const stats = sectionStats(section, progress);
-      const memory = sectionMemory(section, progress, now, course.metadata.exam_date);
+      const memory = sectionMemory(section, progress, now, examRule(course, progress, now));
       return {
         id: section.id,
         title: section.title,
@@ -213,7 +214,7 @@ export function CourseTree({
     const before = growTree(
       courseId,
       sortedSections(course).map((section) => {
-        const m = sectionMemory(section, grewFrom, now, course.metadata.exam_date);
+        const m = sectionMemory(section, grewFrom, now, examRule(course, grewFrom, now));
         return { id: section.id, weight: section.items.length, learned: m.learned, mastery: m.held };
       }),
     );

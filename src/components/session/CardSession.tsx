@@ -10,7 +10,8 @@ import { CourseTree } from '@/components/CourseTree';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { SectionJump } from './SectionJump';
-import { examTime, nextDueAt, whenLabel } from '@/lib/memory';
+import { nextDueAt, whenLabel } from '@/lib/memory';
+import { examRule } from '@/lib/exam';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
 
@@ -33,6 +34,7 @@ const MODE_LABELS: Record<CardMode, string> = {
   mixed: 'Mixed',
   missed: 'Review Missed',
   review: 'Review',
+  today: 'Today',
 };
 
 interface KeyHint {
@@ -58,6 +60,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
   learn: ALL_CARD_KEYS,
   weakest: ALL_CARD_KEYS,
   review: ALL_CARD_KEYS,
+  today: ALL_CARD_KEYS,
   quiz: [
     { keys: ['1', '–', '4'], label: 'select' },
     { keys: ['Enter'], label: 'check / next' },
@@ -106,6 +109,10 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
     text: 'Everything you have studied is still fresh. Review brings items back as they start to fade — new material comes through Learn.',
   },
   mixed: { title: 'No items', text: 'This course has no items yet.' },
+  today: {
+    title: 'Nothing for today',
+    text: 'Nothing is due and everything here has been studied. Add material after your next lecture, or practise with Quiz or Mixed.',
+  },
   missed: {
     title: 'Nothing to review',
     text:
@@ -128,6 +135,16 @@ const PHASES: { key: LearnPhase; label: string }[] = [
  */
 function StepLine({ item }: { item: SessionItem }) {
   const phase = phaseOf(item.type);
+  // Today's sitting opens with what is due; say so, the way a step is named.
+  if (item._block === 'review') {
+    return (
+      <div className="mb-4 flex items-baseline gap-3 border-b border-border pb-2 text-small">
+        <span className="mark text-text-3">Review</span>
+        <span className="text-text-2">what you have studied and are starting to lose</span>
+        {item._again ? <span className="ml-auto whitespace-nowrap text-text-2">Again, from earlier</span> : null}
+      </div>
+    );
+  }
   if (item._step === undefined || !phase) return null;
   const at = PHASES.findIndex((p) => p.key === phase);
   return (
@@ -154,6 +171,8 @@ function StepLine({ item }: { item: SessionItem }) {
 
 /** What the step just finished covered, for the pause after it. */
 interface Pause {
+  /** Today only: the review part of the sitting has ended and Learn is next. */
+  reviewDone: boolean;
   step: number;
   steps: number;
   section: string;
@@ -245,9 +264,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
     const { items: done, results } = useSessionStore.getState();
     const prog = useProgressStore.getState().getProgress(courseId);
     const now = Date.now();
-    const examAt = examTime(course.metadata.exam_date);
+    const exam = examRule(course, prog, now);
     const ids = new Set([...results.keys()].map((i) => done[i]?.id).filter(Boolean) as string[]);
-    const dues = [...ids].map((itemId) => nextDueAt(prog[itemId], now, examAt)).filter((t): t is number => t != null);
+    const dues = [...ids].map((itemId) => nextDueAt(prog[itemId], now, exam.covering(itemId))).filter((t): t is number => t != null);
     if (!dues.length) return null;
     const first = Math.min(...dues);
     const endOfThatDay = new Date(first);
@@ -263,11 +282,12 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
     const { items: all, index: at, results } = useSessionStore.getState();
     const here = all[at];
     const after = all[at + 1];
-    if (mode !== 'learn' || !here?._block || !after || after._block === here._block) return null;
+    if ((mode !== 'learn' && mode !== 'today') || !here?._block || !after || after._block === here._block) return null;
     const inStep = all.map((item, n) => ({ item, n })).filter(({ item }) => item._block === here._block);
     const first = inStep.filter(({ item, n }) => !item._again && results.has(n));
     const owner = inStep.find(({ item }) => !item._again)?.item ?? here;
     return {
+      reviewDone: here._block === 'review',
       step: owner._step ?? 0,
       steps: owner._steps ?? 1,
       section: owner._sectionTitle,
@@ -294,7 +314,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
       const still = buildSessionItems(course, 'review', {
         sectionId,
         progress: useProgressStore.getState().getProgress(courseId),
-        examAt: examTime(course.metadata.exam_date),
+        exam: examRule(course, useProgressStore.getState().getProgress(courseId), Date.now()),
       }).length;
       setMoreDue(still);
       // While more is due now, "these come back tomorrow" is not the news.
@@ -413,17 +433,26 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
               Review the next {Math.min(moreDue, REVIEW_SITTING)}
             </button>
           )}
+          {mode === 'today' && (
+            <button type="button" onClick={restart} className="press press-ink tap-safe">
+              Keep going
+            </button>
+          )}
           {missedNow > 0 && (
             <button
               type="button"
               onClick={retryMissed}
-              className={`press tap-safe ${moreDue > 0 ? '' : 'press-ink'}`}
+              className={`press tap-safe ${moreDue > 0 || mode === 'today' ? '' : 'press-ink'}`}
             >
               Try the {missedNow} you missed again
             </button>
           )}
+          {/* Today is planned in whole steps, so it usually ends a little
+              short of the time set aside; carrying on is a fresh plan from
+              where things now stand. The simulator found this is what makes
+              Today match its plan (sim/FINDINGS.md). */}
           {/* In Review with more due, "Review the next" already is this. */}
-          {moreDue === 0 && (
+          {moreDue === 0 && mode !== 'today' && (
             <button
               type="button"
               onClick={restart}
@@ -500,7 +529,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         </div>
       )}
 
-      {mode === 'learn' && current && !pause && <StepLine item={current} />}
+      {(mode === 'learn' || mode === 'today') && current && !pause && <StepLine item={current} />}
       {mode === 'review' && (
         <p className="mb-4 text-xs text-text-3">
           What you have studied and are starting to lose, faintest first.
@@ -521,19 +550,28 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
          */
         <div className="border-b border-border pb-8 pt-6 text-center">
           <p className="mark text-text-3">
-            {pause.sectionDone ? `End of ${pause.section}` : `Step ${pause.step + 1} of ${pause.steps} done`}
+            {pause.reviewDone
+              ? 'Review done'
+              : pause.sectionDone
+                ? `End of ${pause.section}`
+                : `Step ${pause.step + 1} of ${pause.steps} done`}
           </p>
           {pause.asked > 0 && (
             <p className="mt-2 font-display text-heading font-semibold text-text">
               {pause.got} of {pause.asked} right first time
             </p>
           )}
-          {pause.terms.length > 0 && (
+          {pause.reviewDone && (
+            <p className="mx-auto mt-2 max-w-prose text-small text-text-2">
+              Next, new material: {items[index]?._sectionTitle}
+            </p>
+          )}
+          {!pause.reviewDone && pause.terms.length > 0 && (
             <p className="mx-auto mt-2 max-w-prose text-small text-text-2">{pause.terms.join(' · ')}</p>
           )}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button type="button" onClick={() => setPause(null)} className="press press-ink tap-safe" autoFocus>
-              {pause.sectionDone ? 'Next section' : 'Next step'}
+              {pause.reviewDone ? 'Start learning' : pause.sectionDone ? 'Next section' : 'Next step'}
             </button>
             <Link to={`/study/${courseId}`} className="press tap-safe">
               Stop here

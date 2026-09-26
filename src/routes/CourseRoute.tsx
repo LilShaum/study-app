@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { exportCourse } from '@/lib/exportCourse';
 import { sortedSections } from '@/lib/sortedSections';
-import { availableModes, sectionStats } from '@/lib/sectionStats';
+import { sectionStats } from '@/lib/sectionStats';
 import { scoredEntries } from '@/lib/scored';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { useResumeStore } from '@/store/resume';
@@ -18,7 +18,12 @@ import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
 import type { StudyMode } from '@/lib/buildSessionItems';
 import { examTime, isDueFor } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
-
+import { examRule } from '@/lib/exam';
+import { buildSessionItems } from '@/lib/buildSessionItems';
+import { DEFAULT_MINUTES } from '@/lib/today';
+import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
+import { usePlanStore } from '@/store/plan';
+import { ExamDialog } from '@/components/ExamDialog';
 
 interface ModeCard {
   mode: StudyMode;
@@ -81,6 +86,19 @@ const MODE_LABELS: Record<string, string> = Object.fromEntries(
   ]),
 );
 
+/** 1,2,3,5,7,8 → "1–3, 5, 7–8". */
+function ranges(numbers: number[]): string {
+  const sorted = [...new Set(numbers)].sort((a, b) => a - b);
+  const out: string[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    let j = i;
+    while (j + 1 < sorted.length && sorted[j + 1] === sorted[j] + 1) j++;
+    out.push(j > i ? `${sorted[i]}–${sorted[j]}` : `${sorted[i]}`);
+    i = j;
+  }
+  return out.join(', ');
+}
+
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 /** "Thu 12 Nov · in 48 days" — the date and the distance, which is the part that matters. */
@@ -121,11 +139,7 @@ function ToolLink({ children, ...rest }: React.ComponentProps<typeof Link>) {
 
 function ToolButton({ children, ...rest }: React.ComponentProps<'button'>) {
   return (
-    <button
-      {...rest}
-      type="button"
-      className="tap-safe inline-flex items-center gap-1.5 text-text-2 hover:text-text"
-    >
+    <button {...rest} type="button" className="tap-safe inline-flex items-center gap-1.5 text-text-2 hover:text-text">
       {children}
     </button>
   );
@@ -153,7 +167,7 @@ export function CourseRoute() {
     const items = course?.sections.flatMap((s) => s.items) ?? [];
     const byType = (type: string) => items.filter((i) => i.type === type).length;
     const gradableIds = scoredEntries(items).map((e) => e.id);
-    const examAt = examTime(course?.metadata.exam_date);
+    const exam = course ? examRule(course, progress, now) : null;
     let got = 0;
     let attempts = 0;
     let studied = 0;
@@ -178,10 +192,42 @@ export function CourseRoute() {
         return r && r.missed > r.got;
       }).length,
       studied,
-      due: gradableIds.filter((itemId) => isDueFor(progress[itemId], now, examAt)).length,
+      due: gradableIds.filter((itemId) => isDueFor(progress[itemId], now, exam?.forItem(itemId) ?? null)).length,
       accuracy: attempts > 0 ? Math.round((got / attempts) * 100) : null,
     };
   }, [course, progress, now]);
+
+  const wide = useMediaQuery(WIDE);
+  // The pinned Start on a phone shows only once Today itself has scrolled
+  // away: with both on screen it said the same thing twice and covered the
+  // line under it.
+  const [todayInView, setTodayInView] = useState(true);
+  const todayObserver = useRef<IntersectionObserver | null>(null);
+  const todayRef = useCallback((el: HTMLLIElement | null) => {
+    todayObserver.current?.disconnect();
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    todayObserver.current = new IntersectionObserver(([entry]) => setTodayInView(entry.isIntersecting));
+    todayObserver.current.observe(el);
+  }, []);
+  const [examOpen, setExamOpen] = useState(false);
+  const minutes = usePlanStore((s) => (id ? s.minutesFor(id) : DEFAULT_MINUTES));
+  /**
+   * What pressing Today would give, said before it is pressed: how many
+   * reviews, then where new material picks up. Built by the same call the
+   * session makes, so the promise and the sitting cannot drift apart.
+   */
+  const today = useMemo(() => {
+    if (!course) return null;
+    const items = buildSessionItems(course, 'today', {
+      progress,
+      now,
+      exam: examRule(course, progress, now),
+      minutes,
+    });
+    const review = items.filter((i) => i._block === 'review').length;
+    const firstNew = items.find((i) => i._block !== 'review');
+    return { review, firstNew, empty: items.length === 0 };
+  }, [course, progress, now, minutes]);
 
   // A bookmark outlives the item it points at — the item can be edited away,
   // the section deleted — so it is only offered when it still resolves.
@@ -190,8 +236,7 @@ export function CourseRoute() {
     course &&
     course.sections.some(
       (s) =>
-        (bookmark.sectionId === null || s.id === bookmark.sectionId) &&
-        s.items.some((i) => i.id === bookmark.itemId),
+        (bookmark.sectionId === null || s.id === bookmark.sectionId) && s.items.some((i) => i.id === bookmark.itemId),
     )
       ? bookmark
       : null;
@@ -209,63 +254,80 @@ export function CourseRoute() {
   }
 
   const tags = course.metadata.tags ?? [];
+  const sectionsInOrder = sortedSections(course);
+  const todaySummary =
+    !today || today.empty
+      ? 'Nothing is due, and everything added so far has been studied. Add material after your next lecture.'
+      : [
+          today.review > 0 ? plural(today.review, 'card') + ' to review' : null,
+          today.firstNew
+            ? `${today.review > 0 ? 'then new' : 'New'}: section ${sectionsInOrder.findIndex((s) => s.id === today.firstNew!._sectionId) + 1}, ${today.firstNew._sectionTitle}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(', ');
+  const covered = course.metadata.exam_sections;
+  const coverage = covered?.length
+    ? `section${covered.length === 1 ? '' : 's'} ${ranges(
+        covered.map((sid) => sectionsInOrder.findIndex((s) => s.id === sid) + 1).filter((n) => n > 0),
+      )}`
+    : 'every section';
+  const examLine = course.metadata.exam_date
+    ? `Exam ${examLabel(course.metadata.exam_date)}, on ${coverage} · Change`
+    : 'Exam coming up? Add its date and what it covers';
 
-  return (
-    <div>
-      <Link to="/" className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
-        ← Library
-      </Link>
-
-      {/* Column on a phone: beside the tree the title had a third of the width
-          and broke over four lines. */}
-      <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:gap-8">
-        <CourseTree
-          courseId={id}
-          course={course}
-          progress={progress}
-          className="h-28 sm:h-52 lg:h-64"
-          interactive
-          mode="preview"
-          onExpand={() => setTreeOpen(true)}
-        />
-        <div className="min-w-0 flex-1">
-          <h1 className="font-display text-display font-semibold text-text">{course.metadata.title}</h1>
-          {course.metadata.description && (
-            <p className="mt-2 line-clamp-3 max-w-prose text-small text-text-2 sm:line-clamp-none">
-              {course.metadata.description}
-            </p>
-          )}
-          {/* The code, the subject and the figures were a line of run-together
+  const tree = (
+    <CourseTree
+      courseId={id}
+      course={course}
+      progress={progress}
+      className={wide ? 'h-[26rem] w-full' : 'h-28 sm:h-52'}
+      interactive
+      mode="preview"
+      onExpand={() => setTreeOpen(true)}
+    />
+  );
+  const titleBlock = (
+    <div className="min-w-0 flex-1">
+      <h1 className="font-display text-display font-semibold text-text">{course.metadata.title}</h1>
+      {course.metadata.description && (
+        <p className="mt-2 line-clamp-3 max-w-prose text-small text-text-2 sm:line-clamp-none">
+          {course.metadata.description}
+        </p>
+      )}
+      {/* The code, the subject and the figures were a line of run-together
               small caps and a sentence of statistics. As a specimen label they
               are fields, which is what they are. */}
-          <SpecimenLabel
-            className="mt-4"
-            rows={[
-              { label: 'Code', value: course.metadata.course_code },
-              { label: 'Subject', value: course.metadata.subject },
-              { label: 'Exam', value: examLabel(course.metadata.exam_date) },
-              {
-                label: 'Contents',
-                value: `${counts.total} item${counts.total === 1 ? '' : 's'} in ${
-                  course.sections.length
-                } section${course.sections.length === 1 ? '' : 's'}`,
-              },
-              {
-                label: 'Studied',
-                value:
-                  counts.accuracy === null
-                    ? 'Not yet'
-                    : // "over 474 scorable items" read as though all 474 had
-                      // been studied, when the accuracy covers only those
-                      // that have.
-                      `${counts.accuracy}% correct · ${counts.studied} of ${counts.gradable} studied`,
-              },
-              { label: 'Tags', value: tags.length ? tags.join(', ') : null },
-            ]}
-          />
-        </div>
-      </div>
+      <SpecimenLabel
+        className="mt-4"
+        rows={[
+          { label: 'Code', value: course.metadata.course_code },
+          { label: 'Subject', value: course.metadata.subject },
+          { label: 'Exam', value: examLabel(course.metadata.exam_date) },
+          {
+            label: 'Contents',
+            value: `${counts.total} item${counts.total === 1 ? '' : 's'} in ${
+              course.sections.length
+            } section${course.sections.length === 1 ? '' : 's'}`,
+          },
+          {
+            label: 'Studied',
+            value:
+              counts.accuracy === null
+                ? 'Not yet'
+                : // "over 474 scorable items" read as though all 474 had
+                  // been studied, when the accuracy covers only those
+                  // that have.
+                  `${counts.accuracy}% correct · ${counts.studied} of ${counts.gradable} studied`,
+          },
+          { label: 'Tags', value: tags.length ? tags.join(', ') : null },
+        ]}
+      />
+    </div>
+  );
 
+  const main = (
+    <>
       <CourseHealthPanel course={course} onFix={() => setAdding('fix')} />
 
       {resumable && (
@@ -310,88 +372,61 @@ export function CourseRoute() {
           page you see most. As ruled entries with the counts in a right-hand
           column it reads as part of the same book as the library's contents
           list, and the counts line up so you can actually compare them,
-          which in a grid they never did. */}
+
+      {/* The ways to work, set as an index rather than a tile grid: ruled
+          entries with the counts in a right-hand column, the same book as
+          the library's contents list.
+
+          Today leads. It is the one entry that answers "what should I do
+          now" — review what is fading, then carry on with new material,
+          sized to the time the student has — and the simulator found a
+          student who simply presses it every day does better than one who
+          works the course page by hand (sim/FINDINGS.md). The modes under
+          it are for choosing yourself. */}
       <section className="mt-8">
         <h2 className="mark mb-2 text-text-3">Ways to work</h2>
         <ul className="border-t border-border">
-          {/* The recommended path, set as the leading entry: full ink, a
-              gloss underneath, and a heavier rule closing it off from the
-              practice modes below. */}
-          {/* Once something studied is fading, bringing it back is worth
-              more than anything new — so Review leads while it has work,
-              and steps aside when it has none. */}
-          {counts.due > 0 && (
-            <li className="border-b border-border">
-              <Link to={`/session/${id}/review`} className="group block py-4">
+          <li ref={todayRef} className="border-b-2 border-text-3 py-4">
+            <div className="flex items-start gap-4">
+              <div className="min-w-0 flex-1">
                 <span className="flex items-baseline gap-3">
-                  <span className="font-display text-heading font-semibold text-text group-hover:text-accent">
-                    Review
-                  </span>
-                  <span className="leaders hidden sm:block" aria-hidden="true" />
-                  <span className="mark shrink-0 tabular-nums text-text-2">{counts.due} due</span>
+                  <span className="font-display text-heading font-semibold text-text">Today</span>
+                  <span className="mark tabular-nums text-text-2">{minutes} min</span>
                 </span>
-                <span className="mt-0.5 block text-small text-text-2">
-                  {course.metadata.exam_date
-                    ? 'What you have studied that would be faint by the exam, faintest first'
-                    : 'What you have studied and are starting to lose, faintest first'}
-                </span>
-              </Link>
-            </li>
-          )}
-          {/* Learn picks up at the next section not yet worked through, and
-              says which. It used to start at item 1 of the whole course every
-              time — one walk of several hundred items from the top, however
-              much was already done. The whole course is still one tap away. */}
-          <li className="border-b-2 border-text-3">
-            <Link
-              to={
-                nextUp
-                  ? `/session/${id}/learn?section=${encodeURIComponent(nextUp.section.id)}`
-                  : `/session/${id}/${LEARN.mode}`
-              }
-              className="group block py-4"
-            >
-              <span className="flex items-baseline gap-3">
-                <span className="font-display text-heading font-semibold text-text group-hover:text-accent">
-                  {LEARN.label}
-                </span>
-                <span className="leaders hidden sm:block" aria-hidden="true" />
-                <span className="mark shrink-0 tabular-nums text-text-2">
-                  {plural(nextUp ? availableModes(nextUp.section).learn : LEARN.count(counts), 'item')}
-                </span>
-              </span>
-              <span className="mt-0.5 block text-small text-text-2">
-                {nextUp ? (
-                  <>
-                    Next: section {nextUp.index + 1}, {nextUp.section.title}
-                  </>
-                ) : (
-                  LEARN.desc
-                )}
-              </span>
-            </Link>
-            {nextUp && (
-              <Link
-                to={`/session/${id}/${LEARN.mode}`}
-                className="tap-safe -mt-2 mb-2 inline-flex items-center text-small text-text-3 hover:text-text"
-              >
-                or the whole course, {plural(LEARN.count(counts), 'item')}
-              </Link>
-            )}
+                <span className="mt-0.5 block text-small text-text-2">{todaySummary}</span>
+                <button
+                  type="button"
+                  onClick={() => setExamOpen(true)}
+                  className="tap-safe mt-1 text-left text-small text-text-3 underline-offset-4 hover:text-text hover:underline"
+                >
+                  {examLine}
+                </button>
+              </div>
+              {!today?.empty && (
+                <Link to={`/session/${id}/today`} className="press press-ink shrink-0">
+                  Start
+                </Link>
+              )}
+            </div>
           </li>
-          {PRACTICE.filter((m) => m.mode !== 'missed' || counts.missed > 0).map((m) => (
-            <li key={m.mode} className="border-b border-border">
-              <Link
-                to={`/session/${id}/${m.mode}`}
-                className="group tap-safe flex items-baseline gap-3 py-3"
-              >
-                <span className="font-display text-body text-text group-hover:text-accent">
-                  {m.label}
-                </span>
+          {[
+            ...(counts.due > 0 ? [{ mode: 'review', label: 'Review', unit: `${counts.due} due` }] : []),
+            {
+              mode: nextUp ? `learn?section=${encodeURIComponent(nextUp.section.id)}` : LEARN.mode,
+              label: 'Learn',
+              unit: nextUp ? `section ${nextUp.index + 1}` : plural(LEARN.count(counts), 'item'),
+            },
+            ...PRACTICE.filter((m) => m.mode !== 'missed' || counts.missed > 0).map((m) => ({
+              mode: m.mode,
+              label: m.label,
+              unit: plural(m.count(counts), 'item'),
+            })),
+          ].map((m) => (
+            <li key={m.label} className="border-b border-border">
+              <Link to={`/session/${id}/${m.mode}`} className="group tap-safe flex items-baseline gap-3 py-3">
+                <span className="font-display text-body text-text group-hover:text-accent">{m.label}</span>
                 <span className="leaders hidden sm:block" aria-hidden="true" />
-                <span className="mark shrink-0 tabular-nums text-text-3">
-                  {plural(m.count(counts), 'item')}
-                </span>
+                <span className="mark shrink-0 tabular-nums text-text-3">{m.unit}</span>
               </Link>
             </li>
           ))}
@@ -408,43 +443,32 @@ export function CourseRoute() {
         <div className="flex items-baseline gap-x-3">
           <span className="mark w-16 shrink-0 text-text-3">View</span>
           <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
-          <ToolLink to={`/study/${id}/progress`}>
-            Progress
-          </ToolLink>
-          <ToolLink to={`/session/${id}/browse`}>
-            Browse and edit
-          </ToolLink>
-          {counts.graphic > 0 && (
-            <ToolLink to={`/study/${id}/diagrams`}>
-              Diagrams ({counts.graphic})
-            </ToolLink>
-          )}
+            <ToolLink to={`/study/${id}/progress`}>Progress</ToolLink>
+            <ToolLink to={`/session/${id}/browse`}>Browse and edit</ToolLink>
+            {counts.graphic > 0 && <ToolLink to={`/study/${id}/diagrams`}>Diagrams ({counts.graphic})</ToolLink>}
           </div>
         </div>
         <div className="flex items-baseline gap-x-3">
           <span className="mark w-16 shrink-0 text-text-3">Course</span>
           <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
-          <ToolButton onClick={() => setAdding('material')}>
-            Add material
-          </ToolButton>
-          <ToolButton onClick={() => setAdding('practice')}>
-            More practice
-          </ToolButton>
-          <ToolButton onClick={() => setEditingDetails(true)}>
-            Edit details
-          </ToolButton>
-          <ToolButton
-            onClick={() => {
-              exportCourse(id, course);
-              toast('Course exported.', { type: 'success' });
-            }}
-          >
-            Export
-          </ToolButton>
+            <ToolButton onClick={() => setAdding('material')}>Add material</ToolButton>
+            <ToolButton onClick={() => setAdding('practice')}>More practice</ToolButton>
+            <ToolButton onClick={() => setEditingDetails(true)}>Edit details</ToolButton>
+            <ToolButton
+              onClick={() => {
+                exportCourse(id, course);
+                toast('Course exported.', { type: 'success' });
+              }}
+            >
+              Export
+            </ToolButton>
           </div>
         </div>
       </div>
-
+    </>
+  );
+  const contents = (
+    <>
       {/* No ornament above this heading. A single leaf used to sit here as a
           printer's fleuron; at 18px it read as a stray "0", and the heavy
           rule under the heading already marks where the contents begin. */}
@@ -465,9 +489,7 @@ export function CourseRoute() {
                 to={`/study/${id}/section/${encodeURIComponent(section.id)}`}
                 className="group tap-safe flex items-baseline gap-3 py-3"
               >
-                <span className="mark w-6 shrink-0 text-right tabular-nums text-text-3">
-                  {index + 1}
-                </span>
+                <span className="mark w-6 shrink-0 text-right tabular-nums text-text-3">{index + 1}</span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-baseline gap-2">
                     <span className="font-display text-body font-medium text-text group-hover:text-accent">
@@ -484,11 +506,7 @@ export function CourseRoute() {
                     <span className="mark block">
                       <span
                         className={
-                          stats.accuracy >= 80
-                            ? 'text-success'
-                            : stats.accuracy >= 50
-                              ? 'text-warning'
-                              : 'text-error'
+                          stats.accuracy >= 80 ? 'text-success' : stats.accuracy >= 50 ? 'text-warning' : 'text-error'
                         }
                       >
                         {stats.accuracy}%
@@ -502,22 +520,68 @@ export function CourseRoute() {
           );
         })}
       </ul>
+    </>
+  );
 
-      {treeOpen && (
-        <TreeDialog courseId={id} course={course} progress={progress} onClose={() => setTreeOpen(false)} />
+  return (
+    // Room under the page on a phone for the pinned Start bar.
+    <div className={wide ? '' : 'pb-20 sm:pb-0'}>
+      <Link to="/" className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
+        ← Library
+      </Link>
+
+      {/* Two layouts, not one stretched. On a desktop the course page is
+          where you look around, so it spreads into two columns: the tree
+          large enough to point at without opening it, with the contents
+          under it, and everything you do on the right — all of it on one
+          screen. Text you read stays at reading width either way. */}
+      {wide ? (
+        <div className="mt-6 grid grid-cols-[22rem_minmax(0,1fr)] gap-12">
+          <aside>
+            {tree}
+            <div className="mt-6">{contents}</div>
+          </aside>
+          <div>
+            {titleBlock}
+            {main}
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Column on a phone: beside the tree the title had a third of the
+              width and broke over four lines. */}
+          <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:gap-8">
+            {tree}
+            {titleBlock}
+          </div>
+          {main}
+          {contents}
+        </>
       )}
 
-      {editingDetails && (
-        <CourseDetailsDialog courseId={id} course={course} onClose={() => setEditingDetails(false)} />
+      {/* On a phone, Today's Start stays where a thumb is, however far the
+          page has scrolled. */}
+      {!wide && !today?.empty && !todayInView && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-strong bg-bg/95 px-5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:hidden">
+          <div className="flex items-center gap-4">
+            <span className="min-w-0 flex-1 truncate text-small text-text-2">
+              <span className="font-display font-semibold text-text">Today</span> · {minutes} min
+            </span>
+            <Link to={`/session/${id}/today`} className="press press-ink shrink-0">
+              Start
+            </Link>
+          </div>
+        </div>
       )}
+
+      {examOpen && <ExamDialog courseId={id} course={course} onClose={() => setExamOpen(false)} />}
+
+      {treeOpen && <TreeDialog courseId={id} course={course} progress={progress} onClose={() => setTreeOpen(false)} />}
+
+      {editingDetails && <CourseDetailsDialog courseId={id} course={course} onClose={() => setEditingDetails(false)} />}
 
       {adding && (
-        <AddToCourseDialog
-          courseId={id}
-          course={course}
-          initialMode={adding}
-          onClose={() => setAdding(null)}
-        />
+        <AddToCourseDialog courseId={id} course={course} initialMode={adding} onClose={() => setAdding(null)} />
       )}
     </div>
   );

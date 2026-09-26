@@ -139,6 +139,14 @@
       padding-inline: 2rem;
     }
   }
+  /* A course page on a desktop spreads into two columns (see CourseRoute):
+     the one place the app is looked around rather than read, so the one
+     place the measure widens. Reading pages keep the single measure. */
+  @media (min-width: 1024px) {
+    .page-block.is-wide {
+      max-width: 76rem;
+    }
+  }
 
   /* ---- the press ----
      A control here is a piece of type, not a painted rectangle.

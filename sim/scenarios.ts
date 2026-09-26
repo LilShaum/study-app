@@ -11,11 +11,18 @@ const base = {
   days: 31,
   release: { atStart: 3, everyDays: 2.5 },
   examDate: true,
-  policy: 'follow-app',
+  policy: 'today-button',
 } as const;
 
 export const SCENARIOS: Scenario[] = [
   { ...base, name: 'steady-30', why: 'The typical case: half an hour every day.', minutes: () => 30 },
+  {
+    ...base,
+    name: 'steady-30-follow-app',
+    why: 'Before the Today plan: Review until nothing is due, then Learn (the old course page).',
+    minutes: () => 30,
+    policy: 'follow-app',
+  },
   { ...base, name: 'steady-45', why: 'What 15 more minutes a day buys.', minutes: () => 45 },
   { ...base, name: 'steady-60', why: 'A committed student.', minutes: () => 60 },
   {
@@ -36,6 +43,14 @@ export const SCENARIOS: Scenario[] = [
     why: 'A midterm on the first six sections only.',
     minutes: () => 30,
     scope: [0, 1, 2, 3, 4, 5],
+  },
+  {
+    ...base,
+    name: 'steady-30-half-scope-told',
+    why: 'As steady-30-half-scope, and the student tells the app which sections.',
+    minutes: () => 30,
+    scope: [0, 1, 2, 3, 4, 5],
+    tellsScope: true,
   },
   {
     ...base,
@@ -120,4 +135,47 @@ export const SCENARIOS: Scenario[] = [
     memory: 'harsh',
     examDate: false,
   },
+  // Added 2026-09-26 with the scoped exam rule (lib/exam.ts): the student
+  // also tells the app which sections the exam covers.
+  {
+    ...base,
+    name: 'steady-30-cutoff-scope',
+    why: 'As steady-30-cutoff, and the app knows which sections are on the exam.',
+    minutes: () => 30,
+    release: { atStart: 3, everyDays: 3.2 },
+    scopeCutoffDays: 7,
+    tellsScope: true,
+  },
+  {
+    ...base,
+    name: 'steady-45-cutoff-scope',
+    why: 'As steady-45-cutoff, with the exam sections known.',
+    minutes: () => 45,
+    release: { atStart: 3, everyDays: 3.2 },
+    scopeCutoffDays: 7,
+    tellsScope: true,
+  },
+  {
+    ...base,
+    name: 'steady-45-cutoff-scope-harsh',
+    why: 'Sensitivity: steady-45-cutoff-scope under harsh forgetting.',
+    minutes: () => 45,
+    release: { atStart: 3, everyDays: 3.2 },
+    scopeCutoffDays: 7,
+    tellsScope: true,
+    memory: 'harsh',
+  },
 ];
+
+/**
+ * SIM_VARY=policy:today,today-50 npm run sim — every scenario in the suite
+ * re-run with each listed value of one field, named "<scenario>@<value>".
+ * For trying a change across all situations without adding it to the suite.
+ */
+export function variants(spec: string): Scenario[] {
+  const [field, list] = spec.split(':');
+  const values = list.split(',');
+  return SCENARIOS.flatMap((sc) =>
+    values.map((v) => ({ ...sc, name: `${sc.name}@${v}`, [field]: field === 'tellsScope' || field === 'examDate' ? v === 'true' : v })),
+  );
+}

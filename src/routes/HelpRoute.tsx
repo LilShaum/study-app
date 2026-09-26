@@ -22,6 +22,11 @@ interface HelpSection {
 // answered questions nobody asked.
 const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   {
+    name: 'Today',
+    what: 'The one to press most days. It reviews what you are starting to forget, then carries on with new material, and ends when your daily time is up. Set the time, and your exam date and what it covers, from the line under Today on the course page. In the last few days before an exam it makes more room for anything on it you have not studied yet.',
+    scored: true,
+  },
+  {
     name: 'Learn',
     what: 'Teaches a section a few terms at a time. Each step: read the terms, type them from memory, then answer questions that use them. Anything you get wrong comes back a few cards later. After each step you can stop, and Learn picks up at the next one.',
     scored: true,
