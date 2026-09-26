@@ -76,6 +76,14 @@ export interface Metrics {
   earlyReviews: number;
   /** Share of review answers given after it had fallen below 0.5 (too late: relearning). */
   lateReviews: number;
+  /**
+   * The late ones split by what the item was, as shares of all reviews: its
+   * first review after being learned, its first after a miss, or a mature
+   * item (reviewed right at least once before). They sum to lateReviews.
+   */
+  lateFirst: number;
+  lateAfterMiss: number;
+  lateMature: number;
   /** The most items due at the start of any one day. */
   peakDue: number;
   /** Day every scope section had been opened, or null if one never was. */
@@ -104,6 +112,10 @@ export interface RunResult {
 interface Truth {
   s: number;
   last: number;
+  /** The last answer was a miss: the next review is the first since it was shown. */
+  lapsed: boolean;
+  /** Right answers since it was first learned or last missed. */
+  successes: number;
 }
 
 /** The context a policy gets each day: its budget and the app's two doors. */
@@ -229,8 +241,9 @@ export function simulate(sc: Scenario, seed: number): RunResult {
   const primed = new Map<string, number>();
   const recallAt = (id: string, t: number) => {
     const T = truth.get(id);
-    return T ? Math.exp(-(t - T.last) / (T.s * DAY)) : null;
+    return T ? memory.recall((t - T.last) / DAY, T.s) : null;
   };
+  const reviewing = (item: SessionItem, mode: string) => mode === 'review' || item._block === 'review';
 
   useProgressStore.setState({ byCourse: {} });
   const store = useSessionStore.getState;
@@ -243,6 +256,9 @@ export function simulate(sc: Scenario, seed: number): RunResult {
   let reviews = 0;
   let early = 0;
   let late = 0;
+  let lateFirst = 0;
+  let lateAfterMiss = 0;
+  let lateMature = 0;
   let peakDue = 0;
   let allStartedDay: number | null = null;
   let resume: { section: string; item: string } | null = null;
@@ -272,16 +288,27 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       const got = r() < p;
       const e = easeOf(item.id);
       const T = truth.get(item.id);
-      if (mode === 'review' && R != null) {
+      // A review is a review whichever door it came through: Today's sitting
+      // opens with its due cards. Judged by session mode alone, the suite's
+      // default policy reported no reviews at all (2026-09-26 audit).
+      if (reviewing(item, mode) && R != null && T) {
         reviews++;
         if (R >= 0.95) early++;
-        if (R < 0.5) late++;
+        if (R < 0.5) {
+          late++;
+          if (T.lapsed) lateAfterMiss++;
+          else if (T.successes === 0) lateFirst++;
+          else lateMature++;
+        }
       }
       if (T == null) learnedNew++;
-      else if (mode === 'review') reviewed++;
+      else if (reviewing(item, mode)) reviewed++;
       truth.set(item.id, {
         s: got ? (T ? memory.grow(T.s, R ?? 0, e) : memory.first(e)) : memory.lapse(T?.s ?? null, e),
         last: now,
+        lapsed: !got,
+        // A first right answer starts the count; a right review adds to it.
+        successes: got ? (T && !T.lapsed ? T.successes + 1 : 0) : 0,
       });
       store().record(got);
     };
@@ -295,7 +322,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
         const ms = SECONDS[item.type] * 1000;
         now += ms;
         used += ms;
-        if (mode === 'review') reviewMs += ms;
+        if (reviewing(item, mode)) reviewMs += ms;
         if (item.type === 'definition') primed.set(recallId(item.id), now);
         if (item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall') answer(item, mode);
         if (!store().next()) return 'done' as const;
@@ -399,6 +426,9 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       reviewShare: totalMs ? reviewMs / totalMs : 0,
       earlyReviews: reviews ? early / reviews : 0,
       lateReviews: reviews ? late / reviews : 0,
+      lateFirst: reviews ? lateFirst / reviews : 0,
+      lateAfterMiss: reviews ? lateAfterMiss / reviews : 0,
+      lateMature: reviews ? lateMature / reviews : 0,
       peakDue,
       allStartedDay,
       bySection,

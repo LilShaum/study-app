@@ -343,3 +343,59 @@ describe('buildSessionItems — today', () => {
     expect(long.length).toBeGreaterThan(short.length);
   });
 });
+
+describe('buildSessionItems — today, when the next step does not fit', () => {
+  const DAY_MS = 86_400_000;
+  const now = new Date(2026, 9, 1, 19).getTime();
+  const course = {
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: [
+      {
+        id: 'a',
+        title: 'A',
+        items: [
+          ...[0, 1, 2, 3].map((n) => ({ id: `ad${n}`, type: 'definition', term: `Term A ${n}`, definition: `meaning ${n}` })),
+          ...[0, 1, 2, 3].map((n) => ({ id: `aq${n}`, type: 'mcq', question: `About Term A ${n}?`, options: ['a', 'b', 'c', 'd'], correct_index: 0, explanation: 'x' })),
+        ],
+      },
+      { id: 'b', title: 'B', items: [{ id: 'bf0', type: 'flashcard', front: 'f', back: 'b' }] },
+    ],
+  } as unknown as Course;
+
+  it('stops rather than jumping ahead to a later section', () => {
+    // One card due from A, and a sitting too short for A's next step.
+    const progress = { aq0: { got: 1, missed: 0, lastSeen: now - 30 * DAY_MS, stability: 2 } };
+    const items = buildSessionItems(course, 'today', { now, progress, minutes: 3 });
+    expect(items[0]).toMatchObject({ id: 'aq0', _block: 'review' });
+    expect(items.filter((i) => i._sectionId === 'b')).toEqual([]);
+  });
+});
+
+describe('buildSessionItems — today, a mixed-up partner joins the review', () => {
+  const DAY_MS = 86_400_000;
+  const now = new Date(2026, 9, 1, 19).getTime();
+  const course = {
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: [
+      {
+        id: 'a',
+        title: 'A',
+        items: [
+          { id: 'exo', type: 'definition', term: 'Exocytosis', definition: 'out' },
+          { id: 'endo', type: 'definition', term: 'Endocytosis', definition: 'in' },
+        ],
+      },
+    ],
+  } as unknown as Course;
+
+  it('is marked as part of the review, like the card it follows', () => {
+    const progress = { 'exo~recall': { got: 0, missed: 1, lastSeen: now - 3 * DAY_MS, stability: 0.5, confusedWith: ['endo'] } };
+    const items = buildSessionItems(course, 'today', { now, progress, minutes: 30 });
+    expect(items.slice(0, 2).map((i) => [i.id, i._block])).toEqual([
+      ['exo~recall', 'review'],
+      ['endo~recall', 'review'],
+    ]);
+  });
+});

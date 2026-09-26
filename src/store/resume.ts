@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { safeJSONStorage } from '@/lib/safeStorage';
+import type { Course } from '@/schema/course';
 import type { StudyMode } from '@/lib/buildSessionItems';
+import { recallId } from '@/lib/scored';
 
 export interface Bookmark {
   mode: StudyMode;
@@ -65,3 +67,22 @@ export const useResumeStore = create<ResumeState>()(
     },
   ),
 );
+
+/**
+ * Whether a bookmark still points at something in the course, so Continue is
+ * offered only when it can land somewhere.
+ *
+ * A bookmark outlives the item it points at — the item can be edited away,
+ * the section deleted. And a typed-recall card is scored, and bookmarked,
+ * under an id the course file does not hold (lib/scored.ts): a bookmark saved
+ * on one used to be judged unresolvable, so Continue never appeared for
+ * Terms, and disappeared from Learn, Review and Today whenever the last card
+ * seen was a term to type.
+ */
+export function bookmarkResolves(course: Course, bookmark: Bookmark): boolean {
+  return course.sections.some(
+    (s) =>
+      (bookmark.sectionId === null || s.id === bookmark.sectionId) &&
+      s.items.some((i) => i.id === bookmark.itemId || (i.type === 'definition' && recallId(i.id) === bookmark.itemId)),
+  );
+}

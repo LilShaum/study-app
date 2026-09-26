@@ -149,17 +149,36 @@ const SITTING_MARGIN_DAYS = 1;
  * (The obvious version — "due if its next review would fall after the exam"
  * — never fires: an item not yet due is by definition still above the
  * threshold, so it is above it on the exam day too.)
+ *
+ * That exam review happens once. The window is a stretch of time, and an
+ * item answered inside it is still inside it a minute later — with the
+ * sitting's slack it rarely projects above the target even then — so
+ * without this an item came straight back as due after the very review the
+ * rule asked for, and in the last day or two before an exam Review never
+ * emptied. Once answered in the window, only fading brings it back.
  */
 export function isDueFor(r: ItemResult | undefined, now: number, examAt: number | null): boolean {
   const s = stabilityOf(r);
   if (s == null) return false;
   if (retrievability(r, now)! < DUE_BELOW) return true;
-  if (examAt == null || examAt <= now) return false;
-  if (retrievability(r, examAt)! >= EXAM_TARGET) return false;
+  const latest = examReviewFrom(r, s, now, examAt);
+  return latest != null && now >= latest;
+}
+
+/**
+ * When the exam review window opens for a studied item — the latest moment
+ * a review still leaves it at EXAM_TARGET on the day, less the sitting's
+ * slack — or null when there is no exam to time it by, the item will be
+ * strong enough on the day anyway, or it has already been answered inside
+ * the window.
+ */
+function examReviewFrom(r: ItemResult | undefined, s: number, now: number, examAt: number | null): number | null {
+  if (examAt == null || examAt <= now) return null;
+  if (retrievability(r, examAt)! >= EXAM_TARGET) return null;
   // After a review at time x, recall on the day is at least exp(−(exam − x)/s),
   // so the review must fall within s·ln(1/target) of the exam.
   const latest = examAt - (-Math.log(EXAM_TARGET) * s + SITTING_MARGIN_DAYS) * DAY_MS;
-  return now >= latest;
+  return r!.lastSeen! >= latest ? null : latest;
 }
 
 /**
@@ -179,9 +198,8 @@ export function nextDueAt(r: ItemResult | undefined, now: number, examAt: number
   const s = stabilityOf(r);
   if (s == null) return null;
   const normal = r!.lastSeen! + -Math.log(DUE_BELOW) * s * DAY_MS;
-  if (examAt == null || examAt <= now || retrievability(r, examAt)! >= EXAM_TARGET) return normal;
-  const latest = examAt - (-Math.log(EXAM_TARGET) * s + SITTING_MARGIN_DAYS) * DAY_MS;
-  return Math.min(normal, latest);
+  const latest = examReviewFrom(r, s, now, examAt);
+  return latest == null ? normal : Math.min(normal, latest);
 }
 
 /**

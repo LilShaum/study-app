@@ -16,6 +16,12 @@ import type { SessionItem } from '@/lib/buildSessionItems';
 export interface MemoryModel {
   name: string;
   source: string;
+  /**
+   * Recall `days` after the last answer, at stability `s` (days to ~37%).
+   * The app's curve is exponential; a truth model with the same shape only
+   * tests how stability is updated, not whether the shape is right.
+   */
+  recall: (days: number, s: number) => number;
   /** Days an item holds (stability) after its first right answer. */
   first: (ease: number) => number;
   /** Stability after a wrong answer, given what it was (null if never learned). */
@@ -23,6 +29,14 @@ export interface MemoryModel {
   /** Stability after a right answer at recall R. */
   grow: (s: number, recall: number, ease: number) => number;
 }
+
+const exponential = (days: number, s: number) => Math.exp(-Math.max(0, days) / s);
+/**
+ * A power-law curve through the same 37% point: R = 1 / (1 + (e − 1)·t/S).
+ * Drops faster than the exponential at first and slower later, as forgetting
+ * curves fitted to real data do (FSRS uses a power curve).
+ */
+const powerLaw = (days: number, s: number) => 1 / (1 + (Math.E - 1) * (Math.max(0, days) / s));
 
 export const MEMORY: Record<string, MemoryModel> = {
   // Shaped like FSRS, the model behind Anki's current scheduler, with its
@@ -32,6 +46,7 @@ export const MEMORY: Record<string, MemoryModel> = {
   fsrs: {
     name: 'fsrs',
     source: 'FSRS-shaped (Anki default parameters, rounded). Not fitted to this student.',
+    recall: exponential,
     first: (ease) => 2.4 * ease,
     lapse: (before) => (before == null ? 0.4 : 0.4 + 0.15 * before),
     grow: (s, recall, ease) => s * (1 + 11 * ease * Math.pow(s, -0.14) * (Math.exp(0.94 * (1 - recall)) - 1)),
@@ -42,10 +57,20 @@ export const MEMORY: Record<string, MemoryModel> = {
   harsh: {
     name: 'harsh',
     source: 'Pessimistic hand-set values; the lower bound, not a prediction.',
+    recall: exponential,
     first: (ease) => 1.2 * ease,
     lapse: (_before, ease) => 0.3 * ease,
     grow: (s, recall, ease) => s * (1.15 + 2.5 * ease * (1 - recall)),
   },
+};
+// Added 2026-09-26 (audit): `fsrs` shares the app's exponential curve, so
+// agreement between "App thinks" and the truth under it is partly built in.
+// This is the same student with a power-law curve, for that one question.
+MEMORY['fsrs-power'] = {
+  ...MEMORY.fsrs,
+  name: 'fsrs-power',
+  source: 'As fsrs, with a power-law forgetting curve through the same 37% point. A shape check, not a prediction.',
+  recall: powerLaw,
 };
 
 /** Seconds a card takes, by what the student is doing with it. */

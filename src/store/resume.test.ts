@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Course } from '@/schema/course';
-import { useResumeStore, type Bookmark } from './resume';
+import { bookmarkResolves, useResumeStore, type Bookmark } from './resume';
 import { useSessionStore } from './session';
 
 const course = {
@@ -98,5 +98,25 @@ describe('session init — resuming', () => {
   it('tracks the section of the item it resumed at, not the first item', () => {
     useSessionStore.getState().init('c1', course, 'learn', undefined, 'c');
     expect(useSessionStore.getState().activeSectionId).toBe('s1');
+  });
+});
+
+describe('bookmarkResolves', () => {
+  const course = {
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: [{ id: 's1', title: 'One', items: [{ id: 'd1', type: 'definition', term: 't', definition: 'd' }] }],
+  } as unknown as Course;
+  const at = (itemId: string, sectionId: string | null = null): Bookmark => ({ mode: 'today', sectionId, itemId, index: 3, total: 9, updatedAt: 0 });
+
+  it('finds an item that is in the course', () => {
+    expect(bookmarkResolves(course, at('d1'))).toBe(true);
+    expect(bookmarkResolves(course, at('gone'))).toBe(false);
+    expect(bookmarkResolves(course, at('d1', 'other'))).toBe(false);
+  });
+
+  it('finds a typed-recall card, which is scored under an id the file does not hold', () => {
+    expect(bookmarkResolves(course, at('d1~recall'))).toBe(true);
+    expect(bookmarkResolves(course, at('d1~recall', 's1'))).toBe(true);
   });
 });

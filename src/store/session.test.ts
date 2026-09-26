@@ -254,3 +254,77 @@ describe('session store: Learn brings a missed card back', () => {
     expect(s().items).toHaveLength(before);
   });
 });
+
+describe('session store: answers stay with their cards as copies come and go', () => {
+  const learnCourse = {
+    schema_version: '1.0',
+    metadata: { title: 'L' },
+    sections: [
+      {
+        id: 's1',
+        title: 'One',
+        items: [
+          ...['Alpha', 'Beta', 'Gamma', 'Delta'].map((t, n) => ({ id: `d${n}`, type: 'definition', term: t, definition: `meaning ${n}` })),
+          ...[1, 2, 3, 4, 5, 6].map((n) => mcq(`q${n}`, `Which is question ${n}?`)),
+        ],
+      },
+    ],
+  } as unknown as Course;
+  const s = () => useSessionStore.getState();
+  const goTo = (id: string) => {
+    while (s().current()?.id !== id) if (!s().next()) throw new Error(`${id} not reached`);
+  };
+  /** Every recorded answer, by the id of the card it now sits under. */
+  const recorded = () => [...s().results].map(([n, got]) => [s().items[n].id, s().items[n]._again ?? 0, got]);
+
+  beforeEach(() => {
+    useProgressStore.setState({ byCourse: {} });
+    s().init('shift', learnCourse, 'learn');
+  });
+
+  it('after a miss, two more answers, and an earlier answer overruled into a miss', () => {
+    goTo('q1');
+    s().record(false); // q1 comes back 4 on
+    s().next();
+    s().record(true); // q2
+    s().next();
+    s().record(true); // q3
+    s().prev(); // back to q2
+    s().setResult(false); // now a miss: its copy goes in 4 on from q2, after q1's
+    expect(recorded()).toEqual([
+      ['q1', 0, false],
+      ['q2', 0, false],
+      ['q3', 0, true],
+    ]);
+    expect(s().items.filter((i) => i._again).map((i) => i.id)).toEqual(['q1', 'q2']);
+    const copyOf = (id: string) => {
+      while (!(s().current()?.id === id && s().current()?._again)) if (!s().next()) throw new Error(`${id} copy not reached`);
+    };
+    copyOf('q1');
+    s().record(true);
+    copyOf('q2');
+    s().record(true);
+    expect(s().stillMissed()).toEqual([]);
+    expect(s().score).toEqual({ got: 1, missed: 2 });
+  });
+
+  it('taking a copy back after answers were recorded beyond it', () => {
+    goTo('q1');
+    s().record(false);
+    const copyAt = s().items.findIndex((i) => i.id === 'q1' && i._again);
+    // Skip past the copy without answering it, answer the card after it.
+    while (s().index < copyAt + 1) s().next();
+    s().record(true);
+    const after = s().current()!.id;
+    // Back to the ORIGINAL (not the copy, which has the same id) and overrule
+    // the miss: the copy goes, and the answer recorded beyond it must still
+    // belong to the same card.
+    while (!(s().current()?.id === 'q1' && !s().current()?._again)) s().prev();
+    s().setResult(true);
+    expect(s().items.filter((i) => i._again)).toEqual([]);
+    expect(recorded()).toEqual([
+      ['q1', 0, true],
+      [after, 0, true],
+    ]);
+  });
+});
