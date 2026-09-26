@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Course } from '@/schema/course';
+import type { Course, StudyItem } from '@/schema/course';
 import { nextSectionToLearn } from './nextToLearn';
 
 const course = {
@@ -29,5 +29,27 @@ describe('nextSectionToLearn', () => {
 
   it('reports where the section sits in the course', () => {
     expect(nextSectionToLearn(course, { a1: seen })).toMatchObject({ index: 1 });
+  });
+});
+
+describe('nextSectionToLearn — an exam with a scope', () => {
+  const item = (id: string) => ({ id, type: 'flashcard', front: 'f', back: 'b' }) as StudyItem;
+  const scoped = {
+    schema_version: '1.0',
+    metadata: { title: 'T', exam_date: '2026-10-27', exam_sections: ['c'] },
+    sections: [
+      { id: 'a', title: 'A', items: [item('a1')] },
+      { id: 'b', title: 'B', items: [item('b1')] },
+      { id: 'c', title: 'C', items: [item('c1')] },
+    ],
+  } as Course;
+  const before = new Date(2026, 9, 1).getTime();
+
+  it('teaches what the exam covers first', () => {
+    expect(nextSectionToLearn(scoped, {}, before)?.section.id).toBe('c');
+  });
+
+  it('goes back to course order once the exam has passed', () => {
+    expect(nextSectionToLearn(scoped, {}, new Date(2026, 10, 1).getTime())?.section.id).toBe('a');
   });
 });

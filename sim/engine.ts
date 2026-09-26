@@ -1,5 +1,7 @@
 import type { Course } from '@/schema/course';
 import { recallId, type SessionItem } from '@/lib/buildSessionItems';
+import { examRule } from '@/lib/exam';
+import { splitSitting } from '@/lib/today';
 import { examTime, isDueFor, retrievability } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
 import { scoredEntries } from '@/lib/scored';
@@ -38,6 +40,8 @@ export interface Scenario {
    * Ignored when `scope` is given.
    */
   scopeCutoffDays?: number;
+  /** Whether the student told the app which sections the exam covers. */
+  tellsScope?: boolean;
   policy: keyof typeof POLICIES | string;
 }
 
@@ -49,6 +53,9 @@ export interface DayRow {
   reviewed: number;
   learnedNew: number;
   studied: number;
+  /** In-scope items released but never studied, and whether the exam was steering Review. */
+  unseen: number;
+  protecting: boolean;
 }
 
 export interface Metrics {
@@ -100,12 +107,36 @@ export interface Day {
   learn: (capMs?: number) => boolean;
   /** Scored items released but never answered. */
   unseen: () => number;
+  /** How the app's Today plan would divide this day's minutes (lib/today.ts). */
+  split: (cap?: number, withinDays?: number | null) => { reviewMs: number; learnMs: number };
   daysLeft: number;
 }
 
 export type Policy = (d: Day) => void;
 
+/**
+ * The Today plan: the split lib/today.ts computes, then Review up to its
+ * share, Learn with the rest, and anything left over back to Review.
+ */
+const today =
+  (cap?: number, withinDays?: number | null): Policy =>
+  (d) => {
+    const { reviewMs } = d.split(cap, withinDays);
+    for (let k = 0; k < 20 && d.usedMs() < reviewMs; k++) if (d.review(reviewMs) !== 'done') break;
+    while (d.usedMs() < d.budgetMs && d.learn()) {
+      /* keep learning */
+    }
+    for (let k = 0; k < 20 && d.usedMs() < d.budgetMs; k++) if (d.review() !== 'done') break;
+  };
+
 export const POLICIES: Record<string, Policy> = {
+  /** The Today plan as the app ships it (lib/today.ts defaults). */
+  today: today(),
+  /**
+   * Experiment, 2026-09-26: cap Review at 60% whenever anything is unseen,
+   * all month. Much worse at 30 min/day; kept for reference.
+   */
+  'today-cap-always': today(0.6, null),
   /**
    * What the app suggests today: Review leads the course page while
    * anything is due, then Learn carries on with the next section.
@@ -140,14 +171,11 @@ export function simulate(sc: Scenario, seed: number): RunResult {
   const policy = POLICIES[sc.policy];
   if (!shape || !memory || !policy) throw new Error(`${sc.name}: unknown shape, memory or policy`);
 
-  const course: Course = makeCourse(shape, 1);
+  const full: Course = makeCourse(shape, 1);
   const examDay = new Date(START + sc.days * DAY);
   const examIso = `${examDay.getFullYear()}-${String(examDay.getMonth() + 1).padStart(2, '0')}-${String(examDay.getDate()).padStart(2, '0')}`;
-  if (sc.examDate) course.metadata.exam_date = examIso;
   const examAt = examTime(examIso)!;
-  const appExam = sc.examDate ? examAt : null;
-
-  const sections = sortedSections(course);
+  const sections = sortedSections(full);
   const idsOf = (i: number) => scoredEntries(sections[i].items).map((e) => e.id);
   const releasedOn = (i: number) =>
     i < sc.release.atStart ? 0 : Math.ceil((i - sc.release.atStart + 1) * sc.release.everyDays);
@@ -155,6 +183,17 @@ export function simulate(sc: Scenario, seed: number): RunResult {
     sc.scope ??
     sections.map((_, i) => i).filter((i) => sc.scopeCutoffDays == null || releasedOn(i) <= sc.days - sc.scopeCutoffDays);
   const scopeIds = scope.flatMap(idsOf);
+  // The app sees the course as the student has built it so far: a section
+  // is added when its lecture is, as with Add material.
+  const courseOn = (available: number): Course => ({
+    ...full,
+    metadata: {
+      ...full.metadata,
+      ...(sc.examDate ? { exam_date: examIso } : {}),
+      ...(sc.tellsScope ? { exam_sections: scope.map((i) => sections[i].id) } : {}),
+    },
+    sections: sections.slice(0, available),
+  });
   const typeOf = new Map(sections.flatMap((s) => scoredEntries(s.items).map((e) => [e.id, e.item.type] as const)));
 
   const r = rng(seed * 7919 + 17);
@@ -190,8 +229,10 @@ export function simulate(sc: Scenario, seed: number): RunResult {
     let used = 0;
     let reviewed = 0;
     let learnedNew = 0;
+    const course = courseOn(available);
     const progAtStart = useProgressStore.getState().getProgress(COURSE_ID);
-    const dueAtStart = Object.keys(progAtStart).filter((id) => isDueFor(progAtStart[id], now, appExam)).length;
+    const exam = examRule(course, progAtStart, now);
+    const dueAtStart = Object.keys(progAtStart).filter((id) => isDueFor(progAtStart[id], now, exam.forItem(id))).length;
     peakDue = Math.max(peakDue, dueAtStart);
 
     const answer = (item: SessionItem, mode: string) => {
@@ -249,6 +290,10 @@ export function simulate(sc: Scenario, seed: number): RunResult {
         resume = out === 'out' ? { section: next.section.id, item: store().current()!.id } : null;
         return out === 'done';
       },
+      split: (cap, withinDays) => {
+        const plan = splitSitting(course, useProgressStore.getState().getProgress(COURSE_ID), now, budgetMs / MIN, cap, withinDays);
+        return { reviewMs: plan.reviewMinutes * MIN, learnMs: plan.learnMinutes * MIN };
+      },
       unseen: () => {
         const prog = useProgressStore.getState().getProgress(COURSE_ID);
         let n = 0;
@@ -269,6 +314,8 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       reviewed,
       learnedNew,
       studied: Object.keys(prog).length,
+      unseen: exam.unseen,
+      protecting: exam.protecting,
     });
   }
 

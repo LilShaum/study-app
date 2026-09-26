@@ -10,6 +10,65 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-09-26 — The Today plan: review first, learn late
+
+**Question.** Phase 1 was going to split every sitting between Review and
+Learn, on the reasoning that time spent reviewing was starving new
+material (finding 1 below). Before building it, the split was tried here.
+
+**Changes to the simulator.** The course now grows as lectures are added
+(the app only ever sees released sections, as with Add material).
+`Scenario.tellsScope` passes the exam's sections to the app. `SIM_VARY`
+re-runs the suite with one field varied. The suite's default policy is
+now `today` (what the app will offer); `steady-30-follow-app` keeps the old
+course-page behaviour for comparison.
+
+**Changes to the app.** `lib/exam.ts`: the exam date applies only to the
+sections it covers and holds back while any of them is unstudied (except
+in the last 7 days). Measured alone: within noise everywhere (0 to +2).
+`lib/today.ts`: the split below. `nextSectionToLearn` teaches exam sections
+first while an exam with a scope is coming.
+
+**Capping Review all month is much worse** (30 min/day, 3 seeds):
+
+| Review cap | none | 40% | 50% | 60% | 70% |
+|---|---|---|---|---|---|
+| steady-30 | 50% | 28% | 27% | 30% | 38% |
+| steady-30-cutoff | 60% | 33% | 34% | 37% | 44% |
+
+Everything gets seen and almost none of it lasts: an item studied once is
+gone by the exam unless it is reviewed. **Depth beats breadth when time is
+short.** Finding 1 below was right that half the course goes unstudied, and
+wrong about the cure.
+
+**Capping Review only in the last days is better.** Learning something 1–4
+days before the exam needs no reviews to survive to it. Tested caps of
+30–50% from 4, 7 or 10 days out; best: 40% from 4 days (`REVIEW_CAP`,
+`CAP_WITHIN_DAYS`). Full suite, 5 seeds, against the old course page:
+
+| Scenario | Before | Today plan |
+|---|---|---|
+| steady-30 | 50% | 53% |
+| steady-45 | 69% | 76% |
+| steady-60 | 82% | 86% |
+| crammer | 53% | 67% |
+| steady-30-cutoff | 59% | 62% |
+| steady-45-cutoff-harsh | 21% | 24% |
+| busy-20 | 26% | 25% (noise) |
+| steady-30-half-scope, scope **not** told | 87% | 81% |
+| steady-30-half-scope, scope told | 87% | 88% |
+
+Holds under `harsh`. The one loss is an exam on half the course that the
+app was not told about: the last-days push goes into sections that are not
+on it. **So the exam setup must ask which sections the exam covers.**
+
+**Caveats.** The score is exam morning only. Material learned in the last
+four days is likely gone soon after, which matters for a cumulative final;
+not modelled. Held ≥0.8 drops in several scenarios while the expected
+score rises: more items known a little, fewer known well.
+
+---
+
 ## 2026-09-26 — Exams don't cover the last week's lectures
 
 **Why.** The user pointed out that what is taught right before a test is

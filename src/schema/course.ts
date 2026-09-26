@@ -119,6 +119,8 @@ export const CourseMetadataSchema = z.looseObject({
   course_code: z.string().optional(),
   /** YYYY-MM-DD. Set by the student in Course details; drives exam-aware review. */
   exam_date: z.string().optional(),
+  /** Section ids the exam covers; all of them when absent. Set with the exam date. */
+  exam_sections: z.array(z.string()).optional(),
   subject: z.string().optional(),
   description: z.string().optional(),
   tags: z.array(z.string()).optional(),

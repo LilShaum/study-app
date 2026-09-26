@@ -6,6 +6,7 @@ import { recallId } from './scored';
 import { isDueFor, reviewUrgency } from './memory';
 import { acceptedForms, normalise } from './typedAnswer';
 import { stepSection } from './learnSteps';
+import type { ExamRule } from './exam';
 
 export const STUDY_MODES = [
   'browse',
@@ -116,8 +117,8 @@ export interface SessionOptions {
   progress?: Record<string, ItemResult>;
   /** The time to judge "due" at. 'review' only; defaults to the clock. */
   now?: number;
-  /** When the exam is, as ms, if the course has a date. 'review' only. */
-  examAt?: number | null;
+  /** How the exam steers Review (lib/exam.ts). 'review' only. */
+  exam?: ExamRule;
 }
 
 const isGradable = (i: AnyItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall';
@@ -195,7 +196,7 @@ function weakestFirst(items: SessionItem[], progress?: Record<string, ItemResult
 export function buildSessionItems(
   course: Course,
   mode: StudyMode,
-  { missedIds, sectionId, progress, now = Date.now(), examAt = null }: SessionOptions = {},
+  { missedIds, sectionId, progress, now = Date.now(), exam }: SessionOptions = {},
 ): SessionItem[] {
   const sections = sectionId
     ? sortedSections(course).filter((s) => s.id === sectionId)
@@ -341,8 +342,8 @@ export function buildSessionItems(
       // Never-seen items are not here: new material comes through Learn.
       items = asTyped(asRecall(items))
         .filter(isGradable)
-        .filter((i) => isDueFor(progress?.[i.id], now, examAt))
-        .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, examAt) }))
+        .filter((i) => isDueFor(progress?.[i.id], now, exam?.forItem(i.id) ?? null))
+        .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, exam?.forItem(item.id) ?? null) }))
         .sort((a, b) => a.u - b.u || a.i - b.i)
         .map((e) => e.item)
         .slice(0, REVIEW_SITTING);

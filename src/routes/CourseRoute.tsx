@@ -18,6 +18,7 @@ import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
 import type { StudyMode } from '@/lib/buildSessionItems';
 import { examTime, isDueFor } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
+import { examRule } from '@/lib/exam';
 
 
 interface ModeCard {
@@ -153,7 +154,7 @@ export function CourseRoute() {
     const items = course?.sections.flatMap((s) => s.items) ?? [];
     const byType = (type: string) => items.filter((i) => i.type === type).length;
     const gradableIds = scoredEntries(items).map((e) => e.id);
-    const examAt = examTime(course?.metadata.exam_date);
+    const exam = course ? examRule(course, progress, now) : null;
     let got = 0;
     let attempts = 0;
     let studied = 0;
@@ -178,7 +179,7 @@ export function CourseRoute() {
         return r && r.missed > r.got;
       }).length,
       studied,
-      due: gradableIds.filter((itemId) => isDueFor(progress[itemId], now, examAt)).length,
+      due: gradableIds.filter((itemId) => isDueFor(progress[itemId], now, exam?.forItem(itemId) ?? null)).length,
       accuracy: attempts > 0 ? Math.round((got / attempts) * 100) : null,
     };
   }, [course, progress, now]);

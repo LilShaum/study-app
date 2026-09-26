@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import type { Course } from '@/schema/course';
-import { examTime } from '@/lib/memory';
 import { buildSessionItems, recallId, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { useProgressStore, type ItemResult } from './progress';
+import { examRule } from '@/lib/exam';
 
 interface SessionState {
   courseId: string | null;
@@ -104,8 +104,12 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     // and a question already answered right comes back typed — so every mode
     // that builds from it gets it.
     const progress = progressStore.getProgress(courseId);
-    const examAt = examTime(course.metadata.exam_date);
-    const items = buildSessionItems(course, mode, { missedIds, sectionId, progress, examAt });
+    const items = buildSessionItems(course, mode, {
+      missedIds,
+      sectionId,
+      progress,
+      exam: examRule(course, progress, Date.now()),
+    });
     // Resume by id, not position: Mixed and Review Missed reshuffle each start
     // and Weakest First reorders as accuracy changes, so a saved index would
     // land on a different item. An id the list no longer holds (the item was

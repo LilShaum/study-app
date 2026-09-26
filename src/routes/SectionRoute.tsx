@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { scoredEntries } from '@/lib/scored';
-import { examTime, isDueFor } from '@/lib/memory';
+import { isDueFor } from '@/lib/memory';
 import { useCoursesStore } from '@/store/courses';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { availableModes, findSection, sectionStats } from '@/lib/sectionStats';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { CourseTree } from '@/components/CourseTree';
+import { examRule } from '@/lib/exam';
 
 const TYPE_LABELS: Record<string, string> = {
   mcq: 'MCQ',
@@ -60,7 +61,7 @@ export function SectionRoute() {
   const modes = availableModes(section);
 
   const scored = scoredEntries(section.items);
-  const examAt = examTime(course.metadata.exam_date);
+  const examAt = examRule(course, progress, now).forSection(section.id);
   const due = scored.filter(({ id: itemId }) => isDueFor(progress[itemId], now, examAt)).length;
   const missed = scored.filter(({ id: itemId }) => {
     const r = progress[itemId];

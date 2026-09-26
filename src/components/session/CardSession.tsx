@@ -10,7 +10,8 @@ import { CourseTree } from '@/components/CourseTree';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { SectionJump } from './SectionJump';
-import { examTime, nextDueAt, whenLabel } from '@/lib/memory';
+import { nextDueAt, whenLabel } from '@/lib/memory';
+import { examRule } from '@/lib/exam';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
 
@@ -245,9 +246,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
     const { items: done, results } = useSessionStore.getState();
     const prog = useProgressStore.getState().getProgress(courseId);
     const now = Date.now();
-    const examAt = examTime(course.metadata.exam_date);
+    const exam = examRule(course, prog, now);
     const ids = new Set([...results.keys()].map((i) => done[i]?.id).filter(Boolean) as string[]);
-    const dues = [...ids].map((itemId) => nextDueAt(prog[itemId], now, examAt)).filter((t): t is number => t != null);
+    const dues = [...ids].map((itemId) => nextDueAt(prog[itemId], now, exam.covering(itemId))).filter((t): t is number => t != null);
     if (!dues.length) return null;
     const first = Math.min(...dues);
     const endOfThatDay = new Date(first);
@@ -294,7 +295,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
       const still = buildSessionItems(course, 'review', {
         sectionId,
         progress: useProgressStore.getState().getProgress(courseId),
-        examAt: examTime(course.metadata.exam_date),
+        exam: examRule(course, useProgressStore.getState().getProgress(courseId), Date.now()),
       }).length;
       setMoreDue(still);
       // While more is due now, "these come back tomorrow" is not the news.

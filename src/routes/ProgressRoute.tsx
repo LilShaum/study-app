@@ -6,6 +6,7 @@ import { useCoursesStore } from '@/store/courses';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { computeCourseStats, type StatRow } from '@/lib/computeCourseStats';
 import { CourseTree } from '@/components/CourseTree';
+import { examRule } from '@/lib/exam';
 
 /** Below this, a section is not solid yet. The one number the page is about. */
 const SOLID = 80;
@@ -139,8 +140,9 @@ export function ProgressRoute() {
   // what it learned is still held, lowest first. Accuracy says how well you
   // answered; this says how much of it is still there, which is what decides
   // what to do next.
+  const exam = examRule(course, progress, now);
   const fading = sortedSections(course)
-    .map((section) => ({ section, m: sectionMemory(section, progress, now, course.metadata.exam_date) }))
+    .map((section) => ({ section, m: sectionMemory(section, progress, now, exam) }))
     .filter(({ m }) => m.studied > 0)
     .map(({ section, m }) => ({ section, due: m.due, held: Math.round((m.learned ? m.held / m.learned : 1) * 100) }))
     .sort((a, b) => a.held - b.held || b.due - a.due);

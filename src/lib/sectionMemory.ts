@@ -1,6 +1,7 @@
 import type { Section } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
-import { examTime, isDueFor, retrievability } from './memory';
+import type { ExamRule } from './exam';
+import { isDueFor, retrievability } from './memory';
 import { scoredEntries } from './scored';
 import { sectionStats } from './sectionStats';
 
@@ -54,11 +55,11 @@ export function sectionMemory(
   section: Section,
   progress: Record<string, ItemResult>,
   now: number,
-  examDate?: string,
+  exam?: ExamRule,
 ): SectionMemory {
   const stats = sectionStats(section, progress);
   const learned = learnedShare(stats.studied, stats.gradable, stats.accuracy);
-  const examAt = examTime(examDate);
+  const examAt = exam?.forSection(section.id) ?? null;
   return {
     learned,
     held: learned * heldShare(section, progress, now),

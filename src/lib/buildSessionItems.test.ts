@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course } from '@/schema/course';
 import { buildSessionItems } from './buildSessionItems';
+import type { ExamRule } from './exam';
 
 const course = {
   schema_version: '1.0',
@@ -202,7 +203,8 @@ describe('buildSessionItems — review', () => {
   it('brings an item forward for an exam it would be faint at', () => {
     const progress = { a_mcq: seen(0.2, 4) };
     expect(buildSessionItems(mixedCourse, 'review', { now, progress })).toHaveLength(0);
-    expect(buildSessionItems(mixedCourse, 'review', { now, progress, examAt: now + 1.3 * DAY })).toHaveLength(1);
+    const exam = { forItem: () => now + 1.3 * DAY } as unknown as ExamRule;
+    expect(buildSessionItems(mixedCourse, 'review', { now, progress, exam })).toHaveLength(1);
   });
 });
 
