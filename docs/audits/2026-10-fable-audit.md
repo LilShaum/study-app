@@ -185,9 +185,10 @@ which the log mentions once and the headline numbers hide.
 ### 3.1 "Half of reviews come too late"
 
 The new *Late: first / after miss / mature* column says which reviews these
-are. Under `fsrs`, of 50 points late, about 37 are the **first review after
-a miss**, 7 the first review after learning, 0 mature items; under `harsh`,
-76 of 95. So this is one case, not a general lag: the app floors a missed
+are. Under `fsrs` (steady-30), of 53 points late, 46 are the **first review
+after a miss**, 7 the first review after learning, 0 mature items; under
+`harsh`, 82 of 95; for the crammer, 45 of 67 after a miss and 22 first
+reviews. So this is one case, not a general lag: the app floors a missed
 item at one day of stability, both simulated students have forgotten it
 within hours, and with one sitting a day the next chance is tomorrow.
 
