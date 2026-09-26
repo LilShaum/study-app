@@ -3,6 +3,7 @@ import type { Course } from '@/schema/course';
 import { buildSessionItems, recallId, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { useProgressStore, type ItemResult } from './progress';
 import { examRule } from '@/lib/exam';
+import { usePlanStore } from './plan';
 
 interface SessionState {
   courseId: string | null;
@@ -109,6 +110,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       sectionId,
       progress,
       exam: examRule(course, progress, Date.now()),
+      minutes: usePlanStore.getState().minutesFor(courseId),
     });
     // Resume by id, not position: Mixed and Review Missed reshuffle each start
     // and Weakest First reorders as accuracy changes, so a saved index would
@@ -187,7 +189,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   requeue: (index) => {
     const { mode, items } = get();
     const item = items[index];
-    if (mode !== 'learn' || !item || !isGradable(item) || (item._again ?? 0) >= AGAIN_MAX) return;
+    const learning = mode === 'learn' || (mode === 'today' && item?._step !== undefined);
+    if (!learning || !item || !isGradable(item) || (item._again ?? 0) >= AGAIN_MAX) return;
     // Until it is right once, and no more: a higher bar in the first sitting
     // buys nothing that lasts once it is relearned on a later day (Vaughn,
     // Dunlosky & Rawson 2016, in docs/evidence.md). Review is that later day.

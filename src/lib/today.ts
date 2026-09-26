@@ -24,6 +24,25 @@ export const CAP_WITHIN_DAYS = 4;
 /** Rough seconds per card, for turning minutes into a number of cards. */
 export const REVIEW_SECONDS = 25;
 
+/** A sitting's length when the student has not said. */
+export const DEFAULT_MINUTES = 30;
+
+/**
+ * Rough seconds a card takes, for fitting a sitting to its minutes. The same
+ * figures the simulator's student uses; replace both with measured ones
+ * once the study log exists.
+ */
+const CARD_SECONDS: Record<string, number> = {
+  definition: 20,
+  example: 40,
+  graphic: 30,
+  flashcard: 12,
+  recall: 15,
+  mcq: 35,
+};
+
+export const cardSeconds = (item: { type: string }) => CARD_SECONDS[item.type] ?? 20;
+
 export interface Sitting {
   reviewMinutes: number;
   learnMinutes: number;
@@ -40,6 +59,8 @@ export function splitSitting(
   cap = REVIEW_CAP,
   /** How close to the exam, in days, the cap starts. Null caps whenever something is unseen (sim only). */
   capWithinDays: number | null = CAP_WITHIN_DAYS,
+  /** Seconds the due cards will actually take, when the caller has them; estimated otherwise. */
+  dueSeconds?: number,
 ): Sitting {
   const exam = examRule(course, progress, now);
   let due = 0;
@@ -53,7 +74,7 @@ export function splitSitting(
   }
   // With a date, what matters is what the exam covers; without, everything.
   const unseen = exam.at != null ? exam.unseen : unseenAll;
-  const reviewNeed = (due * REVIEW_SECONDS) / 60;
+  const reviewNeed = (dueSeconds ?? due * REVIEW_SECONDS) / 60;
   const capping = unseen > 0 && (capWithinDays == null || (exam.at != null && exam.at - now <= capWithinDays * 86_400_000));
   const reviewMinutes = Math.min(reviewNeed, capping ? minutes * cap : minutes);
   return { reviewMinutes, learnMinutes: minutes - reviewMinutes, due, unseen };

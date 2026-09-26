@@ -21,6 +21,15 @@ export function nextSectionToLearn(
   progress: Record<string, ItemResult>,
   now = Date.now(),
 ): { section: Section; index: number } | null {
+  return sectionsToLearn(course, progress, now)[0] ?? null;
+}
+
+/** Every section with something never answered, in the order Learn takes them. */
+export function sectionsToLearn(
+  course: Course,
+  progress: Record<string, ItemResult>,
+  now = Date.now(),
+): { section: Section; index: number }[] {
   const sections = sortedSections(course);
   // Sections an upcoming exam covers come first: learning something that is
   // not on it can wait until after.
@@ -28,12 +37,10 @@ export function nextSectionToLearn(
   const upcoming = onExam.size > 0 && (examTime(course.metadata.exam_date) ?? 0) > now;
   const order = sections.map((section, index) => ({ section, index }));
   if (upcoming) order.sort((a, b) => Number(onExam.has(b.section.id)) - Number(onExam.has(a.section.id)) || a.index - b.index);
-  for (const { section, index } of order) {
-    const unanswered = scoredEntries(section.items).some(({ id }) => {
+  return order.filter(({ section }) =>
+    scoredEntries(section.items).some(({ id }) => {
       const r = progress[id];
       return !r || r.got + r.missed === 0;
-    });
-    if (unanswered) return { section, index };
-  }
-  return null;
+    }),
+  );
 }

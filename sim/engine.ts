@@ -7,6 +7,7 @@ import { nextSectionToLearn } from '@/lib/nextToLearn';
 import { scoredEntries } from '@/lib/scored';
 import { sortedSections } from '@/lib/sortedSections';
 import { useProgressStore } from '@/store/progress';
+import { usePlanStore } from '@/store/plan';
 import { useSessionStore } from '@/store/session';
 import { makeCourse, SHAPES } from './course';
 import { rng, type Rand } from './random';
@@ -103,6 +104,8 @@ export interface Day {
   available: number;
   /** Open Review, as the course page does, and study until it ends or time does. */
   review: (capMs?: number) => 'done' | 'out' | 'empty';
+  /** Press Today: one sitting the app sizes to the day's minutes. */
+  today: () => 'done' | 'out' | 'empty';
   /** Open Learn on the section the course page suggests. False when there is none to learn. */
   learn: (capMs?: number) => boolean;
   /** Scored items released but never answered. */
@@ -130,6 +133,17 @@ const today =
   };
 
 export const POLICIES: Record<string, Policy> = {
+  /** The student presses Today once, with their minutes set, and stops when it ends. */
+  'today-button-once': (d) => {
+    d.today();
+  },
+  /**
+   * The same, and takes "Keep going" at the end while they still have time:
+   * the sitting is planned in whole steps and usually ends a little early.
+   */
+  'today-button': (d) => {
+    for (let k = 0; k < 5 && d.usedMs() < d.budgetMs; k++) if (d.today() !== 'done') break;
+  },
   /** The Today plan as the app ships it (lib/today.ts defaults). */
   today: today(),
   /**
@@ -260,7 +274,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       store().record(got);
     };
 
-    const run = (mode: 'review' | 'learn', capMs: number, sectionId?: string, resumeId?: string) => {
+    const run = (mode: 'review' | 'learn' | 'today', capMs: number, sectionId?: string, resumeId?: string) => {
       store().init(COURSE_ID, course, mode, sectionId, resumeId);
       if (!store().items.length) return 'empty' as const;
       for (;;) {
@@ -283,6 +297,10 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       available,
       daysLeft: sc.days - day,
       review: (capMs = budgetMs) => run('review', capMs),
+      today: () => {
+        usePlanStore.setState({ byCourse: { [COURSE_ID]: { minutes: budgetMs / MIN } } });
+        return run('today', budgetMs);
+      },
       learn: (capMs = budgetMs) => {
         const next = nextSectionToLearn(course, useProgressStore.getState().getProgress(COURSE_ID));
         if (!next || next.index >= available || used >= capMs) return false;

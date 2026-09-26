@@ -11,7 +11,7 @@ const base = {
   days: 31,
   release: { atStart: 3, everyDays: 2.5 },
   examDate: true,
-  policy: 'today',
+  policy: 'today-button',
 } as const;
 
 export const SCENARIOS: Scenario[] = [

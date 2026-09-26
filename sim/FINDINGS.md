@@ -10,6 +10,28 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-09-26 — The real Today button, checked against the plan
+
+**What.** `today` session mode (`buildSessionItems`): due cards for Review's
+share of the minutes, then whole Learn steps from where Learn left off.
+New policy `today-button` presses it (and "Keep going" while time is
+left); it is now the suite default. `today-button-once` stops after one.
+
+**Caught before any screen was built.** The first version rebuilt the next
+section from step 1 every day, redoing finished steps: 37% against the
+policy's 53% at 30 min/day. Fixed by skipping steps whose questions have
+all been answered. Then the sitting, planned in whole steps, ended ~15%
+early; with "Keep going" it matches or beats the policy everywhere
+(54/77/88% at 30/45/60 min against 53/76/86%). **So Today's finish screen
+needs a Keep going button.**
+
+**Scope, again.** 45 min/day with a 7-day exam cutoff: date set, sections
+not told 78%; sections told 85%; no date 85%. An exam date without its
+sections still costs points; with them it costs nothing. The setup has to
+ask for both, and make the sections easy to get right.
+
+---
+
 ## 2026-09-26 — The Today plan: review first, learn late
 
 **Question.** Phase 1 was going to split every sitting between Review and
