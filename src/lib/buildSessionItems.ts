@@ -372,7 +372,12 @@ export function buildSessionItems(
       }
       const learn: SessionItem[] = [];
       let learnSpent = 0;
+      // Time ran out at a step that would not fit. Stop there: going on to a
+      // later section whose step is smaller would teach it out of order,
+      // while the one Learn left off in stays unfinished.
+      let full = false;
       for (const { section } of sectionsToLearn(course, progress ?? {}, now)) {
+        if (full) break;
         const steps = learnOrder(withRecall(items.filter((i) => i._sectionId === section.id)), progress);
         for (let s = 0; s < (steps[0]?._steps ?? 0); s++) {
           const step = steps.filter((i) => i._step === s);
@@ -386,13 +391,18 @@ export function buildSessionItems(
           const cost = step.reduce((n, i) => n + cardSeconds(i), 0);
           // Whole steps only, so the sitting ends where a step does; the
           // first one always fits, or a short sitting would teach nothing.
-          if ((learn.length || review.length) && learnSpent + cost > plan.learnMinutes * 60) break;
+          if ((learn.length || review.length) && learnSpent + cost > plan.learnMinutes * 60) {
+            full = true;
+            break;
+          }
           learn.push(...step);
           learnSpent += cost;
         }
         if (learnSpent >= plan.learnMinutes * 60) break;
       }
-      items = [...pairConfusions(review), ...learn];
+      // A mixed-up partner brought in beside a due card is part of the review
+      // too, whether or not it was due itself.
+      items = [...pairConfusions(review).map((i) => ({ ...i, _block: 'review' })), ...learn];
       break;
     }
     case 'missed':

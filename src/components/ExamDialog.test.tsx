@@ -23,12 +23,12 @@ describe('ExamDialog', () => {
   const open = () => render(<ExamDialog courseId="bio" course={course} onClose={() => {}} />);
   const setDate = (value: string) => fireEvent.change(screen.getByLabelText('Exam date'), { target: { value } });
 
-  it('stores no section list when every section is on the exam, so later lectures count too', () => {
+  it('stores the sections as a list even when all are ticked, so later lectures are asked about', () => {
     open();
     setDate('2026-10-27');
     fireEvent.click(screen.getByText('Save'));
     expect(saved().exam_date).toBe('2026-10-27');
-    expect(saved().exam_sections).toBeUndefined();
+    expect(saved().exam_sections).toEqual(['a', 'b', 'c']);
   });
 
   it('stores the sections when some are left off', () => {

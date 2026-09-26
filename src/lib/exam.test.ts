@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
-import { examRule, PROTECT_FROM_DAYS } from './exam';
+import { examAfterAdding, examRule, PROTECT_FROM_DAYS } from './exam';
 import { recallId } from './scored';
 
 const DAY = 86_400_000;
@@ -52,5 +52,28 @@ describe('examRule', () => {
 
   it('ignores an exam that has passed', () => {
     expect(examRule(course(date), {}, exam + DAY).at).toBeNull();
+  });
+});
+
+describe('examAfterAdding', () => {
+  const withNew = (sections?: string[]) => {
+    const c = course(date, sections);
+    return { ...c, sections: [...c.sections, { id: 'n', title: 'New', items: [def('n1')] }] } as Course;
+  };
+
+  it('counts a section added weeks before the exam', () => {
+    expect(examAfterAdding(withNew(['a']), ['n'], exam - 20 * DAY)).toEqual({ examSections: ['a', 'n'], included: true });
+  });
+
+  it('leaves out a section added in the last week', () => {
+    expect(examAfterAdding(withNew(['a']), ['n'], exam - 3 * DAY)).toEqual({ examSections: ['a'], included: false });
+  });
+
+  it('turns an implicit "every section" into the list it meant', () => {
+    expect(examAfterAdding(withNew(), ['n'], exam - 3 * DAY)?.examSections).toEqual(['a', 'b']);
+  });
+
+  it('does nothing without an upcoming exam', () => {
+    expect(examAfterAdding(withNew(), ['n'], exam + DAY)).toBeNull();
   });
 });

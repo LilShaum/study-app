@@ -10,6 +10,80 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-09-26 — Audit: the suite could not see Review; late reviews are the ones after a miss
+
+An independent audit of the learning logic (`docs/audits/2026-10-fable-audit.md`).
+
+**The simulator was blind to Review under its own default policy.** The
+*In Review*, *Too early* and *Too late* columns counted answers only in a
+session opened as Review. The suite's default policy is `today-button`,
+whose reviews come through Today's opening block — so every `today-button`
+row reported 0% in all three, and the "half of reviews come too late"
+finding below rested on `follow-app` alone. Fixed: a review is now any
+answer to a card in a review block, whichever door it came through.
+Measured on the Today plan: 48–53% late under `fsrs`, 94–95% under
+`harsh`, 61–69% for busy-20 and the crammer. The old finding stands.
+
+**New column: what the late reviews are.** *Late: first / after miss /
+mature* splits them by the item's state. Under `fsrs` (steady-30), 46 of
+the 53 points are the **first review after a miss**, 7 are the first
+review after learning, and mature items contribute nothing; under `harsh`
+it is 82 of 95, and the crammer's 67 is 45 after a miss and 22 first
+reviews (a week of new material at 90 min/day). So the open problem is not "reviews come too late" in general.
+It is one case: the app floors a missed item at one day, and both
+simulated students have forgotten it within hours. With one sitting a day,
+nothing in the schedule can review it sooner than the next sitting.
+
+**Earlier reviewing does not fix it, and its direction depends on the
+student** (3 seeds, memory constants changed locally and not committed):
+
+| Change | steady-30 | half-scope-told | 45-cutoff-scope | steady-30-harsh | 45-cutoff-scope-harsh |
+|---|---|---|---|---|---|
+| as shipped | 53% | 90% | 85% | 16% | 24% |
+| due below 0.85 (was 0.75) | 50% | 85% | 83% | 18% | 26% |
+| due below 0.6 | 51% | 87% | 79% | 16% | 23% |
+| growth 2 (was 4) | 51% | 85% | 82% | 18% | 25% |
+| a miss keeps 25% (was 50%) | 54% | 88% | 85% | 16% | 24% |
+
+Reviewing earlier (a higher threshold, or slower growth in the app's
+model) costs 2–5 points under `fsrs` and gains 1–2 under `harsh`; by rule
+2 that is not acted on. Reviewing later costs under both. A harsher lapse
+changes nothing: the floor of one day is what the next sitting sees. Under the `fsrs` student a right
+answer at low recall grows memory a great deal, so a "late" review is not a
+wasted one for them; under `harsh` it is. **What decides this is the real
+after-miss forgetting rate, which the Phase 2 study log should measure
+first** — a re-ask of a missed card later in the same sitting is the only
+lever a daily schedule has, and neither simulated student gives an answer
+minutes after the last one much credit.
+
+**A shape check on the truth model.** Both truth models shared the app's
+exponential forgetting curve, differing only in how stability moves, so
+the close agreement of *App thinks* with the truth under `fsrs` was partly
+built in. `MemoryModel.recall` now names the curve, and `fsrs-power` is the
+same student with a power-law curve through the same 37% point. Under it
+(`SIM_VARY=memory:fsrs-power`, 3 seeds): steady-30 56% (app 54%), steady-45
+78% (76%), busy-20 29% (29%), crammer 67% (67%), half-scope-told 91% (92%),
+45-cutoff-scope 85% (85%). The agreement survives the shape; the app's
+estimate is not leaning on it.
+
+**Two app fixes, measured.** (1) An item reviewed inside its exam window
+came straight back as due (the window is a stretch of time; a review
+inside it does not close it), so in the last day or two before an exam
+Review never emptied and the finish screen said "these come back later
+today". Now the exam review happens once. (2) Today skipped ahead to a later
+section when the current section's next step did not fit the minutes
+left. Together, over the suite: scores within noise everywhere (−1 to +3),
+peak due 10–20% lower wherever an exam date is set (steady-30 318 → 282,
+half-scope-told 241 → 189). **Re-baselined** in this commit.
+
+**Still true, and worth saying plainly.** With the date set and the
+sections not told, steady-45-cutoff scores 78% against 85% without a date
+(and 85% with the sections told). The exam dialog stores no section list
+when every section is ticked — the default — so a student who accepts it
+and keeps adding lectures is in the "not told" case.
+
+---
+
 ## 2026-09-26 — A readiness forecast: not yet
 
 **What was tried** (`sim/experiments/forecast.ts`). A day-by-day projection

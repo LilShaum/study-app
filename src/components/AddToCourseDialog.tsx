@@ -8,6 +8,7 @@ import { buildPractisePrompt } from '@/lib/buildPractisePrompt';
 import { buildFixPrompt, planFixes } from '@/lib/buildFixPrompt';
 import { analyseCourseGaps } from '@/lib/courseGaps';
 import { sortedSections } from '@/lib/sortedSections';
+import { examAfterAdding } from '@/lib/exam';
 import { useCoursesStore } from '@/store/courses';
 import { persisted } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
@@ -54,6 +55,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   const [skipDuplicates, setSkipDuplicates] = useState(true);
   const [copied, setCopied] = useState(false);
   const mergeIntoCourse = useCoursesStore((s) => s.mergeIntoCourse);
+  const updateCourse = useCoursesStore((s) => s.updateCourse);
 
   const firstSectionId = sortedSections(course)[0]?.id ?? 'added';
 
@@ -111,6 +113,28 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
     }
   };
 
+  /** New sections and an upcoming exam: say whether they count, and let one tap flip it. */
+  const askAboutExam = (ids: string[], titles: string[]) => {
+    const current = useCoursesStore.getState().courses[courseId];
+    const decision = current && examAfterAdding(current, ids, Date.now());
+    if (!current || !decision) return;
+    const setSections = (examSections: string[]) => {
+      const latest = useCoursesStore.getState().courses[courseId];
+      if (latest) updateCourse(courseId, { ...latest, metadata: { ...latest.metadata, exam_sections: examSections } });
+    };
+    setSections(decision.examSections);
+    const name = titles.length === 1 ? `“${titles[0]}”` : `${titles.length} new sections`;
+    const flipped = decision.included
+      ? decision.examSections.filter((id) => !ids.includes(id))
+      : [...decision.examSections, ...ids];
+    toast(decision.included ? `${name} counted as on your exam.` : `${name} not counted for your exam (it’s in the last week).`, {
+      type: 'info',
+      duration: 12000,
+      actionLabel: decision.included ? 'Not on it' : 'It’s on it',
+      onAction: () => setSections(flipped),
+    });
+  };
+
   const confirm = () => {
     if (!plan) return;
     const { ok } = persisted(() => mergeIntoCourse(courseId, plan));
@@ -119,6 +143,8 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
       onClose();
       return;
     }
+    const newSections = plan.sections.filter((s) => s.isNew && s.added.length > 0);
+    askAboutExam(newSections.map((s) => s.id), newSections.map((s) => s.title));
     const renamed = Object.keys(plan.renamedIds).length;
     const parts: string[] = [];
     if (plan.totalAdded) parts.push(`Added ${plural(plan.totalAdded, 'item')}`);

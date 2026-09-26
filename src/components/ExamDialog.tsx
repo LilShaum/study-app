@@ -55,10 +55,9 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
     const metadata = { ...course.metadata };
     if (date) metadata.exam_date = date;
     else delete metadata.exam_date;
-    // Every section ticked is stored as no list at all, so a section added
-    // after the date was set counts as covered — the usual case, since the
-    // exam covers lectures still to come when you set it.
-    if (date && covered.size && covered.size < sections.length) metadata.exam_sections = [...covered];
+    // Always an explicit list: sections added later are asked about when
+    // they are added (lib/exam.ts, examAfterAdding), never assumed.
+    if (date && covered.size) metadata.exam_sections = sections.map((s) => s.id).filter((id) => covered.has(id));
     else delete metadata.exam_sections;
     setMinutes(courseId, minutes);
     const { ok } = persisted(() => updateCourse(courseId, { ...course, metadata }));

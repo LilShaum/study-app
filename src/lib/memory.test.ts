@@ -138,3 +138,20 @@ describe('whenLabel', () => {
     expect(whenLabel(at(2026, 9, 20, 9), now)).toMatch(/^on /);
   });
 });
+
+describe('an exam review happens once', () => {
+  // S = 4 days, exam two days out: the exam review window opens at about
+  // T0 + 0.58 days (see nextDueAt).
+  const exam = T0 + 2 * DAY;
+  const r: ItemResult = { got: 1, missed: 0, lastSeen: T0, stability: 4 };
+
+  it('is not due again straight after the review it asked for', () => {
+    const at = nextDueAt(r, T0, exam)!;
+    expect(isDueFor(r, at + 60_000, exam)).toBe(true);
+    const s = nextStability({ stability: 4, lastSeen: T0 }, true, at + 60_000);
+    const reviewed: ItemResult = { got: 2, missed: 0, lastSeen: at + 60_000, stability: s };
+    // It has had its exam review; only fading below the threshold brings it back.
+    expect(isDueFor(reviewed, at + 120_000, exam)).toBe(false);
+    expect(nextDueAt(reviewed, at + 120_000, exam)).toBeGreaterThan(at + 120_000);
+  });
+});

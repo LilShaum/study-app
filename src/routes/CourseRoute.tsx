@@ -6,7 +6,7 @@ import { sortedSections } from '@/lib/sortedSections';
 import { sectionStats } from '@/lib/sectionStats';
 import { scoredEntries } from '@/lib/scored';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
-import { useResumeStore } from '@/store/resume';
+import { bookmarkResolves, useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
 import { CourseTree } from '@/components/CourseTree';
@@ -231,15 +231,7 @@ export function CourseRoute() {
 
   // A bookmark outlives the item it points at — the item can be edited away,
   // the section deleted — so it is only offered when it still resolves.
-  const resumable =
-    bookmark &&
-    course &&
-    course.sections.some(
-      (s) =>
-        (bookmark.sectionId === null || s.id === bookmark.sectionId) && s.items.some((i) => i.id === bookmark.itemId),
-    )
-      ? bookmark
-      : null;
+  const resumable = bookmark && course && bookmarkResolves(course, bookmark) ? bookmark : null;
 
   if (!id) return <Navigate to="/" replace />;
   if (!course) {

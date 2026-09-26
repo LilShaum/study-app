@@ -44,6 +44,9 @@ export function summarise(sc: Scenario, runs: RunResult[]): Summary {
       reviewShare: avg(m.map((x) => x.reviewShare)),
       earlyReviews: avg(m.map((x) => x.earlyReviews)),
       lateReviews: avg(m.map((x) => x.lateReviews)),
+      lateFirst: avg(m.map((x) => x.lateFirst)),
+      lateAfterMiss: avg(m.map((x) => x.lateAfterMiss)),
+      lateMature: avg(m.map((x) => x.lateMature)),
       peakDue: avg(m.map((x) => x.peakDue)),
       allStartedDay: started.every((d) => d != null) ? avg(started as number[]) : null,
       bySection: m[0].bySection.map((_, i) => avg(m.map((x) => x.bySection[i]))),
@@ -70,14 +73,14 @@ export function markdown(rows: Summary[], baseline: Record<string, Summary>, hea
   const out = [
     header,
     '',
-    '| Scenario | Exam score | Held ≥0.8 | Never studied | App thinks | Forecast d0 / d10 | Unstudied said/true d0, d10 | Min | In Review | Too early | Too late | Peak due | All started |',
-    '|---|---|---|---|---|---|---|---|---|---|---|---|---|',
+    '| Scenario | Exam score | Held ≥0.8 | Never studied | App thinks | Forecast d0 / d10 | Unstudied said/true d0, d10 | Min | In Review | Too early | Too late | Late: first / after miss / mature | Peak due | All started |',
+    '|---|---|---|---|---|---|---|---|---|---|---|---|---|---|',
   ];
   for (const r of rows) {
     const b = baseline[r.scenario]?.mean;
     const m = r.mean;
     out.push(
-      `| ${r.scenario} | ${pct(m.expectedScore)} ±${Math.round(r.scoreSd * 100)}${delta(m.expectedScore, b?.expectedScore)} | ${pct(m.held)}${delta(m.held, b?.held)} | ${pct(m.neverStudied)}${delta(m.neverStudied, b?.neverStudied)} | ${pct(m.appEstimate)} | ${range(m.forecast0)} / ${range(m.forecast10)} | ${said(m.unseen0)}, ${said(m.unseen10)} | ${Math.round(m.minutes)} | ${pct(m.reviewShare)} | ${pct(m.earlyReviews)} | ${pct(m.lateReviews)} | ${Math.round(m.peakDue)} | ${m.allStartedDay == null ? 'never' : `day ${Math.round(m.allStartedDay)}`} |`,
+      `| ${r.scenario} | ${pct(m.expectedScore)} ±${Math.round(r.scoreSd * 100)}${delta(m.expectedScore, b?.expectedScore)} | ${pct(m.held)}${delta(m.held, b?.held)} | ${pct(m.neverStudied)}${delta(m.neverStudied, b?.neverStudied)} | ${pct(m.appEstimate)} | ${range(m.forecast0)} / ${range(m.forecast10)} | ${said(m.unseen0)}, ${said(m.unseen10)} | ${Math.round(m.minutes)} | ${pct(m.reviewShare)} | ${pct(m.earlyReviews)} | ${pct(m.lateReviews)} | ${pct(m.lateFirst)} / ${pct(m.lateAfterMiss)} / ${pct(m.lateMature)} | ${Math.round(m.peakDue)} | ${m.allStartedDay == null ? 'never' : `day ${Math.round(m.allStartedDay)}`} |`,
     );
   }
   out.push('', 'Exam score by section (course order):', '');
@@ -86,7 +89,7 @@ export function markdown(rows: Summary[], baseline: Record<string, Summary>, hea
   for (const r of rows) out.push(`- **${r.scenario}**: ${r.why}`);
   out.push(
     '',
-    'Columns: *Exam score* is the expected score on a question per item in scope (MCQs get the 25% guess floor), mean ± spread across seeds, with the change from the baseline in points. *Held* is the share still at recall ≥ 0.8. *App thinks* is the same score computed from the app’s own memory model on the day. *Forecast* is what the app’s forecast (lib/forecast.ts) said on day 0 and day 10, with the true score on the same sections in brackets — marked ! when it falls outside the range. *Too early* / *Too late* are review answers given at true recall ≥ 0.95 / < 0.5.',
+    'Columns: *Exam score* is the expected score on a question per item in scope (MCQs get the 25% guess floor), mean ± spread across seeds, with the change from the baseline in points. *Held* is the share still at recall ≥ 0.8. *App thinks* is the same score computed from the app’s own memory model on the day. *Forecast* is what the app’s forecast (lib/forecast.ts) said on day 0 and day 10, with the true score on the same sections in brackets — marked ! when it falls outside the range. *Too early* / *Too late* are review answers given at true recall ≥ 0.95 / < 0.5; *Late: first / after miss / mature* splits the late ones by whether it was the item’s first review after learning, its first after a miss, or a mature item.',
   );
   return out.join('\n');
 }
