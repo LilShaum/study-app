@@ -30,6 +30,11 @@ lilshaum.github.io/arborous/, and GitHub doesn't forward the old address.
 
 ## Plan for a seamless switch
 
+**Sync (2026-09-27) makes this much simpler:** a student signed in to Sync
+signs in again at the new address and everything comes back, on any device,
+the installed iPhone app included. The backup steps below remain for anyone
+not using Sync.
+
 1. ~~**Add "Back up everything" / "Restore".**~~ Done (2026-09-27):
    Help → "Where your courses are saved", and a "Restore a backup" link on
    the empty library (`src/lib/backup.ts`).
