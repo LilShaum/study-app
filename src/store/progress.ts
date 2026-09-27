@@ -21,6 +21,19 @@ export interface ItemResult {
    * until the difference sticks.
    */
   confusedWith?: string[];
+  /** Whether the latest answer was right. Absent on records from before it was kept. */
+  lastGot?: boolean;
+}
+
+/**
+ * Whether an item counts as missed: its latest answer was wrong. Records from
+ * before the latest answer was kept fall back to the counts, which is what
+ * "missed" used to mean everywhere — and was wrong for an item missed three
+ * times and then got right twice, which still counted as missed.
+ */
+export function isMissed(r: ItemResult | undefined): boolean {
+  if (!r || r.got + r.missed === 0) return false;
+  return r.lastGot != null ? !r.lastGot : r.missed > r.got;
 }
 
 type CourseProgress = Record<string, ItemResult>;
@@ -70,7 +83,7 @@ export const useProgressStore = create<ProgressState>()(
         return new Set(
           Object.keys(progress).filter((itemId) => {
             const r = progress[itemId];
-            return r && r.missed > r.got;
+            return isMissed(r);
           }),
         );
       },
@@ -87,6 +100,7 @@ export const useProgressStore = create<ProgressState>()(
             lastSeen: now,
             stability: nextStability(before, got, now),
             before,
+            lastGot: got,
           };
           return {
             byCourse: {
@@ -109,6 +123,7 @@ export const useProgressStore = create<ProgressState>()(
             ...prev,
             got: prev.got + (got ? 1 : -1),
             missed: prev.missed + (got ? -1 : 1),
+            lastGot: got,
             // Redo the latest update the other way. A record from before the
             // model has no snapshot to redo it from, and keeps what it has.
             ...(prev.before !== undefined && prev.lastSeen != null

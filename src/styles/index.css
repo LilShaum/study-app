@@ -448,8 +448,18 @@
   .app-header {
     padding-top: env(safe-area-inset-top);
   }
+  /* Room under the page for anything pinned to the bottom of the screen
+     (the course page's Start bar on a phone), so it covers nothing. On the
+     shell, not the body: the body is held to the viewport's height. */
+  .app-shell {
+    padding-bottom: var(--pinned-bottom, 0px);
+  }
+
   .app-toast-viewport {
     padding-bottom: env(safe-area-inset-bottom);
+    /* Above anything pinned to the bottom of the screen (the course page's
+       Start bar on a phone), which sets --pinned-bottom while it shows. */
+    bottom: calc(1rem + var(--pinned-bottom, 0px));
   }
 
   /* A finger is not a cursor: on a touch device give small controls a hit

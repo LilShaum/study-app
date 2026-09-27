@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Course } from '@/schema/course';
 import { buildSessionItems, recallId, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
-import { useProgressStore, type ItemResult } from './progress';
+import { isMissed, useProgressStore, type ItemResult } from './progress';
 import { examRule } from '@/lib/exam';
 import { usePlanStore } from './plan';
 import { measuredPace, useStudyLogStore } from './studyLog';
@@ -220,11 +220,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       sinceHours: before?.lastSeen != null ? (now - before.lastSeen) / 3_600_000 : null,
       // The record keeps the memory before its latest answer; stability
       // that did not rise means that answer was a miss.
-      afterMiss: before
-        ? before.before
-          ? (before.stability ?? 0) <= before.before.stability
-          : before.missed > 0 && before.got === 0
-        : false,
+      afterMiss: isMissed(before),
       predicted: retrievability(before, now),
     });
     useProgressStore.getState().recordResult(courseId, item.id, got);

@@ -51,7 +51,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   { name: 'Mixed', what: 'Everything in the course, shuffled.', scored: true },
   {
     name: 'Weakest first',
-    what: 'Everything you can be scored on, starting with what you get wrong most often. Things you have not tried yet come in the middle.',
+    what: 'Everything you can be scored on, starting with what you are most likely to have forgotten by now. Things you have not tried yet come in the middle.',
     scored: true,
   },
   {
@@ -61,7 +61,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Review missed',
-    what: 'Only the items you have got wrong more often than right.',
+    what: 'Only the items you got wrong the last time you answered them.',
     scored: true,
   },
   {

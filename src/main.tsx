@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import { runLegacyMigration } from '@/store/migrateLegacy';
+import { watchForRestore } from '@/lib/backup';
 import { setStorageFailureHandler } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { router } from './router';
@@ -15,6 +16,7 @@ setStorageFailureHandler((message) => toast(message, { type: 'error', duration: 
 // already created (and synchronously rehydrated) them, so this just seeds
 // data from the vanilla app's localStorage keys into the new ones if needed.
 runLegacyMigration();
+watchForRestore();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

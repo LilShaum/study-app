@@ -3,7 +3,7 @@ import type { ItemResult } from '@/store/progress';
 import { shuffle } from './shuffle';
 import { sortedSections } from './sortedSections';
 import { recallId } from './scored';
-import { isDueFor, reviewUrgency } from './memory';
+import { isDueFor, retrievability, reviewUrgency } from './memory';
 import { acceptedForms, normalise } from './typedAnswer';
 import { stepSection } from './learnSteps';
 import { sectionsToLearn } from './nextToLearn';
@@ -169,38 +169,37 @@ function learnOrder(items: SessionItem[], progress?: Record<string, ItemResult>)
 }
 
 /**
- * How well the student knows one item, as a 0-1 accuracy.
+ * How well the student knows one item right now, 0-1: the memory model's
+ * recall estimate (lib/memory.ts), the same one Review runs on. Lifetime
+ * accuracy, which this used to be, never forgets: a term got right five
+ * times a month ago ranked as known, however faded it was.
  *
  * Never-attempted items score 0.5 deliberately: an item you have never seen
- * is a bigger risk than one you have answered right three times, and a
- * smaller one than an item you keep getting wrong. Sorting them into the
- * middle is the honest ranking, and it also means this mode is never empty
- * on a fresh course.
+ * is a bigger risk than one you are likely to recall, and a smaller one than
+ * an item you have mostly forgotten. Sorting them into the middle is the
+ * honest ranking, and it also means this mode is never empty on a fresh
+ * course.
  */
-function accuracyOf(item: SessionItem, progress?: Record<string, ItemResult>): number {
-  const r = progress?.[item.id];
-  const attempts = r ? r.got + r.missed : 0;
-  if (!attempts) return 0.5;
-  return r!.got / attempts;
+function recallOf(item: SessionItem, now: number, progress?: Record<string, ItemResult>): number {
+  return retrievability(progress?.[item.id], now) ?? 0.5;
 }
 
 /**
  * Gradable items, worst-known first.
  *
- * Distinct from Review Missed, which is a binary filter (missed > got) and so
- * drops everything you are shaky-but-net-positive on — a 3/5 item disappears
- * from Review Missed entirely while still being the thing most likely to cost
- * you marks.
+ * Distinct from Review Missed, which holds only what the latest answer got
+ * wrong, and from Review, which holds only what has faded past its point:
+ * this is everything, faintest first.
  */
-function weakestFirst(items: SessionItem[], progress?: Record<string, ItemResult>): SessionItem[] {
+function weakestFirst(items: SessionItem[], now: number, progress?: Record<string, ItemResult>): SessionItem[] {
   return items
     .filter(isGradable)
-    .map((item, i) => ({ item, i, acc: accuracyOf(item, progress) }))
+    .map((item, i) => ({ item, i, acc: recallOf(item, now, progress) }))
     .sort((a, b) => {
       if (a.acc !== b.acc) return a.acc - b.acc;
       const ra = progress?.[a.item.id];
       const rb = progress?.[b.item.id];
-      // Same accuracy: the one you've got wrong more times is the weaker.
+      // Same recall: the one you've got wrong more times is the weaker.
       const missedDiff = (rb?.missed ?? 0) - (ra?.missed ?? 0);
       if (missedDiff !== 0) return missedDiff;
       // Then the one you haven't seen in longest (never seen sorts first).
@@ -371,7 +370,7 @@ export function buildSessionItems(
       items = learnOrder(withRecall(items), progress);
       break;
     case 'weakest':
-      items = weakestFirst(asTyped(asRecall(items)), progress);
+      items = weakestFirst(asTyped(asRecall(items)), now, progress);
       break;
     case 'review':
       // Unlimited minutes is how the finish screen counts everything due.

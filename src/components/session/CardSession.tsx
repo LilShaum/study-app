@@ -10,6 +10,7 @@ import { CourseTree } from '@/components/CourseTree';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { SectionJump } from './SectionJump';
+import { SessionRail } from './SessionRail';
 import { nextDueAt, whenLabel } from '@/lib/memory';
 import { examRule } from '@/lib/exam';
 
@@ -476,19 +477,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
   }
 
   return (
-    <div className="relative mx-auto max-w-2xl p-6">
-      {/* A marginal figure: the course's tree with the section you are in
-          lit, in the margin a page has anyway. The one screen you spend the
-          most time on had nothing of the course on it but its text. */}
-      <div className="absolute -left-40 top-24 hidden xl:block" aria-hidden="true">
-        <CourseTree
-          courseId={courseId}
-          course={course}
-          progress={progress}
-          className="h-40"
-          highlight={activeSectionId}
-        />
-      </div>
+    <div className="mx-auto max-w-2xl p-6 lg:grid lg:max-w-5xl lg:grid-cols-[minmax(0,1fr)_13rem] lg:gap-12">
+      <div className="min-w-0">
       <div className="mb-4 flex items-center justify-between">
         <Link to={`/study/${courseId}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
           ← Back
@@ -540,7 +530,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
       )}
       {mode === 'weakest' && (
         <p className="mb-4 text-xs text-text-3">
-          Ordered by your own accuracy — shakiest first, then anything you haven&rsquo;t seen yet.
+          Ordered by how likely you are to have forgotten each one, faintest first. Anything you haven&rsquo;t seen yet comes in the middle.
         </p>
       )}
 
@@ -631,7 +621,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
 
       {/* Hidden on touch, where there's no keyboard to hint about. */}
       <p
-        className={`mt-4 hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-3 ${pause ? '' : '[@media(hover:hover)]:flex'}`}
+        className={`mt-4 hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-3 lg:!hidden ${pause ? '' : '[@media(hover:hover)]:flex'}`}
       >
         {KEY_HINTS[mode].map((hint) => (
           <span key={hint.keys.join()} className="flex items-center gap-1">
@@ -644,6 +634,20 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           </span>
         ))}
       </p>
+      </div>
+      <SessionRail
+        items={items}
+        index={index}
+        course={course}
+        score={score}
+        hints={pause ? [] : KEY_HINTS[mode]}
+        figure={
+          /* The course's tree with the section you are in lit: the one
+             screen you spend the most time on otherwise has nothing of the
+             course on it but its text. */
+          <CourseTree courseId={courseId} course={course} progress={progress} className="h-40" highlight={activeSectionId} />
+        }
+      />
     </div>
   );
 }

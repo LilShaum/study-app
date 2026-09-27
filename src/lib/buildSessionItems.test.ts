@@ -136,26 +136,30 @@ describe('buildSessionItems — learn mode', () => {
 });
 
 describe('buildSessionItems — weakest first', () => {
-  const at = (got: number, missed: number, lastSeen = 1) => ({ got, missed, lastSeen });
+  const DAY = 86_400_000;
+  const now = 100 * DAY;
+  // An item last answered `daysAgo` days ago, holding for `stability` days.
+  const at = (daysAgo: number, stability: number, got = 1, missed = 0) => ({ got, missed, lastSeen: now - daysAgo * DAY, stability });
 
-  it('ranks by accuracy, worst first', () => {
+  it('ranks by how likely you are to recall it now, faintest first', () => {
     const items = buildSessionItems(mixedCourse, 'weakest', {
-      progress: { a_mcq: at(1, 3), b_mcq: at(4, 0), a_card: at(2, 2), 'a_def~recall': at(3, 1), 'b_def~recall': at(0, 1) },
+      now,
+      progress: { a_mcq: at(10, 2), b_mcq: at(1, 30), a_card: at(3, 3), 'a_def~recall': at(1, 5), 'b_def~recall': at(20, 2) },
     });
     expect(items.map((i) => i.id)).toEqual(['b_def~recall', 'a_mcq', 'a_card', 'a_def~recall', 'b_mcq']);
   });
 
-  it('keeps an item you get right more often than wrong, unlike Review Missed', () => {
-    // 3/5 never appears in Review Missed (missed is not > got) but is exactly
-    // the item most likely to cost marks.
-    const progress = { a_mcq: at(3, 2), b_mcq: at(5, 0), a_card: at(5, 0), 'a_def~recall': at(5, 0), 'b_def~recall': at(5, 0) };
-    expect(buildSessionItems(mixedCourse, 'weakest', { progress })[0].id).toBe('a_mcq');
-    expect(buildSessionItems(mixedCourse, 'missed', { missedIds: new Set() })).toHaveLength(0);
+  it('puts a faded item ahead of a fresh one, whatever their records', () => {
+    // Right five times, but a month ago on a short memory: mostly forgotten.
+    const progress = { a_mcq: at(30, 4, 5, 0), b_mcq: at(0.1, 1, 1, 3) };
+    const ids = buildSessionItems(mixedCourse, 'weakest', { now, progress }).map((i) => i.id);
+    expect(ids.indexOf('a_mcq')).toBeLessThan(ids.indexOf('b_mcq'));
   });
 
-  it('sorts never-seen items between what you fail and what you have nailed', () => {
+  it('sorts never-seen items between what you have forgotten and what you know', () => {
     const items = buildSessionItems(mixedCourse, 'weakest', {
-      progress: { a_mcq: at(0, 2), b_mcq: at(3, 0) },
+      now,
+      progress: { a_mcq: at(20, 2), b_mcq: at(0.5, 30) },
     });
     // a_card and both recall questions have no history at all.
     expect(items.map((i) => i.id)).toEqual(['a_mcq', 'a_card', 'a_def~recall', 'b_def~recall', 'b_mcq']);
@@ -170,12 +174,12 @@ describe('buildSessionItems — weakest first', () => {
     expect(buildSessionItems(mixedCourse, 'weakest')).toHaveLength(5);
   });
 
-  it('breaks an accuracy tie with the item missed more times', () => {
+  it('breaks a tie with the item missed more times', () => {
     const items = buildSessionItems(mixedCourse, 'weakest', {
-      progress: { a_mcq: at(1, 1), b_mcq: at(4, 4), a_card: at(9, 0) },
+      now,
+      progress: { a_mcq: at(2, 2, 1, 1), b_mcq: at(2, 2, 4, 4), a_card: at(0.1, 50) },
     });
-    // The unseen recall questions also sit at 0.5, but have missed nothing.
-    expect(items.map((i) => i.id)).toEqual(['b_mcq', 'a_mcq', 'a_def~recall', 'b_def~recall', 'a_card']);
+    expect(items.map((i) => i.id).slice(0, 2)).toEqual(['b_mcq', 'a_mcq']);
   });
 });
 
