@@ -55,12 +55,21 @@ const expectedTerms = termsPath
     declaredTerms();
 
 function declaredTerms() {
+  // A term the course also lists as only mentioned was, by its own account,
+  // never explained, and the prompt tells it not to define one.
+  const mentioned = new Set((course.metadata?.inventory?.mentioned ?? []).map((t) => String(t).trim().toLowerCase()));
   const terms = (course.metadata?.inventory?.terms ?? [])
     .map((t) => String(t).trim())
-    .filter(Boolean)
+    .filter((t) => t && !mentioned.has(t.toLowerCase()))
     .map((t) => [t]);
   return terms.length ? terms : null;
 }
+
+const GREEK = Object.fromEntries(
+  'alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma sigma tau upsilon phi chi psi omega'
+    .split(' ')
+    .map((name, i) => [String.fromCharCode(0x3b1 + i), name]),
+);
 
 /* Normalise both sides identically. Filtering words on only one side makes
    a verbatim quote unmatchable; mapping ×/·/⋅/* to a common token stops an
@@ -68,6 +77,9 @@ function declaredTerms() {
 const norm = (s) =>
   String(s)
     .toLowerCase()
+    // Greek letters are names here (α cells, β cells, λ): spell them out, or
+    // stripping them makes "α cells" and "β cells" the same term.
+    .replace(/[α-ω]/g, (c) => ` ${GREEK[c] ?? ''} `)
     // Fold accents to ASCII. Stripping them instead splits a word in two
     // ("Némethy" -> "n methy"), so a quote that transliterates the accent
     // away reads as a fabrication.
@@ -165,14 +177,24 @@ if (SRC) {
     return parts.length > 0 && parts.every(groundedRun);
   };
 
+  // Text inside a figure is not in a PDF's text layer, so a figure-sourced
+  // excerpt can be real and still untraceable here. The prompt has them say
+  // so; they are listed for checking by eye rather than failed.
+  const FIGURE = /^\s*(figure|fig\.|table|equation|diagram)\b/i;
   const notContiguous = items.filter((i) => i.source_excerpt && !grounded(i.source_excerpt));
-  const ungrounded = notContiguous.filter((i) => wordsCovered(i.source_excerpt) < WORD_COVERAGE);
+  const fromFigures = notContiguous.filter((i) => FIGURE.test(i.source_excerpt) && wordsCovered(i.source_excerpt) < WORD_COVERAGE);
+  const ungrounded = notContiguous.filter((i) => !FIGURE.test(i.source_excerpt) && wordsCovered(i.source_excerpt) < WORD_COVERAGE);
   const reconstructed = notContiguous.filter((i) => wordsCovered(i.source_excerpt) >= WORD_COVERAGE);
 
   check(
     ungrounded.length === 0,
     `every source_excerpt traces to the source${ungrounded.length ? ` — NOT FOUND (${ungrounded.length}): ${ungrounded.map((i) => i.id).join(', ')}` : ''}`,
   );
+  if (fromFigures.length) {
+    warn.push(
+      `${fromFigures.length} excerpt(s) quote a figure or table, whose text the source file may not contain — check these against the pages: ${fromFigures.map((i) => i.id).join(', ')}`,
+    );
+  }
   if (reconstructed.length) {
     warn.push(
       `${reconstructed.length} excerpt(s) are not a contiguous quote but every word appears in the source — typically a table row reassembled by hand. Worth eyeballing: ${reconstructed

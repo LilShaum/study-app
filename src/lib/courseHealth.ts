@@ -190,7 +190,10 @@ export function analyseCourseHealth(course: Course): CourseHealth {
   }
 
   /* ---- coverage against the generator's own declared inventory ---- */
-  const declared = course.metadata.inventory?.terms ?? null;
+  // Terms the generator says the notes only name were never meant to get a
+  // definition (CLAUDE.md), so they are not counted as missing.
+  const mentioned = new Set((course.metadata.inventory?.mentioned ?? []).map((t) => t.trim().toLowerCase()));
+  const declared = course.metadata.inventory?.terms?.filter((t) => !mentioned.has(t.trim().toLowerCase())) ?? null;
   let declaredTermCoverage: CourseHealth['declaredTermCoverage'] = null;
 
   if (declared && declared.length) {

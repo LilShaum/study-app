@@ -49,7 +49,10 @@ front of you, not by a general instinct to be conservative.
 Grounding is enforced structurally: **every item carries a `source_excerpt`**
 — a short direct quote or tight paraphrase of the passage it comes from. If
 you cannot point to the passage, do not write the item. This is cheap; it is
-not a reason to write fewer items.
+not a reason to write fewer items. When the passage is inside a figure, table
+or equation rather than the running text, start the excerpt with `Figure:`,
+`Table:` or `Equation:` and quote its labels exactly as printed, so it can be
+checked against the page.
 
 ## How to read the source
 
@@ -67,9 +70,9 @@ This is the step that makes coverage possible, and skipping it is the single
 biggest cause of a thin course.
 
 **Part of this inventory goes into the output.** The term list becomes
-`metadata.inventory.terms` (see the output contract below), so the app can
-check your finished course against your own list and tell the student what
-you missed. Write that list honestly and completely — a short list does not
+`metadata.inventory` (see the output contract below): `terms` for every term
+the source explains, `mentioned` for every term it only names. The app checks
+your finished course against `terms` and tells the student what you missed. Write that list honestly and completely — a short list does not
 make you look thorough, it makes the gaps invisible, which is the one failure
 a student cannot detect for themselves.
 
@@ -84,9 +87,10 @@ Capture:
   "common mistake", "this will be on the exam".
 - **Every technical term.** The test: would a competent student *from another
   discipline* know this word? If not, it is jargon and it needs a definition.
-  Include terms used in passing, terms inside figure captions, and terms that
-  appear only in a formula's symbol list. Be thorough — this is the list
-  people most often truncate.
+  Include terms used in passing and terms inside figure captions — those the
+  source only names go under `mentioned`. A formula's symbols belong with the
+  formula, not in the term list. Be thorough — this is the list people most
+  often truncate.
 - **Every mechanism or process** with ordered steps or a causal chain.
 - **Every formula or equation**, plus what each symbol means and the units.
 - **Every worked example or calculation** performed in the source.
@@ -104,21 +108,36 @@ suggestions:
 
 | Inventory entry | Must produce |
 |---|---|
-| Each technical term | a `definition` item — no exceptions, as long as the source says what it means |
+| Each technical term the source explains | a `definition` item — no exceptions, as long as it is a name a student could be asked to produce (see below) |
 | Each stated learning objective | at least one `mcq` or `flashcard` that would demonstrate it is met |
 | Each flagged key concept | at least one `mcq` or `flashcard` |
 | Each formula | a `definition` (what it computes, what the symbols mean) **and** an `mcq` applying it |
 | Each worked example in the source | an `example` item reproducing the reasoning |
-| Each multi-step mechanism | an `example` item **and** a gradable item on the order or the purpose of a step |
+| Each multi-step mechanism | an `example` item **and** a gradable item on the order or the purpose of a step — on the order only where the source gives one (numbered steps, arrows, a time axis); a bulleted list is not an order |
 | Each comparison | an `mcq` that forces the student to discriminate between the two |
 | Each caveat or flagged misconception | an `mcq` whose distractors encode that specific misconception |
-| Each meaningful figure | a `graphic` item, if a diagram genuinely clarifies it |
+| Each meaningful figure | the relationship it shows, tested in a gradable item; a `graphic` only if your drawing makes it clearer than the source's own figure does |
 
-A term the source only *names* — used in passing, never explained — still
-goes in the inventory, but gets no definition item: writing one would mean
-supplying a meaning from your own knowledge, and obligation 1 wins that
-conflict. Listing it keeps it visible; the app will ask whether it deserved
-more.
+A term the source only *names* — used in passing, a label on a diagram, a
+caption, never explained — goes in `inventory.mentioned` and gets no
+definition item: writing one would mean supplying a meaning from your own
+knowledge, and obligation 1 wins that conflict. Listing it keeps it visible;
+the app will ask whether it deserved more.
+
+Not every explained term makes a good `definition`, because the app asks for
+it by showing the meaning and having the student type the name. A symbol or
+formula variable (`r_m`, `I_ion`), a descriptive phrase ("resistance of the
+cell membrane") or a slide heading is not a name anyone would be asked to
+produce: cover it inside the parent term's definition, its `related_terms`, or
+a flashcard. When two terms name the same thing at different grain — a
+functional zone and the structure that forms it — write one definition and
+list the other in `related_terms`; two definitions would read identically and
+accept different answers.
+
+Test the subject, not the artwork. No item on where a label sits in a
+drawing, how an illustrator grouped things, or a value read to false
+precision off an unannotated graph. An arrow in a figure is a relationship:
+ask about it in an MCQ or flashcard.
 
 One passage can and should yield several items. A paragraph defining a term,
 giving its formula and working an example is three or four items, not one —
@@ -128,14 +147,15 @@ practice. This is not padding; padding is inventing content that is not there.
 ### Pass 4 — Audit your own coverage
 
 Before you output anything, walk the Pass 2 inventory and confirm each entry
-is covered. Pay particular attention to the term list: **every single term
-must have a definition item.** If something is uncovered, either write the
+is covered. Pay particular attention to the term list: **every term in
+`terms` must have a definition item.** If something is uncovered, either write the
 item or satisfy yourself that the source genuinely says nothing about it.
 
 As a calibration check, count the distinct ideas in your Pass 2 inventory —
 terms, mechanisms, formulas, comparisons, caveats — and expect roughly **two
 to four items per idea**, since recall, application and recognition are
-different skills. Anchor on that, never on how many pages or words the source
+different skills — scaled by weight: one item for a bare fact stated once and
+never used again, three or four for a formula, mechanism or comparison. Anchor on that, never on how many pages or words the source
 happens to be. If your draft is far below it, you have skipped content: go
 back to the inventory. If the inventory itself is genuinely short, a small
 course is the right answer.
@@ -187,7 +207,8 @@ file must be valid JSON matching this shape exactly:
       "example": number?, "graphic": number?
     }?,
     "inventory": {                 // your Pass 2 inventory — see below
-      "terms": string[],           // EVERY technical term you found
+      "terms": string[],           // EVERY term the source explains
+      "mentioned": string[]?,      // terms it only names (no definition item)
       "objectives": string[]?      // stated learning objectives, verbatim
     }?
   },
@@ -335,8 +356,9 @@ table. The app reports sections where nothing goes beyond recall.
 both produce items that are perfectly grounded and still worthless:
 
 - A stem that cites the source — "according to the notes", "on the Chemical
-  Messengers slide", "which two are listed together on one line". The cue
-  will not exist in the exam, and the last of those tests typesetting.
+  Messengers slide", "which two are listed together on one line", or the
+  softer "shown", "listed for", "given in the lecture". The cue will not
+  exist in the exam, and the last of those tests typesetting.
 - A stem built by bolting an interrogative onto the source sentence —
   "Hydrophilic messengers travel to the target cell how?" from a source
   reading "Travel to target cell dissolved in extracellular fluid". Nothing
@@ -375,7 +397,7 @@ nothing else.
 ## Before you output
 
 Check your own draft:
-1. **Coverage.** Walk your Pass 2 inventory. Is every term defined? Is every
+1. **Coverage.** Walk your Pass 2 inventory. Is every term in `terms` defined? Is every
    stated objective backed by a gradable item? Is every formula applied
    somewhere? Anything missing gets written now.
 2. Does every item have a `source_excerpt` that really is in the source?

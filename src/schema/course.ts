@@ -111,6 +111,8 @@ export const ItemCountsSchema = z
  */
 export const InventorySchema = z.looseObject({
   terms: z.array(z.string()).optional(),
+  /** Terms the source only names (a label, a caption): listed, never defined. */
+  mentioned: z.array(z.string()).optional(),
   objectives: z.array(z.string()).optional(),
 });
 
