@@ -44,3 +44,22 @@ describe('study log', () => {
     expect(useStudyLogStore.getState().byCourse.c.answers[0].afterMiss).toBe(true);
   });
 });
+
+describe('study log — size', () => {
+  beforeEach(() => useStudyLogStore.setState({ byCourse: {} }));
+
+  it('skips cards flicked past in under a second', () => {
+    useStudyLogStore.getState().logCard('c', 'mcq', 0.4, 0);
+    expect(useStudyLogStore.getState().byCourse.c).toBeUndefined();
+  });
+
+  it('stores answers rounded, not as full-precision doubles', () => {
+    useStudyLogStore.getState().logAnswer('c', { at: 1, type: 'mcq', got: true, sinceHours: 12.345678901, afterMiss: false, predicted: 0.8123456789 });
+    expect(useStudyLogStore.getState().byCourse.c.answers[0]).toMatchObject({ sinceHours: 12.35, predicted: 0.812 });
+  });
+
+  it('never measures a pace below a floor', () => {
+    const times = Array.from({ length: 20 }, () => ({ type: 'flashcard', seconds: 1 }));
+    expect(measuredPace({ c: { times, answers: [], days: {} } }).flashcard).toBe(3);
+  });
+});

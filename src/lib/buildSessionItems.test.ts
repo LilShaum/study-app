@@ -407,3 +407,29 @@ describe('buildSessionItems — today, a mixed-up partner joins the review', () 
     ]);
   });
 });
+
+describe('fitMinutes', () => {
+  it('keeps a card that fits exactly, despite float rounding', async () => {
+    const { fitMinutes } = await import('./buildSessionItems');
+    const cards = Array.from({ length: 10 }, () => ({ type: 'x' }));
+    // 123 s at 41 s a card: three fit exactly.
+    expect(fitMinutes(cards, 123 / 60, { x: 41 })).toHaveLength(3);
+  });
+});
+
+describe('buildSessionItems — a review sitting has a ceiling', () => {
+  const DAY = 86_400_000;
+  const now = 100 * DAY;
+  const items = Array.from({ length: 300 }, (_, i) => ({ id: `q${i}`, type: 'flashcard', front: 'f', back: 'b' }));
+  const big = { schema_version: '1.0', metadata: { title: 'T' }, sections: [{ id: 's', title: 'S', order: 1, items }] } as unknown as Course;
+  const progress = Object.fromEntries(items.map((it) => [it.id, { got: 1, missed: 0, lastSeen: now - 3 * DAY, stability: 1 }]));
+
+  it('holds at most REVIEW_MAX however long the minutes', async () => {
+    const { REVIEW_MAX } = await import('./buildSessionItems');
+    expect(buildSessionItems(big, 'review', { progress, now, minutes: 90 })).toHaveLength(REVIEW_MAX);
+  });
+
+  it('counts everything due when asked with unlimited minutes', () => {
+    expect(buildSessionItems(big, 'review', { progress, now, minutes: Infinity })).toHaveLength(300);
+  });
+});

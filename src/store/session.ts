@@ -22,6 +22,14 @@ function logCurrentCard(state: { courseId: string | null; items: SessionItem[]; 
   shownAt = now;
 }
 
+/**
+ * Starts the current card's clock afresh: for a card shown again after the
+ * student sat on a pause screen, which is not time spent on the card.
+ */
+export function restartCardTimer() {
+  shownAt = Date.now();
+}
+
 interface SessionState {
   courseId: string | null;
   mode: StudyMode | null;
@@ -279,7 +287,9 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
 
   jumpToSection: (sectionId) => {
     const idx = get().items.findIndex((i) => i._sectionId === sectionId);
-    if (idx >= 0) set({ index: idx, activeSectionId: sectionId });
+    if (idx < 0) return;
+    logCurrentCard(get());
+    set({ index: idx, activeSectionId: sectionId });
   },
 
   finish: () => {

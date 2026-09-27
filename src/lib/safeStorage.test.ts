@@ -115,3 +115,29 @@ describe('storageUsage', () => {
     expect(storageUsage()!.limit).toBeGreaterThan(1024 * 1024);
   });
 });
+
+describe('safeStorage — the study log gives way', () => {
+  it('drops the study log to make room for anything else', async () => {
+    const { safeJSONStorage, persisted } = await freshModule();
+    localStorage.setItem('arborous:study-log', 'x'.repeat(100));
+    // Full until the log is gone.
+    Storage.prototype.setItem = function (this: Storage, k: string, v: string) {
+      if (realGet.call(this, 'arborous:study-log') != null) throw new DOMException('full', 'QuotaExceededError');
+      realSetItem.call(this, k, v);
+    };
+    const { ok } = persisted(() => safeJSONStorage!.setItem('arborous:progress', { state: { a: 1 }, version: 0 }));
+    expect(ok).toBe(true);
+    expect(localStorage.getItem('arborous:study-log')).toBeNull();
+    expect(localStorage.getItem('arborous:progress')).toContain('"a":1');
+  });
+
+  it('still reports the failure when dropping the log is not enough', async () => {
+    const { safeJSONStorage, persisted } = await freshModule();
+    localStorage.setItem('arborous:study-log', 'x');
+    breakWrites();
+    const { ok } = persisted(() => safeJSONStorage!.setItem('arborous:progress', { state: {}, version: 0 }));
+    expect(ok).toBe(false);
+  });
+});
+
+const realGet = Storage.prototype.getItem;

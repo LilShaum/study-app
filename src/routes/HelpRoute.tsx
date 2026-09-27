@@ -56,7 +56,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Review',
-    what: 'Brings back what you have studied as you start to forget it, most forgotten first, 50 at a time. If you set an exam date in Edit details, it also makes sure things are fresh on the day.',
+    what: 'Brings back what you have studied as you start to forget it, most forgotten first, as many as fit in your daily time. If you set an exam date in Edit details, it also makes sure things are fresh on the day.',
     scored: true,
   },
   {
