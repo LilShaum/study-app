@@ -30,17 +30,17 @@ lilshaum.github.io/arborous/, and GitHub doesn't forward the old address.
 
 ## Plan for a seamless switch
 
-1. **Add "Back up everything" / "Restore".** One file holding every course,
-   all progress and the settings stores. It's worth having anyway, since iOS
-   can clear site storage.
+1. ~~**Add "Back up everything" / "Restore".**~~ Done (2026-09-27):
+   Help → "Where your courses are saved", and a "Restore a backup" link on
+   the empty library (`src/lib/backup.ts`).
 2. **Ship one release at the old address that announces the move.** It shows
    the new address and a one-tap "Save backup" button, and stays up long
    enough for users to see it.
 3. **The owner renames the repo** in GitHub's settings. This session can't.
    Then, in the same push: change the paths listed above, and update the
    session's repo access (`add_repo`) and the git remote.
-4. **Open the new address with no data saved.** If localStorage is empty,
-   show a clear "Restore from backup" prompt before onboarding.
+4. **Open the new address with no data saved.** The empty library already
+   offers "Restore a backup"; consider offering it in the welcome too.
 5. **Optionally forward the old address.** Make a new repo named `study-app`
    whose Pages site redirects to /arborous/, with a `sw.js` that unregisters
    itself, so old links and bookmarks still land somewhere.
