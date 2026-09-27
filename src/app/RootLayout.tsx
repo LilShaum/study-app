@@ -38,9 +38,9 @@ function useLocationName(): string {
 export function RootLayout() {
   const here = useLocationName();
   const { pathname } = useLocation();
-  // The course page is laid out in two columns on a desktop; head, page and
-  // colophon widen together so the rules still line up.
-  const wide = /^\/study\/[^/]+$/.test(pathname) ? ' is-wide' : '';
+  // The course page and the study screen are laid out in two columns on a
+  // desktop; head, page and colophon widen together so the rules still line up.
+  const wide = /^\/study\/[^/]+$/.test(pathname) || pathname.startsWith('/session/') ? ' is-wide' : '';
 
   return (
     <div className="app-shell paper-grain flex min-h-screen flex-col bg-bg">

@@ -3,7 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { scoredEntries } from '@/lib/scored';
 import { isDueFor } from '@/lib/memory';
 import { useCoursesStore } from '@/store/courses';
-import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
+import { EMPTY_PROGRESS, isMissed, useProgressStore } from '@/store/progress';
 import { availableModes, findSection, sectionStats } from '@/lib/sectionStats';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { CourseTree } from '@/components/CourseTree';
@@ -64,8 +64,7 @@ export function SectionRoute() {
   const examAt = examRule(course, progress, now).forSection(section.id);
   const due = scored.filter(({ id: itemId }) => isDueFor(progress[itemId], now, examAt)).length;
   const missed = scored.filter(({ id: itemId }) => {
-    const r = progress[itemId];
-    return r && r.missed > r.got;
+    return isMissed(progress[itemId]);
   }).length;
 
   const MODE_LINKS: { mode: string; label: string; count: number; lead?: boolean; unit?: string }[] = [

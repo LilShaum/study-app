@@ -1,11 +1,11 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { exportCourse } from '@/lib/exportCourse';
 import { sortedSections } from '@/lib/sortedSections';
 import { sectionStats } from '@/lib/sectionStats';
 import { scoredEntries } from '@/lib/scored';
-import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
+import { EMPTY_PROGRESS, isMissed, useProgressStore } from '@/store/progress';
 import { bookmarkResolves, useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
@@ -159,10 +159,10 @@ export function CourseRoute() {
   const bookmark = useResumeStore((s) => (id ? s.byCourse[id] : undefined));
   const clearBookmark = useResumeStore((s) => s.clear);
   const progress = useProgressStore((s) => (id ? s.getProgress(id) : EMPTY_PROGRESS));
-  const nextUp = useMemo(() => (course ? nextSectionToLearn(course, progress) : null), [course, progress]);
   // What is due is judged as of opening the page: rendering must not read the
   // clock, and a count that shifted while you looked at it would be worse.
   const [now] = useState(Date.now);
+  const nextUp = useMemo(() => (course ? nextSectionToLearn(course, progress, now) : null), [course, progress, now]);
 
   const counts = useMemo<Counts>(() => {
     const items = course?.sections.flatMap((s) => s.items) ?? [];
@@ -189,8 +189,7 @@ export function CourseRoute() {
       // Counted here rather than via progress.missedIds(), which builds a new
       // Set on every call and would change the store snapshot each render.
       missed: gradableIds.filter((itemId) => {
-        const r = progress[itemId];
-        return r && r.missed > r.got;
+        return isMissed(progress[itemId]);
       }).length,
       studied,
       due: gradableIds.filter((itemId) => isDueFor(progress[itemId], now, exam?.forItem(itemId) ?? null)).length,
@@ -558,7 +557,7 @@ export function CourseRoute() {
       {/* On a phone, Today's Start stays where a thumb is, however far the
           page has scrolled. */}
       {!wide && !today?.empty && !todayInView && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-strong bg-bg/95 px-5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:hidden">
+        <PinnedBar>
           <div className="flex items-center gap-4">
             <span className="min-w-0 flex-1 truncate text-small text-text-2">
               <span className="font-display font-semibold text-text">Today</span> · {minutes} min
@@ -567,7 +566,7 @@ export function CourseRoute() {
               Start
             </Link>
           </div>
-        </div>
+        </PinnedBar>
       )}
 
       {examOpen && <ExamDialog courseId={id} course={course} onClose={() => setExamOpen(false)} />}
@@ -579,6 +578,36 @@ export function CourseRoute() {
       {adding && (
         <AddToCourseDialog courseId={id} course={course} initialMode={adding} onClose={() => setAdding(null)} />
       )}
+    </div>
+  );
+}
+
+/**
+ * A bar pinned to the bottom of a phone screen. While it shows, it tells the
+ * page how tall it is (--pinned-bottom), so messages rise above it instead of
+ * covering its button.
+ */
+function PinnedBar({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const set = () => root.style.setProperty('--pinned-bottom', `${el.offsetHeight}px`);
+    set();
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(set) : null;
+    observer?.observe(el);
+    return () => {
+      observer?.disconnect();
+      root.style.removeProperty('--pinned-bottom');
+    };
+  }, []);
+  return (
+    <div
+      ref={ref}
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border-strong bg-bg/95 px-5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:hidden"
+    >
+      {children}
     </div>
   );
 }
