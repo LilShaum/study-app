@@ -111,6 +111,14 @@ describe('analyseCourseHealth — coverage against the declared inventory', () =
     expect(find(h, 'declared-terms-missing')).toMatchObject({ severity: 'warning' });
   });
 
+  it('does not count a term the notes only mention as missing', () => {
+    const h = analyseCourseHealth(
+      course([def('d1', 'Michaelis constant')], { inventory: { terms: ['Michaelis constant', 'Purkinje neuron'], mentioned: ['Purkinje neuron'] } }),
+    );
+    expect(h.declaredTermCoverage).toMatchObject({ covered: 1, total: 1 });
+    expect(find(h, 'declared-terms-missing')).toBeUndefined();
+  });
+
   it('matches a declared term against a longer definition title', () => {
     const h = analyseCourseHealth(withInventory([def('d1', 'Km (Michaelis constant)')], ['Km']));
     expect(h.declaredTermCoverage).toMatchObject({ covered: 1, total: 1 });
