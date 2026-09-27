@@ -4,7 +4,7 @@ import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
 import { buildSessionItems, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { phaseOf, type LearnPhase } from '@/lib/learnSteps';
-import { useSessionStore } from '@/store/session';
+import { useSessionStore, restartCardTimer } from '@/store/session';
 import { useResumeStore } from '@/store/resume';
 import { CourseTree } from '@/components/CourseTree';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
@@ -342,6 +342,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         if (e.key === 'Enter' || e.key === 'ArrowRight') {
           e.preventDefault();
           setPause(null);
+          restartCardTimer();
         }
         return;
       }
@@ -572,7 +573,10 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
             <p className="mx-auto mt-2 max-w-prose text-small text-text-2">{pause.terms.join(' · ')}</p>
           )}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <button type="button" onClick={() => setPause(null)} className="press press-ink tap-safe" autoFocus>
+            <button type="button" onClick={() => {
+              setPause(null);
+              restartCardTimer();
+            }} className="press press-ink tap-safe" autoFocus>
               {pause.reviewDone ? 'Start learning' : pause.sectionDone ? 'Next section' : 'Next step'}
             </button>
             <Link to={`/study/${courseId}`} className="press tap-safe">

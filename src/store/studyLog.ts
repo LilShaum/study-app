@@ -41,12 +41,20 @@ interface CourseLog {
   days: Record<string, number>;
 }
 
-const MAX_TIMES = 1500;
-const MAX_ANSWERS = 3000;
+// Sized so a course's log stays under about 100 KB: it shares the browser's
+// ~5 MB with the courses and progress, and those matter more (see also
+// lib/safeStorage.ts, which drops the log first when storage is full).
+const MAX_TIMES = 500;
+const MAX_ANSWERS = 800;
+/** Under a second, the card was skipped past, not studied. */
+const MIN_CARD_SECONDS = 1;
 /** A card left open longer than this was not being studied. */
 const MAX_CARD_SECONDS = 180;
 
 const EMPTY: CourseLog = { times: [], answers: [], days: {} };
+
+const round = (x: number | null, places: number) => (x == null ? null : Number(x.toFixed(places)));
+const compact = (e: AnswerEvent): AnswerEvent => ({ ...e, sinceHours: round(e.sinceHours, 2), predicted: round(e.predicted, 3) });
 
 export const dayKey = (at: number) => {
   const d = new Date(at);
@@ -65,7 +73,7 @@ export const useStudyLogStore = create<StudyLogState>()(
     (set) => ({
       byCourse: {},
       logCard: (courseId, type, seconds, at) => {
-        if (!(seconds > 0)) return;
+        if (!(seconds >= MIN_CARD_SECONDS)) return;
         const s = Math.min(MAX_CARD_SECONDS, seconds);
         set((state) => {
           const log = state.byCourse[courseId] ?? EMPTY;
@@ -86,7 +94,7 @@ export const useStudyLogStore = create<StudyLogState>()(
         set((state) => {
           const log = state.byCourse[courseId] ?? EMPTY;
           return {
-            byCourse: { ...state.byCourse, [courseId]: { ...log, answers: [...log.answers, event].slice(-MAX_ANSWERS) } },
+            byCourse: { ...state.byCourse, [courseId]: { ...log, answers: [...log.answers, compact(event)].slice(-MAX_ANSWERS) } },
           };
         }),
       clear: (courseId) =>
@@ -121,7 +129,8 @@ export function measuredPace(byCourse: Record<string, CourseLog>): Record<string
   for (const [type, list] of byType) {
     if (list.length < MIN_SAMPLES) continue;
     const sorted = [...list].sort((a, b) => a - b);
-    out[type] = sorted[Math.floor(sorted.length / 2)];
+    // A floor, so a run of fast taps can never make a sitting limitless.
+    out[type] = Math.max(3, sorted[Math.floor(sorted.length / 2)]);
   }
   return out;
 }

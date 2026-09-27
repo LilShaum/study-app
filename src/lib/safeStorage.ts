@@ -81,6 +81,8 @@ export function storageUsage(): { used: number; limit: number } | null {
   }
 }
 
+const STUDY_LOG_KEY = 'arborous:study-log';
+
 const safeLocalStorage: Storage = {
   get length() {
     try {
@@ -107,6 +109,20 @@ const safeLocalStorage: Storage = {
     try {
       localStorage.setItem(name, value);
     } catch {
+      // The study log is the one thing here that can be lost without loss to
+      // the student (it only tunes timing). When storage is full, it goes
+      // first, so a course or an answer is never what fails to save.
+      if (name !== STUDY_LOG_KEY) {
+        try {
+          if (localStorage.getItem(STUDY_LOG_KEY) != null) {
+            localStorage.removeItem(STUDY_LOG_KEY);
+            localStorage.setItem(name, value);
+            return;
+          }
+        } catch {
+          /* still full: fall through and report it */
+        }
+      }
       writeFailedSinceCheck = true;
       // The ambient warning stays once-per-session — a failing write usually
       // keeps failing and a toast per keystroke would be worse than the

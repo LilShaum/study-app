@@ -33,12 +33,16 @@ export type StudyMode = (typeof STUDY_MODES)[number];
  * was an hour of MCQs or ten minutes of flashcards; now it is the student's
  * own time a day, most urgent first, and the end of a sitting offers more.
  */
+/** However long the minutes, a sitting past this many cards is one nobody finishes; the end offers more. */
+export const REVIEW_MAX = 200;
+
 export function fitMinutes<T extends { type: string }>(list: T[], minutes: number, pace?: Record<string, number>): T[] {
   const out: T[] = [];
   let spent = 0;
   for (const item of list) {
     const s = cardSeconds(item, pace);
-    if (out.length && spent + s > minutes * 60) break;
+    // The small allowance keeps float rounding from dropping a card that fits.
+    if (out.length && spent + s > minutes * 60 + 1e-6) break;
     out.push(item);
     spent += s;
   }
@@ -370,7 +374,8 @@ export function buildSessionItems(
       items = weakestFirst(asTyped(asRecall(items)), progress);
       break;
     case 'review':
-      items = pairConfusions(fitMinutes(dueFirst(items), minutes, pace));
+      // Unlimited minutes is how the finish screen counts everything due.
+      items = pairConfusions(fitMinutes(dueFirst(items), minutes, pace).slice(0, Number.isFinite(minutes) ? REVIEW_MAX : undefined));
       break;
     case 'today': {
       // One sitting sized to the student's minutes: what is due, for Review's
