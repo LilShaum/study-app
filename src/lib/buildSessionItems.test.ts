@@ -280,17 +280,25 @@ describe('buildSessionItems — a question answered right comes back typed', () 
 });
 
 describe('buildSessionItems — a review sitting has a size', () => {
-  it('serves the most urgent, up to one sitting', async () => {
-    const { REVIEW_SITTING } = await import('./buildSessionItems');
-    const items = Array.from({ length: REVIEW_SITTING + 20 }, (_, i) => ({ id: `q${i}`, type: 'flashcard', front: 'f', back: 'b' }));
-    const big = { schema_version: '1.0', metadata: { title: 'T' }, sections: [{ id: 's', title: 'S', order: 1, items }] } as unknown as Course;
-    const DAY = 86_400_000;
-    const now = 100 * DAY;
-    const progress = Object.fromEntries(items.map((it, i) => [it.id, { got: 1, missed: 0, lastSeen: now - (1 + i / 10) * DAY, stability: 1 }]));
-    const served = buildSessionItems(big, 'review', { progress, now });
-    expect(served).toHaveLength(REVIEW_SITTING);
-    // Faintest first: the longest-unseen items lead.
-    expect(served[0].id).toBe(`q${REVIEW_SITTING + 19}`);
+  const DAY = 86_400_000;
+  const now = 100 * DAY;
+  const items = Array.from({ length: 200 }, (_, i) => ({ id: `q${i}`, type: 'flashcard', front: 'f', back: 'b' }));
+  const big = { schema_version: '1.0', metadata: { title: 'T' }, sections: [{ id: 's', title: 'S', order: 1, items }] } as unknown as Course;
+  const progress = Object.fromEntries(items.map((it, i) => [it.id, { got: 1, missed: 0, lastSeen: now - (1 + i / 10) * DAY, stability: 1 }]));
+
+  it('fits the minutes a day, most urgent first', () => {
+    // Flashcards take 12 s by default: 10 minutes is 50 of them.
+    const served = buildSessionItems(big, 'review', { progress, now, minutes: 10 });
+    expect(served).toHaveLength(50);
+    expect(served[0].id).toBe('q199');
+  });
+
+  it('uses the pace measured on this device', () => {
+    expect(buildSessionItems(big, 'review', { progress, now, minutes: 10, pace: { flashcard: 30 } })).toHaveLength(20);
+  });
+
+  it('serves at least one card however short the sitting', () => {
+    expect(buildSessionItems(big, 'review', { progress, now, minutes: 0.01 })).toHaveLength(1);
   });
 });
 

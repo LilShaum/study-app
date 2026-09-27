@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
-import { buildSessionItems, REVIEW_SITTING, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
+import { buildSessionItems, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { phaseOf, type LearnPhase } from '@/lib/learnSteps';
 import { useSessionStore } from '@/store/session';
 import { useResumeStore } from '@/store/resume';
@@ -315,6 +315,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         sectionId,
         progress: useProgressStore.getState().getProgress(courseId),
         exam: examRule(course, useProgressStore.getState().getProgress(courseId), Date.now()),
+        // Every card still due, not one more sitting's worth.
+        minutes: Infinity,
       }).length;
       setMoreDue(still);
       // While more is due now, "these come back tomorrow" is not the news.
@@ -430,7 +432,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
               leads. */}
           {moreDue > 0 && (
             <button type="button" onClick={restart} className="press press-ink tap-safe">
-              Review the next {Math.min(moreDue, REVIEW_SITTING)}
+              Keep reviewing
             </button>
           )}
           {mode === 'today' && (
@@ -451,7 +453,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
               short of the time set aside; carrying on is a fresh plan from
               where things now stand. The simulator found this is what makes
               Today match its plan (sim/FINDINGS.md). */}
-          {/* In Review with more due, "Review the next" already is this. */}
+          {/* In Review with more due, "Keep reviewing" already is this. */}
           {moreDue === 0 && mode !== 'today' && (
             <button
               type="button"

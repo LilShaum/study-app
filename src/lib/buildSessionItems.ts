@@ -25,12 +25,25 @@ export const STUDY_MODES = [
 export type StudyMode = (typeof STUDY_MODES)[number];
 
 /**
- * The most a Review sitting holds. A student learning a 474-item course over
- * two weeks meets two hundred and more due in a day (simulated; see
- * lib/memory.ts), and a sitting that long is one nobody finishes. The most
- * urgent come first, and the end of a sitting offers the next.
+ * The first cards of a list that fit in `minutes`, at the seconds each takes
+ * (measured on this device when there is enough, lib/today.ts). Always at
+ * least one, so a short sitting still does something.
+ *
+ * A Review sitting is sized this way. It used to be a fixed 50 cards, which
+ * was an hour of MCQs or ten minutes of flashcards; now it is the student's
+ * own time a day, most urgent first, and the end of a sitting offers more.
  */
-export const REVIEW_SITTING = 50;
+export function fitMinutes<T extends { type: string }>(list: T[], minutes: number, pace?: Record<string, number>): T[] {
+  const out: T[] = [];
+  let spent = 0;
+  for (const item of list) {
+    const s = cardSeconds(item, pace);
+    if (out.length && spent + s > minutes * 60) break;
+    out.push(item);
+    spent += s;
+  }
+  return out;
+}
 
 type DefinitionItem = Extract<StudyItem, { type: 'definition' }>;
 
@@ -357,21 +370,14 @@ export function buildSessionItems(
       items = weakestFirst(asTyped(asRecall(items)), progress);
       break;
     case 'review':
-      items = pairConfusions(dueFirst(items).slice(0, REVIEW_SITTING));
+      items = pairConfusions(fitMinutes(dueFirst(items), minutes, pace));
       break;
     case 'today': {
       // One sitting sized to the student's minutes: what is due, for Review's
       // share of the time, then Learn's steps for the rest (lib/today.ts).
       const due = dueFirst(items);
       const plan = splitSitting(course, progress ?? {}, now, minutes, undefined, undefined, due.reduce((n, i) => n + cardSeconds(i, pace), 0));
-      const review: SessionItem[] = [];
-      let spent = 0;
-      for (const item of due) {
-        if (review.length && spent + cardSeconds(item, pace) > plan.reviewMinutes * 60) break;
-        if (plan.reviewMinutes <= 0) break;
-        review.push({ ...item, _block: 'review' });
-        spent += cardSeconds(item, pace);
-      }
+      const review = plan.reviewMinutes > 0 ? fitMinutes(due, plan.reviewMinutes, pace) : [];
       const learn: SessionItem[] = [];
       let learnSpent = 0;
       // Time ran out at a step that would not fit. Stop there: going on to a

@@ -176,6 +176,14 @@ export const POLICIES: Record<string, Policy> = {
    */
   'today-cap-always': today(0.6, null),
   /**
+   * Experiment, 2026-09-27: the exam-week choice, as the two things a student
+   * could pick in the last week. "Learn what's left": Review held to 20% for
+   * the final 7 days while anything on the exam is unseen. "Hold on to what
+   * I know": Review is never capped.
+   */
+  'week-learn': today(0.2, 7),
+  'week-review': today(1, 4),
+  /**
    * What the app suggests today: Review leads the course page while
    * anything is due, then Learn carries on with the next section.
    */
