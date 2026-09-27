@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
 import { measuredPace, useStudyLogStore } from './studyLog';
 import { useSessionStore } from './session';
@@ -13,6 +13,7 @@ describe('study log', () => {
     useStudyLogStore.setState({ byCourse: {} });
     useProgressStore.setState({ byCourse: {} });
   });
+  afterEach(() => vi.useRealTimers());
 
   it('keeps built-in guesses until a type has enough samples', () => {
     const times = Array.from({ length: 14 }, () => ({ type: 'mcq', seconds: 50 }));
@@ -22,7 +23,11 @@ describe('study log', () => {
 
   it('logs each answer, and each card as the student moves on', () => {
     const s = useSessionStore.getState;
+    // A card is timed from when it is shown; opened and left in the same
+    // millisecond it would log zero seconds, which the log drops.
+    vi.useFakeTimers({ now: 1_000_000 });
     s().init('c', course, 'quiz');
+    vi.setSystemTime(1_008_000);
     s().record(false);
     s().next();
     const log = useStudyLogStore.getState().byCourse.c;

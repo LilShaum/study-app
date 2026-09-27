@@ -10,6 +10,42 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-09-27 — The exam-week choice: not built; Review sized by minutes
+
+**Question.** Finding 3 below proposed letting the student choose, in the
+last week, between learning what's left and holding on to what they know.
+Tried as two policies before building a screen (3 seeds each):
+`week-learn` holds Review to 20% for the final 7 days while anything on
+the exam is unseen; `week-review` never caps Review. Against `today` (the
+shipped rule: 40% in the final 4 days).
+
+| Scenario | today | Learn what's left | Hold on |
+|---|---|---|---|
+| steady-30 | 52% | 48% | 51% |
+| steady-45 | 76% | 74% | 72% |
+| busy-20 | 28% | 23% | 28% |
+| crammer | 67% | 62% | 63% |
+| half-scope-told | 87% | 87% | 88% |
+| 30-cutoff-scope | 63% | 57% | 61% |
+| 45-cutoff-scope | 85% | 86% | 85% |
+| 45-cutoff-scope-harsh | 24% | 20% | 21% |
+
+**Decision: no choice.** "Learn what's left" is worse almost everywhere
+(up to −6 with the scope told). "Hold on" only wins when the exam covers
+less than the course **and the app was not told** (half-scope 79 → 88,
+45-cutoff 79 → 85). The exam dialog now always stores the sections, so
+that case is the one the setup already fixes. With the scope told, the
+shipped rule matches or beats both options under `fsrs` and `harsh`.
+Offering the choice would mostly offer a worse option. The two policies
+stay in `engine.ts` for re-checking.
+
+**Review sized by minutes.** A Review sitting was a fixed 50 cards; it is
+now the student's minutes a day at their measured pace, most urgent first
+(`fitMinutes`). The suite is unchanged within noise (the Today button,
+the default policy, already sized its review block this way).
+
+---
+
 ## 2026-09-26 — Audit: the suite could not see Review; late reviews are the ones after a miss
 
 An independent audit of the learning logic (`docs/audits/2026-10-fable-audit.md`).
