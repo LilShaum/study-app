@@ -7,6 +7,7 @@ import { useFallenStore } from '@/store/fallen';
 import { useStudyLogStore } from '@/store/studyLog';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
+import { BackupButton, RestoreButton } from '@/components/Backup';
 import { useOnboardingStore } from '@/store/onboarding';
 import { storageUsage } from '@/lib/safeStorage';
 import { scrollToAnchor } from '@/lib/scrollToAnchor';
@@ -289,10 +290,19 @@ const SECTIONS: HelpSection[] = [
       <>
         <p>
           Your courses and progress are saved in this browser, on this device. Nothing is uploaded
-          and there is no account. If you clear the browser&rsquo;s data, your courses go with it,
-          so use <strong>Export</strong> on a course page to keep a copy or to move a course to
-          another device.
+          and there is no account. If you clear the browser&rsquo;s data, your courses go with it.
         </p>
+        <p className="mt-2">
+          <strong>Back up everything</strong> saves every course, all your progress and your
+          settings as one file. Keep it somewhere safe, or restore it on another device or in the
+          installed app to carry on exactly where you left off. Restoring replaces what is on the
+          device you restore it on. To give one course to a classmate, use <strong>Export</strong>{' '}
+          on its course page instead.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-3">
+          <BackupButton />
+          <RestoreButton />
+        </div>
         <p className="mt-2">
           Arborous can be installed as an app, and works offline. On an iPhone: Share, then Add to
           Home Screen. On Android or desktop Chrome: the install icon in the address bar, or the ⋮
@@ -300,7 +310,7 @@ const SECTIONS: HelpSection[] = [
         </p>
         <p className="mt-2">
           On an iPhone the installed app has its own storage, separate from Safari, so courses added
-          in Safari will not appear in it. Export them from Safari and upload them in the app.
+          in Safari will not appear in it. Back up in Safari and restore in the app.
         </p>
         <p className="mt-2">If you delete a course by mistake, tap Undo on the message that appears.</p>
         <div className="mt-2">

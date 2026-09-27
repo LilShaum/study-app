@@ -15,6 +15,7 @@ import { isDueFor } from '@/lib/memory';
 import { sectionStats } from '@/lib/sectionStats';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
 import { examRule } from '@/lib/exam';
+import { RestoreButton } from '@/components/Backup';
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
@@ -192,6 +193,10 @@ export function LibraryRoute() {
             <Icon name="plus" size={13} />
             New course
           </button>
+          <p className="mt-6 text-small">
+            Studied on another device?{' '}
+            <RestoreButton className="tap-safe text-text-2 underline decoration-border-strong underline-offset-4 hover:text-text" label="Restore a backup" />
+          </p>
         </div>
       ) : (
         <>
