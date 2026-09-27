@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
+import type { Course } from '@/schema/course';
 import { exportCourse } from '@/lib/exportCourse';
+import { cloudError, hasSavedSignIn, shareCourse } from '@/lib/cloud';
 import { sortedSections } from '@/lib/sortedSections';
 import { sectionStats } from '@/lib/sectionStats';
 import { scoredEntries } from '@/lib/scored';
@@ -457,6 +459,7 @@ export function CourseRoute() {
             >
               Export
             </ToolButton>
+            <ToolButton onClick={() => void share(course)}>Share</ToolButton>
           </div>
         </div>
       </div>
@@ -610,4 +613,35 @@ function PinnedBar({ children }: { children: ReactNode }) {
       {children}
     </div>
   );
+}
+
+/**
+ * Makes a link a classmate can open to add this course. Needs a sign-in, so
+ * the link has an owner who can take it down; opening one needs nothing.
+ */
+async function share(course: Course) {
+  if (!hasSavedSignIn()) {
+    toast('Sign in to share a course.', {
+      type: 'info',
+      actionLabel: 'Sign in',
+      onAction: () => window.location.assign('#/sync'),
+    });
+    return;
+  }
+  try {
+    const url = await shareCourse(course);
+    const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+    if (coarse && typeof navigator.share === 'function') {
+      await navigator.share({ title: course.metadata.title, url }).catch(() => undefined);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast('Link copied. Anyone with it can add this course.', { type: 'success' });
+    } catch {
+      window.prompt('Copy this link:', url);
+    }
+  } catch (e) {
+    toast(cloudError(e), { type: 'error' });
+  }
 }

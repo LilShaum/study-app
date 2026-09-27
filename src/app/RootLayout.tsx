@@ -28,6 +28,8 @@ function useLocationName(): string {
   });
 
   if (pathname === '/help') return 'Using Arborous';
+  if (pathname === '/sync') return 'Sync';
+  if (pathname.startsWith('/shared/')) return 'Shared course';
   if (pathname.startsWith('/session/')) return title ?? 'Session';
   if (pathname.includes('/progress')) return title ? `${title} · Progress` : 'Progress';
   if (pathname.includes('/diagrams')) return title ? `${title} · Plates` : 'Plates';
@@ -94,6 +96,9 @@ export function RootLayout() {
         <div className="flex items-center justify-center gap-5">
           <Link to="/help" className="press press-quiet">
             Help
+          </Link>
+          <Link to="/sync" className="press press-quiet">
+            Sync
           </Link>
           <DarkModeToggle />
         </div>

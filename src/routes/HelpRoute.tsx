@@ -289,8 +289,15 @@ const SECTIONS: HelpSection[] = [
     body: (
       <>
         <p>
-          Your courses and progress are saved in this browser, on this device. Nothing is uploaded
-          and there is no account. If you clear the browser&rsquo;s data, your courses go with it.
+          Your courses and progress are saved in this browser, on this device. If you clear the
+          browser&rsquo;s data, your courses go with it.
+        </p>
+        <p className="mt-2">
+          <strong>Sync</strong> (at the foot of every page) is optional: sign in with an email and a
+          password on each device you study on, and your courses and progress follow you between
+          them. Without it nothing leaves this device. <strong>Share</strong> on a course page makes
+          a link anyone can open to add that course to their own library; it needs you signed in,
+          and opening it does not.
         </p>
         <p className="mt-2">
           <strong>Back up everything</strong> saves every course, all your progress and your

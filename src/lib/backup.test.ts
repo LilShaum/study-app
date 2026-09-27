@@ -76,3 +76,11 @@ describe('backup', () => {
     expect(Object.keys(read.backup.data)).toEqual(['arborous:plan']);
   });
 });
+
+describe('backup and sync', () => {
+  it("leaves sync's own bookkeeping out of a backup", async () => {
+    localStorage.setItem('arborous:sync-meta', '{"state":{"remoteSeenAt":"x"},"version":0}');
+    const { makeBackup } = await import('./backup');
+    expect(makeBackup().data['arborous:sync-meta']).toBeUndefined();
+  });
+});
