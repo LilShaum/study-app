@@ -24,6 +24,7 @@ import { useFallenStore } from '@/store/fallen';
 const PREFIX = 'arborous:';
 /** Set by a restore, so any other open tab reloads instead of writing its old state back. */
 export const RESTORED_KEY = `${PREFIX}restored-at`;
+const SYNC_META_KEY = `${PREFIX}sync-meta`;
 
 /** The persisted stores, whose in-memory state is the truth when storage has fallen behind. */
 const STORES = [
@@ -71,7 +72,10 @@ function ownKeys(): string[] {
 
 export function makeBackup(now = new Date()): Backup {
   const data: Record<string, string> = {};
-  for (const k of ownKeys()) if (k !== RESTORED_KEY) data[k] = localStorage.getItem(k) ?? '';
+  // Sync's own bookkeeping stays behind: it describes this device's last
+  // sync, and carried to another device it would make that one skip a
+  // download it needs. A restored device starts sync afresh.
+  for (const k of ownKeys()) if (k !== RESTORED_KEY && k !== SYNC_META_KEY) data[k] = localStorage.getItem(k) ?? '';
   // The stores' state in memory, not what last reached storage: when storage
   // is full, recent changes live only in memory, and a backup is exactly when
   // they must not be lost.

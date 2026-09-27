@@ -8,6 +8,8 @@ import { ProgressRoute } from '@/routes/ProgressRoute';
 import { SectionRoute } from '@/routes/SectionRoute';
 import { DiagramsRoute } from '@/routes/DiagramsRoute';
 import { HelpRoute } from '@/routes/HelpRoute';
+import { SyncRoute } from '@/routes/SyncRoute';
+import { SharedRoute } from '@/routes/SharedRoute';
 
 // Hash routing (createHashRouter) is required, not a preference — GitHub
 // Pages serves this as a static site with no server-side rewrite, so a
@@ -25,6 +27,8 @@ export const router = createHashRouter([
       { path: 'study/:id/section/:sectionId', element: <SectionRoute /> },
       { path: 'study/:id/diagrams', element: <DiagramsRoute /> },
       { path: 'help', element: <HelpRoute /> },
+      { path: 'sync', element: <SyncRoute /> },
+      { path: 'shared/:id', element: <SharedRoute /> },
       { path: 'session/:id/:mode', element: <SessionRoute /> },
       { path: '*', element: <LibraryRoute /> },
     ],

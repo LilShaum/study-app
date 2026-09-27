@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import { runLegacyMigration } from '@/store/migrateLegacy';
 import { watchForRestore } from '@/lib/backup';
+import '@/store/syncMeta';
+import { startAutoSync } from '@/lib/autoSync';
 import { setStorageFailureHandler } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { router } from './router';
@@ -17,6 +19,7 @@ setStorageFailureHandler((message) => toast(message, { type: 'error', duration: 
 // data from the vanilla app's localStorage keys into the new ones if needed.
 runLegacyMigration();
 watchForRestore();
+startAutoSync();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
