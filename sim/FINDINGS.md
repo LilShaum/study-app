@@ -10,6 +10,30 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-09-28 — A calibrator for real study logs, checked on known students
+
+`scripts/calibrate-log.mjs` reads a backup file (or one course's study log)
+and measures what the simulator assumes: seconds per card, first-answer
+accuracy, how fast a missed card is forgotten (maximum-likelihood stability
+under R = exp(−t/S), MCQ guessing allowed for), and whether the app's recall
+predictions come true (real ≈ predicted^k).
+
+Checked first on simulated students, whose forgetting is known
+(`SIM_KEEP_LOG=1 npx vitest run --config vitest.sim.config.ts sim/calibrate.sim.ts`,
+steady-30, one seed):
+
+| | truth after a miss | fitted | predictions |
+|---|---|---|---|
+| `fsrs` | 10–17 h | 17 h | k = 0.8: remembers longer than the app thinks |
+| `harsh` | 7 h | 7 h | k = 3: forgets faster |
+
+Card times came back exactly. So the tool can tell the two students apart,
+which is the question every "reviews come too late" finding below waits on.
+**Next: run it on the owner's real log** once there are at least 30 answers
+after a miss.
+
+---
+
 ## 2026-09-27 — The exam-week choice: not built; Review sized by minutes
 
 **Question.** Finding 3 below proposed letting the student choose, in the
