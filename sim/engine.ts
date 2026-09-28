@@ -257,7 +257,10 @@ export function simulate(sc: Scenario, seed: number): RunResult {
   useProgressStore.setState({ byCourse: {} });
   // The simulated student's card times are the simulator's own assumptions;
   // logging them would feed them back as "measured" pace.
-  useStudyLogStore.setState({ byCourse: {}, logCard: () => {}, logAnswer: () => {} });
+  // SIM_KEEP_LOG keeps it, so scripts/calibrate-log.mjs can be checked on a
+  // student whose forgetting is known (sim/calibrate.sim.ts).
+  if (process.env.SIM_KEEP_LOG) useStudyLogStore.setState({ byCourse: {} });
+  else useStudyLogStore.setState({ byCourse: {}, logCard: () => {}, logAnswer: () => {} });
   const store = useSessionStore.getState;
   let now = START;
   Date.now = () => now;
