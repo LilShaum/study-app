@@ -300,6 +300,9 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
     font-variant-numeric: lining-nums tabular-nums;
+    /* A label is a word or two: it moves to the next line whole, never
+       breaks inside a word ("REVIE / W") under the body's anywhere rule. */
+    overflow-wrap: normal;
   }
 
   /* ---- a contents entry ----

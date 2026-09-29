@@ -140,8 +140,8 @@ function StepLine({ item }: { item: SessionItem }) {
   if (item._block === 'review') {
     return (
       <div className="mb-4 flex items-baseline gap-3 border-b border-border pb-2 text-small">
-        <span className="mark text-text-3">Review</span>
-        <span className="text-text-2">what you have studied and are starting to lose</span>
+        <span className="mark shrink-0 whitespace-nowrap text-text-3">Review</span>
+        <span className="min-w-0 text-text-2">what you have studied and are starting to lose</span>
         {item._again ? <span className="ml-auto whitespace-nowrap text-text-2">Again, from earlier</span> : null}
       </div>
     );
