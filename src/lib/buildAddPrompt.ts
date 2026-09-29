@@ -5,6 +5,7 @@ import GENERATOR_SPEC from '../../CLAUDE.md?raw';
 import type { Course } from '@/schema/course';
 import { allItems } from '@/schema/fragment';
 import { sortedSections } from './sortedSections';
+import { freshIdPrefix } from './idPrefix';
 
 /**
  * Builds the prompt a student pastes into their AI chat to generate items for
@@ -33,30 +34,39 @@ export function buildAddPrompt(course: Course): string {
     ? tags.map((t) => `"${t}"`).join(', ')
     : '(none yet — pick a small, reusable set)';
 
-  // A prefix no existing id uses, rather than a list of taken ids. The list
-  // was cut at 60 of however many there were ("…and 438 more"), so the model
-  // was told to avoid ids it was never shown. One rule it can follow beats a
-  // partial list it cannot; planMerge still renames any collision.
-  const existingIds = items.map((i) => i.id);
-  let k = 1;
-  while (existingIds.some((id) => id.startsWith(`add${k}_`))) k++;
-  const prefix = `add${k}_`;
+  const prefix = freshIdPrefix(course);
 
-  const prompts = items.slice(0, 40).map((i) => `- ${promptOf(i)}`);
+  // Everything the course already asks, by section. It used to be a sample
+  // of the first 40, which was nothing like enough for the common case: the
+  // same lecture again with slides added, where the model needs to see all
+  // of what is covered to write only what is new. A stem is short, so even a
+  // 500-item course stays a reasonable paste.
+  const covered = sections
+    .filter((s) => s.items.length)
+    .map((s) => [`Section "${s.id}" — ${s.title}:`, ...s.items.map((i) => `  - [${i.type}] ${promptOf(i)}`)].join('\n'))
+    .join('\n\n');
 
   return `I'm adding new material to an existing Arborous course. Below is the
 generator spec, then the state of the course I'm adding to, then my source
 material.
 
+My source may be entirely new (a later lecture), or a longer version of a
+lecture the course already has, with slides added. Either way, write items
+ONLY for content the course does not already cover. Everything it covers is
+listed below; where my source repeats it, skip it. Where it adds to a lecture
+already here, put the new items in that lecture's existing section.
+
 Return ONLY JSON in this shape — just the sections I'm adding to or creating,
-each holding ONLY the new items. Do not repeat items the course already has,
-and do not return the whole course. Where the spec below describes the output
-as a whole course file (schema_version, metadata), this shape replaces it:
+each holding ONLY the new items, plus the inventory of what you added. Do not
+repeat items the course already has, and do not return the whole course.
+Where the spec below describes the output as a whole course file
+(schema_version, metadata), this shape replaces it:
 
 {
   "sections": [
     { "id": "<existing section id, or a new slug>", "title": "<only needed for a new section>", "items": [ /* new items */ ] }
-  ]
+  ],
+  "inventory": { "terms": [ /* terms the NEW material explains */ ], "mentioned": [ /* terms it only names */ ] }
 }
 
 ════════ COURSE I'M ADDING TO ════════
@@ -75,14 +85,10 @@ ${tagLine}
 Item ids: start every new id with "${prefix}" (e.g. "${prefix}def_1"). No id
 already in the course begins that way, so none of yours can collide.
 
-${
-  items.length > 40
-    ? `A sample of what the course already asks — the first 40 of ${items.length}. Don't write
-another item testing the same fact as one of these; exact repeats of anything
-in the course are skipped when the new items are merged in.`
-    : 'What the course already asks — do NOT write another item testing the same fact:'
-}
-${prompts.join('\n') || '(none yet)'}
+Everything the course already asks — do NOT write another item testing the
+same fact the same way (exact repeats are skipped when the new items are
+merged in, but near-repeats are not):
+${covered || '(none yet)'}
 
 ════════ GENERATOR SPEC ════════
 
@@ -103,5 +109,5 @@ function promptOf(item: { type: string; [k: string]: unknown }): string {
         : item.type === 'definition'
           ? item.term
           : item.title;
-  return String(text ?? '').slice(0, 120);
+  return String(text ?? '').slice(0, 100);
 }

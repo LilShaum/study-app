@@ -10,7 +10,7 @@ interface CoursesState {
   courses: Record<string, Course>;
 
   /** Parses + validates a File, then stores it. Mirrors Store.save(). */
-  importCourse: (file: File) => Promise<{ ok: true; id: string; course: Course } | { ok: false; error: string }>;
+  importCourse: (file: File) => Promise<{ ok: true; id: string; course: Course; warning?: string } | { ok: false; error: string }>;
   /** Adds an already-validated course (used by import + legacy migration). */
   addCourse: (course: Course) => string;
   updateCourse: (id: string, course: Course) => void;
@@ -41,7 +41,7 @@ export const useCoursesStore = create<CoursesState>()(
         const result = await parseCourseFile(file);
         if (!result.ok) return result;
         const id = get().addCourse(result.course);
-        return { ok: true, id, course: result.course };
+        return { ok: true, id, course: result.course, warning: result.warning };
       },
 
       addCourse: (course) => {

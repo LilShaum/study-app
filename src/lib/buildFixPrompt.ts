@@ -1,5 +1,6 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { sortedSections } from './sortedSections';
+import { freshIdPrefix } from './idPrefix';
 import { analyseCourseHealth } from './courseHealth';
 import { QUALITY_BAR_SPEC } from './generatorSpec';
 
@@ -247,7 +248,8 @@ Both keys are optional — send only the ones you have something for.
 - Do NOT return the whole course. New items go under \`sections\`; fixes go
   under \`corrections\` and must keep the id they already have.
 - Do not re-send items that are already fine.
-- Every item needs a unique \`id\`, a \`type\`, and a \`source_excerpt\` quoting
+- Every NEW item needs an \`id\` starting with "${freshIdPrefix(course, 'fix')}" (no id in the
+  course starts that way), a \`type\`, and a \`source_excerpt\` quoting
   the passage it comes from.
 - Every \`mcq\` needs exactly four \`options\`, a 0-based \`correct_index\`, an
   \`explanation\`, and a \`distractor_rationale\` with one entry per option in the

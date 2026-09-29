@@ -8,6 +8,7 @@ import { useCoursesStore } from '@/store/courses';
 import { beginWriteCheck, persisted, writesLanded } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
+import { cutMessage, readReply } from '@/lib/readReply';
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
@@ -49,19 +50,14 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
   const navigate = useNavigate();
 
   // Parsed on every keystroke so the preview and the error both track the box.
-  const result = useMemo((): { course: Course } | { error: string } | null => {
-    const text = pasted.trim();
-    if (!text) return null;
-    const unfenced = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-
-    let json: unknown;
-    try {
-      json = JSON.parse(unfenced);
-    } catch (e) {
-      return { error: `That isn't valid JSON — ${(e as Error).message}` };
-    }
-    const parsed = parseCourse(json);
-    return parsed.ok ? { course: parsed.course } : { error: parsed.error };
+  const result = useMemo((): { course: Course; cut: string | null } | { error: string } | null => {
+    if (!pasted.trim()) return null;
+    // Finds the JSON in a whole copied reply, and keeps what came before a
+    // cut-off (lib/readReply).
+    const read = readReply(pasted);
+    if (!read.ok) return { error: read.error };
+    const parsed = parseCourse(read.json);
+    return parsed.ok ? { course: parsed.course, cut: read.cut ? cutMessage(read.cut) : null } : { error: parsed.error };
   }, [pasted]);
 
   const course = result && 'course' in result ? result.course : null;
@@ -191,6 +187,12 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
               className="whitespace-pre-wrap border-l-2 border-error py-2 pl-3 text-sm text-error"
             >
               {result.error}
+            </div>
+          )}
+
+          {result && 'cut' in result && result.cut && (
+            <div role="status" className="border-l-2 border-warning py-2 pl-3 text-sm text-text-2">
+              {result.cut}
             </div>
           )}
 

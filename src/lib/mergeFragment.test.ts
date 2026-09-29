@@ -320,3 +320,22 @@ describe('parseFragment — corrections', () => {
     expect(r.ok).toBe(false);
   });
 });
+
+describe('applyMerge — inventory of added material', () => {
+  it("joins the new material's terms to the course's, moving newly explained ones out of mentioned", async () => {
+    const { planMerge, applyMerge } = await import('./mergeFragment');
+    const base = {
+      schema_version: '1.0',
+      metadata: { title: 'T', total_items: 0, inventory: { terms: ['Axon'], mentioned: ['Glia', 'Soma'] } },
+      sections: [{ id: 's', title: 'S', items: [] }],
+    } as unknown as import('@/schema/course').Course;
+    const fragment = {
+      sections: [{ id: 's', items: [{ id: 'n1', type: 'flashcard', front: 'f', back: 'b', source_excerpt: 'x' }] }],
+      inventory: { terms: ['glia', 'Dendrite'], mentioned: ['Myelin'] },
+    } as unknown as import('@/schema/fragment').Fragment;
+    const merged = applyMerge(base, planMerge(base, fragment));
+    expect(merged.metadata.inventory?.terms).toEqual(['Axon', 'glia', 'Dendrite']);
+    expect(merged.metadata.inventory?.mentioned).toEqual(['Soma', 'Myelin']);
+    expect(merged.metadata.total_items).toBe(1);
+  });
+});

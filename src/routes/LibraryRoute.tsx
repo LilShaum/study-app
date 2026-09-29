@@ -120,7 +120,9 @@ export function LibraryRoute() {
       toast(imported.error, { type: 'error' });
       return;
     }
-    if (ok) {
+    if (ok && imported.warning) {
+      toast(imported.warning, { type: 'info', duration: 30000 });
+    } else if (ok) {
       toast(`"${imported.course.metadata.title || 'Course'}" uploaded.`, { type: 'success' });
     } else {
       toast(STORAGE_FULL, { type: 'error', duration: 12000 });

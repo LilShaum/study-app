@@ -13,6 +13,7 @@ import { useCoursesStore } from '@/store/courses';
 import { persisted } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
+import { cutMessage, readReply } from '@/lib/readReply';
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
@@ -61,24 +62,18 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
   // Re-planned on every keystroke: parsing a paste is cheap and pure, and it
   // means the preview and the error both track what's actually in the box.
-  const result = useMemo((): { plan: MergePlan } | { error: string } | null => {
-    const text = pasted.trim();
-    if (!text) return null;
+  const result = useMemo((): { plan: MergePlan; cut: string | null } | { error: string } | null => {
+    if (!pasted.trim()) return null;
 
-    // Tolerate a ```json fence — models add one even when told not to.
-    const unfenced = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    // Finds the JSON in a whole copied reply (the fix prompt asks for a
+    // verdict list before it), and keeps what came before a cut-off.
+    const read = readReply(pasted);
+    if (!read.ok) return { error: read.error };
 
-    let json: unknown;
-    try {
-      json = JSON.parse(unfenced);
-    } catch (e) {
-      return { error: `That isn't valid JSON — ${(e as Error).message}` };
-    }
-
-    const parsed = parseFragment(json, firstSectionId);
+    const parsed = parseFragment(read.json, firstSectionId);
     if (!parsed.ok) return { error: parsed.error };
 
-    return { plan: planMerge(course, parsed.fragment, { skipDuplicates }) };
+    return { plan: planMerge(course, parsed.fragment, { skipDuplicates }), cut: read.cut ? cutMessage(read.cut) : null };
   }, [pasted, course, firstSectionId, skipDuplicates]);
 
   const plan = result && 'plan' in result ? result.plan : null;
@@ -353,6 +348,12 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
               className="whitespace-pre-wrap border-l-2 border-error py-2 pl-3 text-sm text-error"
             >
               {result.error}
+            </div>
+          )}
+
+          {result && 'cut' in result && result.cut && (
+            <div role="status" className="border-l-2 border-warning py-2 pl-3 text-sm text-text-2">
+              {result.cut}
             </div>
           )}
 
