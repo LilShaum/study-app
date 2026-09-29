@@ -1,8 +1,9 @@
 import { CourseSchema, SCHEMA_VERSION, type Course } from './course';
 import { formatZodError } from './formatZodError';
+import { cutMessage, readReply } from '@/lib/readReply';
 
 export type ParseCourseResult =
-  | { ok: true; course: Course }
+  | { ok: true; course: Course; warning?: string }
   | { ok: false; error: string };
 
 /**
@@ -58,12 +59,10 @@ export async function parseCourseFile(file: File): Promise<ParseCourseResult> {
     return { ok: false, error: 'Could not read the file.' };
   }
 
-  let json: unknown;
-  try {
-    json = JSON.parse(text);
-  } catch {
-    return { ok: false, error: 'Could not parse the file. Make sure it is a valid JSON file.' };
-  }
-
-  return parseCourse(json);
+  // A reply saved straight from a chat may be wrapped in text or cut off
+  // partway; lib/readReply keeps what it can.
+  const read = readReply(text);
+  if (!read.ok) return { ok: false, error: 'Could not parse the file. Make sure it is a valid JSON file.' };
+  const parsed = parseCourse(read.json);
+  return parsed.ok && read.cut ? { ...parsed, warning: cutMessage(read.cut) } : parsed;
 }

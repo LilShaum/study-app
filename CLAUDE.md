@@ -72,7 +72,8 @@ biggest cause of a thin course.
 **Part of this inventory goes into the output.** The term list becomes
 `metadata.inventory` (see the output contract below): `terms` for every term
 the source explains, `mentioned` for every term it only names. The app checks
-your finished course against `terms` and tells the student what you missed. Write that list honestly and completely — a short list does not
+your finished course against `terms` and tells the student what you missed.
+Write that list honestly and completely — a short list does not
 make you look thorough, it makes the gaps invisible, which is the one failure
 a student cannot detect for themselves.
 
@@ -155,7 +156,8 @@ As a calibration check, count the distinct ideas in your Pass 2 inventory —
 terms, mechanisms, formulas, comparisons, caveats — and expect roughly **two
 to four items per idea**, since recall, application and recognition are
 different skills — scaled by weight: one item for a bare fact stated once and
-never used again, three or four for a formula, mechanism or comparison. Anchor on that, never on how many pages or words the source
+never used again, three or four for a formula, mechanism or comparison. Anchor
+on that, never on how many pages or words the source
 happens to be. If your draft is far below it, you have skipped content: go
 back to the inventory. If the inventory itself is genuinely short, a small
 course is the right answer.
@@ -223,6 +225,11 @@ file must be valid JSON matching this shape exactly:
   ]
 }
 ```
+
+If your reply is cut off before the end, the app keeps every complete item
+before the cut. If you are then asked to continue, send **only the items you
+had not written yet**, as `{"sections": [{"id", "title", "items": [...]}]}`
+with the same section ids — never the course again from the start.
 
 Mirror the structure of the source material in your sections — if the notes
 have chapters/lectures/weeks/topics, each becomes a section, in that order.
@@ -324,7 +331,9 @@ wrong thing. For every MCQ:
   write a real rationale for an option, replace that option — it's not a
   good distractor.
 - `explanation` states why the correct answer is right, grounded in the
-  source, not just "because it's correct."
+  source, not just "because it's correct." One or two sentences: the
+  explanations and rationales are most of a course's length, and a reply
+  that runs out of room is cut off.
 
 **Do not let the shape of an option give the answer away.** This is the
 failure mode that survives every other rule, because a correct answer wants
@@ -341,6 +350,14 @@ distractors. The app now checks this and will report it.
 - Never let one option run past twice the length of the others.
 - Vary which position is correct, and do not make "the longest", "the most
   detailed" or "the most hedged" option a reliable signal.
+- **A rule you can count:** the correct option may be the longest of the
+  four in no more than one MCQ in four, and the shortest in no more than one
+  in four either. The reliable way to hold it is to write the correct option
+  first, then write the distractors so that in most questions at least one of
+  them is longer and at least one shorter. Measured again after this
+  section was written: 46% of correct options were still the longest,
+  because "roughly the same length" is easy to believe of your own options.
+  A count is not.
 
 **Test understanding, not just recall.** If the source explains a mechanism,
 ask what happens when a step is blocked. If it gives a formula, ask the
@@ -371,7 +388,8 @@ rule is that a fact stated as a rule should also be **asked as a rule**. The
 same slide says hydrophilic messengers bind transmembrane receptors, so
 besides recalling that, ask it: given a new messenger that is hydrophilic,
 where is its receptor? Same passage, same grounding — nothing added that the
-slide does not say — and now the student has to use it. Reuse the source's terms; don't reuse its sentences. The app
+slide does not say — and now the student has to use it. Reuse the source's
+terms; don't reuse its sentences. The app
 measures this overlap across the whole course and reports the share.
 
 **What is graded.** `mcq` and `flashcard` items are graded, and so is each
@@ -404,11 +422,13 @@ Check your own draft:
    Delete or fix any that don't.
 3. Does every MCQ have four options, a 0-based `correct_index` pointing at
    the genuinely correct one, and a real `distractor_rationale` per option?
-4. **Scan the correct options alone.** Are they consistently the longest, the
-   most qualified, the only ones with a parenthetical? If a stranger could
-   score above 25% seeing only the options and never the questions, fix the
-   distractors — this is the one fault that makes a course flatter a student
-   rather than prepare them.
+4. **Scan the correct options alone.** Count the MCQs whose correct option
+   is the longest of the four, and those where it is the shortest: more than
+   one in four either way, and you must rework distractors until it is not. Are the correct options the most qualified,
+   the only ones with a parenthetical? If a stranger could score above 25%
+   seeing only the options and never the questions, fix the distractors —
+   this is the one fault that makes a course flatter a student rather than
+   prepare them.
 5. **Scan the stems alone.** Does any mention the notes, the slides or a
    figure? Is any one just its `source_excerpt` reworded into a question?
    Does every section have at least one that asks for more than retrieval?

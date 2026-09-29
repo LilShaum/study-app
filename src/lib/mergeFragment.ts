@@ -35,6 +35,8 @@ export interface MergePlan {
   totalDuplicates: number;
   /** Per-type counts of what would actually be added. */
   countsByType: Record<string, number>;
+  /** The added material's inventory, joined to the course's when applied. */
+  inventory?: Fragment['inventory'];
 }
 
 export interface MergeOptions {
@@ -183,6 +185,7 @@ export function planMerge(course: Course, fragment: Fragment, options: MergeOpti
     totalAdded: sections.reduce((n, s) => n + s.added.length, 0),
     totalDuplicates: sections.reduce((n, s) => n + s.duplicates.length, 0),
     countsByType,
+    inventory: fragment.inventory,
   };
 }
 
@@ -223,11 +226,30 @@ export function applyMerge(course: Course, plan: MergePlan): Course {
 
   const merged: Course = { ...course, sections };
 
+  // New material brings new terms: join its inventory to the course's, so
+  // the coverage check covers what was added too. A term already listed as
+  // explained stays explained; one the new notes explain moves out of
+  // "mentioned".
+  if (plan.inventory && plan.totalAdded > 0) {
+    const was = course.metadata.inventory ?? {};
+    const union = (a: string[] = [], b: string[] = []) => {
+      const seen = new Set(a.map((t) => t.toLowerCase()));
+      return [...a, ...b.filter((t) => !seen.has(t.toLowerCase()) && seen.add(t.toLowerCase()))];
+    };
+    const terms = union(was.terms, plan.inventory.terms);
+    const explained = new Set(terms.map((t) => t.toLowerCase()));
+    const mentioned = union(was.mentioned, plan.inventory.mentioned).filter((t) => !explained.has(t.toLowerCase()));
+    merged.metadata = {
+      ...course.metadata,
+      inventory: { ...was, terms, mentioned, objectives: union(was.objectives, plan.inventory.objectives) },
+    };
+  }
+
   const hasTotal = course.metadata.total_items !== undefined;
   const hasCounts = course.metadata.item_counts !== undefined;
   if (hasTotal || hasCounts) {
     const items = allItems(sections);
-    merged.metadata = { ...course.metadata };
+    merged.metadata = { ...merged.metadata };
     if (hasTotal) merged.metadata.total_items = items.length;
     if (hasCounts) {
       const counts: Record<string, number> = {};

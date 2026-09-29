@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CourseSchema, StudyItemSchema, type Section, type StudyItem } from './course';
+import { CourseSchema, InventorySchema, StudyItemSchema, type Section, type StudyItem } from './course';
 import { formatZodError } from './formatZodError';
 
 /* ============================================================
@@ -35,6 +35,8 @@ export const FragmentSchema = z
   .looseObject({
     sections: z.array(FragmentSectionSchema).optional(),
     corrections: z.array(StudyItemSchema).optional(),
+    /** The new material's own Pass 2 inventory, joined to the course's (see applyMerge). */
+    inventory: InventorySchema.optional(),
   })
   .refine((f) => (f.sections?.length ?? 0) > 0 || (f.corrections?.length ?? 0) > 0, {
     message: 'Expected at least one section of items, or at least one correction.',
@@ -82,7 +84,7 @@ export function parseFragment(raw: unknown, fallbackSectionId: string): ParseFra
   // or on purpose to fold one course into another. Take its sections.
   const asCourse = CourseSchema.safeParse(raw);
   if (asCourse.success) {
-    return { ok: true, fragment: { sections: asCourse.data.sections } };
+    return { ok: true, fragment: { sections: asCourse.data.sections, inventory: asCourse.data.metadata.inventory } };
   }
 
   // (1) The fragment shape — items to add, corrections to apply, or both.
