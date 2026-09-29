@@ -344,7 +344,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             <div className="mt-2 text-sm text-text-3">
               …or{' '}
               <label className="cursor-pointer text-accent hover:underline">
-                open a saved reply or .json file
+                upload a file instead
                 <input
                   type="file"
                   accept=".json,.txt,application/json,text/plain"
