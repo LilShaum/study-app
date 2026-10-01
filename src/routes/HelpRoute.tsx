@@ -25,7 +25,7 @@ interface HelpSection {
 const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   {
     name: 'Today',
-    what: 'The one to press most days. It reviews what you are starting to forget, then carries on with new material, and ends when your daily time is up. Set the time, and your exam date and what it covers, from the line under Today on the course page. In the last few days before an exam it makes more room for anything on it you have not studied yet.',
+    what: 'The one to press most days. It reviews what you are starting to forget, then carries on with new material, and ends when your daily time is up. Set the time, and your exam date and what it covers, from the line under Today on the course page. If one exam covers several courses with the same course code, you can set it on all of them at once there. In the last few days before an exam it makes more room for anything on it you have not studied yet.',
     scored: true,
   },
   {
@@ -56,7 +56,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Review',
-    what: 'Brings back what you have studied as you start to forget it, most forgotten first, as many as fit in your daily time. If you set an exam date in Edit details, it also makes sure things are fresh on the day.',
+    what: 'Brings back what you have studied as you start to forget it, most forgotten first, as many as fit in your daily time. If you set an exam date (under Today on the course page), it also makes sure things are fresh on the day.',
     scored: true,
   },
   {
@@ -235,8 +235,9 @@ const SECTIONS: HelpSection[] = [
     body: (
       <p>
         <strong>Edit details</strong> on a course page changes the title, course code, subject,
-        description, tags and exam date. The course code is what shows at the top of the screen, and
-        tags let you filter the library. Renaming a course keeps your progress.
+        description and tags. The course code is what shows at the top of the screen and groups
+        courses of one class in the library, and tags let you filter it. Renaming a course keeps your
+        progress.
       </p>
     ),
   },
