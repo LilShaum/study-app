@@ -294,9 +294,10 @@ for (const g of items.filter((i) => i.type === 'graphic')) {
   check(!/<script|\son[a-z]+\s*=|<foreignObject|href\s*=\s*["']?\s*(https?:|javascript:)/i.test(svg), `${g.id}: no script, event handlers or external refs in svg`);
   check(/viewBox/i.test(svg), `${g.id}: svg has a viewBox`);
   check(!!String(g.alt_text ?? '').trim(), `${g.id}: has alt_text`);
-  // (?<![-\w]) so `stroke-width="2"` isn't mistaken for a fixed canvas size —
-  // \b matches after the hyphen, which flagged every well-formed diagram.
-  check(!/(?<![-\w])(width|height)\s*=\s*["']?\d/.test(svg), `${g.id}: svg has no fixed pixel size (so it fills a phone screen)`, warn);
+  // Only the root <svg> tag: a <rect width="40"> inside is a shape, not a
+  // fixed canvas. (?<![-\w]) so `stroke-width="2"` isn't mistaken for one.
+  const root = svg.match(/<svg\b[^>]*>/i)?.[0] ?? '';
+  check(!/(?<![-\w])(width|height)\s*=\s*["']?\d/.test(root), `${g.id}: svg has no fixed pixel size (so it fills a phone screen)`, warn);
   check(/currentColor/i.test(svg), `${g.id}: svg uses currentColor (legible on the dark themes)`, warn);
 }
 
