@@ -75,13 +75,22 @@ export function LibraryRoute() {
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [showTags, setShowTags] = useState(false);
 
   const allTags = useMemo(
     () => [...new Set(ids.flatMap((id) => courses[id].metadata.tags ?? []))].sort(),
     [ids, courses],
   );
+  // A student's courses group by the class they belong to, not by topic
+  // tags: five courses already carried twenty-odd tags, a wall that pushed
+  // the list itself off a phone screen. Classes come first and stay short.
+  const allClasses = useMemo(
+    () => [...new Set(ids.map((id) => courses[id].metadata.course_code?.trim()).filter((c): c is string => !!c))].sort(),
+    [ids, courses],
+  );
 
-  const isFiltering = search.trim() !== '' || selectedTags.size > 0;
+  const isFiltering = search.trim() !== '' || selectedTags.size > 0 || selectedClass !== null;
 
   const filteredIds = ids.filter((id) => {
     const c = courses[id];
@@ -92,7 +101,14 @@ export function LibraryRoute() {
       .toLowerCase();
     const matchesText = !text || haystack.includes(text);
     const matchesTags = selectedTags.size === 0 || (c.metadata.tags ?? []).some((t) => selectedTags.has(t));
-    return matchesText && matchesTags;
+    const matchesClass = selectedClass === null || c.metadata.course_code?.trim() === selectedClass;
+    return matchesText && matchesTags && matchesClass;
+  });
+  // Courses of one class sit together, in the order they were added.
+  filteredIds.sort((a, b) => {
+    const ca = courses[a].metadata.course_code?.trim() ?? '\uffff';
+    const cb = courses[b].metadata.course_code?.trim() ?? '\uffff';
+    return ca.localeCompare(cb);
   });
 
   const toggleTag = (tag: string) => {
@@ -112,6 +128,7 @@ export function LibraryRoute() {
     // full the course lands in memory, shows in the library, and is gone on
     // the next reload. Saying "uploaded" then is simply untrue.
     beginWriteCheck();
+    const had = new Set(Object.keys(useCoursesStore.getState().courses));
     const imported = await importCourse(file);
     // Read AFTER the await: importCourse reads the file first, so the write
     // it triggers has not happened by the time the call returns.
@@ -123,7 +140,10 @@ export function LibraryRoute() {
     if (ok && imported.warning) {
       toast(imported.warning, { type: 'info', duration: 30000 });
     } else if (ok) {
-      toast(`"${imported.course.metadata.title || 'Course'}" uploaded.`, { type: 'success' });
+      // Same title replaces the course in place (see addCourse): say so, since
+      // a student re-uploading a fixed file wants to know it didn't duplicate.
+      const title = imported.course.metadata.title || 'Course';
+      toast(had.has(imported.id) ? `"${title}" updated. Your progress on it is kept.` : `"${title}" uploaded.`, { type: 'success' });
     } else {
       toast(STORAGE_FULL, { type: 'error', duration: 12000 });
     }
@@ -133,6 +153,7 @@ export function LibraryRoute() {
     const courseSnapshot = courses[id];
     const progressSnapshot = useProgressStore.getState().getProgress(id);
     const bookmarkSnapshot = useResumeStore.getState().getBookmark(id);
+    const logSnapshot = useStudyLogStore.getState().byCourse[id];
     removeCourse(id);
     useProgressStore.getState().removeCourseProgress(id);
     useResumeStore.getState().clear(id);
@@ -144,6 +165,7 @@ export function LibraryRoute() {
         updateCourse(id, courseSnapshot);
         useProgressStore.setState((s) => ({ byCourse: { ...s.byCourse, [id]: progressSnapshot } }));
         useResumeStore.getState().restore(id, bookmarkSnapshot);
+        if (logSnapshot) useStudyLogStore.setState((s) => ({ byCourse: { ...s.byCourse, [id]: logSnapshot } }));
       },
     });
   };
@@ -205,10 +227,10 @@ export function LibraryRoute() {
       ) : (
         <>
           {/* The apparatus of a contents page: a ruled line to write the
-              search on, and the subjects set as an index line. Both used to
+              search on, and the classes and tags set as index lines. Both used to
               be web furniture — a grey rounded search box and a row of
               filled pill chips — which is the look the page was trying to
-              get away from. A selected subject is underscored, the way you
+              get away from. A selected entry is underscored, the way you
               would mark an index entry, not filled in. */}
           <div className="mb-7 space-y-4">
             <label className="flex items-baseline gap-3">
@@ -222,36 +244,31 @@ export function LibraryRoute() {
                 className="field w-full text-small"
               />
             </label>
-            {allTags.length > 0 && (
-              <div className="flex flex-wrap items-baseline gap-x-1 gap-y-2">
-                <span className="mark mr-2 text-text-3">Subjects</span>
-                {allTags.map((tag, i) => {
-                  const active = selectedTags.has(tag);
-                  return (
-                    <span key={tag} className="flex items-baseline">
-                      <button
-                        type="button"
-                        onClick={() => toggleTag(tag)}
-                        aria-pressed={active}
-                        className={`tap-safe px-0.5 text-small transition-colors ${
-                          active
-                            ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
-                            : 'text-text-2 hover:text-text hover:underline hover:underline-offset-4'
-                        }`}
-                      >
-                        {tag}
-                      </button>
-                      {i < allTags.length - 1 && <span className="ml-1 text-text-3">·</span>}
-                    </span>
-                  );
-                })}
-              </div>
+            {allClasses.length > 1 && (
+              <IndexLine
+                label="Classes"
+                entries={allClasses}
+                isActive={(c) => selectedClass === c}
+                onToggle={(c) => setSelectedClass((prev) => (prev === c ? null : c))}
+              />
             )}
+            {allTags.length > 0 &&
+              (showTags || selectedTags.size > 0 ? (
+                <IndexLine label="Tags" entries={allTags} isActive={(t) => selectedTags.has(t)} onToggle={toggleTag} />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowTags(true)}
+                  className="mark tap-safe text-text-3 hover:text-text"
+                >
+                  Tags ({allTags.length}) ▸
+                </button>
+              ))}
           </div>
 
           {filteredIds.length === 0 ? (
             <div className="border-y border-border py-12 text-center text-text-2">
-              No matching courses. Try a different search term or clear the subject filter.
+              No matching courses. Try a different search, or clear the class or tag you picked.
             </div>
           ) : (
             /* A contents list, not a card grid.
@@ -329,6 +346,45 @@ export function LibraryRoute() {
       )}
 
       {creating && <NewCourseDialog onClose={() => setCreating(false)} />}
+    </div>
+  );
+}
+
+/** A row of filter words set like an index line: a selected one is underscored, not filled in. */
+function IndexLine({
+  label,
+  entries,
+  isActive,
+  onToggle,
+}: {
+  label: string;
+  entries: string[];
+  isActive: (entry: string) => boolean;
+  onToggle: (entry: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-baseline gap-x-1 gap-y-2">
+      <span className="mark mr-2 text-text-3">{label}</span>
+      {entries.map((entry, i) => {
+        const active = isActive(entry);
+        return (
+          <span key={entry} className="flex items-baseline">
+            <button
+              type="button"
+              onClick={() => onToggle(entry)}
+              aria-pressed={active}
+              className={`tap-safe px-0.5 text-small transition-colors ${
+                active
+                  ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
+                  : 'text-text-2 hover:text-text hover:underline hover:underline-offset-4'
+              }`}
+            >
+              {entry}
+            </button>
+            {i < entries.length - 1 && <span className="ml-1 text-text-3">·</span>}
+          </span>
+        );
+      })}
     </div>
   );
 }
