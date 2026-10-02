@@ -2,7 +2,7 @@
  * Shows the passage from the student's own notes that an item was generated
  * from.
  *
- * CLAUDE.md makes `source_excerpt` mandatory on every item — it's the main
+ * prompts/generator.md makes `source_excerpt` mandatory on every item — it's the main
  * structural defence against the generator inventing facts. That guarantee is
  * worthless if it's never surfaced: this is what lets you check a card against
  * what your notes actually said. Collapsed by default so it doesn't compete

@@ -18,8 +18,8 @@ describe('specSection', () => {
   });
 });
 
-describe('the sections the prompts quote from CLAUDE.md', () => {
-  // If a heading in CLAUDE.md is renamed, specSection returns '' and the fix
+describe('the sections the prompts quote from prompts/generator.md', () => {
+  // If a heading in prompts/generator.md is renamed, specSection returns '' and the fix
   // and practise prompts lose their rules without any error. These fail
   // first instead.
   it('carries the item format', () => {
@@ -35,7 +35,7 @@ describe('the sections the prompts quote from CLAUDE.md', () => {
   });
 
   it('is quoted verbatim, so the prompts cannot drift from the spec', () => {
-    const spec = fs.readFileSync(path.resolve(__dirname, '../../CLAUDE.md'), 'utf8');
+    const spec = fs.readFileSync(path.resolve(__dirname, '../../prompts/generator.md'), 'utf8');
     expect(spec).toContain(QUALITY_BAR_SPEC);
     expect(spec).toContain(ITEM_TYPES_SPEC);
   });

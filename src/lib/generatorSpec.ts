@@ -1,19 +1,19 @@
-// The canonical generator spec, imported straight from the repo's CLAUDE.md.
-import GENERATOR_SPEC from '../../CLAUDE.md?raw';
+// The canonical generator spec, imported straight from prompts/generator.md.
+import GENERATOR_SPEC from '../../prompts/generator.md?raw';
 
 /**
- * Sections of CLAUDE.md, for the prompts that need part of the spec rather
+ * Sections of prompts/generator.md, for the prompts that need part of the spec rather
  * than all of it.
  *
  * The new-course and add-material prompts embed the whole file. The fix and
  * more-practice prompts used to carry their own paraphrase of the rules
  * instead — and a paraphrase drifts. When the option-length, source-citing
- * and recall-only rules were added to CLAUDE.md, those two prompts never
+ * and recall-only rules were added to prompts/generator.md, those two prompts never
  * received them, so every batch of extra questions they produced could repeat
  * exactly the faults the app had just started reporting. Quoting the spec's
  * own sections means there is one copy of each rule.
  *
- * A heading is found by its exact text. Renaming one in CLAUDE.md would
+ * A heading is found by its exact text. Renaming one in prompts/generator.md would
  * otherwise empty a prompt silently, so generatorSpec.test.ts asserts that
  * every section used here exists and carries the rules it is relied on for.
  */

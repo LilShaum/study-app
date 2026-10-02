@@ -4,7 +4,7 @@ import { buildNewCoursePrompt } from './buildNewCoursePrompt';
 describe('buildNewCoursePrompt', () => {
   const prompt = buildNewCoursePrompt();
 
-  it('embeds the canonical generator spec from CLAUDE.md', () => {
+  it('embeds the canonical generator spec from prompts/generator.md', () => {
     // Imported with ?raw so what the app hands out is byte-for-byte the spec
     // the app parses. Assert on distinctive spec content, not just a non-empty
     // string — a silently-empty import would otherwise "pass".

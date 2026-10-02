@@ -1,7 +1,7 @@
-// The canonical generator spec, imported straight from the repo's CLAUDE.md so
+// The canonical generator spec, imported straight from prompts/generator.md so
 // the prompt this app hands out can never drift from the format the app
-// actually parses. Editing CLAUDE.md updates both at once.
-import GENERATOR_SPEC from '../../CLAUDE.md?raw';
+// actually parses. Editing it updates both at once.
+import GENERATOR_SPEC from '../../prompts/generator.md?raw';
 import type { Course } from '@/schema/course';
 import { allItems } from '@/schema/fragment';
 import { sortedSections } from './sortedSections';

@@ -35,7 +35,7 @@ function plural(n: number, word: string): string {
  * The app could always open a `.study.json`, but never said where one comes
  * from: the empty state told you to upload a file and the generator spec
  * existed only as a file in the repo, so you had to already know about
- * CLAUDE.md to get started at all. This hands you the prompt.
+ * prompts/generator.md to get started at all. This hands you the prompt.
  *
  * Step 2 accepts a paste as well as a file, because the generator returns JSON
  * in a chat window — making you save it to disk first is a step that buys

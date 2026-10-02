@@ -19,3 +19,8 @@ screenshots/
 
 # Simulator output (the baseline in sim/baseline.json is committed)
 sim/results/
+
+# Course files are students' own material, and the repo is public. Made-up
+# test courses live in scripts/__fixtures__.
+*.study.json
+!scripts/__fixtures__/*.study.json

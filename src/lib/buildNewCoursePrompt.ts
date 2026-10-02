@@ -1,6 +1,6 @@
-// Imported straight from the repo's CLAUDE.md so the prompt the app hands out
-// is byte-for-byte the spec the app parses. Editing CLAUDE.md updates both.
-import GENERATOR_SPEC from '../../CLAUDE.md?raw';
+// Imported straight from prompts/generator.md so the prompt the app hands out
+// is byte-for-byte the spec the app parses. Editing it updates both.
+import GENERATOR_SPEC from '../../prompts/generator.md?raw';
 
 /**
  * The prompt for generating a course from scratch.
