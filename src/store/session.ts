@@ -139,7 +139,10 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       exam: examRule(course, progress, Date.now()),
       minutes:
         mode === 'today'
-          ? todaySitting(courseId, course, progress, Date.now(), fullDay).minutes
+          ? // A resumed sitting is the one already under way: the time spent in it
+            // is already in the day's total, so re-planning from what is left
+            // would shrink it, or empty it, under the bookmark.
+            todaySitting(courseId, course, progress, Date.now(), fullDay || !!resumeItemId).minutes
           : usePlanStore.getState().minutesFor(courseId),
       pace: measuredPace(useStudyLogStore.getState().byCourse),
     });

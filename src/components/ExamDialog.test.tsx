@@ -80,5 +80,16 @@ describe('ExamDialog', () => {
       fireEvent.click(screen.getByText('Save'));
       expect(useCoursesStore.getState().courses.endo.metadata.exam_date).toBeUndefined();
     });
+
+    it('keeps the sections chosen on a course that shares the exam when the date moves', () => {
+      const exam = { exam_date: '2026-10-27', exam_sections: ['a'] };
+      useCoursesStore.setState({ courses: { bio: coded('Bio', exam), endo: coded('Endo', { ...exam, exam_sections: ['b'] }) } });
+      render(<ExamDialog courseId="bio" course={useCoursesStore.getState().courses.bio} onClose={() => {}} />);
+      setDate('2026-11-03');
+      fireEvent.click(screen.getByText('Save'));
+      const endo = useCoursesStore.getState().courses.endo.metadata;
+      expect(endo.exam_date).toBe('2026-11-03');
+      expect(endo.exam_sections).toEqual(['b']);
+    });
   });
 });
