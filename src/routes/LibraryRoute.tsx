@@ -301,7 +301,19 @@ export function LibraryRoute() {
             )}
             {allTags.length > 0 &&
               (showTags || selectedTags.size > 0 ? (
-                <IndexLine label="Tags" entries={allTags} isActive={(t) => selectedTags.has(t)} onToggle={toggleTag} />
+                <div className="space-y-2">
+                  <IndexLine label="Tags" entries={allTags} isActive={(t) => selectedTags.has(t)} onToggle={toggleTag} />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowTags(false);
+                      setSelectedTags(new Set());
+                    }}
+                    className="mark tap-safe text-text-3 hover:text-text"
+                  >
+                    {selectedTags.size > 0 ? 'Clear and hide tags' : 'Hide tags'} ◂
+                  </button>
+                </div>
               ) : (
                 <button
                   type="button"

@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { cloud, cloudError, syncNow } from '@/lib/cloud';
 import { useSyncMetaStore } from '@/store/syncMeta';
 import { toast } from '@/store/toast';
@@ -46,7 +47,10 @@ export function SyncRoute() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="font-display text-display text-text">Sync</h1>
+      <Link to="/" className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
+        ← Library
+      </Link>
+      <h1 className="mt-3 font-display text-display text-text">Sync</h1>
       <p className="mt-2 text-small text-text-2">
         Sign in on each device you study on, and your courses and progress follow you between them. Without an account,
         everything stays on this device, as before.
