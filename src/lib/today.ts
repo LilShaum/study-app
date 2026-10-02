@@ -81,3 +81,31 @@ export function splitSitting(
   const reviewMinutes = Math.min(reviewNeed, capping ? minutes * cap : minutes);
   return { reviewMinutes, learnMinutes: minutes - reviewMinutes, due, unseen };
 }
+
+/** A second, short sitting later the same day, for what has come due since: mostly that day's misses. */
+export const CATCH_UP_MINUTES = 5;
+
+/** How many studied items are due now (exam timing included). */
+export function dueCount(course: Course, progress: Record<string, ItemResult>, now: number): number {
+  const exam = examRule(course, progress, now);
+  let n = 0;
+  for (const section of course.sections)
+    for (const { id } of scoredEntries(section.items)) if (isDueFor(progress[id], now, exam.forItem(id))) n++;
+  return n;
+}
+
+/**
+ * Minutes for a Today sitting opened now: what is left of the day's plan
+ * after what was already studied today. Once the plan is spent, a short
+ * catch-up while anything is due, and nothing otherwise.
+ *
+ * The catch-up is the simulator's finding (sim/FINDINGS.md, 2026-10-02): a
+ * five-minute second sitting a few hours after the first, on the cards that
+ * have come due since, was worth several points on the exam under both
+ * simulated students, taken out of the same daily time.
+ */
+export function minutesLeft(planned: number, studiedSeconds: number, due: number): { minutes: number; catchUp: boolean } {
+  const left = planned - studiedSeconds / 60;
+  if (left >= CATCH_UP_MINUTES) return { minutes: left, catchUp: false };
+  return due > 0 ? { minutes: CATCH_UP_MINUTES, catchUp: true } : { minutes: 0, catchUp: false };
+}

@@ -4,6 +4,7 @@ import { buildSessionItems, recallId, type SessionItem, type StudyMode } from '@
 import { isMissed, useProgressStore, type ItemResult } from './progress';
 import { examRule } from '@/lib/exam';
 import { usePlanStore } from './plan';
+import { todaySitting } from '@/lib/todaySitting';
 import { measuredPace, useStudyLogStore } from './studyLog';
 import { retrievability } from '@/lib/memory';
 
@@ -51,7 +52,8 @@ interface SessionState {
   /** True when this session started from a saved bookmark rather than item 1. */
   resumed: boolean;
 
-  init: (courseId: string, course: Course, mode: StudyMode, sectionId?: string, resumeItemId?: string) => void;
+  /** `fullDay`: Today planned at the full daily time, ignoring what was studied today ("Keep going"). */
+  init: (courseId: string, course: Course, mode: StudyMode, sectionId?: string, resumeItemId?: string, fullDay?: boolean) => void;
   /** The section this session is scoped to, or null for the whole course. */
   sectionId: string | null;
   current: () => SessionItem | null;
@@ -121,7 +123,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   resumed: false,
   sectionId: null,
 
-  init: (courseId, course, mode, sectionId, resumeItemId) => {
+  init: (courseId, course, mode, sectionId, resumeItemId, fullDay = false) => {
     const progressStore = useProgressStore.getState();
     const missedIds = mode === 'missed' ? progressStore.missedIds(courseId) : undefined;
     // Weakest-first ranks by the student's own history, so it is the one mode
@@ -135,7 +137,10 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       sectionId,
       progress,
       exam: examRule(course, progress, Date.now()),
-      minutes: usePlanStore.getState().minutesFor(courseId),
+      minutes:
+        mode === 'today'
+          ? todaySitting(courseId, course, progress, Date.now(), fullDay).minutes
+          : usePlanStore.getState().minutesFor(courseId),
       pace: measuredPace(useStudyLogStore.getState().byCourse),
     });
     shownAt = Date.now();

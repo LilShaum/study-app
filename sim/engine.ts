@@ -3,7 +3,7 @@ import { recallId, type SessionItem } from '@/lib/buildSessionItems';
 import { examRule } from '@/lib/exam';
 import { splitSitting } from '@/lib/today';
 import { forecast } from './experiments/forecast';
-import { examTime, isDueFor, retrievability } from '@/lib/memory';
+import { examTime, isDueFor, retrievability, setPersonalScale, stabilityOf } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
 import { scoredEntries } from '@/lib/scored';
 import { sortedSections } from '@/lib/sortedSections';
@@ -128,8 +128,14 @@ export interface Day {
   available: number;
   /** Open Review, as the course page does, and study until it ends or time does. */
   review: (capMs?: number) => 'done' | 'out' | 'empty';
-  /** Press Today: one sitting the app sizes to the day's minutes. */
-  today: () => 'done' | 'out' | 'empty';
+  /** Press Today: one sitting the app sizes to the day's minutes (or to capMs). */
+  today: (capMs?: number) => 'done' | 'out' | 'empty';
+  /** A fresh Today sitting of this many ms, whatever was studied earlier in the day. */
+  todayFor: (ms: number) => 'done' | 'out' | 'empty';
+  /** Let hours pass on the clock without studying. */
+  later: (hours: number) => void;
+  /** A sitting of only the cards missed so far today, up to capMs. Experiment. */
+  missedAgain: (capMs: number) => 'done' | 'out' | 'empty';
   /** Open Learn on the section the course page suggests. False when there is none to learn. */
   learn: (capMs?: number) => boolean;
   /** Scored items released but never answered. */
@@ -156,7 +162,49 @@ const today =
     for (let k = 0; k < 20 && d.usedMs() < d.budgetMs; k++) if (d.review() !== 'done') break;
   };
 
+const eveningMisses =
+  (hours: number, minutes: number): Policy =>
+  (d) => {
+    const main = Math.max(0, d.budgetMs - minutes * MIN);
+    for (let k = 0; k < 5 && d.usedMs() < main; k++) if (d.today(main) !== 'done') break;
+    d.later(hours);
+    d.missedAgain(d.usedMs() + minutes * MIN);
+  };
+
+const todayButton: Policy = (d) => {
+  for (let k = 0; k < 5 && d.usedMs() < d.budgetMs; k++) if (d.today() !== 'done') break;
+};
+
 export const POLICIES: Record<string, Policy> = {
+  /**
+   * Experiment, 2026-10-02: the day's minutes less five in one sitting, then
+   * six hours later five minutes on only what was missed in it.
+   */
+  'evening-misses': (d) => {
+    const main = Math.max(0, d.budgetMs - 5 * MIN);
+    for (let k = 0; k < 5 && d.usedMs() < main; k++) if (d.today(main) !== 'done') break;
+    d.later(6);
+    d.missedAgain(d.usedMs() + 5 * MIN);
+  },
+  /**
+   * The same through the app's own doors: Today with five minutes less, then
+   * four hours later Today again for five minutes (SIM_GAP to change the gap).
+   */
+  'evening-today': (d) => {
+    const main = Math.max(0, d.budgetMs - 5 * MIN);
+    for (let k = 0; k < 5 && d.usedMs() < main; k++) if (d.today(main) !== 'done') break;
+    d.later(Number(process.env.SIM_GAP ?? 4));
+    d.todayFor(5 * MIN);
+  },
+  'evening-misses-3h': eveningMisses(3, 5),
+  'evening-misses-10h': eveningMisses(10, 5),
+  'evening-misses-0h': eveningMisses(0, 5),
+  /**
+   * Experiment, 2026-10-02: the Today button, with the app's memory model
+   * fitted to this student's own review answers each morning (see engine's
+   * personal-pace fit). Same minutes as today-button.
+   */
+  'today-personal': todayButton,
   /** The student presses Today once, with their minutes set, and stops when it ends. */
   'today-button-once': (d) => {
     d.today();
@@ -264,6 +312,10 @@ export function simulate(sc: Scenario, seed: number): RunResult {
   const store = useSessionStore.getState;
   let now = START;
   Date.now = () => now;
+  // today-personal: the app's review answers so far, as the app saw them
+  // (its own stability, time since), to fit how fast this student forgets.
+  setPersonalScale(1);
+  const seenByApp: { days: number; s: number; mcq: boolean; got: boolean }[] = [];
 
   const rows: DayRow[] = [];
   let reviewMs = 0;
@@ -287,6 +339,8 @@ export function simulate(sc: Scenario, seed: number): RunResult {
     let reviewed = 0;
     let learnedNew = 0;
     const course = courseOn(available);
+    if (sc.policy === 'today-personal' && seenByApp.length >= 30) setPersonalScale(fitScale(seenByApp));
+    const missedToday = new Map<string, SessionItem>();
     const progAtStart = useProgressStore.getState().getProgress(COURSE_ID);
     const exam = examRule(course, progAtStart, now);
     const dueAtStart = Object.keys(progAtStart).filter((id) => isDueFor(progAtStart[id], now, exam.forItem(id))).length;
@@ -318,6 +372,10 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       }
       if (T == null) learnedNew++;
       else if (reviewing(item, mode)) reviewed++;
+      const before = useProgressStore.getState().getProgress(COURSE_ID)[item.id];
+      const appS = stabilityOf(before);
+      if (appS != null) seenByApp.push({ days: (now - before!.lastSeen!) / DAY, s: appS, mcq: item.type === 'mcq', got });
+      if (!got) missedToday.set(item.id, { ...item, _again: undefined, _block: 'review' });
       truth.set(item.id, {
         s: got ? (T ? memory.grow(T.s, R ?? 0, e) : memory.first(e)) : memory.lapse(T?.s ?? null, e),
         last: now,
@@ -328,8 +386,9 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       store().record(got);
     };
 
-    const run = (mode: 'review' | 'learn' | 'today', capMs: number, sectionId?: string, resumeId?: string) => {
+    const run = (mode: 'review' | 'learn' | 'today', capMs: number, sectionId?: string, resumeId?: string, items?: SessionItem[]) => {
       store().init(COURSE_ID, course, mode, sectionId, resumeId);
+      if (items) useSessionStore.setState({ items, index: 0 });
       if (!store().items.length) return 'empty' as const;
       for (;;) {
         if (used >= capMs) return 'out' as const;
@@ -351,10 +410,18 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       available,
       daysLeft: sc.days - day,
       review: (capMs = budgetMs) => run('review', capMs),
-      today: () => {
-        usePlanStore.setState({ byCourse: { [COURSE_ID]: { minutes: budgetMs / MIN } } });
-        return run('today', budgetMs);
+      today: (capMs = budgetMs) => {
+        usePlanStore.setState({ byCourse: { [COURSE_ID]: { minutes: capMs / MIN } } });
+        return run('today', capMs);
       },
+      todayFor: (ms) => {
+        usePlanStore.setState({ byCourse: { [COURSE_ID]: { minutes: ms / MIN } } });
+        return run('today', used + ms);
+      },
+      later: (hours) => {
+        now += hours * 3_600_000;
+      },
+      missedAgain: (capMs) => run('review', capMs, undefined, undefined, [...missedToday.values()]),
       learn: (capMs = budgetMs) => {
         const next = nextSectionToLearn(course, useProgressStore.getState().getProgress(COURSE_ID));
         if (!next || next.index >= available || used >= capMs) return false;
@@ -453,4 +520,27 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       unseen10: unseenOn(10),
     },
   };
+}
+
+/**
+ * How much slower (above 1) or faster than the app's model this student
+ * forgets: the scale on the app's stabilities that best explains their
+ * answers, by maximum likelihood (a four-option question can be guessed).
+ */
+export function fitScale(seen: { days: number; s: number; mcq: boolean; got: boolean }[]): number {
+  let best = 1;
+  let bestLl = -Infinity;
+  for (let m = 0.3; m <= 3; m *= 1.05) {
+    let ll = 0;
+    for (const a of seen) {
+      const R = Math.exp(-a.days / (a.s * m));
+      const p = Math.min(0.999, Math.max(0.001, a.mcq ? R + (1 - R) * 0.25 : R));
+      ll += a.got ? Math.log(p) : Math.log(1 - p);
+    }
+    if (ll > bestLl) {
+      bestLl = ll;
+      best = m;
+    }
+  }
+  return best;
 }

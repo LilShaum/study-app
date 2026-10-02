@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CATCH_UP_HOURS,
+  catchUpDue,
   DUE_BELOW,
   examTime,
   isDue,
@@ -153,5 +155,21 @@ describe('an exam review happens once', () => {
     // It has had its exam review; only fading below the threshold brings it back.
     expect(isDueFor(reviewed, at + 120_000, exam)).toBe(false);
     expect(nextDueAt(reviewed, at + 120_000, exam)).toBeGreaterThan(at + 120_000);
+  });
+});
+
+describe('a miss is worth one more look the same day', () => {
+  const H = 3_600_000;
+  const missed: ItemResult = { got: 0, missed: 1, lastSeen: T0, stability: 1, lastGot: false };
+
+  it('comes due CATCH_UP_HOURS after the miss, not at the model floor', () => {
+    expect(catchUpDue(missed, T0 + (CATCH_UP_HOURS - 0.1) * H)).toBe(false);
+    expect(isDueFor(missed, T0 + (CATCH_UP_HOURS + 0.1) * H, null)).toBe(true);
+    expect(nextDueAt(missed, T0, null)).toBe(T0 + CATCH_UP_HOURS * H);
+  });
+
+  it('only while the latest answer is the miss', () => {
+    const since: ItemResult = { ...missed, got: 1, lastGot: true, stability: 2 };
+    expect(catchUpDue(since, T0 + 4 * H)).toBe(false);
   });
 });

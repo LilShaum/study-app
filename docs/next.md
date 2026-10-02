@@ -15,6 +15,8 @@ away, and lists today's work across courses; a finished Today points to the
 next course with work; one exam date can be set on several courses of a
 class; undoing a removal keeps the study log; re-uploading says "updated".
 
+Done 2026-10-02: a catch-up later the same day for missed cards (simulator: several points on the exam under both students; sim/FINDINGS.md). Today now uses what is left of the day's time.
+
 Next:
 - Share links and sync are live (`src/lib/cloud.ts`, `docs/supabase.sql`) and
   confirmed working by the owner on real devices, 2026-09-27. Cloud sessions

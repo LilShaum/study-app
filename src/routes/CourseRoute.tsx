@@ -18,11 +18,12 @@ import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog'
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
 import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
 import type { StudyMode } from '@/lib/buildSessionItems';
-import { examTime, isDueFor } from '@/lib/memory';
+import { CATCH_UP_HOURS, examTime, isDueFor } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
 import { examRule } from '@/lib/exam';
 import { buildSessionItems } from '@/lib/buildSessionItems';
 import { DEFAULT_MINUTES } from '@/lib/today';
+import { studiedToday, todaySitting } from '@/lib/todaySitting';
 import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 import { usePlanStore } from '@/store/plan';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
@@ -221,18 +222,30 @@ export function CourseRoute() {
    * session makes, so the promise and the sitting cannot drift apart.
    */
   const today = useMemo(() => {
-    if (!course) return null;
+    if (!course || !id) return null;
+    // What is left of the day's time once some is studied, or the short
+    // catch-up after it (lib/todaySitting). `logs` and `minutes` are what it
+    // reads, so they are what make this recompute.
+    void logs;
+    void minutes;
+    const sitting = todaySitting(id, course, progress, now);
     const items = buildSessionItems(course, 'today', {
       progress,
       now,
       exam: examRule(course, progress, now),
-      minutes,
+      minutes: sitting.minutes,
       pace,
     });
     const review = items.filter((i) => i._block === 'review').length;
     const firstNew = items.find((i) => i._block !== 'review');
-    return { review, firstNew, empty: items.length === 0 };
-  }, [course, progress, now, minutes, pace]);
+    // Done for today: when the day's misses are worth one more look.
+    const studied = studiedToday(id, now) > 0;
+    const backAt = Object.values(progress)
+      .filter((r) => r.lastGot === false && r.lastSeen != null && now - r.lastSeen < CATCH_UP_HOURS * 3_600_000)
+      .map((r) => r.lastSeen! + CATCH_UP_HOURS * 3_600_000);
+    const catchUpAt = backAt.length && new Date(Math.min(...backAt)).toDateString() === new Date(now).toDateString() ? Math.min(...backAt) : null;
+    return { review, firstNew, empty: items.length === 0, minutes: Math.round(sitting.minutes), catchUp: sitting.catchUp, studied, catchUpAt, waiting: backAt.length };
+  }, [course, id, progress, now, minutes, pace, logs]);
 
   // A bookmark outlives the item it points at — the item can be edited away,
   // the section deleted — so it is only offered when it still resolves.
@@ -252,8 +265,17 @@ export function CourseRoute() {
 
   const tags = course.metadata.tags ?? [];
   const sectionsInOrder = sortedSections(course);
+  const clock = (t: number) => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const todaySummary =
-    !today || today.empty
+    today?.empty && today.studied
+      ? `Done for today.${
+          today.catchUpAt
+            ? ` ${today.waiting === 1 ? 'The one you missed is' : `The ${today.waiting} you missed are`} worth one more look after ${clock(today.catchUpAt)}: five minutes then makes them stick.`
+            : ''
+        }`
+      : today?.catchUp
+        ? `Catch-up: ${plural(today.review, 'card')} that came due since you studied, mostly ones you missed.`
+        : !today || today.empty
       ? 'Nothing is due, and everything added so far has been studied. Add material after your next lecture.'
       : [
           today.review > 0 ? plural(today.review, 'card') + ' to review' : null,
@@ -388,7 +410,12 @@ export function CourseRoute() {
               <div className="min-w-0 flex-1">
                 <span className="flex items-baseline gap-3">
                   <span className="font-display text-heading font-semibold text-text">Today</span>
-                  <span className="mark tabular-nums text-text-2">{minutes} min</span>
+                  {!today?.empty && (
+                    <span className="mark tabular-nums text-text-2">
+                      {today?.catchUp ? 'catch-up · ' : ''}
+                      {today?.minutes ?? minutes} min{today && !today.catchUp && today.minutes < minutes ? ' left' : ''}
+                    </span>
+                  )}
                 </span>
                 <span className="mt-0.5 block text-small text-text-2">{todaySummary}</span>
                 <button
@@ -563,7 +590,7 @@ export function CourseRoute() {
         <PinnedBar>
           <div className="flex items-center gap-4">
             <span className="min-w-0 flex-1 truncate text-small text-text-2">
-              <span className="font-display font-semibold text-text">Today</span> · {minutes} min
+              <span className="font-display font-semibold text-text">Today</span> · {today?.minutes ?? minutes} min
             </span>
             <Link to={`/session/${id}/today`} className="press press-ink shrink-0">
               Start

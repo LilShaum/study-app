@@ -11,12 +11,13 @@ import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { SectionJump } from './SectionJump';
 import { SessionRail } from './SessionRail';
-import { nextDueAt, whenLabel } from '@/lib/memory';
+import { CATCH_UP_HOURS, nextDueAt, whenLabel } from '@/lib/memory';
 import { examRule } from '@/lib/exam';
 import { useCoursesStore } from '@/store/courses';
 import { usePlanStore } from '@/store/plan';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { todayAcrossCourses, type CourseToday } from '@/lib/libraryToday';
+import { studiedToday } from '@/lib/todaySitting';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
 
@@ -247,9 +248,10 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
     });
   }, [courseId, mode, sectionId, index, current, total, finished]);
 
-  const restart = () => {
+  /** `fullDay`: "Keep going" carries on past the day's plan, so Today is planned afresh at the full time. */
+  const restart = (fullDay = false) => {
     useResumeStore.getState().clear(courseId);
-    init(courseId, course, mode, sectionId);
+    init(courseId, course, mode, sectionId, undefined, fullDay);
   };
 
   /**
@@ -269,12 +271,14 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
   const [nextCourse, setNextCourse] = useState<CourseToday | null>(null);
   const nextCourseFor = (): CourseToday | null => {
     const plan = usePlanStore.getState();
+    const now = Date.now();
     const others = todayAcrossCourses(
       useCoursesStore.getState().courses,
       useProgressStore.getState().byCourse,
-      Date.now(),
+      now,
       plan.minutesFor,
       measuredPace(useStudyLogStore.getState().byCourse),
+      (id) => studiedToday(id, now),
     ).filter((c) => c.id !== courseId);
     return others[0] ?? null;
   };
@@ -282,6 +286,17 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
     const { items: done, results } = useSessionStore.getState();
     const prog = useProgressStore.getState().getProgress(courseId);
     const now = Date.now();
+    // Misses first: one more look a few hours on is the cheapest gain there is
+    // (lib/memory.ts, catchUpDue), but only if the student knows to come back.
+    const missed = [...new Set([...results.keys()].map((i) => done[i]?.id).filter((id): id is string => !!id && prog[id]?.lastGot === false))];
+    if (missed.length) {
+      const back = Math.max(...missed.map((id) => prog[id].lastSeen ?? now)) + CATCH_UP_HOURS * 3_600_000;
+      const sameDay = new Date(back).toDateString() === new Date(now).toDateString();
+      const n = missed.length === 1 ? 'The one you missed is' : `The ${missed.length} you missed are`;
+      return sameDay
+        ? `${n} worth one more look after ${new Date(back).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}. Open Today then: five minutes makes them stick.`
+        : `${n} back first thing tomorrow.`;
+    }
     const exam = examRule(course, prog, now);
     const ids = new Set([...results.keys()].map((i) => done[i]?.id).filter(Boolean) as string[]);
     const dues = [...ids].map((itemId) => nextDueAt(prog[itemId], now, exam.covering(itemId))).filter((t): t is number => t != null);
@@ -451,12 +466,12 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
               fresh — the most useful next step when there is one, so it
               leads. */}
           {moreDue > 0 && (
-            <button type="button" onClick={restart} className="press press-ink tap-safe">
+            <button type="button" onClick={() => restart()} className="press press-ink tap-safe">
               Keep reviewing
             </button>
           )}
           {mode === 'today' && (
-            <button type="button" onClick={restart} className="press press-ink tap-safe">
+            <button type="button" onClick={() => restart(true)} className="press press-ink tap-safe">
               Keep going
             </button>
           )}
@@ -477,7 +492,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           {moreDue === 0 && mode !== 'today' && (
             <button
               type="button"
-              onClick={restart}
+              onClick={() => restart()}
               className={`press tap-safe ${missedNow > 0 ? '' : 'press-ink'}`}
             >
               Study again
@@ -542,7 +557,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
       {resumed && (
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-surface px-4 py-2 text-sm">
           <span className="text-text-2">Picked up where you left off.</span>
-          <button type="button" onClick={restart} className="text-accent hover:underline">
+          <button type="button" onClick={() => restart()} className="text-accent hover:underline">
             Start from the beginning
           </button>
         </div>

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
 import { recallId } from './scored';
-import { CAP_WITHIN_DAYS, REVIEW_CAP, REVIEW_SECONDS, splitSitting } from './today';
+import { CAP_WITHIN_DAYS, CATCH_UP_MINUTES, minutesLeft, REVIEW_CAP, REVIEW_SECONDS, splitSitting } from './today';
 
 const DAY = 86_400_000;
 const exam = new Date(2026, 9, 27, 9).getTime();
@@ -40,5 +40,20 @@ describe('splitSitting', () => {
     const plan = splitSitting(course(false), few, exam - 20 * DAY, 30);
     expect(plan.reviewMinutes).toBeCloseTo((12 * REVIEW_SECONDS) / 60);
     expect(plan.learnMinutes).toBeCloseTo(30 - (12 * REVIEW_SECONDS) / 60);
+  });
+});
+
+describe('minutesLeft', () => {
+  it('is the rest of the day’s plan while five minutes or more remain', () => {
+    expect(minutesLeft(30, 0, 0)).toEqual({ minutes: 30, catchUp: false });
+    expect(minutesLeft(30, 20 * 60, 4)).toEqual({ minutes: 10, catchUp: false });
+  });
+
+  it('is a short catch-up once the plan is spent and something is due', () => {
+    expect(minutesLeft(30, 29 * 60, 3)).toEqual({ minutes: CATCH_UP_MINUTES, catchUp: true });
+  });
+
+  it('is nothing once the plan is spent and nothing is due', () => {
+    expect(minutesLeft(30, 40 * 60, 0)).toEqual({ minutes: 0, catchUp: false });
   });
 });
