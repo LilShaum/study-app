@@ -54,4 +54,31 @@ describe('ExamDialog', () => {
     expect(saved().exam_date).toBeUndefined();
     expect(saved().exam_sections).toBeUndefined();
   });
+
+  describe('other courses of the same class', () => {
+    const coded = (title: string, extra = {}) =>
+      ({ ...course, metadata: { title, course_code: 'BIOL 365', ...extra } }) as unknown as Course;
+
+    it('sets the same date on the courses ticked, covering all their sections', () => {
+      useCoursesStore.setState({ courses: { bio: coded('Bio'), endo: coded('Endo'), cell: coded('Cell') } });
+      render(<ExamDialog courseId="bio" course={useCoursesStore.getState().courses.bio} onClose={() => {}} />);
+      setDate('2026-10-27');
+      fireEvent.click(screen.getByLabelText('Endo'));
+      fireEvent.click(screen.getByText('Save'));
+      const all = useCoursesStore.getState().courses;
+      expect(all.endo.metadata.exam_date).toBe('2026-10-27');
+      expect(all.endo.metadata.exam_sections).toEqual(['a', 'b', 'c']);
+      expect(all.cell.metadata.exam_date).toBeUndefined();
+    });
+
+    it('clears a course that shared the date once it is unticked', () => {
+      const exam = { exam_date: '2026-10-27', exam_sections: ['a'] };
+      useCoursesStore.setState({ courses: { bio: coded('Bio', exam), endo: coded('Endo', exam) } });
+      render(<ExamDialog courseId="bio" course={useCoursesStore.getState().courses.bio} onClose={() => {}} />);
+      expect((screen.getByLabelText('Endo') as HTMLInputElement).checked).toBe(true);
+      fireEvent.click(screen.getByLabelText('Endo'));
+      fireEvent.click(screen.getByText('Save'));
+      expect(useCoursesStore.getState().courses.endo.metadata.exam_date).toBeUndefined();
+    });
+  });
 });

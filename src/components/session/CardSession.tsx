@@ -13,6 +13,10 @@ import { SectionJump } from './SectionJump';
 import { SessionRail } from './SessionRail';
 import { nextDueAt, whenLabel } from '@/lib/memory';
 import { examRule } from '@/lib/exam';
+import { useCoursesStore } from '@/store/courses';
+import { usePlanStore } from '@/store/plan';
+import { measuredPace, useStudyLogStore } from '@/store/studyLog';
+import { todayAcrossCourses, type CourseToday } from '@/lib/libraryToday';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
 
@@ -261,6 +265,19 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
   const [appointment, setAppointment] = useState<string | null>(null);
   /** Review only: how many are still due once this sitting is done. */
   const [moreDue, setMoreDue] = useState(0);
+  /** Today only: the next course with something to do, worked out as the sitting ends. */
+  const [nextCourse, setNextCourse] = useState<CourseToday | null>(null);
+  const nextCourseFor = (): CourseToday | null => {
+    const plan = usePlanStore.getState();
+    const others = todayAcrossCourses(
+      useCoursesStore.getState().courses,
+      useProgressStore.getState().byCourse,
+      Date.now(),
+      plan.minutesFor,
+      measuredPace(useStudyLogStore.getState().byCourse),
+    ).filter((c) => c.id !== courseId);
+    return others[0] ?? null;
+  };
   const appointmentFor = (): string | null => {
     const { items: done, results } = useSessionStore.getState();
     const prog = useProgressStore.getState().getProgress(courseId);
@@ -326,6 +343,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
       setMoreDue(0);
       setAppointment(appointmentFor());
     }
+    setNextCourse(mode === 'today' ? nextCourseFor() : null);
     finish();
   };
   const retryMissed = useSessionStore((s) => s.retryMissed);
@@ -472,6 +490,14 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
             Back to course
           </Link>
         </div>
+        {mode === 'today' && nextCourse && (
+          <Link
+            to={`/session/${nextCourse.id}/today`}
+            className="press tap-safe mt-3 max-w-full"
+          >
+            Next: Today in {nextCourse.title}
+          </Link>
+        )}
       </div>
     );
   }

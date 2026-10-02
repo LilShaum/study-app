@@ -10,6 +10,11 @@ leaves room under it); Weakest ranks by the memory model and Missed means
 refuse a newer app's format, and make other open tabs reload on restore; the
 study screen has a side rail on desktop; the course page reads the clock once.
 
+Done 2026-10-01: the library filters by class (course code) with tags folded
+away, and lists today's work across courses; a finished Today points to the
+next course with work; one exam date can be set on several courses of a
+class; undoing a removal keeps the study log; re-uploading says "updated".
+
 Next:
 - Share links and sync are live (`src/lib/cloud.ts`, `docs/supabase.sql`) and
   confirmed working by the owner on real devices, 2026-09-27. Cloud sessions

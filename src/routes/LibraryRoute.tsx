@@ -16,7 +16,23 @@ import { sectionStats } from '@/lib/sectionStats';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
 import { examRule } from '@/lib/exam';
 import { RestoreButton } from '@/components/Backup';
-import { useStudyLogStore } from '@/store/studyLog';
+import { measuredPace, useStudyLogStore } from '@/store/studyLog';
+import { usePlanStore } from '@/store/plan';
+import { todayAcrossCourses, type CourseToday } from '@/lib/libraryToday';
+
+/** The most courses the Today block names; the list below carries the rest. */
+const TODAY_ROWS = 3;
+
+/** "12 to review · new material · exam in 4 days" — only the parts that apply. */
+function todayLine(c: CourseToday): string {
+  return [
+    c.review > 0 ? `${c.review} to review` : null,
+    c.hasNew ? 'new material' : null,
+    c.examDays === 0 ? 'exam today' : c.examDays === 1 ? 'exam tomorrow' : c.examDays != null ? `exam in ${c.examDays} days` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
@@ -71,6 +87,14 @@ export function LibraryRoute() {
   const updateCourse = useCoursesStore((s) => s.updateCourse);
   const inputRef = useRef<HTMLInputElement>(null);
   const ids = Object.keys(courses);
+  const minutesFor = usePlanStore((s) => s.minutesFor);
+  const logs = useStudyLogStore((s) => s.byCourse);
+  const pace = useMemo(() => measuredPace(logs), [logs]);
+  // Only worth working out when there is a choice to make between courses.
+  const todays = useMemo(
+    () => (Object.keys(courses).length >= 2 ? todayAcrossCourses(courses, allProgress, now, minutesFor, pace) : []),
+    [courses, allProgress, now, minutesFor, pace],
+  );
 
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState('');
@@ -226,6 +250,29 @@ export function LibraryRoute() {
         </div>
       ) : (
         <>
+          {todays.length > 0 && (
+            <div className="mb-7">
+              <h2 className="mark mb-2 text-text-3">Today</h2>
+              <ul className="border-y border-border">
+                {todays.slice(0, TODAY_ROWS).map((c) => (
+                  <li key={c.id} className="flex items-center gap-4 border-b border-border py-3 last:border-b-0">
+                    <div className="min-w-0 flex-1">
+                      <span className="block font-display text-body font-semibold leading-snug text-text">
+                        {c.title}
+                      </span>
+                      <span className="block text-small text-text-2">{todayLine(c)}</span>
+                    </div>
+                    <Link to={`/session/${c.id}/today`} className="press press-ink tap-safe shrink-0">
+                      Start
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              {todays.length > TODAY_ROWS && (
+                <p className="mt-2 text-small text-text-3">+{todays.length - TODAY_ROWS} more below</p>
+              )}
+            </div>
+          )}
           {/* The apparatus of a contents page: a ruled line to write the
               search on, and the classes and tags set as index lines. Both used to
               be web furniture — a grey rounded search box and a row of

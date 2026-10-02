@@ -42,6 +42,25 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
   );
   const [minutes, setMinutesDraft] = useState(minutesNow);
 
+  // One class's exam often covers several of its courses (a course is
+  // usually a lecture set), so the date can be set on those in one go.
+  const allCourses = useCoursesStore((s) => s.courses);
+  const code = course.metadata.course_code?.trim();
+  const siblings = code
+    ? Object.entries(allCourses).filter(([id, c]) => id !== courseId && c.metadata.course_code?.trim() === code)
+    : [];
+  const linkedBefore = new Set(
+    course.metadata.exam_date ? siblings.filter(([, c]) => c.metadata.exam_date === course.metadata.exam_date).map(([id]) => id) : [],
+  );
+  const [alsoFor, setAlsoFor] = useState<Set<string>>(linkedBefore);
+  const toggleAlso = (id: string) =>
+    setAlsoFor((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
   const toggle = (id: string) =>
     setCovered((prev) => {
       const next = new Set(prev);
@@ -60,7 +79,23 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
     if (date && covered.size) metadata.exam_sections = sections.map((s) => s.id).filter((id) => covered.has(id));
     else delete metadata.exam_sections;
     setMinutes(courseId, minutes);
-    const { ok } = persisted(() => updateCourse(courseId, { ...course, metadata }));
+    const { ok } = persisted(() => {
+      updateCourse(courseId, { ...course, metadata });
+      if (!date) return;
+      for (const [id, other] of siblings) {
+        const m = { ...other.metadata };
+        if (alsoFor.has(id)) {
+          // Already on this date: keep the sections chosen for it there.
+          if (m.exam_date !== date || !m.exam_sections?.length) m.exam_sections = sortedSections(other).map((s) => s.id);
+          m.exam_date = date;
+        } else if (linkedBefore.has(id)) {
+          // Unticked: not the same exam after all.
+          delete m.exam_date;
+          delete m.exam_sections;
+        } else continue;
+        updateCourse(id, { ...other, metadata: m });
+      }
+    });
     toast(ok ? 'Saved.' : "Browser storage is full, so this wasn't saved.", { type: ok ? 'success' : 'error' });
     onClose();
   };
@@ -119,6 +154,23 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
                   None
                 </button>
               </span>
+            </fieldset>
+          )}
+
+          {date && siblings.length > 0 && (
+            <fieldset>
+              <legend className="mb-1 text-sm font-medium text-text">Same exam for</legend>
+              <p className="mb-2 text-xs text-text-3">Other {code} courses this exam also covers.</p>
+              <ul className="border-y border-border">
+                {siblings.map(([id, c]) => (
+                  <li key={id} className="border-b border-border last:border-b-0">
+                    <label className="tap-safe flex cursor-pointer items-baseline gap-3 py-2 text-small">
+                      <input type="checkbox" checked={alsoFor.has(id)} onChange={() => toggleAlso(id)} />
+                      <span className={alsoFor.has(id) ? 'text-text' : 'text-text-3'}>{c.metadata.title}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
             </fieldset>
           )}
 
