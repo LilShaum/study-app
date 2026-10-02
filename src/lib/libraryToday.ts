@@ -3,12 +3,15 @@ import type { ItemResult } from '@/store/progress';
 import { buildSessionItems } from './buildSessionItems';
 import { examRule } from './exam';
 import { examTime } from './memory';
+import { dueCount, minutesLeft } from './today';
 
 export interface CourseToday {
   id: string;
   title: string;
   code?: string;
   minutes: number;
+  /** Today's time is spent; this is the short second sitting for what came due since. */
+  catchUp: boolean;
   review: number;
   hasNew: boolean;
   /** Whole days to the exam from this morning, or null with no date or once it has passed. */
@@ -41,11 +44,13 @@ export function todayAcrossCourses(
   now: number,
   minutesFor: (courseId: string) => number,
   pace?: Record<string, number>,
+  /** Seconds already studied today in a course (store/studyLog). */
+  studiedToday: (courseId: string) => number = () => 0,
 ): CourseToday[] {
   const out: CourseToday[] = [];
   for (const [id, course] of Object.entries(courses)) {
     const progress = progressByCourse[id] ?? {};
-    const minutes = minutesFor(id);
+    const { minutes, catchUp } = minutesLeft(minutesFor(id), studiedToday(id), dueCount(course, progress, now));
     const items = buildSessionItems(course, 'today', {
       progress,
       now,
@@ -59,6 +64,7 @@ export function todayAcrossCourses(
       title: course.metadata.title,
       code: course.metadata.course_code?.trim() || undefined,
       minutes,
+      catchUp,
       review: items.filter((i) => i._block === 'review').length,
       hasNew: items.some((i) => i._block !== 'review'),
       examDays: daysToExam(course.metadata.exam_date, now),

@@ -10,6 +10,61 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-02 — A catch-up later the same day: built; a personal forgetting rate: not yet
+
+**Question.** The owner liked how Learn and Today adapt to them and asked to
+lean into that, but only where it makes studying more effective. Two
+candidates, tried as policies before any screen (3 seeds each):
+
+1. `evening-misses`: the day's minutes less five in one sitting, then hours
+   later five minutes on only the cards missed in it. Same total time.
+2. `today-personal`: the Today button, with the app's memory model scaled
+   each morning to this student's own review answers (maximum-likelihood fit
+   of how much faster or slower they forget than the model assumes). Needs a
+   hook in `lib/memory.ts` (`setPersonalScale`, 1 everywhere in the app).
+
+| Scenario | today-button | personal | evening, 6 h |
+|---|---|---|---|
+| steady-30 | 53% | 54% | 60% |
+| steady-45 | 77% | 76% | 85% |
+| busy-20 | 27% | 30% | 28% |
+| crammer | 67% | 66% | 67% |
+| steady-45-cutoff-scope | 84% | 85% | 92% |
+| steady-30-harsh | 16% | 17% | 18% |
+| steady-45-cutoff-scope-harsh | 24% | 25% | 25% |
+
+**The gap is what does it.** The same five minutes on the misses at the end
+of the first sitting (`evening-misses-0h`) gives nothing (53%, as the
+baseline); 3 h gives 59%, 10 h 62% (steady-30). Both truth models give
+little credit for an answer minutes after the last one, so the 0 h result
+is partly built in, but the direction agrees with the spacing evidence.
+Gains hold in direction under both students (fsrs +6 to +9, harsh +1 to +2),
+so by rule 2 it is acted on.
+
+**Through the app's own doors** (`evening-today`: Today, then Today again
+for five minutes hours later) it first did *worse* at 6 h: a missed card
+sat at the model's one-day floor and only came due about 7 h on, so the
+second sitting found nothing to re-ask and spent its minutes on new
+material. At 8 h it matched `evening-misses`. So the app now makes a missed
+card due `CATCH_UP_HOURS` (3) after the miss (`catchUpDue`), and with that
+the second sitting works from 3 h: steady-30 57%, busy-20 30%,
+steady-45-cutoff-scope 92%, harsh 17% / 24%. A student who studies once a
+day is unchanged (full suite within noise of the old baseline).
+
+**Built.** Today's minutes are now what is left of the day's plan after
+what was studied today (study log); once spent, Today is a five-minute
+catch-up while anything is due, and "Done for today" otherwise, with the
+time the misses are worth another look. The finish screen names that time.
+"Keep going" still plans a full sitting. The simulator's study log is off,
+so its students see the full plan each time, as before. **Re-baselined.**
+
+**Not built: the personal forgetting rate.** Within noise almost
+everywhere, slightly up under `harsh` and busy-20, slightly down in some
+`fsrs` rows. Revisit once the owner's real log can say how far their
+forgetting is from the model (`scripts/calibrate-log.mjs`).
+
+---
+
 ## 2026-09-28 — A calibrator for real study logs, checked on known students
 
 `scripts/calibrate-log.mjs` reads a backup file (or one course's study log)

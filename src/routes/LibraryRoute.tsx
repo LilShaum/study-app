@@ -19,6 +19,7 @@ import { RestoreButton } from '@/components/Backup';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { usePlanStore } from '@/store/plan';
 import { todayAcrossCourses, type CourseToday } from '@/lib/libraryToday';
+import { studiedToday } from '@/lib/todaySitting';
 
 /** The most courses the Today block names; the list below carries the rest. */
 const TODAY_ROWS = 3;
@@ -26,7 +27,7 @@ const TODAY_ROWS = 3;
 /** "12 to review · new material · exam in 4 days" — only the parts that apply. */
 function todayLine(c: CourseToday): string {
   return [
-    c.review > 0 ? `${c.review} to review` : null,
+    c.catchUp ? `catch-up: ${c.review} to look at again` : c.review > 0 ? `${c.review} to review` : null,
     c.hasNew ? 'new material' : null,
     c.examDays === 0 ? 'exam today' : c.examDays === 1 ? 'exam tomorrow' : c.examDays != null ? `exam in ${c.examDays} days` : null,
   ]
@@ -92,7 +93,10 @@ export function LibraryRoute() {
   const pace = useMemo(() => measuredPace(logs), [logs]);
   // Only worth working out when there is a choice to make between courses.
   const todays = useMemo(
-    () => (Object.keys(courses).length >= 2 ? todayAcrossCourses(courses, allProgress, now, minutesFor, pace) : []),
+    () =>
+      Object.keys(courses).length >= 2
+        ? todayAcrossCourses(courses, allProgress, now, minutesFor, pace, (id) => studiedToday(id, now))
+        : [],
     [courses, allProgress, now, minutesFor, pace],
   );
 

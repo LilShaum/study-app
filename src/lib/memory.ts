@@ -61,6 +61,16 @@ export const DUE_BELOW = 0.75;
 const clamp = (s: number) => Math.min(CEILING_DAYS, Math.max(FLOOR_DAYS, s));
 
 /**
+ * How much slower (above 1) or faster (below 1) this student forgets than
+ * the model assumes, applied to every stability when reading recall. 1 until
+ * there are enough of the student's own answers to fit it (lib/personalPace).
+ */
+let personalScale = 1;
+export function setPersonalScale(scale: number): void {
+  personalScale = scale;
+}
+
+/**
  * The item's stability, in days, or null if it has never been answered.
  *
  * Records written before this model existed carry only counts. Those get a
@@ -80,7 +90,7 @@ export function retrievability(r: ItemResult | undefined, at: number): number | 
   const s = stabilityOf(r);
   if (s == null) return null;
   const days = Math.max(0, (at - r!.lastSeen!) / DAY_MS);
-  return Math.exp(-days / s);
+  return Math.exp(-days / (s * personalScale));
 }
 
 /** Whether a studied item has faded enough to be worth reviewing. Never-seen items are not due. */
@@ -101,7 +111,7 @@ export function nextStability(
   if (!before) return got ? FIRST_RIGHT_DAYS : FLOOR_DAYS;
   if (!got) return clamp(before.stability * LAPSE_KEEPS);
   const days = Math.max(0, (at - before.lastSeen) / DAY_MS);
-  const R = Math.exp(-days / before.stability);
+  const R = Math.exp(-days / (before.stability * personalScale));
   return clamp(before.stability * (1 + GROWTH * (1 - R)));
 }
 
@@ -161,8 +171,24 @@ export function isDueFor(r: ItemResult | undefined, now: number, examAt: number 
   const s = stabilityOf(r);
   if (s == null) return false;
   if (retrievability(r, now)! < DUE_BELOW) return true;
-  const latest = examReviewFrom(r, s, now, examAt);
+  if (catchUpDue(r, now)) return true;
+  const latest = examReviewFrom(r, s * personalScale, now, examAt);
   return latest != null && now >= latest;
+}
+
+/**
+ * A miss is worth one more look a few hours later the same day: the
+ * simulator found a five-minute second sitting on the day's misses worth
+ * several points on the exam under both students, and nothing when the
+ * same cards were re-asked minutes later at the end of the first sitting
+ * (sim/FINDINGS.md, 2026-10-02). After a miss the model's floor puts the
+ * card due only about seven hours on, so a student back in the evening
+ * often found nothing waiting; this brings it forward to CATCH_UP_HOURS.
+ */
+export const CATCH_UP_HOURS = 3;
+export function catchUpDue(r: ItemResult | undefined, now: number): boolean {
+  if (!r || r.lastGot !== false || r.lastSeen == null) return false;
+  return now - r.lastSeen >= CATCH_UP_HOURS * 3_600_000;
 }
 
 /**
@@ -197,8 +223,9 @@ export function reviewUrgency(r: ItemResult | undefined, now: number, examAt: nu
 export function nextDueAt(r: ItemResult | undefined, now: number, examAt: number | null): number | null {
   const s = stabilityOf(r);
   if (s == null) return null;
-  const normal = r!.lastSeen! + -Math.log(DUE_BELOW) * s * DAY_MS;
-  const latest = examReviewFrom(r, s, now, examAt);
+  let normal = r!.lastSeen! + -Math.log(DUE_BELOW) * s * personalScale * DAY_MS;
+  if (r!.lastGot === false) normal = Math.min(normal, r!.lastSeen! + CATCH_UP_HOURS * 3_600_000);
+  const latest = examReviewFrom(r, s * personalScale, now, examAt);
   return latest == null ? normal : Math.min(normal, latest);
 }
 

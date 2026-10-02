@@ -377,6 +377,11 @@ export function buildSessionItems(
       items = pairConfusions(fitMinutes(dueFirst(items), minutes, pace).slice(0, Number.isFinite(minutes) ? REVIEW_MAX : undefined));
       break;
     case 'today': {
+      // Nothing left of the day's time and nothing to catch up on (lib/today.ts, minutesLeft).
+      if (minutes <= 0) {
+        items = [];
+        break;
+      }
       // One sitting sized to the student's minutes: what is due, for Review's
       // share of the time, then Learn's steps for the rest (lib/today.ts).
       const due = dueFirst(items);
