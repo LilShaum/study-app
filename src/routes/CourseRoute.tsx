@@ -23,7 +23,7 @@ import { nextSectionToLearn } from '@/lib/nextToLearn';
 import { examRule } from '@/lib/exam';
 import { buildSessionItems } from '@/lib/buildSessionItems';
 import { DEFAULT_MINUTES } from '@/lib/today';
-import { studiedToday, todaySitting } from '@/lib/todaySitting';
+import { plannedMinutes, studiedToday, todaySitting } from '@/lib/todaySitting';
 import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 import { usePlanStore } from '@/store/plan';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
@@ -213,7 +213,15 @@ export function CourseRoute() {
     todayObserver.current.observe(el);
   }, []);
   const [examOpen, setExamOpen] = useState(false);
-  const minutes = usePlanStore((s) => (id ? s.minutesFor(id) : DEFAULT_MINUTES));
+  const ownMinutes = usePlanStore((s) => (id ? s.minutesFor(id) : DEFAULT_MINUTES));
+  const total = usePlanStore((s) => s.total);
+  // With one daily time for all courses, this course's share of it today.
+  const minutes = useMemo(() => {
+    void ownMinutes;
+    void total;
+    void progress;
+    return id ? Math.round(plannedMinutes(id, now)) : DEFAULT_MINUTES;
+  }, [id, now, ownMinutes, total, progress]);
   const logs = useStudyLogStore((s) => s.byCourse);
   const pace = useMemo(() => measuredPace(logs), [logs]);
   /**

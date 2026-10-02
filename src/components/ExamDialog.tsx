@@ -34,6 +34,7 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
   const updateCourse = useCoursesStore((s) => s.updateCourse);
   const minutesNow = usePlanStore((s) => s.minutesFor(courseId));
   const setMinutes = usePlanStore((s) => s.setMinutes);
+  const sharedTotal = usePlanStore((s) => s.total);
 
   const sections = sortedSections(course);
   const [date, setDate] = useState(course.metadata.exam_date ?? '');
@@ -175,28 +176,35 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
             </fieldset>
           )}
 
-          <fieldset>
-            <legend className="mb-1 text-sm font-medium text-text">Time a day</legend>
-            <p className="mb-2 text-xs text-text-3">Today&rsquo;s session is sized to this.</p>
-            <div role="radiogroup" aria-label="Minutes a day" className="flex flex-wrap gap-x-4 gap-y-2">
-              {MINUTE_CHOICES.map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  role="radio"
-                  aria-checked={minutes === m}
-                  onClick={() => setMinutesDraft(m)}
-                  className={`tap-safe px-0.5 text-small tabular-nums ${
-                    minutes === m
-                      ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
-                      : 'text-text-2 hover:text-text'
-                  }`}
-                >
-                  {m} min
-                </button>
-              ))}
-            </div>
-          </fieldset>
+          {sharedTotal != null ? (
+            <p className="text-small text-text-3">
+              Time a day comes from one daily time for all your courses ({sharedTotal} min), shared by how soon each
+              exam is. Change it under Today on the library page.
+            </p>
+          ) : (
+            <fieldset>
+              <legend className="mb-1 text-sm font-medium text-text">Time a day</legend>
+              <p className="mb-2 text-xs text-text-3">Today&rsquo;s session is sized to this.</p>
+              <div role="radiogroup" aria-label="Minutes a day" className="flex flex-wrap gap-x-4 gap-y-2">
+                {MINUTE_CHOICES.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    role="radio"
+                    aria-checked={minutes === m}
+                    onClick={() => setMinutesDraft(m)}
+                    className={`tap-safe px-0.5 text-small tabular-nums ${
+                      minutes === m
+                        ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
+                        : 'text-text-2 hover:text-text'
+                    }`}
+                  >
+                    {m} min
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          )}
         </div>
 
         <div className="flex justify-end gap-2 border-t border-border px-5 py-3">

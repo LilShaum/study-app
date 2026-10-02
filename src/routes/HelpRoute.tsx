@@ -25,7 +25,7 @@ interface HelpSection {
 const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   {
     name: 'Today',
-    what: 'The one to press most days. It reviews what you are starting to forget, then carries on with new material, and ends when your daily time is up. Set the time, and your exam date and what it covers, from the line under Today on the course page. If one exam covers several courses with the same course code, you can set it on all of them at once there. In the last few days before an exam it makes more room for anything on it you have not studied yet. Once your time is used up, coming back a few hours later gives a five-minute catch-up on what you missed, which does more for those cards than going over them again straight away.',
+    what: 'The one to press most days. It reviews what you are starting to forget, then carries on with new material, and ends when your daily time is up. Set the time, and your exam date and what it covers, from the line under Today on the course page. If one exam covers several courses with the same course code, you can set it on all of them at once there. In the last few days before an exam it makes more room for anything on it you have not studied yet. Once your time is used up, coming back a few hours later gives a five-minute catch-up on what you missed, which does more for those cards than going over them again straight away. With more than one course, you can set one daily time for all of them under Today on the library page: it is shared by how soon each exam is, so the nearest gets the most.',
     scored: true,
   },
   {

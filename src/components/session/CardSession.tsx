@@ -14,10 +14,9 @@ import { SessionRail } from './SessionRail';
 import { CATCH_UP_HOURS, nextDueAt, whenLabel } from '@/lib/memory';
 import { examRule } from '@/lib/exam';
 import { useCoursesStore } from '@/store/courses';
-import { usePlanStore } from '@/store/plan';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { todayAcrossCourses, type CourseToday } from '@/lib/libraryToday';
-import { studiedToday } from '@/lib/todaySitting';
+import { plannedMinutes, studiedToday } from '@/lib/todaySitting';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
 
@@ -270,13 +269,12 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
   /** Today only: the next course with something to do, worked out as the sitting ends. */
   const [nextCourse, setNextCourse] = useState<CourseToday | null>(null);
   const nextCourseFor = (): CourseToday | null => {
-    const plan = usePlanStore.getState();
     const now = Date.now();
     const others = todayAcrossCourses(
       useCoursesStore.getState().courses,
       useProgressStore.getState().byCourse,
       now,
-      plan.minutesFor,
+      (id) => plannedMinutes(id, now),
       measuredPace(useStudyLogStore.getState().byCourse),
       (id) => studiedToday(id, now),
     ).filter((c) => c.id !== courseId);
