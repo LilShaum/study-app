@@ -85,8 +85,9 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
       for (const [id, other] of siblings) {
         const m = { ...other.metadata };
         if (alsoFor.has(id)) {
-          // Already on this date: keep the sections chosen for it there.
-          if (m.exam_date !== date || !m.exam_sections?.length) m.exam_sections = sortedSections(other).map((s) => s.id);
+          // Already sharing this exam (the date may be moving): keep the
+          // sections chosen for it there. Newly ticked: all of them.
+          if (!linkedBefore.has(id) || !m.exam_sections?.length) m.exam_sections = sortedSections(other).map((s) => s.id);
           m.exam_date = date;
         } else if (linkedBefore.has(id)) {
           // Unticked: not the same exam after all.
