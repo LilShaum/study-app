@@ -36,7 +36,7 @@ function course(): Course {
 describe('buildAddPrompt', () => {
   const prompt = buildAddPrompt(course());
 
-  it('embeds the canonical generator spec from CLAUDE.md', () => {
+  it('embeds the canonical generator spec from prompts/generator.md', () => {
     // The spec is imported with ?raw so the in-app prompt cannot drift from
     // the format the app parses. If the import silently resolved to nothing,
     // the prompt would still "work" but omit the whole contract — so assert

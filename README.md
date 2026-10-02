@@ -56,7 +56,7 @@ icon cannot drift apart.
 ## The `.study.json` format
 
 The full schema lives in `src/schema/course.ts` (Zod, with TypeScript types
-inferred from it) — that file is the source of truth. `CLAUDE.md` is a
+inferred from it) — that file is the source of truth. `prompts/generator.md` is a
 *separate* thing: it's the system prompt for the AI conversation that
 generates `.study.json` files from a student's notes, not instructions for
 working on this app.
@@ -65,7 +65,7 @@ working on this app.
 
 The app ships with no content and no assumption that you already have a
 `.study.json`. **New course** on the library page hands you the generator
-prompt — `CLAUDE.md` verbatim, via a `?raw` import, so it cannot drift from
+prompt — `prompts/generator.md` verbatim, via a `?raw` import, so it cannot drift from
 the format the app parses — to paste into an AI chat with your slides
 attached. Paste the JSON it returns straight back into the same dialog, or
 open a saved file if you kept one.
@@ -93,8 +93,8 @@ scorable, a low gradable ratio — and the practice prompt names those as
 priorities, so a second round targets the gaps rather than producing more of
 the same.
 
-The prompt embeds `CLAUDE.md` via a `?raw` import, so the spec the app hands
-out can't drift from the format it parses — edit `CLAUDE.md` and both change.
+The prompt embeds `prompts/generator.md` via a `?raw` import, so the spec the app hands
+out can't drift from the format it parses — edit `prompts/generator.md` and both change.
 `src/lib/mergeFragment.ts` holds the merge logic: `planMerge` computes,
 `applyMerge` applies, both pure. Both modes merge through it.
 
@@ -197,7 +197,7 @@ npm run audit -- course.study.json source.txt --terms terms.txt
 
 It verifies that every `source_excerpt` really appears in the source (the
 check that catches fabricated content), that MCQs honour the contract in
-`CLAUDE.md` (four options, an in-range 0-based `correct_index`, an
+`prompts/generator.md` (four options, an in-range 0-based `correct_index`, an
 index-aligned `distractor_rationale`, no "all of the above" filler), that ids
 are unique, that diagrams carry no scripts or event handlers, and that the
 metadata counts are true. Exit code is 1 on any hard failure, so it can gate a

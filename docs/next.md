@@ -1,6 +1,6 @@
 # What's next
 
-The generation prompt (CLAUDE.md) is frozen for now: courses were just
+The generation prompt (prompts/generator.md) is frozen for now: courses were just
 generated with it, so effort goes into the app, which helps every existing
 course.
 

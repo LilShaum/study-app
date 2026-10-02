@@ -2,10 +2,10 @@
  * Prepares a course's inline `svg` for rendering: makes it theme-legible and
  * strips anything executable.
  *
- * Why this exists: CLAUDE.md asks the generator to emit inline SVG diagrams,
+ * Why this exists: prompts/generator.md asks the generator to emit inline SVG diagrams,
  * and LLM-authored SVG defaults to hardcoded dark strokes (#000, #222, #333).
  * Three of the four tree themes are dark, so those diagrams render as
- * near-invisible ghosts. CLAUDE.md now asks for `currentColor`, but that only
+ * near-invisible ghosts. prompts/generator.md now asks for `currentColor`, but that only
  * helps files generated from here on — this rescues everything already made.
  *
  * The remap rule: near-black becomes `currentColor` and near-white becomes the
