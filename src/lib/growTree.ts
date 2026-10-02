@@ -147,6 +147,46 @@ const TRAITS = {
 
 type SpeciesTraits = typeof TRAITS;
 
+/**
+ * This course's habit: the same traits, moved along the axes a person reads
+ * a tree's shape by, by amounts the seed decides.
+ *
+ * Not species again. Named species failed because each had to be told apart
+ * from the others by silhouette alone; here nothing has to be named. Two
+ * axes, each continuous, each kept inside the range where the drawing still
+ * reads as a tree:
+ *
+ * - upright ↔ spreading: a strong leader, steep limbs and a taller bole
+ *   against a weak leader, wide limbs and a short bole. These move together
+ *   because they do in real trees — an oak is not a tall, narrow tree with
+ *   level branches.
+ * - fine ↔ broad foliage: smaller, denser leaves in tighter clumps against
+ *   larger, looser ones.
+ *
+ * Drawn from a stream of its own, so the crown's own jitter is untouched by
+ * how many draws this takes.
+ */
+function habitFor(seed: string): SpeciesTraits {
+  const h = rng(hashSeed(`${seed}/habit`));
+  // Pushed away from the middle a little, so most courses are visibly one
+  // kind or the other rather than all being the average tree.
+  const lean = (x: number) => 0.5 + Math.sign(x - 0.5) * Math.pow(Math.abs(x - 0.5) * 2, 0.7) / 2;
+  const upright = lean(h());
+  const fine = lean(h());
+  const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+  return {
+    spread: [mix(80, 54, upright), mix(48, 26, upright)],
+    lift: mix(0.18, 0.42, upright),
+    leader: mix(0.38, 0.78, upright),
+    children: TRAITS.children,
+    bole: [mix(70, 98, upright) + (h() - 0.5) * 8, 14],
+    clumps: TRAITS.clumps,
+    clumpDensity: Math.round(mix(13, 19, fine)),
+    clumpSize: mix(12.5, 9.5, fine),
+    leafLength: mix(8.8, 6.2, fine),
+  };
+}
+
 /** Cheap, stable string hash — the same course id always seeds the same tree. */
 function hashSeed(s: string): number {
   let h = 2166136261;
@@ -424,7 +464,7 @@ function trunkOutline(spine: Pt[], foot: number, top: number, flareL: number, fl
 }
 
 export function growTree(seed: string, sections: TreeSection[]): Tree {
-  const traits = TRAITS;
+  const traits = habitFor(seed);
   const rand = rng(hashSeed(seed));
   const width = 200;
   const height = 260;
@@ -723,6 +763,23 @@ export function growTree(seed: string, sections: TreeSection[]): Tree {
     const learned = Math.max(held, clamp01(section.learned ?? held));
     leafy(section.id, anchorsBySection.get(section.id) ?? [], traits.clumps, held, learned, section.id, [0.75, 0.55]);
   });
+
+  /* ---- fit: a broad habit can reach past the drawing's edges, and the
+     edge would cut it off. Narrow the whole tree about its trunk just enough
+     to fit, judged by the wood plus a clump's reach so that the measure never
+     depends on how much is in leaf — a tree must not change width as it is
+     learned. ---- */
+  const PAIR = /(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g;
+  const xs = limbs.filter((l) => l.kind !== 'leaf').flatMap((l) => [...l.d.matchAll(PAIR)].map((m) => Number(m[1])));
+  const reach = traits.clumpSize * 1.3;
+  const left = baseX - (Math.min(...xs) - reach);
+  const right = Math.max(...xs) + reach - baseX;
+  const k = Math.min(1, (baseX - 2) / left, (width - 2 - baseX) / right);
+  if (k < 1) {
+    for (const limb of limbs) {
+      limb.d = limb.d.replace(PAIR, (_, x: string, y: string) => `${round(baseX + (Number(x) - baseX) * k)} ${y}`);
+    }
+  }
 
   return { width, height, limbs };
 }

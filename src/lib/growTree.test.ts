@@ -231,3 +231,23 @@ describe('growTree — every branch is a section', () => {
     expect(spine.length).toBeGreaterThan(0);
   });
 });
+
+describe('each course grows its own habit', () => {
+  // Horizontal reach of the bare crown, from the path coordinates.
+  const reach = (seed: string) => {
+    const t = growTree(seed, Array.from({ length: 8 }, (_, i) => ({ id: `s${i}`, weight: 20, mastery: 0 })));
+    const xs = t.limbs
+      .filter((l) => l.kind !== 'leaf')
+      .flatMap((l) => [...l.d.matchAll(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g)].map((m) => Number(m[1])));
+    return Math.max(...xs) - Math.min(...xs);
+  };
+
+  it('some courses are upright and narrow, others broad', () => {
+    const widths = Array.from({ length: 20 }, (_, i) => reach(`course-${i}`));
+    expect(Math.max(...widths) - Math.min(...widths)).toBeGreaterThan(40);
+  });
+
+  it('stays inside the drawing', () => {
+    for (let i = 0; i < 40; i++) expect(reach(`course-${i}`)).toBeLessThanOrEqual(200);
+  });
+});
