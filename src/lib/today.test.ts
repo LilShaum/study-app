@@ -53,6 +53,10 @@ describe('minutesLeft', () => {
     expect(minutesLeft(30, 29 * 60, 3)).toEqual({ minutes: CATCH_UP_MINUTES, catchUp: true });
   });
 
+  it('is a short plan in full when nothing has been studied today', () => {
+    expect(minutesLeft(4, 0, 0)).toEqual({ minutes: 4, catchUp: false });
+  });
+
   it('is nothing once the plan is spent and nothing is due', () => {
     expect(minutesLeft(30, 40 * 60, 0)).toEqual({ minutes: 0, catchUp: false });
   });

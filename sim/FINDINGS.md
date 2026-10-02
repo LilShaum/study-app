@@ -10,6 +10,41 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-02 — Several courses, one daily time: share by how soon each exam is
+
+**Question.** A student with several courses has one amount of time a day.
+The app had a time per course, so five courses at the default came to two
+and a half hours. How should one budget be split?
+
+**How** (`sim/several.sim.ts`, 3 seeds). Three courses (spec-estimate,
+lectures released as in the suite, scope told, the last 3 days off the
+exam), exams on days 12, 21 and 31; the Today button in each. Courses share
+no cards, so a split that depends only on the calendar can be run one
+course at a time with its share of each day — the same as running them
+together. Mean exam score across the three:
+
+| Daily | Student | equal | 1 / days left | last week ×3 | last week ×10 |
+|---|---|---|---|---|---|
+| 45 | fsrs | 42% | 48% | 45% | 48% |
+| 45 | harsh | 17% | 21% | 18% | 21% |
+| 60 | fsrs | 52% | 61% | 57% | 61% |
+| 60 | harsh | 20% | 24% | 23% | 24% |
+| 90 | fsrs | 69% | 81% | 79% | 80% |
+| 90 | harsh | 24% | 29% | 26% | 30% |
+
+**Decision: share by 1 / days left.** Better than equal everywhere, under
+both students, and as good as the strongest last-week boost with no
+threshold to choose. The per-exam scores also come out closer together
+(60 min, fsrs: 39 / 46 / 70 equal, 70 / 55 / 59 shared), because an equal
+split starves the first exam and over-feeds the last. A course with no
+date counts as 30 days off; one with nothing to do gets no share. Built as
+an opt-in "one daily time for all courses" on the library page.
+
+**Not tried:** a split that reacts to what is due in each course (needs the
+courses run side by side in one engine).
+
+---
+
 ## 2026-10-02 — A catch-up later the same day: built; a personal forgetting rate: not yet
 
 **Question.** The owner liked how Learn and Today adapt to them and asked to

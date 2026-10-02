@@ -12,6 +12,12 @@ import { DEFAULT_MINUTES } from '@/lib/today';
  */
 interface PlanState {
   byCourse: Record<string, { minutes: number }>;
+  /**
+   * One daily time for every course together, split between them by how
+   * soon each exam is (lib/dailyShare.ts). Null: each course has its own.
+   */
+  total: number | null;
+  setTotal: (minutes: number | null) => void;
   minutesFor: (courseId: string) => number;
   /** Whether the student has chosen, rather than getting the default. */
   hasChosen: (courseId: string) => boolean;
@@ -22,6 +28,8 @@ export const usePlanStore = create<PlanState>()(
   persist(
     (set, get) => ({
       byCourse: {},
+      total: null,
+      setTotal: (total) => set({ total }),
       minutesFor: (courseId) => get().byCourse[courseId]?.minutes ?? DEFAULT_MINUTES,
       hasChosen: (courseId) => courseId in get().byCourse,
       setMinutes: (courseId, minutes) =>

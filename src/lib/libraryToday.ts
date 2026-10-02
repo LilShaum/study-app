@@ -19,7 +19,7 @@ export interface CourseToday {
 }
 
 /** Whole days from today's local midnight to the exam's day; the same count the course page gives. */
-function daysToExam(date: string | undefined, now: number): number | null {
+export function daysToExam(date: string | undefined, now: number): number | null {
   const at = examTime(date);
   if (at == null) return null;
   const today = new Date(now);

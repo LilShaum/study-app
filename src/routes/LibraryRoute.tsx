@@ -19,7 +19,7 @@ import { RestoreButton } from '@/components/Backup';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { usePlanStore } from '@/store/plan';
 import { todayAcrossCourses, type CourseToday } from '@/lib/libraryToday';
-import { studiedToday } from '@/lib/todaySitting';
+import { plannedMinutes, studiedToday } from '@/lib/todaySitting';
 
 /** The most courses the Today block names; the list below carries the rest. */
 const TODAY_ROWS = 3;
@@ -27,6 +27,7 @@ const TODAY_ROWS = 3;
 /** "12 to review · new material · exam in 4 days" — only the parts that apply. */
 function todayLine(c: CourseToday): string {
   return [
+    c.catchUp ? null : `${Math.round(c.minutes)} min`,
     c.catchUp ? `catch-up: ${c.review} to look at again` : c.review > 0 ? `${c.review} to review` : null,
     c.hasNew ? 'new material' : null,
     c.examDays === 0 ? 'exam today' : c.examDays === 1 ? 'exam tomorrow' : c.examDays != null ? `exam in ${c.examDays} days` : null,
@@ -88,16 +89,18 @@ export function LibraryRoute() {
   const updateCourse = useCoursesStore((s) => s.updateCourse);
   const inputRef = useRef<HTMLInputElement>(null);
   const ids = Object.keys(courses);
-  const minutesFor = usePlanStore((s) => s.minutesFor);
+  const total = usePlanStore((s) => s.total);
   const logs = useStudyLogStore((s) => s.byCourse);
   const pace = useMemo(() => measuredPace(logs), [logs]);
   // Only worth working out when there is a choice to make between courses.
   const todays = useMemo(
     () =>
       Object.keys(courses).length >= 2
-        ? todayAcrossCourses(courses, allProgress, now, minutesFor, pace, (id) => studiedToday(id, now))
+        ? todayAcrossCourses(courses, allProgress, now, (id) => plannedMinutes(id, now), pace, (id) => studiedToday(id, now))
         : [],
-    [courses, allProgress, now, minutesFor, pace],
+    // `total` is read through plannedMinutes, so it is what has to recompute this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [courses, allProgress, now, total, pace],
   );
 
   const [creating, setCreating] = useState(false);
@@ -256,7 +259,10 @@ export function LibraryRoute() {
         <>
           {todays.length > 0 && (
             <div className="mb-7">
-              <h2 className="mark mb-2 text-text-3">Today</h2>
+              <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <h2 className="mark text-text-3">Today</h2>
+                <DailyTime />
+              </div>
               <ul className="border-y border-border">
                 {todays.slice(0, TODAY_ROWS).map((c) => (
                   <li key={c.id} className="flex items-center gap-4 border-b border-border py-3 last:border-b-0">
@@ -448,6 +454,63 @@ function IndexLine({
           </span>
         );
       })}
+    </div>
+  );
+}
+
+const DAILY_CHOICES = [30, 45, 60, 90, 120, 180];
+
+/**
+ * One daily time for every course together, split by how soon each exam is
+ * (lib/dailyShare.ts). Off until chosen: until then each course keeps its own.
+ */
+function DailyTime() {
+  const total = usePlanStore((s) => s.total);
+  const setTotal = usePlanStore((s) => s.setTotal);
+  const [open, setOpen] = useState(false);
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)} className="tap-safe text-small text-text-3 hover:text-text">
+        {total != null ? `${total} min a day, all courses ▸` : 'Set one daily time for all courses ▸'}
+      </button>
+    );
+  }
+  return (
+    <div className="w-full">
+      <p className="mb-1 text-xs text-text-3">
+        Shared between courses by how soon each exam is, so the nearest gets the most.
+      </p>
+      <div role="radiogroup" aria-label="Minutes a day, all courses" className="flex flex-wrap gap-x-4 gap-y-2">
+        {DAILY_CHOICES.map((m) => (
+          <button
+            key={m}
+            type="button"
+            role="radio"
+            aria-checked={total === m}
+            onClick={() => {
+              setTotal(m);
+              setOpen(false);
+            }}
+            className={`tap-safe px-0.5 text-small tabular-nums ${
+              total === m ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : 'text-text-2 hover:text-text'
+            }`}
+          >
+            {m} min
+          </button>
+        ))}
+        {total != null && (
+          <button
+            type="button"
+            onClick={() => {
+              setTotal(null);
+              setOpen(false);
+            }}
+            className="tap-safe text-small text-text-3 hover:text-text"
+          >
+            Each course its own
+          </button>
+        )}
+      </div>
     </div>
   );
 }

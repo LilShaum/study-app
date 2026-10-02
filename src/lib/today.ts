@@ -106,6 +106,10 @@ export function dueCount(course: Course, progress: Record<string, ItemResult>, n
  */
 export function minutesLeft(planned: number, studiedSeconds: number, due: number): { minutes: number; catchUp: boolean } {
   const left = planned - studiedSeconds / 60;
+  // Nothing studied yet: the plan itself, however small. A short share of a
+  // daily time split between courses (lib/dailyShare) is still a sitting,
+  // not a plan already spent.
+  if (studiedSeconds <= 0 && planned > 0) return { minutes: planned, catchUp: false };
   if (left >= CATCH_UP_MINUTES) return { minutes: left, catchUp: false };
   return due > 0 ? { minutes: CATCH_UP_MINUTES, catchUp: true } : { minutes: 0, catchUp: false };
 }
