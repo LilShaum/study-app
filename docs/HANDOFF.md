@@ -69,9 +69,10 @@ a classmate.
 - Phone first. Most studying happens on a phone; check every change at
   390px wide. The main action stays in thumb reach (the pinned Start bar).
 - Plain words. Copy reads like a person wrote it: short, concrete, no
-  jargon, no "AI" tone, and no em dashes in anything the student sees
-  (they are the best-known tell of AI-written text; use a period, comma or
-  colon). If a label needs explaining ("open a saved reply"), change the
+  jargon, no "AI" tone. Em dashes only on purpose: AI writing scatters them
+  by habit (about fifty were cleared from the app in one pass), so default
+  to a period, comma or colon and keep a dash only where it reads better or
+  does a design job. If a label needs explaining ("open a saved reply"), change the
   label ("upload a file instead").
 - Every page has an obvious way back (a "← Library" link, not only the
   wordmark).

@@ -47,5 +47,5 @@ Load these skills when the work matches; don't wait until halfway through:
 
 A new session starts with `npm install` and Playwright already done (the
 SessionStart hook in `.claude/hooks/`). `node scripts/screenshots.mjs <dir>`
-shoots every screen; `node scripts/ui-dashes.mjs` checks the copy.
+shoots every screen; `node scripts/ui-dashes.mjs` lists the em dashes in the copy, to judge each one.
 
