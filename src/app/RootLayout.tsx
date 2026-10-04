@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
 import { ThemeEffect } from '@/components/ThemeEffect';
 import { DarkModeToggle } from '@/components/DarkModeToggle';
@@ -37,8 +38,29 @@ function useLocationName(): string {
   return 'The library';
 }
 
+/**
+ * The browser tab says where you are too, by the course's full title rather
+ * than its code: three courses of one class share a code, and a row of tabs
+ * all reading "BIOL 365" tells them apart no better than "Arborous" did.
+ */
+function useTabTitle(here: string): void {
+  const { pathname } = useLocation();
+  const { id } = useParams();
+  const title = useCoursesStore((s) => (id ? s.courses[id]?.metadata.title : undefined));
+  let name: string | null = here === 'The library' ? null : pathname === '/help' ? 'Help' : here;
+  if (title) {
+    if (pathname.includes('/progress')) name = `${title} · Progress`;
+    else if (pathname.includes('/diagrams')) name = `${title} · Plates`;
+    else name = title;
+  }
+  useEffect(() => {
+    document.title = name ? `${name} · Arborous` : 'Arborous';
+  }, [name]);
+}
+
 export function RootLayout() {
   const here = useLocationName();
+  useTabTitle(here);
   const { pathname } = useLocation();
   // The course page and the study screen are laid out in two columns on a
   // desktop; head, page and colophon widen together so the rules still line up.

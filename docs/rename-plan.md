@@ -49,3 +49,7 @@ not using Sync.
 5. **Optionally forward the old address.** Make a new repo named `study-app`
    whose Pages site redirects to /arborous/, with a `sw.js` that unregisters
    itself, so old links and bookmarks still land somewhere.
+
+When the address changes, also update the two places that hold it in full:
+the `og:image` tag in `index.html` (link previews need an absolute URL) and
+the redirect in `public/404.html`.
