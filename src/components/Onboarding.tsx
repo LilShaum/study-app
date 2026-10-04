@@ -141,7 +141,7 @@ export function Onboarding() {
             ) : platform === 'android' ? (
               <>
                 <p className="mt-1 text-text-3">
-                  Worth doing first — it opens full-screen and works offline.
+                  Worth doing first: it opens full-screen and works offline.
                 </p>
                 <ol className="mt-2 space-y-1.5">
                   <Step n={1}>
@@ -170,7 +170,7 @@ export function Onboarding() {
 
         {installed && (
           <div className="mt-5 rounded border border-border bg-bg p-3 text-sm text-text-2">
-            ✓ You&rsquo;re using Arborous as an installed app — it works offline from here.
+            ✓ You&rsquo;re using Arborous as an installed app. It works offline from here.
           </div>
         )}
 

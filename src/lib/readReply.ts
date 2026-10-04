@@ -119,7 +119,7 @@ export function readReply(reply: string): ReadReply {
         /* fall through to the original error */
       }
     }
-    return { ok: false, error: `That isn't valid JSON — ${(e as Error).message}` };
+    return { ok: false, error: `That isn't valid JSON: ${(e as Error).message}` };
   }
 }
 
@@ -130,6 +130,6 @@ export const CONTINUE_ASK =
 /** The line to show when a reply was cut off and only its complete part was kept. */
 export function cutMessage(cut: { lastSection: string | null }): string {
   return `The reply was cut off before the end, so only its complete part is here${
-    cut.lastSection ? ` — section "${cut.lastSection}" may be missing its last items, and any sections after it are missing` : ''
+    cut.lastSection ? `. Section "${cut.lastSection}" may be missing its last items, and any sections after it are missing` : ''
   }. Add this, then in the same chat send: ${CONTINUE_ASK} Paste what comes back into Add material on the course.`;
 }

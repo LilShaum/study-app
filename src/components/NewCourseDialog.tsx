@@ -11,7 +11,7 @@ import { Icon } from './Icon';
 import { cutMessage, readReply } from '@/lib/readReply';
 
 const STORAGE_FULL =
-  "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
+  "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a course you've finished and remove it, then try again.";
 
 interface NewCourseDialogProps {
   onClose: () => void;
@@ -71,7 +71,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
     } catch {
       // No clipboard (insecure context, permission denied) — don't strand the
       // user with nothing; give them the text to copy by hand.
-      toast('Clipboard blocked — the prompt was opened in a new tab instead.', { type: 'info' });
+      toast('Clipboard blocked, so the prompt opened in a new tab instead.', { type: 'info' });
       const w = window.open('', '_blank');
       if (w) {
         w.document.write(
@@ -139,11 +139,11 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
         <div className="space-y-5 px-5 py-4">
           <section>
             <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-text-3">
-              Step 1 — generate
+              Step 1: generate
             </div>
             <p className="mb-2 text-sm text-text-2">
               Copy this prompt into an AI chat, attach your slides, PDF or notes, and it will return
-              a course. The prompt is the full generator spec — it tells the model to inventory
+              a course. The prompt is the full generator spec. It tells the model to inventory
               every term, objective and formula in your notes first, so the result covers the
               material rather than skimming it.
             </p>
@@ -160,7 +160,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
           <section>
             <label className="block">
               <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-3">
-                Step 2 — paste the course back
+                Step 2: paste the course back
               </span>
               <textarea
                 value={pasted}

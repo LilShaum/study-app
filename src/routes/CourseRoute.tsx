@@ -364,7 +364,7 @@ export function CourseRoute() {
               {MODE_LABELS[resumable.mode] ?? resumable.mode}
               {resumable.sectionId && (
                 <span className="font-normal text-text-2">
-                  {' — '}
+                  {': '}
                   {course.sections.find((s) => s.id === resumable.sectionId)?.title}
                 </span>
               )}

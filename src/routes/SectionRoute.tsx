@@ -121,7 +121,7 @@ export function SectionRoute() {
         <div className="mt-4 border-l-2 border-border-strong py-2 pl-3 text-sm">
           {stats.accuracy === null ? (
             <span className="text-text-2">
-              Nothing studied in this section yet — {plural(stats.gradable, 'item')} can be scored.
+              Nothing studied in this section yet. {plural(stats.gradable, 'item')} can be scored.
             </span>
           ) : (
             <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
@@ -140,7 +140,7 @@ export function SectionRoute() {
         // Six greyed-out "none here" tiles told an empty section's story six
         // times over; one line says it once.
         <p className="mt-6 border-y border-border py-5 text-center text-sm text-text-2">
-          This section is empty — the generator created it but put no items in it. &ldquo;More
+          This section is empty. The generator created it but put no items in it. &ldquo;More
           practice&rdquo; on the course page can fill it, or you can add items yourself in Browse.
         </p>
       ) : (

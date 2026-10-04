@@ -16,7 +16,7 @@ import { Icon } from './Icon';
 import { cutMessage, readReply } from '@/lib/readReply';
 
 const STORAGE_FULL =
-  "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
+  "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a course you've finished and remove it, then try again.";
 
 export type AddMode = 'material' | 'practice' | 'fix';
 
@@ -97,7 +97,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
       // Clipboard is blocked without a secure context or permission. Don't
       // strand the student — hand them the text to copy by hand.
       setPasted('');
-      toast('Clipboard blocked — the prompt was opened in a new tab instead.', { type: 'info' });
+      toast('Clipboard blocked, so the prompt opened in a new tab instead.', { type: 'info' });
       const w = window.open('', '_blank');
       if (w) {
         w.document.write(`<pre style="white-space:pre-wrap;font:13px/1.5 system-ui;padding:16px">${
@@ -162,7 +162,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
       role="dialog"
       aria-modal="true"
-      aria-label={`${MODE_TITLES[mode]} — ${course.metadata.title}`}
+      aria-label={`${MODE_TITLES[mode]}: ${course.metadata.title}`}
     >
       <div className="my-8 w-full max-w-2xl paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
@@ -209,7 +209,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
           {/* Step 1 */}
           <section>
             <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-text-3">
-              Step 1 — generate
+              Step 1: generate
             </div>
             {mode === 'material' ? (
               <p className="mb-2 text-sm text-text-2">
@@ -220,7 +220,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             ) : mode === 'fix' ? (
               <p className="mb-2 text-sm text-text-2">
                 Hands the check&apos;s findings back to the AI that wrote this course.{' '}
-                <strong>Paste it into that same chat</strong> — your original notes are still there,
+                <strong>Paste it into that same chat</strong>. Your original notes are still there,
                 and they are the only thing that can judge whether a missing term actually mattered.
                 The prompt asks for that judgement first: it is told that &ldquo;not worth an
                 item&rdquo; is a correct answer, so a term your notes only mention in passing gets
@@ -229,7 +229,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             ) : (
               <p className="mb-2 text-sm text-text-2">
                 For when you already know the existing questions. This prompt asks for{' '}
-                <strong>new questions on the material you already have</strong> — no notes needed.
+                <strong>new questions on the material you already have</strong>, no notes needed.
                 Each item recorded a quote from your original source, and the prompt hands those
                 back as the material to write from. Paste it into the same chat you generated the
                 course in and it will use your full notes instead, which is better.
@@ -239,7 +239,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             {mode === 'fix' &&
               (fixes.empty ? (
                 <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
-                  The check found nothing to fix — every term the generator listed has a definition,
+                  The check found nothing to fix. Every term the generator listed has a definition,
                   every definition is tested somewhere, and no question has a broken answer key. The
                   prompt would be asking for nothing.
                 </div>
@@ -253,8 +253,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                         {plural(fixes.missingTerms.length, 'listed term')} that never got a
                         definition
                         <span className="text-text-3">
-                          {' '}
-                          — {fixes.missingTerms.slice(0, 4).join(', ')}
+                          : {fixes.missingTerms.slice(0, 4).join(', ')}
                           {fixes.missingTerms.length > 4 ? '…' : ''}
                         </span>
                       </li>
@@ -269,7 +268,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                       <li>
                         repair {plural(fixes.faultyItems.length, 'question')}
                         {fixes.totalFaulty > fixes.faultyItems.length &&
-                          ` — the most serious of ${fixes.totalFaulty}; run this again afterwards for the rest`}
+                          ` (the most serious of ${fixes.totalFaulty}; run this again afterwards for the rest)`}
                         : broken answer keys first, then answers that give themselves away by length and
                         questions that point at your notes instead of the subject
                       </li>
@@ -289,8 +288,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                       <li>
                         {plural(gaps.untestedTerms.length, 'term')} defined but never tested
                         <span className="text-text-3">
-                          {' '}
-                          — {gaps.untestedTerms.slice(0, 4).join(', ')}
+                          : {gaps.untestedTerms.slice(0, 4).join(', ')}
                           {gaps.untestedTerms.length > 4 ? '…' : ''}
                         </span>
                       </li>
@@ -299,8 +297,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                       <li>
                         {plural(gaps.thinSections.length, 'section')} with little that can be scored
                         <span className="text-text-3">
-                          {' '}
-                          — {gaps.thinSections.slice(0, 3).map((x) => x.title).join(', ')}
+                          : {gaps.thinSections.slice(0, 3).map((x) => x.title).join(', ')}
                           {gaps.thinSections.length > 3 ? '…' : ''}
                         </span>
                       </li>
@@ -328,7 +325,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
           <section>
             <label className="block">
               <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-3">
-                Step 2 — paste the JSON back
+                Step 2: paste the JSON back
               </span>
               <textarea
                 value={pasted}
@@ -381,7 +378,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 <div className="text-text-2">
                   Nothing new to add
                   {plan.totalDuplicates > 0
-                    ? ` — all ${plural(plan.totalDuplicates, 'item')} already exist in this course.`
+                    ? `. All ${plural(plan.totalDuplicates, 'item')} already exist in this course.`
                     : '.'}
                 </div>
               ) : plan.totalAdded === 0 ? null : (
@@ -422,7 +419,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                     {plan.corrections.slice(0, 8).map((c) => (
                       <li key={c.id}>
                         → <span className="font-mono text-xs">{c.id}</span>
-                        <span className="text-text-3"> — changes {c.changed.join(', ')}</span>
+                        <span className="text-text-3">: changes {c.changed.join(', ')}</span>
                       </li>
                     ))}
                     {plan.corrections.length > 8 && (

@@ -730,7 +730,7 @@ export function CourseTree({
           <a
             key={section.id}
             href={`#/study/${courseId}/section/${encodeURIComponent(section.id)}`}
-            aria-label={`${section.title} — ${section.items} item${section.items === 1 ? '' : 's'}${
+            aria-label={`${section.title}: ${section.items} item${section.items === 1 ? '' : 's'}${
               section.accuracy === null ? ', not yet studied' : `, ${section.accuracy}% correct`
             }`}
             onFocus={() => setPointed(section.id)}

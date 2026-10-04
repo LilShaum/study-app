@@ -54,8 +54,8 @@ describe('CourseTree', () => {
   it('names each link by its section and how it is going', () => {
     render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
     expect(screen.getAllByRole('link').map((a) => a.getAttribute('aria-label'))).toEqual([
-      'Steady state — 2 items, 75% correct',
-      'Inhibition — 1 item, not yet studied',
+      'Steady state: 2 items, 75% correct',
+      'Inhibition: 1 item, not yet studied',
     ]);
   });
 

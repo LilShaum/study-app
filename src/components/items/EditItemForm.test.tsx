@@ -90,7 +90,7 @@ describe('EditItemForm — MCQ options', () => {
 
   it('says so when the option count is off-contract', () => {
     open(mcq({ options: ['alpha', 'beta', 'gamma'], correct_index: 0 }));
-    expect(screen.getByText(/3 options — the generator/)).toBeTruthy();
+    expect(screen.getByText(/3 options, but the generator/)).toBeTruthy();
   });
 
   it('leaves the question and explanation editable as before', () => {

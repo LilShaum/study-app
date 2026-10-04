@@ -25,7 +25,7 @@ export function parseCourse(raw: unknown): ParseCourseResult {
   ) {
     return {
       ok: false,
-      error: 'Invalid .study.json — missing schema_version, metadata, or sections fields.',
+      error: 'Invalid .study.json: missing schema_version, metadata, or sections fields.',
     };
   }
 
