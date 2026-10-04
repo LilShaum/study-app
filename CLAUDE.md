@@ -2,7 +2,8 @@
 
 A study PWA (React 18, TypeScript, Vite, Zustand) that opens `.study.json`
 course files generated from a student's own notes. See README.md for the
-project overview.
+project overview, and `docs/HANDOFF.md` for the state of the work, what is
+open, and how the owner likes to work.
 
 ## Never put course content in this repo
 
