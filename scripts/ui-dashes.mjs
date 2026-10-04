@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /**
  * Lists em dashes in text a student sees: string literals and JSX text under
- * src/, not comments. Em dashes are the best-known tell of AI-written copy,
- * and the app has none on purpose. The prompts the app hands to an AI
- * (src/lib/build*Prompt.ts) are skipped: only the AI reads them.
+ * src/, not comments. AI-written copy scatters them by habit, so each one
+ * should be there on purpose: where it reads better than a period, comma or
+ * colon, or does a design job. This lists them to be judged; it does not
+ * fail. The prompts the app hands to an AI (src/lib/build*Prompt.ts) are
+ * skipped: only the AI reads them.
  *
- *   node scripts/ui-dashes.mjs     # prints each one; exits 1 if any
+ *   node scripts/ui-dashes.mjs
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -41,4 +43,3 @@ function scan(file) {
 })(SRC);
 
 console.log(found.length ? found.join('\n') : 'No em dashes in UI text.');
-process.exit(found.length ? 1 : 0);

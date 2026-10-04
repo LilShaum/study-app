@@ -41,9 +41,12 @@ reasoning; this is the working version.
 
 - Plain, short, concrete; like a careful person wrote it. No buzzwords, no
   slogans, no "AI" tone.
-- **No em dashes** in anything a student sees. Use a period, comma or colon.
-  Check with `node scripts/ui-dashes.mjs` (the prompts in
-  `src/lib/build*Prompt.ts` are exempt: only the AI reads them).
+- **Em dashes only on purpose.** AI writing reaches for them by habit, and
+  a screen full of them reads as generated. Default to a period, comma or
+  colon; keep a dash where it genuinely reads better or does a design job
+  (a placeholder, a deliberate aside). `node scripts/ui-dashes.mjs` lists
+  every one in the UI so each can be judged (the prompts in
+  `src/lib/build*Prompt.ts` are left out: only the AI reads them).
 - Name a control by what the student does ("upload a file instead"), never
   by the data model ("open a saved reply", "Subjects" for tags).
 - The reason to come back is when knowledge will fade, never a streak or
