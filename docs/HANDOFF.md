@@ -170,9 +170,6 @@ look of a generic web app. Keep it.
   told it was the course generator; one saved a course in the repo and a
   session check pushed it to a public branch. The prompt now lives in
   `prompts/generator.md`, and course files are git-ignored.
-- **Fixing content when the app was the job.** Time went into repairing
-  individual courses when the owner wanted the app improved. Course files
-  are the owner's; the app is the work.
 - **Wording that needed explaining** ("open a saved reply", "Subjects" for
   what were tags). Name things by what the student does.
 
@@ -224,6 +221,8 @@ tree (unreadable).
 
 ## 7. How to work on it
 
+- The work is the app. Don't review, fix or regenerate the owner's course
+  files unless they ask.
 - The owner wants you to act as the manager: find what most needs doing,
   do it, and report in a few plain lines what changed and what is next.
   Ask only for decisions that are genuinely theirs (product direction,
