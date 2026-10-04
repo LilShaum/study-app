@@ -25,3 +25,27 @@ must never be committed, pushed, or saved inside this folder.
 - Checks: `npx tsc --noEmit -p .`, `npx eslint src`, `npx vitest run`.
 - The study simulator (`.claude/skills/simulate`) is for anything that
   changes scheduling, Review, Learn or the memory model.
+
+## How to work here
+
+Plan first: keep a task list for anything over two steps, one task in
+progress at a time, and a task is done only when it is tested and live
+(pushed, merged to `main`, and the live site checked). Leave anything blocked
+open and say what it waits on.
+
+Load these skills when the work matches; don't wait until halfway through:
+
+| When | Skill |
+|---|---|
+| Start of the session, any multi-step task | `working-method` (if the account has it) |
+| Anything a student sees: screens, labels, toasts, Help, the tree | `arborous-design` and `app-making` |
+| Scheduling, Review, Learn, Today, the memory model, any "will this help students" question | `simulate` |
+| Before shipping a code change | `code-review` |
+| Auth, sync, share links, rendering course diagrams, anything with user input | `security-review` |
+| Editing or making a skill | `skill-creator` |
+| Questions about the learning science (`docs/evidence.md`) | the PubMed connector, if connected |
+
+A new session starts with `npm install` and Playwright already done (the
+SessionStart hook in `.claude/hooks/`). `node scripts/screenshots.mjs <dir>`
+shoots every screen; `node scripts/ui-dashes.mjs` checks the copy.
+
