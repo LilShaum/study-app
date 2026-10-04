@@ -164,7 +164,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       id: 'no-course-code',
       severity: 'warning',
       message:
-        'No course code is set, so the top bar falls back to this long title and clips it. Add one under Edit details — e.g. BIOL 365.',
+        'No course code is set, so the top bar falls back to this long title and clips it. Add one under Edit details, e.g. BIOL 365.',
     });
   }
 
@@ -226,7 +226,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       // Terms mode now asks for every defined term by name, so these ARE
       // tested — but only as recall of the word. No question makes the
       // student use them, which is the gap worth closing.
-      message: `${gaps.untestedTerms.length} term${gaps.untestedTerms.length === 1 ? ' is' : 's are'} only ever asked for by name — no question makes you use ${gaps.untestedTerms.length === 1 ? 'it' : 'them'}: ${gaps.untestedTerms.slice(0, 6).join(', ')}${gaps.untestedTerms.length > 6 ? '…' : ''}.`,
+      message: `${gaps.untestedTerms.length} term${gaps.untestedTerms.length === 1 ? ' is' : 's are'} only ever asked for by name. No question makes you use ${gaps.untestedTerms.length === 1 ? 'it' : 'them'}: ${gaps.untestedTerms.slice(0, 6).join(', ')}${gaps.untestedTerms.length > 6 ? '…' : ''}.`,
     });
   }
 
@@ -254,7 +254,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       // explanations under the wrong option. Flagging a clean, fully covered
       // course red for an answer-length pattern alarmed more than it told.
       severity: 'warning',
-      message: `The right answer is the longest of the four options ${pct}% of the time — it should be about 25%. Guessing the longest beats guessing at random here, so some of these are scoring length rather than knowledge.`,
+      message: `The right answer is the longest of the four options ${pct}% of the time. It should be about 25%. Guessing the longest beats guessing at random here, so some of these are scoring length rather than knowledge.`,
       // The blatant cases, so a repair can target them one by one.
       items: quality.length.giveaway,
     });
@@ -274,7 +274,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     findings.push({
       id: 'restates-source',
       severity: 'warning',
-      message: `${pct}% of questions are worded very close to the passage they came from. Each is fine on its own — a definition has to use the term's own words — but at this share the course is mostly asking you to recognise sentences you have read, rather than to use what they say.`,
+      message: `${pct}% of questions are worded very close to the passage they came from. Each is fine on its own (a definition has to use the term's own words), but at this share the course is mostly asking you to recognise sentences you have read, rather than to use what they say.`,
       items: quality.restated,
     });
   }
@@ -294,7 +294,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     findings.push({
       id: 'recall-only-sections',
       severity: 'warning',
-      message: `${n} section${n === 1 ? '' : 's'} only ever ask you to recall a fact — nothing asks you to apply or compare: ${quality.recallOnlySections.slice(0, 3).join('; ')}${n > 3 ? `, +${n - 3} more` : ''}.`,
+      message: `${n} section${n === 1 ? '' : 's'} only ever ask you to recall a fact. Nothing asks you to apply or compare: ${quality.recallOnlySections.slice(0, 3).join('; ')}${n > 3 ? `, +${n - 3} more` : ''}.`,
     });
   }
 

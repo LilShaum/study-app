@@ -130,7 +130,7 @@ const safeLocalStorage: Storage = {
       if (!quotaWarned) {
         quotaWarned = true;
         onWriteFailure?.(
-          "Couldn't save — browser storage is full. Export a course and remove it to free up space.",
+          "Couldn't save because browser storage is full. Export a course and remove it to free up space.",
         );
       }
     }

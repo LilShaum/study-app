@@ -173,11 +173,11 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
             <div className="font-medium text-warning">
               This question&rsquo;s answer key points outside its {options.length} option
               {options.length === 1 ? '' : 's'}, so none of them can be marked correct. Your answer
-              wasn&rsquo;t scored — the fault is in the course file, not your answer.
+              wasn&rsquo;t scored. The fault is in the course file, not your answer.
             </div>
           ) : (
             <div className={`font-medium ${correct ? 'text-success' : 'text-error'}`}>
-              {correct ? '✓ Correct!' : `✗ Incorrect — the answer is ${options[item.correct_index] ?? ''}`}
+              {correct ? '✓ Correct!' : `✗ Incorrect: the answer is ${options[item.correct_index] ?? ''}`}
             </div>
           )}
           {item.explanation && <div className="mt-1 text-sm text-text-2">{item.explanation}</div>}

@@ -23,10 +23,10 @@ interface RecallCardProps {
 function verdictLine(v: Verdict, answer: string, asked: 'term' | 'question'): string {
   switch (v.kind) {
     case 'exact':
-      return `✓ Correct — ${answer}`;
+      return `✓ Correct: ${answer}`;
     case 'typo':
       // Accepted, but the right spelling is worth seeing once.
-      return `✓ Accepted — it is spelled ${v.spelled}`;
+      return `✓ Accepted: it is spelled ${v.spelled}`;
     case 'confused':
       return asked === 'term' ? `✗ That is ${v.with}. This one is ${answer}.` : `✗ That is ${v.with}. The answer is ${answer}.`;
     case 'wrong':
@@ -160,7 +160,7 @@ export function RecallCard({
           )}
           {overruled && (
             <p className="mt-1 text-small text-text-3">
-              Counted as {counted ? 'right' : 'wrong'} — your call, not the grader&rsquo;s.
+              Counted as {counted ? 'right' : 'wrong'}. Your call, not the grader&rsquo;s.
             </p>
           )}
           <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -175,7 +175,7 @@ export function RecallCard({
                 and it can be flipped back; it corrects the attempt already
                 recorded rather than recording another. */}
             <button type="button" onClick={overrule} className="press press-quiet tap-safe">
-              {counted ? 'Count it as wrong' : 'I was right — count it'}
+              {counted ? 'Count it as wrong' : 'I was right, count it'}
             </button>
           </div>
         </div>

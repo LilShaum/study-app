@@ -123,7 +123,7 @@ function McqOptions({ draft, onChange }: { draft: McqDraft; onChange: (d: McqDra
         </button>
         {options.length !== 4 && (
           <span className="text-xs text-text-3">
-            {options.length} options — the generator&rsquo;s contract asks for four.
+            {options.length} options, but the generator&rsquo;s contract asks for four.
           </span>
         )}
       </div>
@@ -136,7 +136,7 @@ function McqOptions({ draft, onChange }: { draft: McqDraft; onChange: (d: McqDra
         >
           {options.map((opt, i) => (
             <option key={i} value={i}>
-              {LETTERS[i] ?? i + 1} — {opt.slice(0, 50)}
+              {LETTERS[i] ?? i + 1}: {opt.slice(0, 50)}
             </option>
           ))}
         </select>
@@ -236,7 +236,7 @@ function TypeFields({
             <textarea name="alt_text" defaultValue={item.alt_text ?? ''} rows={2} className={inputClass} />
           </Field>
           <p className="text-xs text-text-3">
-            The diagram image itself isn't editable here — re-generate the course to change it.
+            The diagram image itself isn't editable here. Re-generate the course to change it.
           </p>
         </>
       );
@@ -321,7 +321,7 @@ export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Difficulty">
           <select name="difficulty" defaultValue={item.difficulty ?? ''} className={inputClass}>
-            <option value="">—</option>
+            <option value="">not set</option>
             <option value="easy">easy</option>
             <option value="medium">medium</option>
             <option value="hard">hard</option>

@@ -63,7 +63,7 @@ export function RootLayout() {
           <Link
             to="/"
             className="mark flex shrink-0 items-center gap-2 whitespace-nowrap text-text hover:text-accent"
-            aria-label="Arborous — back to the library"
+            aria-label="Arborous, back to the library"
           >
             <Sprig size={20} />
             Arborous

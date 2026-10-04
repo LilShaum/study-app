@@ -37,7 +37,7 @@ function todayLine(c: CourseToday): string {
 }
 
 const STORAGE_FULL =
-  "Browser storage is full, so this wasn't saved — it will disappear when you reload. Export a course you've finished and remove it, then try again.";
+  "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a course you've finished and remove it, then try again.";
 
 /**
  * The entry's number in the contents list.

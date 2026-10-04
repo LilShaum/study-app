@@ -111,7 +111,7 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
   },
   review: {
     title: 'Nothing is due',
-    text: 'Everything you have studied is still fresh. Review brings items back as they start to fade — new material comes through Learn.',
+    text: 'Everything you have studied is still fresh. Review brings items back as they start to fade. New material comes through Learn.',
   },
   mixed: { title: 'No items', text: 'This course has no items yet.' },
   today: {
@@ -121,7 +121,7 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
   missed: {
     title: 'Nothing to review',
     text:
-      "You haven't missed anything yet — or you've already nailed it on a retry. Study some Quiz or Flashcards to build up practice history.",
+      "You haven't missed anything yet, or you've already nailed it on a retry. Study some Quiz or Flashcards to build up practice history.",
   },
 };
 

@@ -134,7 +134,7 @@ export function ProgressRoute() {
     );
   }
 
-  const lastSeenText = stats.lastSeen ? ago(stats.lastSeen) : '—';
+  const lastSeenText = stats.lastSeen ? `Last studied ${ago(stats.lastSeen)}.` : 'Not studied yet.';
 
   // What the tree draws, as figures: for each section studied, how much of
   // what it learned is still held, lowest first. Accuracy says how well you
@@ -159,7 +159,7 @@ export function ProgressRoute() {
           <h1 className="mt-1 font-display text-title font-semibold text-text sm:text-display">
             {course.metadata.title}
           </h1>
-          <p className="mt-2 text-small text-text-2">Last studied {lastSeenText}.</p>
+          <p className="mt-2 text-small text-text-2">{lastSeenText}</p>
         </div>
       </div>
 
