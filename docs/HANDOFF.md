@@ -49,6 +49,92 @@ this repo (see the rules).
 - Copy in the app is plain and human, never "AI" sounding.
 - They test on a phone and a desktop. Check phone layouts (390px wide).
 
+## The owner's courses and what they still had to do
+
+None of these files are in the repo. The owner has them in the app (and in
+Supabase once sync is restored); this session also sent them as files.
+
+- BIOL 365: Cell Signaling (498 items), Endocrinology (271), Neuronal
+  Function (208). Generated before the inventory split, so their "terms
+  defined" figures read low.
+- PSYC 351C (283 items, 14 sections: one per lecture topic, re-split from an
+  earlier two-section version). EPHE 155 Nutrition (517 items, 3 lectures).
+  Both had subject/description/tags restored on 2026-09-30.
+- PSYC 305 Lectures 1–4 (377 items), generated 2026-10-03 in another session.
+- Things the owner was asked to do and may not have: apply
+  `Cell-Signaling-fixes.json` (123 corrected answer keys and length-balanced
+  options) through Add material → "upload a file instead"; re-upload the
+  re-split PSYC 351C and the fixed PSYC/Nutrition files (same title replaces
+  in place and keeps progress); set exam dates and one daily time; restore
+  Supabase; delete the `claude/festive-ramanujan-bf7kqn` branch. Ask before
+  assuming any of these happened.
+- The owner had barely studied as of 2026-10-03, so there is no real study
+  log yet.
+
+## Course generation
+
+- Courses should be generated in a regular Claude **chat** (claude.ai) with
+  the prompt from New course, not in a Claude Code session on this repo — a
+  chat cannot touch the repo.
+- `prompts/generator.md` was refined on 2026-09-29 (terms vs mentioned,
+  `Figure:` excerpts, a countable option-length rule, continue-after-cutoff,
+  shorter explanations). The length rule held on its first real test: PSYC
+  305 came back with the correct option longest in 12% of MCQs and shortest
+  in 17% (the limit is 25%). Don't loosen it.
+- Before changing the prompt, read `docs/audits/2026-09-27-prompt-test.md`;
+  it records what each rule fixed. `scripts/audit-course.mjs <file>
+  [source.txt]` scores a generated course (pass the slides' text to check
+  grounding).
+- The app's own checks of a course (`src/lib/courseHealth.ts`,
+  `questionQuality.ts`) flag answer-length bias, restated excerpts (25%),
+  sections with recall only, and undefined terms; the Fix prompt turns those
+  into corrections.
+
+## The look
+
+The app is set like a book, on purpose, and several passes went into it —
+don't drift it back toward a generic web app:
+
+- The library is a contents page: a ruled list, roman numerals, figures in a
+  right-hand column with dot leaders, no cards or rounded boxes.
+- Labels are small caps (`.mark`), the face is Fraunces throughout, paper
+  grain on the surface, `press` buttons with an ink underline.
+- Filters and choices are underscored when selected, never filled pills.
+- The tree (`growTree.ts`) follows a construction contract written at the
+  top of the file: no primitives, no mirror symmetry, three line weights,
+  `currentColor`, deterministic per course. Trees once had named species;
+  they could not be told apart and were dropped. Each course now varies
+  along two continuous axes (upright↔spreading, fine↔broad leaves).
+- Light and dark themes both have to work; check diagrams in dark.
+
+## Environment notes (cloud sessions)
+
+- The scratchpad and anything outside the repo vanish when the container is
+  reclaimed. Send the owner anything they need before a session ends.
+- Playwright is not a dependency: `npm i --no-save playwright@1.56`, then
+  launch Chromium from `/opt/pw-browsers/chromium`. A later `npm install`
+  prunes it.
+- `pkill -f "vite preview"` kills the session's own shell; start preview
+  with `nohup npx vite preview --port 4173 &` and leave it.
+- `git push` sometimes drops ("remote end hung up"); retry with backoff.
+  A session can only push to its own branch and `main`; it cannot delete
+  other branches (git or API), so ask the owner to do it on GitHub.
+- supabase.co is usually blocked by the proxy, so sync and shares can only
+  be tested on the owner's devices.
+- Subagents (Agent tool) run in the same container. A Sonnet subagent did
+  the library Today list well from a tight spec; still review every diff.
+
+## Docs map
+
+- `docs/next.md` — running done/next list.
+- `docs/evidence.md` — the learning-science evidence the design leans on
+  (spacing, retrieval, interleaving, expanding intervals…).
+- `docs/audits/` — code audit and prompt test from 2026-09-27; `docs/briefs/`
+  — the brief given to the outside audit.
+- `docs/rename-plan.md` — how to rename to arborous without losing anyone's
+  data (sync carries it across).
+- `sim/FINDINGS.md` — every simulator result, newest first.
+
 ## Stack and layout
 
 React 18 + TypeScript + Vite 6, Zustand (persisted to localStorage through
