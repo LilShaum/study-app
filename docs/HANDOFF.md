@@ -178,7 +178,38 @@ look of a generic web app. Keep it.
 
 ## 6. Where it is going
 
-In order. Items 1–3 are small and should be done next.
+First, from a friend's real use of Learn (2026-10-10) and the owner's own
+idea. These come before the list below.
+
+A. **Learn asks about things it hasn't taught.** "You learn 4 terms, then
+   the recall asks about things the read part didn't show." The cause is in
+   `src/lib/learnSteps.ts`: an MCQ or flashcard that names none of the
+   section's defined terms is spread across the steps by its position
+   ("unplaced"), so step 1 can ask about material that step 1 never read.
+   Fix: place such items by what they quote (an item whose
+   `source_excerpt` overlaps a definition's excerpt goes in that
+   definition's step), and put whatever still matches nothing in a last
+   "putting it together" step of the section, never an early one. This
+   changes Learn, so run the simulator before and after (`simulate`
+   skill). The same friend called Learn "not very in-depth"; check whether
+   that is this bug or a real gap once it's fixed.
+B. **A glossary.** A per-course page listing every term and concept with
+   its meaning, alphabetical and searchable, to read rather than be quizzed
+   on (the friend asked for it; Browse shows items by section, not as a
+   reference). Built from the definition items; set like a book's index.
+C. **Classes as a real thing.** The owner's idea: organise by class, add
+   lectures to a class, and when an exam comes, pick from the whole class
+   what is on it. Today a class is only a shared course code: the library
+   groups and filters by it, and one exam date can be copied to sibling
+   courses. Build on that rather than a new data model: a class page
+   (tap a class in the library) listing its lectures, "add a lecture" with
+   the code filled in, and one exam dialog for the class that sets the date
+   and lets you tick lectures and sections across all of them (it writes the
+   existing per-course `exam_date` and `exam_sections`, so the scheduler is
+   unchanged). Decide with the owner whether the app should start calling a
+   course a "lecture" in the UI once classes exist.
+
+Then, in order. Items 1–3 are small.
 
 1. **Security: diagrams from other people.** `src/lib/prepareSvg.ts` is a
    hand-written denylist and can be got past (control characters before
