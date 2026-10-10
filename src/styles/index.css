@@ -34,6 +34,21 @@
   #root {
     height: 100%;
   }
+  /* An app, not a web page, on a phone: no rubber-band bounce past the top
+     and bottom, no double-tap zoom, no grey flash on every tap, no sideways
+     drift. Pinch zoom stays available; that is for reading, and taking it
+     away fails people who need it. */
+  html {
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    overscroll-behavior: none;
+    overflow-x: clip;
+    -webkit-tap-highlight-color: transparent;
+  }
   body {
     /* A book is set entirely in its text face. Fraunces carries an optical
        size axis (9–144), so at body size it is a text cut, not the display
@@ -689,3 +704,17 @@
     transform: none !important;
   }
 }
+
+/* iPhones zoom the whole page into any text field set below 16px when it is
+   tapped, and leave it zoomed: the page then slides around under the
+   finger. Every field here is set smaller on purpose for the desktop, so on
+   touch screens they are held at 16px. Outside the layers so it wins over
+   the size utilities. */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
