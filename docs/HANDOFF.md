@@ -13,6 +13,53 @@ Last updated 2026-10-04.
 
 ---
 
+## 0. Plan for the next session
+
+Start here. Make each step a task, keep one in progress, and only mark it
+done when it is tested and live (see §7). Load `working-method`,
+`arborous-design` and `app-making` at the start; `simulate` for step 1.
+
+1. **Fix Learn's step placement** (§6 A)
+   - Before touching code: `npm run sim` and keep the numbers. Write a
+     failing test in `src/lib/learnSteps.test.ts` with a section where a
+     flashcard names no defined term but quotes the same passage
+     (`source_excerpt`) as the second term: today it lands in the wrong
+     step.
+   - Change `stepSection`: an unplaced item joins the step of the
+     definition whose `source_excerpt` it overlaps most; anything still
+     unmatched goes in a final step of its own, never an earlier one.
+   - Done when: the test passes, every existing test passes, the simulator
+     is within noise or better under both students (re-baseline and add a
+     line to `sim/FINDINGS.md` if it moved), and a Learn session in the
+     built app on a phone-sized screen shows recall and questions only
+     about what that step just showed. Live on the site.
+2. **Glossary** (§6 B)
+   - A route `/study/:id/glossary`, linked from the course page's View
+     row. Every definition item, A–Z by term, with its meaning,
+     `also_known_as` and related terms; a "Find" field like the library's;
+     a letter index down the side on desktop. Set as a book's index
+     (`arborous-design`): ruled, no cards.
+   - Done when: it renders for a real course (fixture) at 390px and
+     desktop, both themes; search works; a component test covers sort and
+     filter; tab title is "<course> · Glossary"; live.
+3. **Classes** (§6 C). Show the owner a sketch of the class page and the
+   class exam dialog before building; it is their idea and their call on
+   naming ("course" vs "lecture").
+   - A class page (tap a class in the library): its lectures in order, Add
+     lecture (New course with the code filled in), and one Exam button.
+   - The class exam dialog: date, then every lecture and its sections as a
+     tickable tree; Save writes `exam_date` and `exam_sections` on each
+     ticked course and clears them on unticked ones that had that date.
+   - Today and the library's Today list keep working unchanged (they read
+     the per-course fields).
+   - Done when: tests for the dialog's writes, screenshots at phone and
+     desktop, Help updated, live.
+4. **Security fix** (§6 item 1), then the sync gaps and polish (items
+   2–3).
+
+Before ending the session: update this file (what changed, what is open)
+and `docs/next.md`, and tell the owner in a few plain lines.
+
 ## 1. What Arborous is for
 
 A study app that turns a student's own lecture material into everything
