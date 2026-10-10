@@ -19,7 +19,19 @@ Start here. Make each step a task, keep one in progress, and only mark it
 done when it is tested and live (see §7). Load `working-method`,
 `arborous-design` and `app-making` at the start; `simulate` for step 1.
 
-1. **Fix Learn's step placement** (§6 A)
+1. **Bring Learn up to the standard of Today** (§6 A). The owner's view:
+   most of the effort so far went into Today, and Learn (which a friend
+   found "not very in-depth") has fallen behind. Learn is also what Today
+   runs for new material, so fixing it improves both.
+   - First, walk Learn as a student on a phone-sized screen, on a real
+     fixture course, from a section's first step to its end, and write down
+     everything that feels thin, confusing or out of order. Then compare it
+     with Today point by point (time sizing, what happens after a miss, the
+     pause between steps, the finish screen, the catch-up, exam steering)
+     and list what Learn lacks. Show the owner that list before building
+     anything big.
+   - The known bug comes first: a question can arrive in a step that never
+     taught its material (below).
    - Before touching code: `npm run sim` and keep the numbers. Write a
      failing test in `src/lib/learnSteps.test.ts` with a section where a
      flashcard names no defined term but quotes the same passage
@@ -28,6 +40,8 @@ done when it is tested and live (see §7). Load `working-method`,
    - Change `stepSection`: an unplaced item joins the step of the
      definition whose `source_excerpt` it overlaps most; anything still
      unmatched goes in a final step of its own, never an earlier one.
+   - Then the gaps from the walk-through, each simulated first if it
+     changes what is asked or when (`simulate`).
    - Done when: the test passes, every existing test passes, the simulator
      is within noise or better under both students (re-baseline and add a
      line to `sim/FINDINGS.md` if it moved), and a Learn session in the
