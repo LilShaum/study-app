@@ -144,4 +144,19 @@ describe('Learn in steps', () => {
     expect(items[shown]._step).toBe(items[asked]._step);
     expect(phaseOf(items[shown].type)).toBe('read');
   });
+
+  it('picks up where you stopped: a step whose every question is answered is skipped', () => {
+    const items = learn(defs);
+    const first = items.filter((i) => i._step === 0 && (i.type === 'recall' || i.type === 'mcq' || i.type === 'flashcard'));
+    const progress = Object.fromEntries(first.map((i) => [i.id, { got: 1, missed: 0, lastSeen: 1 }]));
+    const again = learn(defs, progress);
+    expect(again.every((i) => i._step !== 0)).toBe(true);
+    expect(again[0]._step).toBe(1);
+  });
+
+  it('is the whole section again once every step is done', () => {
+    const items = learn(defs);
+    const progress = Object.fromEntries(items.filter((i) => i.type === 'recall').map((i) => [i.id, { got: 1, missed: 1, lastSeen: 1 }]));
+    expect(learn(defs, progress).length).toBeGreaterThan(0);
+  });
 });

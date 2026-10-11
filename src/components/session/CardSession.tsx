@@ -17,6 +17,7 @@ import { useCoursesStore } from '@/store/courses';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { todayAcrossCourses, type CourseToday } from '@/lib/libraryToday';
 import { plannedMinutes, studiedToday } from '@/lib/todaySitting';
+import { sectionsToLearn } from '@/lib/nextToLearn';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
 
@@ -268,6 +269,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
   const [moreDue, setMoreDue] = useState(0);
   /** Today only: the next course with something to do, worked out as the sitting ends. */
   const [nextCourse, setNextCourse] = useState<CourseToday | null>(null);
+  /** Learn only: the next section with something to learn, worked out as the session ends. */
+  const [nextSection, setNextSection] = useState<{ id: string; title: string } | null>(null);
   const nextCourseFor = (): CourseToday | null => {
     const now = Date.now();
     const others = todayAcrossCourses(
@@ -357,6 +360,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
       setAppointment(appointmentFor());
     }
     setNextCourse(mode === 'today' ? nextCourseFor() : null);
+    // Learn's "Keep going": the section Learn would teach next, not this one again.
+    const after = mode === 'learn' ? sectionsToLearn(course, useProgressStore.getState().getProgress(courseId)).find(({ section }) => section.id !== sectionId) : undefined;
+    setNextSection(after ? { id: after.section.id, title: after.section.title } : null);
     finish();
   };
   const retryMissed = useSessionStore((s) => s.retryMissed);
@@ -473,11 +479,19 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
               Keep going
             </button>
           )}
+          {nextSection && (
+            <Link
+              to={`/session/${courseId}/learn?section=${encodeURIComponent(nextSection.id)}`}
+              className="press press-ink tap-safe max-w-full"
+            >
+              Next: {nextSection.title}
+            </Link>
+          )}
           {missedNow > 0 && (
             <button
               type="button"
               onClick={retryMissed}
-              className={`press tap-safe ${moreDue > 0 || mode === 'today' ? '' : 'press-ink'}`}
+              className={`press tap-safe ${moreDue > 0 || mode === 'today' || nextSection ? '' : 'press-ink'}`}
             >
               Try the {missedNow} you missed again
             </button>
@@ -491,7 +505,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
             <button
               type="button"
               onClick={() => restart()}
-              className={`press tap-safe ${missedNow > 0 ? '' : 'press-ink'}`}
+              className={`press tap-safe ${missedNow > 0 || nextSection ? '' : 'press-ink'}`}
             >
               Study again
             </button>

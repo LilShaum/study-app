@@ -382,10 +382,23 @@ export function buildSessionItems(
       // Practice, so a definition is asked for rather than shown.
       items = shuffle(asTyped(asRecall(items)));
       break;
-    case 'learn':
+    case 'learn': {
       // Read the definition, then recall it a few cards later in its step.
-      items = learnOrder(withRecall(items), progress);
+      const all = learnOrder(withRecall(items), progress);
+      // Pick up where you stopped, as Today does: a step whose every question
+      // has been answered is done, and Review brings it back when it fades.
+      // Once every step is done, Learn is the whole thing again.
+      const done = new Set<string>();
+      const blocks = new Map<string, SessionItem[]>();
+      for (const i of all) blocks.set(i._block!, [...(blocks.get(i._block!) ?? []), i]);
+      for (const [block, list] of blocks) {
+        const asks = list.filter(isGradable);
+        if (asks.length && asks.every((i) => { const r = progress?.[i.id]; return !!r && r.got + r.missed > 0; })) done.add(block);
+      }
+      const left = all.filter((i) => !done.has(i._block!));
+      items = left.length ? left : all;
       break;
+    }
     case 'weakest':
       items = weakestFirst(asTyped(asRecall(items)), now, progress);
       break;

@@ -30,7 +30,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Learn',
-    what: 'Teaches a section a few terms at a time. Each step: read the terms, type them from memory, then answer questions that use them. Anything you get wrong comes back a few cards later. After each step you can stop, and Learn picks up at the next one.',
+    what: 'Teaches a section a few terms at a time, about a dozen cards a step. Each step: read the terms and the flashcards it will ask, type the terms from memory, then answer questions that use them. Anything you get wrong comes back a few cards later in the same step, with the passage from your notes. After each step you can stop, and Learn picks up at the next one. At the end it offers the next section.',
     scored: true,
   },
   {
