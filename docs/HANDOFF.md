@@ -9,7 +9,7 @@ Other records: `docs/next.md` (running done/next list), `sim/FINDINGS.md`
 (every study-design result, with numbers), `docs/evidence.md` (the learning
 science), `README.md` (code tour).
 
-Last updated 2026-10-04.
+Last updated 2026-10-11.
 
 ---
 
@@ -17,59 +17,31 @@ Last updated 2026-10-04.
 
 Start here. Make each step a task, keep one in progress, and only mark it
 done when it is tested and live (see §7). Load `working-method`,
-`arborous-design` and `app-making` at the start; `simulate` for step 1.
+`arborous-design` and `app-making` at the start; `simulate` before Learn.
 
-1. **Bring Learn up to the standard of Today** (§6 A). The owner's view:
-   most of the effort so far went into Today, and Learn (which a friend
-   found "not very in-depth") has fallen behind. Learn is also what Today
-   runs for new material, so fixing it improves both.
-   - First, walk Learn as a student on a phone-sized screen, on a real
-     fixture course, from a section's first step to its end, and write down
-     everything that feels thin, confusing or out of order. Then compare it
-     with Today point by point (time sizing, what happens after a miss, the
-     pause between steps, the finish screen, the catch-up, exam steering)
-     and list what Learn lacks. Show the owner that list before building
-     anything big.
-   - The known bug comes first: a question can arrive in a step that never
-     taught its material (below).
-   - Before touching code: `npm run sim` and keep the numbers. Write a
-     failing test in `src/lib/learnSteps.test.ts` with a section where a
-     flashcard names no defined term but quotes the same passage
-     (`source_excerpt`) as the second term: today it lands in the wrong
-     step.
-   - Change `stepSection`: an unplaced item joins the step of the
-     definition whose `source_excerpt` it overlaps most; anything still
-     unmatched goes in a final step of its own, never an earlier one.
-   - Then the gaps from the walk-through, each simulated first if it
-     changes what is asked or when (`simulate`).
-   - Done when: the test passes, every existing test passes, the simulator
-     is within noise or better under both students (re-baseline and add a
-     line to `sim/FINDINGS.md` if it moved), and a Learn session in the
-     built app on a phone-sized screen shows recall and questions only
-     about what that step just showed. Live on the site.
-2. **Glossary** (§6 B)
-   - A route `/study/:id/glossary`, linked from the course page's View
-     row. Every definition item, A–Z by term, with its meaning,
-     `also_known_as` and related terms; a "Find" field like the library's;
-     a letter index down the side on desktop. Set as a book's index
-     (`arborous-design`): ruled, no cards.
-   - Done when: it renders for a real course (fixture) at 390px and
-     desktop, both themes; search works; a component test covers sort and
-     filter; tab title is "<course> · Glossary"; live.
-3. **Classes** (§6 C). Show the owner a sketch of the class page and the
-   class exam dialog before building; it is their idea and their call on
-   naming ("course" vs "lecture").
-   - A class page (tap a class in the library): its lectures in order, Add
-     lecture (New course with the code filled in), and one Exam button.
-   - The class exam dialog: date, then every lecture and its sections as a
-     tickable tree; Save writes `exam_date` and `exam_sections` on each
-     ticked course and clears them on unticked ones that had that date.
-   - Today and the library's Today list keep working unchanged (they read
-     the per-course fields).
-   - Done when: tests for the dialog's writes, screenshots at phone and
-     desktop, Help updated, live.
-4. **Security fix** (§6 item 1), then the sync gaps and polish (items
-   2–3).
+**Done 2026-10-11 (live):** Learn no longer asks a step about what it
+didn't show (`stepSection` places a term-less item by its
+`source_excerpt`; leftovers go in a last step; simulator within noise,
+re-baselined). The glossary (`/study/:id/glossary`, `GlossaryRoute.tsx`,
+`lib/glossary.ts`). Two proposals for the owner, both waiting on answers:
+`docs/proposals/learn.md` (what Learn lacks, A–F) and
+`docs/proposals/classes.md` (class page, class exam, "course" vs
+"lecture", more than one exam).
+
+1. **Learn, the larger changes** (§6 A). Wait for the owner's answer to
+   `docs/proposals/learn.md`. C, D, E there are small (misses stay in their
+   step and never back to back; a next-section button at the end; the
+   definition shown after a miss). A and B change what is asked and when:
+   simulate first.
+2. **Classes** (§6 C). Wait for the owner's answer to
+   `docs/proposals/classes.md`, then build the class page and the class
+   exam dialog. Done when: tests for the dialog's writes, screenshots at
+   phone and desktop, Help updated, live.
+3. **Security fix** (§6 item 1), then the sync gaps and polish (items
+   2–3). These don't wait on anyone.
+
+Seen in passing, not yet fixed: the mode label on the study screen
+("Learn" in a rounded box beside the counter) is a pill, against §3.
 
 Before ending the session: update this file (what changed, what is open)
 and `docs/next.md`, and tell the owner in a few plain lines.
@@ -242,7 +214,8 @@ look of a generic web app. Keep it.
 First, from a friend's real use of Learn (2026-10-10) and the owner's own
 idea. These come before the list below.
 
-A. **Learn asks about things it hasn't taught.** "You learn 4 terms, then
+A. **Learn asks about things it hasn't taught.** (Placement fixed
+   2026-10-11; the rest is in `docs/proposals/learn.md`.) "You learn 4 terms, then
    the recall asks about things the read part didn't show." The cause is in
    `src/lib/learnSteps.ts`: an MCQ or flashcard that names none of the
    section's defined terms is spread across the steps by its position
@@ -254,7 +227,7 @@ A. **Learn asks about things it hasn't taught.** "You learn 4 terms, then
    changes Learn, so run the simulator before and after (`simulate`
    skill). The same friend called Learn "not very in-depth"; check whether
    that is this bug or a real gap once it's fixed.
-B. **A glossary.** A per-course page listing every term and concept with
+B. **A glossary.** (Built 2026-10-11.) A per-course page listing every term and concept with
    its meaning, alphabetical and searchable, to read rather than be quizzed
    on (the friend asked for it; Browse shows items by section, not as a
    reference). Built from the definition items; set like a book's index.

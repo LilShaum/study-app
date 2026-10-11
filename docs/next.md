@@ -18,7 +18,11 @@ class; undoing a removal keeps the study log; re-uploading says "updated".
 
 Done 2026-10-02: a catch-up later the same day for missed cards (simulator: several points on the exam under both students; sim/FINDINGS.md). Today now uses what is left of the day's time. One daily time for all courses, shared by how soon each exam is (sim/several.sim.ts). The generator prompt moved out of CLAUDE.md to prompts/generator.md; course files are git-ignored.
 
+Done 2026-10-11: Learn places a question that names no term by the passage it quotes, and keeps leftovers for a last step, so a step only asks about what it showed. A glossary per course (View → Glossary). Proposals for the owner in docs/proposals/ (Learn gaps, classes).
+
 Next:
+- Owner's answers to docs/proposals/learn.md and classes.md, then build.
+- Security: DOMPurify for course diagrams, plus a CSP meta (HANDOFF §6 item 1).
 - Share links and sync are live (`src/lib/cloud.ts`, `docs/supabase.sql`) and
   confirmed working by the owner on real devices, 2026-09-27. Cloud sessions
   cannot reach supabase.co unless the environment's network settings allow it.
