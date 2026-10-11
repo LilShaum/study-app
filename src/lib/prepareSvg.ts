@@ -14,16 +14,23 @@
  * in between are left alone — a red arrow was a deliberate choice and should
  * survive.
  *
- * Since we already parse the document here, we also drop scripts and event
- * handlers. Course files are self-generated today, so this isn't urgent, but
- * the format is meant to be shared and the cost is a few lines.
+ * Cleaning is DOMPurify's job, with its SVG profile, as the last step: what
+ * it returns is what goes into the page. Share links make a course from
+ * someone else a real input, and the hand-written denylist this replaced
+ * could be got past (a tab inside "javascript:", or an <animate> that swaps
+ * a link in after cleaning). index.html's Content-Security-Policy is the
+ * second layer.
  */
+import DOMPurify from 'dompurify';
 
 /** Attributes whose value is a paint we may remap. */
 const COLOR_ATTRS = ['fill', 'stroke', 'stop-color', 'flood-color', 'lighting-color'] as const;
 
-/** Elements that can execute or embed arbitrary content. */
-const FORBIDDEN_TAGS = new Set(['script', 'foreignobject', 'iframe', 'embed', 'object', 'use']);
+/**
+ * Kept out on top of DOMPurify's SVG profile. <use> can pull in another
+ * document; animation can rewrite an attribute after the clean.
+ */
+const FORBID_TAGS = ['use', 'foreignObject', 'animate', 'animateMotion', 'animateTransform', 'set', 'discard'];
 
 const DARK_MAX_LUMINANCE = 0.28;
 const LIGHT_MIN_LUMINANCE = 0.9;
@@ -88,38 +95,53 @@ function remapStyleAttr(style: string): string {
     .join(';');
 }
 
-function scrub(el: Element): void {
+/** Theme legibility: dark paints become the ink, near-white ones the page. */
+function remapColors(el: Element): void {
   for (const attr of [...el.attributes]) {
     const name = attr.name.toLowerCase();
-
-    // Event handlers (onload, onerror, ...) and javascript: targets.
-    if (name.startsWith('on')) {
-      el.removeAttribute(attr.name);
-      continue;
-    }
-    if ((name === 'href' || name === 'xlink:href') && attr.value.trim().toLowerCase().startsWith('javascript:')) {
-      el.removeAttribute(attr.name);
-      continue;
-    }
-
     if ((COLOR_ATTRS as readonly string[]).includes(name)) {
       const replacement = remapPaint(attr.value);
       if (replacement) el.setAttribute(attr.name, replacement);
-      continue;
-    }
-
-    if (name === 'style') {
+    } else if (name === 'style') {
       el.setAttribute(attr.name, remapStyleAttr(attr.value));
     }
   }
+}
 
-  for (const child of [...el.children]) {
-    if (FORBIDDEN_TAGS.has(child.nodeName.toLowerCase())) {
-      child.remove();
-      continue;
+/**
+ * Sizing: let the diagram scale down on narrow screens regardless of the
+ * authored size. A viewBox-only SVG (no width/height, which is exactly what
+ * the generator is told to emit) has no intrinsic size, so `height:auto`
+ * alone collapses it to 0x0 inside a flex container — it needs an explicit
+ * width, capped at the viewBox width so small diagrams aren't blown up.
+ */
+function size(svg: Element): void {
+  let sizing = 'max-width:100%;height:auto;';
+  if (!(svg.hasAttribute('width') && svg.hasAttribute('height'))) {
+    const viewBoxWidth = Number(svg.getAttribute('viewBox')?.split(/[\s,]+/)[2]);
+    if (Number.isFinite(viewBoxWidth) && viewBoxWidth > 0) {
+      sizing = `width:100%;max-width:${viewBoxWidth}px;height:auto;`;
     }
-    scrub(child);
   }
+  svg.setAttribute('style', `${sizing}${svg.getAttribute('style') ?? ''}`);
+}
+
+/**
+ * One sanitizer with the app's own steps as hooks, so they run inside its
+ * pass and its output is exactly what reaches the page. (Serializing a
+ * cleaned tree ourselves and handing that to innerHTML lets the HTML parser
+ * read it differently from how it was cleaned.)
+ */
+let purifier: ReturnType<typeof DOMPurify> | null = null;
+function purify(): ReturnType<typeof DOMPurify> {
+  if (purifier) return purifier;
+  purifier = DOMPurify(window);
+  purifier.addHook('afterSanitizeAttributes', (node) => {
+    if (!(node instanceof Element)) return;
+    remapColors(node);
+    if (node.nodeName.toLowerCase() === 'svg' && !node.parentElement?.closest('svg')) size(node);
+  });
+  return purifier;
 }
 
 /**
@@ -129,33 +151,17 @@ function scrub(el: Element): void {
 export function prepareSvg(raw: string | undefined): string | null {
   if (!raw || !raw.trim()) return null;
 
+  // Well-formed SVG or nothing: the HTML parser the sanitizer uses would
+  // happily repair a cut-off diagram into something half drawn.
   let doc: Document;
   try {
     doc = new DOMParser().parseFromString(raw, 'image/svg+xml');
   } catch {
     return null;
   }
-
   if (doc.querySelector('parsererror')) return null;
+  if (doc.documentElement?.nodeName.toLowerCase() !== 'svg') return null;
 
-  const svg = doc.documentElement;
-  if (!svg || svg.nodeName.toLowerCase() !== 'svg') return null;
-
-  scrub(svg);
-
-  // Sizing: let the diagram scale down on narrow screens regardless of the
-  // authored size. A viewBox-only SVG (no width/height, which is exactly what
-  // the generator is told to emit) has no intrinsic size, so `height:auto`
-  // alone collapses it to 0x0 inside a flex container — it needs an explicit
-  // width, capped at the viewBox width so small diagrams aren't blown up.
-  let sizing = 'max-width:100%;height:auto;';
-  if (!(svg.hasAttribute('width') && svg.hasAttribute('height'))) {
-    const viewBoxWidth = Number(svg.getAttribute('viewBox')?.split(/[\s,]+/)[2]);
-    if (Number.isFinite(viewBoxWidth) && viewBoxWidth > 0) {
-      sizing = `width:100%;max-width:${viewBoxWidth}px;height:auto;`;
-    }
-  }
-  svg.setAttribute('style', `${sizing}${svg.getAttribute('style') ?? ''}`);
-
-  return new XMLSerializer().serializeToString(svg);
+  const clean = purify().sanitize(raw, { USE_PROFILES: { svg: true, svgFilters: true }, FORBID_TAGS }).trim();
+  return clean.toLowerCase().startsWith('<svg') ? clean : null;
 }
