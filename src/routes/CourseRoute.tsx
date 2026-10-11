@@ -477,6 +477,7 @@ export function CourseRoute() {
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 sm:gap-x-5">
             <ToolLink to={`/study/${id}/progress`}>Progress</ToolLink>
             <ToolLink to={`/session/${id}/browse`}>Browse and edit</ToolLink>
+            {counts.definition > 0 && <ToolLink to={`/study/${id}/glossary`}>Glossary ({counts.definition})</ToolLink>}
             {counts.graphic > 0 && <ToolLink to={`/study/${id}/diagrams`}>Diagrams ({counts.graphic})</ToolLink>}
           </div>
         </div>

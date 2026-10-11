@@ -69,6 +69,11 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
     what: 'The whole course to read through. You can edit, delete or add items here.',
     scored: false,
   },
+  {
+    name: 'Glossary',
+    what: 'Every term in the course from A to Z, with its meaning, to look things up. Find it under View on the course page.',
+    scored: false,
+  },
 ];
 
 const SHORTCUTS: { keys: string; what: string }[] = [
