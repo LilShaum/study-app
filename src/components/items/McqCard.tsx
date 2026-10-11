@@ -191,7 +191,8 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
           )}
         </div>
       )}
-      {revealed && <SourceNote excerpt={item.source_excerpt} />}
+      {/* After a miss the passage is open: the lesson again, not only the right option. */}
+      {revealed && <SourceNote excerpt={item.source_excerpt} open={!correct && !keyBroken} />}
     </div>
   );
 }

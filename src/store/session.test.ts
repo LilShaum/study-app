@@ -186,7 +186,6 @@ describe('session store: Learn brings a missed card back', () => {
           mcq('q2', 'Which is Beta?'),
           mcq('q3', 'Which is Gamma?'),
           mcq('q4', 'Which is Delta?'),
-          mcq('q5', 'Which is Alpha again?'),
         ],
       },
     ],
@@ -229,14 +228,40 @@ describe('session store: Learn brings a missed card back', () => {
     expect(s().stillMissed()).toEqual([]);
   });
 
+  /** One long step of questions, to see a card come back more than once. */
+  const longStep = () => {
+    const items = s().items.filter((i) => i.type === 'mcq');
+    const many = Array.from({ length: 5 }, (_, k) => items.map((i) => ({ ...i, id: `${i.id}-${k}`, _block: 's1#0' }))).flat();
+    useSessionStore.setState({ items: many, index: 0 });
+  };
+
   it('gives up after three returns and leaves it to Review', () => {
-    goTo('q1');
+    longStep();
+    const id = s().current()!.id;
     for (let n = 0; n < 4; n++) {
       s().record(false);
-      if (n < 3) onTo('q1');
+      if (n < 3) onTo(id);
     }
-    expect(s().items.filter((i) => i.id === 'q1')).toHaveLength(4);
-    expect(s().stillMissed()).toEqual(['q1']);
+    expect(s().items.filter((i) => i.id === id)).toHaveLength(4);
+    expect(s().stillMissed()).toEqual([id]);
+  });
+
+  it('keeps a miss in its own step: as its last card when the step ends sooner', () => {
+    goTo('q3');
+    const block = s().current()!._block;
+    s().record(false);
+    const copy = s().items.findIndex((i, n) => n > s().index && i.id === 'q3');
+    expect(s().items[copy]).toMatchObject({ _again: 1, _block: block });
+    expect(s().items[copy + 1]?._block).not.toBe(block);
+    expect(s().items[copy - 1].id).not.toBe('q3');
+  });
+
+  it('never brings a miss back straight after itself', () => {
+    goTo('q4');
+    const before = s().items.length;
+    // The step's last card: nothing to put between it and itself.
+    s().record(false);
+    expect(s().items).toHaveLength(before);
   });
 
   it('takes the copy back when the miss is overruled', () => {

@@ -243,9 +243,16 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     // Until it is right once, and no more: a higher bar in the first sitting
     // buys nothing that lasts once it is relearned on a later day (Vaughn,
     // Dunlosky & Rawson 2016, in docs/evidence.md). Review is that later day.
-    const at = Math.min(index + 1 + AGAIN_AFTER, items.length);
-    const neighbour = items[at - 1];
-    const copy: SessionItem = { ...item, _again: (item._again ?? 0) + 1, _block: neighbour._block };
+    // It stays in its own step: a few cards on, or as the step's last card
+    // if the step ends sooner. A miss that came back in the next step, still
+    // labelled with the old one, was a friend's complaint.
+    let end = index;
+    while (end + 1 < items.length && items[end + 1]._block === item._block) end++;
+    const at = Math.min(index + 1 + AGAIN_AFTER, end + 1);
+    // Never straight after itself: with nothing in between it is only the
+    // answer just seen, clicked again. Left to the catch-up and Review.
+    if (at === index + 1) return;
+    const copy: SessionItem = { ...item, _again: (item._again ?? 0) + 1 };
     // Answers are kept by position, so anything already answered past the
     // insertion (reached by going back with Prev) moves along with its card.
     set((s) => ({

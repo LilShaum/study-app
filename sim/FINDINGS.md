@@ -10,6 +10,21 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-11 — Learn: a miss comes back inside its own step, never straight after itself
+
+**Change** (`docs/proposals/learn.md` C). A missed card came back three
+cards on wherever that was, so it could land in the next step, or straight
+after itself at the end of a step (three times in a row). Now it comes back
+three cards on or as its step's last card, whichever is sooner, and is left
+to the catch-up and Review when nothing in the step is left to put between.
+
+**Result** (3 seeds, whole suite). Under `fsrs` level or up 1–3 points
+(steady-30 55→57%, crammer 68→71%, busy-20 27→30%), with slightly less never
+studied: re-asking a card the moment after it was missed spent time and
+taught nothing. Under `harsh` within a point everywhere. Re-baselined.
+
+---
+
 ## 2026-10-11 — Learn: teach a flashcard before asking it; steps of at most 12 cards
 
 **Change** (`docs/proposals/learn.md` A and B, the owner's go-ahead). In
