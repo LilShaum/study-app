@@ -57,7 +57,7 @@ export function parseCourse(raw: unknown): ParseCourseResult {
       const r = ClassExamSchema.safeParse(e);
       return r.success ? [r.data] : [];
     }).slice(0, 20);
-    const metadata = { ...course.metadata, exams };
+    const metadata: Course['metadata'] = { ...course.metadata, exams };
     if (!exams.length) delete metadata.exams;
     return { ok: true, course: { ...course, metadata } };
   }

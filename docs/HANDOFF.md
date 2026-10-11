@@ -378,7 +378,8 @@ Supabase.
 | `docs/supabase.sql` | Tables, row-level security, RPC |
 
 **Checks:** `npx tsc --noEmit -p .`, `npx eslint src`, `npx vitest run`
-(~620 tests), `npm run build`. Don't run Prettier over whole files (it
+(~660 tests), `npm run build`. Run the build before every push: its
+`tsc -b` is stricter than `tsc -p .` and a deploy failed on that once. Don't run Prettier over whole files (it
 rewrites the quote style).
 
 **Ship:** commit on the session branch, push, merge into `main`
