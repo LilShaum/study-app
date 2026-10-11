@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
 import { buildSessionItems, recallId, type SessionItem } from './buildSessionItems';
-import { phaseOf, STEP_TERMS } from './learnSteps';
+import { phaseOf, STEP_CARDS, STEP_TERMS } from './learnSteps';
 
 const TERMS = ['Adenylyl cyclase', 'Gs protein', 'Protein kinase A', 'Phosphodiesterase', 'Calmodulin', 'Inositol trisphosphate', 'Diacylglycerol', 'Protein kinase C'];
 
@@ -109,5 +109,39 @@ describe('Learn in steps', () => {
   it('marks each card with the step it sits in', () => {
     const items = learn(defs);
     expect(new Set(items.map((i) => i._block))).toEqual(new Set(['s#0', 's#1']));
+  });
+
+  it(`keeps a step to ${STEP_CARDS} cards, with fewer terms a step when there is a lot to ask`, () => {
+    // Four questions on each term: 8 terms would be 2 steps of 4 terms and
+    // 4 + 4 + 16 = 24 cards each.
+    const qs = TERMS.flatMap((t, n) => [0, 1, 2, 3].map((k) => mcq(`q${n}-${k}`, `Question ${k} about ${t}?`)));
+    const items = learn([...defs, ...qs]);
+    const steps = items[0]._steps!;
+    expect(steps).toBeGreaterThan(2);
+    for (let s = 0; s < steps; s++) expect(items.filter((i) => i._step === s).length).toBeLessThanOrEqual(STEP_CARDS);
+    // Still nothing asked before it is taught.
+    for (const [n, t] of TERMS.entries()) {
+      const read = stepOf(items, `d${n}`)!;
+      for (const k of [0, 1, 2, 3]) expect(stepOf(items, `q${n}-${k}`)!, t).toBeGreaterThanOrEqual(read);
+    }
+  });
+
+  it('asks the rest of a long step in the next step, after the reading', () => {
+    // One term and fifteen questions on it: nothing smaller to cut it into.
+    const qs = Array.from({ length: 15 }, (_, k) => mcq(`q${k}`, `Question ${k} about ${TERMS[0]}?`));
+    const items = learn([defs[0], ...qs]);
+    expect(items[0]._steps).toBe(2);
+    expect(items.filter((i) => i._step === 0).length).toBeLessThanOrEqual(STEP_CARDS);
+    expect(items.filter((i) => i._step === 1).every((i) => i.type === 'mcq')).toBe(true);
+  });
+
+  it('shows a new flashcard open before asking it, in the same step', () => {
+    const items = learn([...defs, card('f1', 'Where is Gs protein?')]);
+    const shown = items.findIndex((i) => i.id === 'f1~preview');
+    const asked = items.findIndex((i) => i.id === 'f1');
+    expect(shown).toBeGreaterThanOrEqual(0);
+    expect(shown).toBeLessThan(asked);
+    expect(items[shown]._step).toBe(items[asked]._step);
+    expect(phaseOf(items[shown].type)).toBe('read');
   });
 });

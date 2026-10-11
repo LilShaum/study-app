@@ -10,6 +10,8 @@ interface DefinitionCardProps {
   keyboardEnabled?: boolean;
   onNext?: () => void;
   frame?: ItemFrame;
+  /** Learn: show the passage from the notes open, not folded. */
+  notesOpen?: boolean;
 }
 
 /**
@@ -18,7 +20,7 @@ interface DefinitionCardProps {
  * the term instead (RecallCard), which is the retrieval the reveal only
  * gestured at.
  */
-export function DefinitionCard({ item, keyboardEnabled = false, onNext, frame = 'card' }: DefinitionCardProps) {
+export function DefinitionCard({ item, keyboardEnabled = false, onNext, frame = 'card', notesOpen = false }: DefinitionCardProps) {
   useKeyboardShortcuts((e) => {
     if (e.key !== 'Enter') return;
     e.preventDefault();
@@ -54,7 +56,7 @@ export function DefinitionCard({ item, keyboardEnabled = false, onNext, frame = 
         {item.also_known_as && item.also_known_as.length > 0 && (
           <div className="mt-2 text-xs text-text-3">Also known as: {item.also_known_as.join(', ')}</div>
         )}
-        <SourceNote excerpt={item.source_excerpt} />
+        <SourceNote excerpt={item.source_excerpt} open={notesOpen} />
       </div>
     </div>
   );

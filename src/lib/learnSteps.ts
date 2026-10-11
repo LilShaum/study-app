@@ -1,6 +1,6 @@
 import type { ItemResult } from '@/store/progress';
 import type { AnyItem, SessionItem } from './buildSessionItems';
-import { recallId } from './scored';
+import { previewId, recallId } from './scored';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 
 /**
@@ -35,7 +35,7 @@ const GENERIC_SHARE = 0.4;
 export type LearnPhase = 'read' | 'recall' | 'apply';
 
 export function phaseOf(type: AnyItem['type']): LearnPhase | null {
-  if (type === 'definition' || type === 'example' || type === 'graphic') return 'read';
+  if (type === 'definition' || type === 'example' || type === 'graphic' || type === 'preview') return 'read';
   if (type === 'flashcard' || type === 'recall') return 'recall';
   if (type === 'mcq') return 'apply';
   return null;
@@ -48,9 +48,10 @@ const ORDER: Record<AnyItem['type'], number> = {
   definition: 0,
   example: 1,
   graphic: 2,
-  flashcard: 3,
-  recall: 4,
-  mcq: 5,
+  preview: 3,
+  flashcard: 4,
+  recall: 5,
+  mcq: 6,
 };
 
 type Def = Extract<AnyItem, { type: 'definition' }>;
@@ -110,97 +111,164 @@ function knows(def: Def, progress?: Record<string, ItemResult>): boolean {
   return !!r && r.got > 0 && r.got >= r.missed;
 }
 
+/** Answered at least once: the flashcard needs no reading card first. */
+function answered(item: SessionItem, progress?: Record<string, ItemResult>): boolean {
+  const r = progress?.[item.id];
+  return !!r && r.got + r.missed > 0;
+}
+
+/**
+ * Cards in a step, at most, readings included. A friend found a step of "4
+ * terms" was 22 cards before any misses came back, which did not feel like 4
+ * terms. A step this size is a few minutes.
+ */
+export const STEP_CARDS = 12;
+
+/** A flashcard's reading card (see PreviewItem), in the same section and step. */
+function previewOf(card: SessionItem & { type: 'flashcard' }): SessionItem {
+  return {
+    id: previewId(card.id),
+    type: 'preview',
+    source_excerpt: card.source_excerpt,
+    difficulty: card.difficulty,
+    tags: card.tags,
+    target: card,
+    _sectionTitle: card._sectionTitle,
+    _sectionId: card._sectionId,
+    _sectionOrder: card._sectionOrder,
+  };
+}
+
 /**
  * One section's items as a sequence of steps.
  *
  * Each item comes back carrying `_step`, `_steps` and `_block`, which the
  * session uses to say where you are and to pause between steps. A term you
- * have already answered right skips its reading card; it is still asked.
+ * have already answered right skips its reading card; it is still asked. A
+ * flashcard never answered is shown first, answer and all, then asked a few
+ * cards later: teach, then ask.
  */
 export function stepSection(group: SessionItem[], progress?: Record<string, ItemResult>): SessionItem[] {
   const defs = group.filter((i): i is SessionItem & Def => i.type === 'definition');
-  const others = group.filter((i) => i.type !== 'definition' && i.type !== 'recall');
+  const others = group.filter((i) => i.type !== 'definition' && i.type !== 'recall' && i.type !== 'preview');
+  const texts = new Map(others.map((i) => [i, termTokens(textOf(i))]));
+  const uses = (text: Set<string>, n: Set<string>[]) => n.some((t) => coversTokens(text, t));
+  const defNames = defs.map((d) => namesOf(d));
+  const genericIdx = new Set(
+    defNames
+      .map((n, k) => ({ n, k }))
+      .filter(({ n }) => others.length > 4 && others.filter((o) => uses(texts.get(o)!, n)).length > others.length * GENERIC_SHARE)
+      .map(({ k }) => k),
+  );
+  const defWords = defs.map((d) => excerptWords(d));
+
+  /** Which step every item goes in, with the terms cut into `defSteps` steps. */
+  const place = (defSteps: number) => {
+    const stepOfDef = new Map<string, number>();
+    // Spread evenly, so 9 terms are 3+3+3 and not 4+4+1.
+    defs.forEach((d, k) => stepOfDef.set(d.id, Math.floor((k * defSteps) / defs.length)));
+    const stepOf = new Map<SessionItem, number>();
+    const unplaced: SessionItem[] = [];
+    for (const item of others) {
+      const text = texts.get(item)!;
+      const hits = defs.map((d, k) => ({ step: stepOfDef.get(d.id)!, k })).filter(({ k }) => uses(text, defNames[k]));
+      const specific = hits.filter(({ k }) => !genericIdx.has(k));
+      const pick = specific.length ? specific : hits;
+      // The LAST step among the terms it uses: by then all of them are taught.
+      if (pick.length) stepOf.set(item, Math.max(...pick.map((d) => d.step)));
+      else unplaced.push(item);
+    }
+    // An item that names no term but quotes the same passage as a definition
+    // was written from what that definition teaches: it goes in that step.
+    const leftover: SessionItem[] = [];
+    for (const item of unplaced) {
+      const words = excerptWords(item);
+      let best: { step: number; score: number } | null = null;
+      defs.forEach((d, k) => {
+        const step = stepOfDef.get(d.id)!;
+        const score = overlap(words, defWords[k]);
+        // Ties go to the later step: by then both passages have been read.
+        if (score >= MIN_OVERLAP && (!best || score > best.score || (score === best.score && step > best.step))) best = { step, score };
+      });
+      if (best) stepOf.set(item, (best as { step: number }).step);
+      else leftover.push(item);
+    }
+    // What still matches nothing waits for a last step of its own, after every
+    // term is taught. An early step must never ask about what it did not show.
+    // A section with no terms has nothing to wait for and is cut by count; one
+    // with a single step already reads everything before it asks anything.
+    let steps = defSteps;
+    if (defs.length && defSteps > 1 && leftover.length) {
+      for (const item of leftover) stepOf.set(item, defSteps);
+      steps = defSteps + 1;
+    } else {
+      for (const type of ['example', 'graphic', 'flashcard', 'mcq'] as const) {
+        const ofType = leftover.filter((i) => i.type === type);
+        ofType.forEach((item, k) => stepOf.set(item, Math.floor((k * defSteps) / ofType.length)));
+      }
+    }
+    for (const item of group) {
+      if (item.type === 'definition') stepOf.set(item, stepOfDef.get(item.id)!);
+      if (item.type === 'recall') stepOf.set(item, stepOfDef.get(item.target.id) ?? 0);
+    }
+
+    const out: SessionItem[][] = [];
+    for (let s = 0; s < steps; s++) {
+      const inStep: SessionItem[] = [];
+      group.forEach((item) => {
+        if (stepOf.get(item) !== s) return;
+        if (item.type === 'definition' && knows(item, progress)) return;
+        if (item.type === 'flashcard' && !answered(item, progress)) inStep.push(previewOf(item));
+        inStep.push(item);
+      });
+      const sorted = inStep
+        .map((item, i) => ({ item, i }))
+        .sort((a, b) => ORDER[a.item.type] - ORDER[b.item.type] || a.i - b.i)
+        .map(({ item }) => item);
+      // Typed terms in a different order from the reading, half-way round, so
+      // the first one asked is not the one read last.
+      const recalls = sorted.filter((i) => i.type === 'recall');
+      const half = Math.floor(recalls.length / 2);
+      const turned = [...recalls.slice(half), ...recalls.slice(0, half)];
+      let r = 0;
+      out.push(sorted.map((item) => (item.type === 'recall' ? turned[r++] : item)));
+    }
+    return out;
+  };
+
   // A section with no terms is cut by count instead, about ten cards a step.
-  const defSteps = defs.length
+  let defSteps = defs.length
     ? Math.ceil(defs.length / STEP_TERMS)
     : Math.max(1, Math.ceil(others.length / (STEP_TERMS * 2.5)));
-  const stepOfDef = new Map<string, number>();
-  // Spread evenly, so 9 terms are 3+3+3 and not 4+4+1.
-  defs.forEach((d, k) => stepOfDef.set(d.id, Math.floor((k * defSteps) / defs.length)));
-
-  const texts = new Map(others.map((i) => [i, termTokens(textOf(i))]));
-  const names = defs.map((d) => ({ step: stepOfDef.get(d.id)!, names: namesOf(d) }));
-  const uses = (text: Set<string>, n: Set<string>[]) => n.some((t) => coversTokens(text, t));
-  const generic = new Set(
-    names.filter((d) => others.length > 4 && others.filter((o) => uses(texts.get(o)!, d.names)).length > others.length * GENERIC_SHARE),
-  );
-
-  const stepOf = new Map<SessionItem, number>();
-  const unplaced: SessionItem[] = [];
-  for (const item of others) {
-    const text = texts.get(item)!;
-    const hits = names.filter((d) => uses(text, d.names));
-    const specific = hits.filter((d) => !generic.has(d));
-    const pick = specific.length ? specific : hits;
-    // The LAST step among the terms it uses: by then all of them are taught.
-    if (pick.length) stepOf.set(item, Math.max(...pick.map((d) => d.step)));
-    else unplaced.push(item);
+  let built = place(defSteps);
+  // Fewer terms a step while a step runs long, down to one term each.
+  while (defs.length && defSteps < defs.length && Math.max(...built.map((s) => s.length)) > STEP_CARDS) {
+    built = place(++defSteps);
   }
-  // An item that names no term but quotes the same passage as a definition
-  // was written from what that definition teaches: it goes in that step.
-  const passages = defs.map((d) => ({ step: stepOfDef.get(d.id)!, words: excerptWords(d) }));
-  const leftover: SessionItem[] = [];
-  for (const item of unplaced) {
-    const words = excerptWords(item);
-    let best: { step: number; score: number } | null = null;
-    for (const p of passages) {
-      const score = overlap(words, p.words);
-      // Ties go to the later step: by then both passages have been read.
-      if (score >= MIN_OVERLAP && (!best || score > best.score || (score === best.score && p.step > best.step))) best = { step: p.step, score };
+  // A step still too long (one term with many questions, or the last step of
+  // what fits no term) asks the rest in a step of its own. It only asks about
+  // what the step before it taught, so nothing is asked before it is shown.
+  const cut: SessionItem[][] = [];
+  for (const step of built) {
+    if (step.length <= STEP_CARDS) {
+      cut.push(step);
+      continue;
     }
-    if (best) stepOf.set(item, best.step);
-    else leftover.push(item);
-  }
-  // What still matches nothing waits for a last step of its own, after every
-  // term is taught. An early step must never ask about what it did not show.
-  // A section with no terms has nothing to wait for and is cut by count; one
-  // with a single step already reads everything before it asks anything.
-  let steps = defSteps;
-  if (defs.length && defSteps > 1 && leftover.length) {
-    for (const item of leftover) stepOf.set(item, defSteps);
-    steps = defSteps + 1;
-  } else {
-    for (const type of ['example', 'graphic', 'flashcard', 'mcq'] as const) {
-      const ofType = leftover.filter((i) => i.type === type);
-      ofType.forEach((item, k) => stepOf.set(item, Math.floor((k * defSteps) / ofType.length)));
-    }
-  }
-  for (const item of group) {
-    if (item.type === 'definition') stepOf.set(item, stepOfDef.get(item.id)!);
-    if (item.type === 'recall') stepOf.set(item, stepOfDef.get(item.target.id) ?? 0);
-  }
-
-  const out: SessionItem[] = [];
-  for (let s = 0; s < steps; s++) {
-    const inStep = group
-      .map((item, i) => ({ item, i }))
-      .filter(({ item }) => stepOf.get(item) === s)
-      .filter(({ item }) => !(item.type === 'definition' && knows(item, progress)))
-      .sort((a, b) => ORDER[a.item.type] - ORDER[b.item.type] || a.i - b.i)
-      .map(({ item }) => item);
-    // Typed terms in a different order from the reading, half-way round, so
-    // the first one asked is not the one read last.
-    const recalls = inStep.filter((i) => i.type === 'recall');
-    const half = Math.floor(recalls.length / 2);
-    const turned = [...recalls.slice(half), ...recalls.slice(0, half)];
-    let r = 0;
-    for (const item of inStep) {
-      const placed = item.type === 'recall' ? turned[r++] : item;
-      out.push({ ...placed, _step: s, _steps: steps, _block: `${placed._sectionId}#${s}` });
-    }
+    const reads = step.filter((i) => phaseOf(i.type) === 'read');
+    const asks = step.filter((i) => phaseOf(i.type) !== 'read');
+    const parts = Math.ceil(step.length / STEP_CARDS);
+    const per = Math.ceil(asks.length / parts);
+    // The first part keeps every reading card and asks at least a few; the
+    // rest is shared out evenly.
+    const firstAsks = Math.max(Math.min(per, asks.length), Math.min(asks.length, STEP_CARDS - reads.length));
+    cut.push([...reads, ...asks.slice(0, firstAsks)]);
+    const rest = asks.slice(firstAsks);
+    const more = Math.ceil(rest.length / STEP_CARDS);
+    for (let k = 0; k < more; k++) cut.push(rest.slice(Math.floor((k * rest.length) / more), Math.floor(((k + 1) * rest.length) / more)));
   }
   // A step can end up empty: every term known and nothing else placed in it.
-  const used = [...new Set(out.map((i) => i._step))];
-  if (used.length === steps) return out;
-  return out.map((i) => ({ ...i, _step: used.indexOf(i._step!), _steps: used.length, _block: `${i._sectionId}#${used.indexOf(i._step!)}` }));
+  const steps = cut.filter((s) => s.length);
+  return steps.flatMap((step, s) =>
+    step.map((item) => ({ ...item, _step: s, _steps: steps.length, _block: `${item._sectionId}#${s}` })),
+  );
 }

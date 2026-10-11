@@ -523,7 +523,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           ← Back
         </Link>
         <span className="flex items-baseline gap-2">
-          <span className="rounded border border-border px-2.5 py-0.5 text-xs font-medium text-text-2">
+          <span className="mark text-text-2">
             {MODE_LABELS[mode]}
           </span>
           <span className="whitespace-nowrap text-xs tabular-nums text-text-3">
@@ -636,6 +636,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           onOverride={setResult}
           onConfused={(otherId) => useProgressStore.getState().noteConfusion(courseId, current.id, otherId)}
           onNext={handleNext}
+          learning={current._step !== undefined}
           keyboardEnabled
         />
       )}

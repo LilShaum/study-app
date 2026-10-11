@@ -112,11 +112,18 @@ const mixedCourse = {
 } as unknown as Course;
 
 describe('buildSessionItems — learn mode', () => {
-  it('orders a section definition → example/diagram → flashcard → typed recall → mcq', () => {
+  it('orders a section definition → example/diagram → flashcard shown → flashcard → typed recall → mcq', () => {
     // The typed recall comes after the flashcards so it is not asked the
-    // moment the definition has been read.
+    // moment the definition has been read. A flashcard never answered is
+    // shown open first, then asked.
     const items = buildSessionItems(mixedCourse, 'learn', { sectionId: 'sa' });
-    expect(items.map((i) => i.id)).toEqual(['a_def', 'a_eg', 'a_gfx', 'a_card', 'a_def~recall', 'a_mcq']);
+    expect(items.map((i) => i.id)).toEqual(['a_def', 'a_eg', 'a_gfx', 'a_card~preview', 'a_card', 'a_def~recall', 'a_mcq']);
+  });
+
+  it('shows a flashcard first only until it has been answered', () => {
+    const progress = { a_card: { got: 1, missed: 0, lastSeen: 1, lastGot: true } } as never;
+    const items = buildSessionItems(mixedCourse, 'learn', { sectionId: 'sa', progress });
+    expect(items.map((i) => i.id)).not.toContain('a_card~preview');
   });
 
   it('finishes one section before starting the next', () => {
@@ -125,13 +132,13 @@ describe('buildSessionItems — learn mode', () => {
     // course before answering anything.
     const items = buildSessionItems(mixedCourse, 'learn');
     expect(items.map((i) => i.id)).toEqual([
-      'a_def', 'a_eg', 'a_gfx', 'a_card', 'a_def~recall', 'a_mcq',
+      'a_def', 'a_eg', 'a_gfx', 'a_card~preview', 'a_card', 'a_def~recall', 'a_mcq',
       'b_def', 'b_def~recall', 'b_mcq',
     ]);
   });
 
-  it('drops nothing — it reorders, and adds a recall question per definition', () => {
-    expect(buildSessionItems(mixedCourse, 'learn')).toHaveLength(9);
+  it('drops nothing — it reorders, and adds a recall question per definition and a reading card per new flashcard', () => {
+    expect(buildSessionItems(mixedCourse, 'learn')).toHaveLength(10);
   });
 });
 

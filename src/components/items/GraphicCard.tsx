@@ -5,7 +5,7 @@ import { DifficultyBadge } from './DifficultyBadge';
 import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
 
-export function GraphicCard({ item, frame = 'card' }: { item: GraphicItem; frame?: ItemFrame }) {
+export function GraphicCard({ item, frame = 'card', notesOpen = false }: { item: GraphicItem; frame?: ItemFrame; notesOpen?: boolean }) {
   // Sanitized + theme-adapted; see prepareSvg for why raw markup isn't used.
   const svg = useMemo(() => prepareSvg(item.svg), [item.svg]);
 
@@ -30,7 +30,7 @@ export function GraphicCard({ item, frame = 'card' }: { item: GraphicItem; frame
       </div>
 
       {item.caption && <div className="mt-2 text-sm text-text-2">{item.caption}</div>}
-      <SourceNote excerpt={item.source_excerpt} />
+      <SourceNote excerpt={item.source_excerpt} open={notesOpen} />
     </div>
   );
 }

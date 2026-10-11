@@ -4,7 +4,7 @@ import { DifficultyBadge } from './DifficultyBadge';
 import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
 
-export function ExampleCard({ item, frame = 'card' }: { item: ExampleItem; frame?: ItemFrame }) {
+export function ExampleCard({ item, frame = 'card', notesOpen = false }: { item: ExampleItem; frame?: ItemFrame; notesOpen?: boolean }) {
   return (
     <div className={FRAME[frame]}>
       <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-text-3">
@@ -36,7 +36,7 @@ export function ExampleCard({ item, frame = 'card' }: { item: ExampleItem; frame
           </span>
         </div>
       )}
-      <SourceNote excerpt={item.source_excerpt} />
+      <SourceNote excerpt={item.source_excerpt} open={notesOpen} />
     </div>
   );
 }

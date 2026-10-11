@@ -81,6 +81,7 @@ export const SECONDS: Record<SessionItem['type'], number> = {
   flashcard: 12,
   recall: 15,
   mcq: 35,
+  preview: 10,
 };
 
 /**

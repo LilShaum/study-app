@@ -50,6 +50,7 @@ export function fitMinutes<T extends { type: string }>(list: T[], minutes: numbe
 }
 
 type DefinitionItem = Extract<StudyItem, { type: 'definition' }>;
+type FlashcardItem = Extract<StudyItem, { type: 'flashcard' }>;
 
 export { recallId } from './scored';
 
@@ -91,7 +92,23 @@ export interface RecallItem {
   explanation?: string;
 }
 
-export type AnyItem = StudyItem | RecallItem;
+/**
+ * Learn's reading card for a flashcard not yet answered: the front and the
+ * back shown together, to read, before the flashcard itself is asked a few
+ * cards later. A friend found Learn asking for facts it had never shown;
+ * the reading cards were one-line definitions and the flashcards asked for
+ * what was only in the notes. Session-only, never scored, like RecallItem.
+ */
+export interface PreviewItem {
+  id: string;
+  type: 'preview';
+  source_excerpt?: string;
+  difficulty?: FlashcardItem['difficulty'];
+  tags?: string[];
+  target: FlashcardItem;
+}
+
+export type AnyItem = StudyItem | RecallItem | PreviewItem;
 
 // A discriminated union, so this must be an intersection (an `interface
 // extends` can't add fields to a non-object union type).

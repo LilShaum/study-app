@@ -39,6 +39,7 @@ const CARD_SECONDS: Record<string, number> = {
   flashcard: 12,
   recall: 15,
   mcq: 35,
+  preview: 10,
 };
 
 /** Seconds a card takes: measured on this device when there is enough (store/studyLog), guessed otherwise. */

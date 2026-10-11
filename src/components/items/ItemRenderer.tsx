@@ -5,6 +5,7 @@ import { DefinitionCard } from './DefinitionCard';
 import { ExampleCard } from './ExampleCard';
 import { GraphicCard } from './GraphicCard';
 import { RecallCard } from './RecallCard';
+import { PreviewCard } from './PreviewCard';
 import type { ItemFrame } from './frame';
 
 interface ItemRendererProps {
@@ -22,6 +23,8 @@ interface ItemRendererProps {
   keyboardEnabled?: boolean;
   /** 'sheet' in a session, where the page is the item's boundary. See frame.ts. */
   frame?: ItemFrame;
+  /** Learn: reading cards show the passage from the notes open. */
+  learning?: boolean;
 }
 
 /** Routes to the right card by item.type — the one place that needs to know them all. */
@@ -35,6 +38,7 @@ export function ItemRenderer({
   onConfused,
   keyboardEnabled,
   frame = 'card',
+  learning = false,
 }: ItemRendererProps) {
   switch (item.type) {
     case 'mcq':
@@ -52,12 +56,15 @@ export function ItemRenderer({
           keyboardEnabled={keyboardEnabled}
           onNext={onNext}
           frame={frame}
+          notesOpen={learning}
         />
       );
+    case 'preview':
+      return <PreviewCard item={item} keyboardEnabled={keyboardEnabled} onNext={onNext} frame={frame} />;
     case 'example':
-      return <ExampleCard item={item} frame={frame} />;
+      return <ExampleCard item={item} frame={frame} notesOpen={learning} />;
     case 'graphic':
-      return <GraphicCard item={item} frame={frame} />;
+      return <GraphicCard item={item} frame={frame} notesOpen={learning} />;
     case 'recall':
       return (
         <RecallCard

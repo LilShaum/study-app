@@ -350,9 +350,11 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       const R = recallAt(item.id, now);
       let p: number;
       if (R != null) p = chanceRight(item, R);
-      else if (item.type === 'recall') {
+      else if (item.type === 'recall' || (item.type === 'flashcard' && primed.has(item.id))) {
         const at = primed.get(item.id);
         p = at != null ? FIRST_TIME.primedRecall * Math.exp(-(now - at) / (FIRST_TIME.primedFadeMinutes * MIN)) : FIRST_TIME.coldRecall;
+        // Reading a flashcard never makes it harder than meeting it cold.
+        if (item.type === 'flashcard') p = Math.max(p, FIRST_TIME.flashcard);
       } else p = item.type === 'mcq' ? FIRST_TIME.mcq : FIRST_TIME.flashcard;
       const got = r() < p;
       const e = easeOf(item.id);
@@ -398,6 +400,10 @@ export function simulate(sc: Scenario, seed: number): RunResult {
         used += ms;
         if (reviewing(item, mode)) reviewMs += ms;
         if (item.type === 'definition') primed.set(recallId(item.id), now);
+        // A flashcard read open just before it is asked is primed like a
+        // term just read (2026-10-11). SIM_NO_PREVIEW_PRIMING counts only its
+        // cost in time, the conservative case.
+        if (item.type === 'preview' && !process.env.SIM_NO_PREVIEW_PRIMING) primed.set(item.target.id, now);
         if (item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall') answer(item, mode);
         if (!store().next()) return 'done' as const;
       }

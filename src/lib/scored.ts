@@ -3,6 +3,9 @@ import type { StudyItem } from '@/schema/course';
 /** The id a definition's typed-recall question is scored under. */
 export const recallId = (definitionId: string) => `${definitionId}~recall`;
 
+/** The id of a flashcard's reading card in Learn (see PreviewItem). Never scored. */
+export const previewId = (flashcardId: string) => `${flashcardId}~preview`;
+
 /**
  * Everything in a list of file items that a student can be scored on, under
  * the id its score is stored against.

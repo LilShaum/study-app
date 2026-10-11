@@ -5,14 +5,16 @@
  * prompts/generator.md makes `source_excerpt` mandatory on every item — it's the main
  * structural defence against the generator inventing facts. That guarantee is
  * worthless if it's never surfaced: this is what lets you check a card against
- * what your notes actually said. Collapsed by default so it doesn't compete
+ * what your notes actually said. Collapsed by default, except in Learn, so it doesn't compete
  * with the card itself while studying.
  */
-export function SourceNote({ excerpt }: { excerpt?: string }) {
+export function SourceNote({ excerpt, open = false }: { excerpt?: string; open?: boolean }) {
   if (!excerpt?.trim()) return null;
 
   return (
-    <details className="group/src mt-3 border-t border-border-light pt-2">
+    // Open on Learn's reading cards: there the passage is the lesson, and a
+    // question later may ask for what only it says (docs/proposals/learn.md).
+    <details open={open} className="group/src mt-3 border-t border-border-light pt-2">
       <summary className="tap-safe flex cursor-pointer list-none items-center text-xs text-text-3 hover:text-text-2">
         <span className="group-open/src:hidden">From your notes ▸</span>
         <span className="hidden group-open/src:inline">From your notes ▾</span>

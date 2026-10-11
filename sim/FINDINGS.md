@@ -10,6 +10,31 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-11 — Learn: teach a flashcard before asking it; steps of at most 12 cards
+
+**Change** (`docs/proposals/learn.md` A and B, the owner's go-ahead). In
+Learn, a flashcard never answered is first shown open ("read this, it comes
+up in a moment"), then asked a few cards later in the same step; the
+passage from the notes is open on Learn's reading cards. A step holds at
+most 12 cards: fewer terms a step while one runs long, and what still does
+not fit is asked in the next step, after its reading.
+
+**Assumption added.** A flashcard read open shortly before it is asked is
+primed the way a term just read is (`FIRST_TIME.primedRecall`, fading over
+an hour, never below the cold rate). `SIM_NO_PREVIEW_PRIMING=1` turns that
+off, so only the reading card's 10 seconds count.
+
+**Result** (3 seeds, whole suite; 6 on the closest). With priming: within
+noise everywhere, −1 to +2 on most scenarios under both students
+(steady-30 54→55%, harsh 17→17%, crammer 66→68%). Cost only: within ±2
+everywhere. The one to watch is busy-20 (20 minutes, days off): 30→28%
+±2 at 6 seeds, the reading cards' time in a short sitting. Items are still
+independent here, so the simulator cannot see the reason for the change
+(questions no longer ask for what was never shown); it shows the change
+costs little or nothing. Re-baselined with priming on.
+
+---
+
 ## 2026-10-11 — Learn: a question waits for what it quotes
 
 **Change.** In a Learn step, an item that names none of the section's
