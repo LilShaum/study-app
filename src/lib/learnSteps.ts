@@ -83,6 +83,27 @@ function textOf(item: SessionItem): string {
   }
 }
 
+/**
+ * Two excerpts are the same passage when most of the shorter one's words are
+ * in the longer. Short words ("the", "and", "is") say nothing about a passage.
+ */
+const MIN_OVERLAP = 0.6;
+
+function excerptWords(item: SessionItem): Set<string> {
+  const excerpt = 'source_excerpt' in item ? item.source_excerpt : undefined;
+  return new Set([...termTokens(excerpt ?? '')].filter((w) => w.length >= 4));
+}
+
+function overlap(a: Set<string>, b: Set<string>): number {
+  const small = a.size <= b.size ? a : b;
+  const large = small === a ? b : a;
+  // Fewer than three words is too little to call two passages the same.
+  if (small.size < 3) return 0;
+  let shared = 0;
+  for (const w of small) if (large.has(w)) shared++;
+  return shared / small.size;
+}
+
 /** Answered right before, and not more often wrong than right: no need to read it again first. */
 function knows(def: Def, progress?: Record<string, ItemResult>): boolean {
   const r = progress?.[recallId(def.id)];
@@ -100,12 +121,12 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   const defs = group.filter((i): i is SessionItem & Def => i.type === 'definition');
   const others = group.filter((i) => i.type !== 'definition' && i.type !== 'recall');
   // A section with no terms is cut by count instead, about ten cards a step.
-  const steps = defs.length
+  const defSteps = defs.length
     ? Math.ceil(defs.length / STEP_TERMS)
     : Math.max(1, Math.ceil(others.length / (STEP_TERMS * 2.5)));
   const stepOfDef = new Map<string, number>();
   // Spread evenly, so 9 terms are 3+3+3 and not 4+4+1.
-  defs.forEach((d, k) => stepOfDef.set(d.id, Math.floor((k * steps) / defs.length)));
+  defs.forEach((d, k) => stepOfDef.set(d.id, Math.floor((k * defSteps) / defs.length)));
 
   const texts = new Map(others.map((i) => [i, termTokens(textOf(i))]));
   const names = defs.map((d) => ({ step: stepOfDef.get(d.id)!, names: namesOf(d) }));
@@ -125,11 +146,34 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
     if (pick.length) stepOf.set(item, Math.max(...pick.map((d) => d.step)));
     else unplaced.push(item);
   }
-  // Items that name no term keep their place in the section: the k-th of a
-  // type goes as far through the steps as it is through that type.
-  for (const type of ['example', 'graphic', 'flashcard', 'mcq'] as const) {
-    const ofType = unplaced.filter((i) => i.type === type);
-    ofType.forEach((item, k) => stepOf.set(item, Math.floor((k * steps) / ofType.length)));
+  // An item that names no term but quotes the same passage as a definition
+  // was written from what that definition teaches: it goes in that step.
+  const passages = defs.map((d) => ({ step: stepOfDef.get(d.id)!, words: excerptWords(d) }));
+  const leftover: SessionItem[] = [];
+  for (const item of unplaced) {
+    const words = excerptWords(item);
+    let best: { step: number; score: number } | null = null;
+    for (const p of passages) {
+      const score = overlap(words, p.words);
+      // Ties go to the later step: by then both passages have been read.
+      if (score >= MIN_OVERLAP && (!best || score > best.score || (score === best.score && p.step > best.step))) best = { step: p.step, score };
+    }
+    if (best) stepOf.set(item, best.step);
+    else leftover.push(item);
+  }
+  // What still matches nothing waits for a last step of its own, after every
+  // term is taught. An early step must never ask about what it did not show.
+  // A section with no terms has nothing to wait for and is cut by count; one
+  // with a single step already reads everything before it asks anything.
+  let steps = defSteps;
+  if (defs.length && defSteps > 1 && leftover.length) {
+    for (const item of leftover) stepOf.set(item, defSteps);
+    steps = defSteps + 1;
+  } else {
+    for (const type of ['example', 'graphic', 'flashcard', 'mcq'] as const) {
+      const ofType = leftover.filter((i) => i.type === type);
+      ofType.forEach((item, k) => stepOf.set(item, Math.floor((k * defSteps) / ofType.length)));
+    }
   }
   for (const item of group) {
     if (item.type === 'definition') stepOf.set(item, stepOfDef.get(item.id)!);

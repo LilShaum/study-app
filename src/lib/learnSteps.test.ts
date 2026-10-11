@@ -83,10 +83,21 @@ describe('Learn in steps', () => {
     expect(items.some((i) => i.id === recallId('d0'))).toBe(true);
   });
 
-  it('spreads questions that name no term through the steps in their order', () => {
+  it('places an item that names no term by the passage it quotes', () => {
+    const passage = 'Diacylglycerol stays in the membrane while its partner diffuses away, recruiting the kinase there.';
+    const withExcerpts = defs.map((d, n) => ({ ...d, source_excerpt: n === 6 ? passage : `A passage about thing number ${n} alone.` }) as StudyItem);
+    const quoting = { ...card('f', 'What does the alpha subunit do after the exchange?'), source_excerpt: passage } as StudyItem;
+    const items = learn([...withExcerpts, quoting]);
+    expect(stepOf(items, 'f')).toBe(stepOf(items, 'd6'));
+  });
+
+  it('puts what matches no term and no passage in a last step of its own, never an earlier one', () => {
     const qs = Array.from({ length: 6 }, (_, n) => mcq(`u${n}`, `Unrelated question ${n}?`));
     const items = learn([...defs, ...qs]);
-    expect(qs.map((q) => stepOf(items, q.id))).toEqual([0, 0, 0, 1, 1, 1]);
+    const last = items[0]._steps! - 1;
+    expect(last).toBe(2);
+    expect(qs.map((q) => stepOf(items, q.id))).toEqual(qs.map(() => last));
+    expect(items.filter((i) => i._step === last).every((i) => i.type === 'mcq')).toBe(true);
   });
 
   it('cuts a section with no terms by count', () => {

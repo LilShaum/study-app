@@ -10,6 +10,24 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-11 — Learn: a question waits for what it quotes
+
+**Change.** In a Learn step, an item that names none of the section's
+terms used to be spread through the steps by its position, so step 1 could
+ask about material it never showed (a friend's report: "you learn 4 terms,
+then the recall is not related to the 4 terms"). Now it joins the step of
+the definition whose `source_excerpt` it overlaps most, and anything still
+unmatched waits for a last step after every term is taught.
+
+**Result** (6 seeds on the closest scenarios, 3 on the rest). Exam score
+within a point everywhere, under both students (busy-20 29→30%, harsh
+24→23%); held ≥0.8 moves ±3 at most, inside the spread. Expected: the
+simulator treats items as independent, so it cannot see the benefit of
+asking about what was just read; it can only show that the order costs
+nothing. Re-baselined.
+
+---
+
 ## 2026-10-02 — Several courses, one daily time: share by how soon each exam is
 
 **Question.** A student with several courses has one amount of time a day.
