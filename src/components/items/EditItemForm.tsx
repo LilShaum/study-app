@@ -236,7 +236,7 @@ function TypeFields({
             <textarea name="alt_text" defaultValue={item.alt_text ?? ''} rows={2} className={inputClass} />
           </Field>
           <p className="text-xs text-text-3">
-            The diagram image itself isn't editable here. Re-generate the course to change it.
+            The diagram image itself isn't editable here. Re-generate the lecture to change it.
           </p>
         </>
       );

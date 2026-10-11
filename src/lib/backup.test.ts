@@ -65,7 +65,7 @@ describe('backup', () => {
   it('says so when handed a course file or anything else', () => {
     const asCourse = readBackup(JSON.stringify({ schema_version: '1.0', metadata: { title: 'T' }, sections: [] }));
     expect(asCourse.ok).toBe(false);
-    if (!asCourse.ok) expect(asCourse.error).toMatch(/course file/);
+    if (!asCourse.ok) expect(asCourse.error).toMatch(/lecture file/);
     expect(readBackup('not json').ok).toBe(false);
     expect(readBackup('{"kind":"other"}').ok).toBe(false);
   });

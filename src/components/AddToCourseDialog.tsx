@@ -16,7 +16,7 @@ import { Icon } from './Icon';
 import { cutMessage, readReply } from '@/lib/readReply';
 
 const STORAGE_FULL =
-  "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a course you've finished and remove it, then try again.";
+  "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
 
 export type AddMode = 'material' | 'practice' | 'fix';
 
@@ -152,8 +152,8 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   };
 
   const MODE_TITLES: Record<AddMode, string> = {
-    material: 'Add material to this course',
-    practice: 'More practice on this course',
+    material: 'Add material to this lecture',
+    practice: 'More practice on this lecture',
     fix: 'Fix what the check found',
   };
 
@@ -215,11 +215,11 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
               <p className="mb-2 text-sm text-text-2">
                 Copy the prompt, paste it into your AI chat along with your new notes, and it will
                 return JSON. The prompt already tells it which sections, item ids and tags this
-                course uses, so it won&apos;t duplicate or collide with what you have.
+                lecture uses, so it won&apos;t duplicate or collide with what you have.
               </p>
             ) : mode === 'fix' ? (
               <p className="mb-2 text-sm text-text-2">
-                Hands the check&apos;s findings back to the AI that wrote this course.{' '}
+                Hands the check&apos;s findings back to the AI that wrote this lecture.{' '}
                 <strong>Paste it into that same chat</strong>. Your original notes are still there,
                 and they are the only thing that can judge whether a missing term actually mattered.
                 The prompt asks for that judgement first: it is told that &ldquo;not worth an
@@ -232,7 +232,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 <strong>new questions on the material you already have</strong>, no notes needed.
                 Each item recorded a quote from your original source, and the prompt hands those
                 back as the material to write from. Paste it into the same chat you generated the
-                course in and it will use your full notes instead, which is better.
+                lecture in and it will use your full notes instead, which is better.
               </p>
             )}
 
@@ -378,7 +378,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 <div className="text-text-2">
                   Nothing new to add
                   {plan.totalDuplicates > 0
-                    ? `. All ${plural(plan.totalDuplicates, 'item')} already exist in this course.`
+                    ? `. All ${plural(plan.totalDuplicates, 'item')} already exist in this lecture.`
                     : '.'}
                 </div>
               ) : plan.totalAdded === 0 ? null : (
@@ -435,7 +435,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
               {plan.unmatchedCorrections.length > 0 && (
                 <div className="mt-1.5 text-text-3">
                   Ignoring {plural(plan.unmatchedCorrections.length, 'correction')} for{' '}
-                  {plan.unmatchedCorrections.length === 1 ? 'an id' : 'ids'} this course
+                  {plan.unmatchedCorrections.length === 1 ? 'an id' : 'ids'} this lecture
                   doesn&rsquo;t have ({plan.unmatchedCorrections.slice(0, 3).join(', ')}
                   {plan.unmatchedCorrections.length > 3 ? '…' : ''}).
                 </div>
@@ -443,7 +443,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
               {plan.totalDuplicates > 0 && plan.totalAdded > 0 && (
                 <div className="mt-1.5 text-text-3">
-                  Skipping {plural(plan.totalDuplicates, 'item')} already in this course.
+                  Skipping {plural(plan.totalDuplicates, 'item')} already in this lecture.
                 </div>
               )}
               {Object.keys(plan.renamedIds).length > 0 && (
@@ -462,7 +462,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 checked={skipDuplicates}
                 onChange={(e) => setSkipDuplicates(e.target.checked)}
               />
-              Skip items this course already covers
+              Skip items this lecture already covers
             </label>
           )}
         </div>

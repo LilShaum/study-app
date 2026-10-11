@@ -79,7 +79,7 @@ describe('CourseDetailsDialog', () => {
 
   it('drops an emptied optional field rather than storing an empty string', () => {
     open();
-    type('Course code', '   ');
+    type('Class code', '   ');
     save();
     expect('course_code' in saved()).toBe(false);
   });

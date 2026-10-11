@@ -164,7 +164,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       id: 'no-course-code',
       severity: 'warning',
       message:
-        'No course code is set, so the top bar falls back to this long title and clips it. Add one under Edit details, e.g. BIOL 365.',
+        'No class code is set, so the top bar falls back to this long title and clips it. Add one under Edit details, e.g. BIOL 365.',
     });
   }
 
@@ -172,7 +172,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     findings.push({
       id: 'stale-total',
       severity: 'warning',
-      message: `The course claims ${course.metadata.total_items} items but holds ${items.length}.`,
+      message: `The lecture claims ${course.metadata.total_items} items but holds ${items.length}.`,
     });
   }
 
@@ -234,7 +234,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     findings.push({
       id: 'low-gradable',
       severity: 'warning',
-      message: `Only ${Math.round(gaps.gradableRatio * 100)}% of items are questions. Terms mode quizzes the definitions by name, but most of this course never asks you to apply anything.`,
+      message: `Only ${Math.round(gaps.gradableRatio * 100)}% of items are questions. Terms mode quizzes the definitions by name, but most of this lecture never asks you to apply anything.`,
     });
   }
 
@@ -274,7 +274,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     findings.push({
       id: 'restates-source',
       severity: 'warning',
-      message: `${pct}% of questions are worded very close to the passage they came from. Each is fine on its own (a definition has to use the term's own words), but at this share the course is mostly asking you to recognise sentences you have read, rather than to use what they say.`,
+      message: `${pct}% of questions are worded very close to the passage they came from. Each is fine on its own (a definition has to use the term's own words), but at this share the lecture is mostly asking you to recognise sentences you have read, rather than to use what they say.`,
       items: quality.restated,
     });
   }

@@ -41,7 +41,7 @@ export function parseCourse(raw: unknown): ParseCourseResult {
   if (!result.success) {
     return {
       ok: false,
-      error: `This isn't a valid .study.json course:\n${formatZodError(result.error)}`,
+      error: `This isn't a valid .study.json lecture:\n${formatZodError(result.error)}`,
     };
   }
 

@@ -31,7 +31,7 @@ export function SessionRoute() {
   if (!course) {
     return (
       <div className="py-6 text-center text-text-2">
-        Course not found.{' '}
+        Lecture not found.{' '}
         <Link to="/" className="text-accent hover:underline">
           Back to Library
         </Link>

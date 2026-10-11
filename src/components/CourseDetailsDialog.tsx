@@ -94,8 +94,8 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
     const { ok } = persisted(() => updateCourse(courseId, { ...course, metadata }));
     toast(
       ok
-        ? 'Course details saved.'
-        : "Browser storage is full, so this wasn't saved. Export a course you've finished and remove it, then try again.",
+        ? 'Lecture details saved.'
+        : "Browser storage is full, so this wasn't saved. Export a lecture you've finished and remove it, then try again.",
       { type: ok ? 'success' : 'error', duration: ok ? undefined : 12000 },
     );
     onClose();
@@ -106,11 +106,11 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
       role="dialog"
       aria-modal="true"
-      aria-label="Edit course details"
+      aria-label="Edit lecture details"
     >
       <form onSubmit={save} className="my-8 w-full max-w-lg paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="font-semibold text-text">Course details</h2>
+          <h2 className="font-semibold text-text">Lecture details</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">
             <Icon name="x" size={18} />
           </button>
@@ -130,7 +130,7 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="mb-1 block text-sm font-medium text-text">Course code</span>
+              <span className="mb-1 block text-sm font-medium text-text">Class code</span>
               <input value={code} onChange={(e) => setCode(e.target.value)} className={FIELD} placeholder="BIOC 301" />
             </label>
             <label className="block">
@@ -152,7 +152,7 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               className={`${FIELD} resize-y`}
-              placeholder="What this course covers"
+              placeholder="What this lecture covers"
             />
           </label>
 
@@ -205,7 +205,7 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
           </div>
 
           <p className="text-xs text-text-3">
-            Renaming a course keeps its progress: the id it is stored under was fixed when you added
+            Renaming a lecture keeps its progress: the id it is stored under was fixed when you added
             it and doesn&rsquo;t change here.
           </p>
         </div>

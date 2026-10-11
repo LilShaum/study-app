@@ -91,7 +91,7 @@ export function Onboarding() {
         </div>
         <h1 className="mt-2 text-center font-display text-title font-semibold text-text">Welcome to Arborous</h1>
         <p className="mt-1 text-center text-small text-text-2">
-          Make a study course from your own notes, then practise it.
+          Turn each lecture&rsquo;s slides or notes into something to study, then practise it.
         </p>
 
         {/* The whole loop, once. "The app gives you the prompt" used to be
@@ -99,13 +99,13 @@ export function Onboarding() {
             to do next. */}
         <ol className="mt-5 space-y-2 text-small text-text-2">
           <Step n={1}>
-            <strong className="text-text">New course</strong> gives you a prompt to copy.
+            <strong className="text-text">New lecture</strong> gives you a prompt to copy.
           </Step>
           <Step n={2}>
-            Paste it into an AI chat with your slides or notes attached. It writes the course.
+            Paste it into an AI chat with your slides or notes attached. It writes the lecture.
           </Step>
           <Step n={3}>
-            Paste the course back here and study it. The app keeps track of what is fading and
+            Paste the lecture back here and study it. The app keeps track of what is fading and
             brings it back before you lose it.
           </Step>
         </ol>
@@ -119,8 +119,8 @@ export function Onboarding() {
             {platform === 'ios' ? (
               <>
                 <p className="mt-1 text-text-3">
-                  Do this <strong className="text-text-2">before</strong> you add a course. An
-                  installed app gets its own storage on iOS, so courses you add in Safari first
+                  Do this <strong className="text-text-2">before</strong> you add a lecture. An
+                  installed app gets its own storage on iOS, so lectures you add in Safari first
                   won&rsquo;t appear in the installed app.
                 </p>
                 <ol className="mt-2 space-y-1.5">

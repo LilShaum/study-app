@@ -103,7 +103,7 @@ export function CourseHealthPanel({ course, onFix }: CourseHealthPanelProps) {
           <p className="pt-1 text-xs text-text-3">
             Checked without your original notes, so the app can only hold the generator to the term
             list it declared. To verify every item really traces back to your source, run{' '}
-            <code className="font-mono">npm run audit</code> against the course file.
+            <code className="font-mono">npm run audit</code> against the lecture file.
           </p>
         </div>
       )}

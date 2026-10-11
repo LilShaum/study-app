@@ -117,7 +117,7 @@ export function readBackup(text: string): { ok: true; backup: Backup } | { ok: f
   }
   const b = parsed as Partial<Backup> & { schema_version?: unknown; sections?: unknown };
   if (b && typeof b === 'object' && 'sections' in b && 'schema_version' in b) {
-    return { ok: false, error: "That's a course file, not a backup. Add it from the library with Upload." };
+    return { ok: false, error: "That's a lecture file, not a backup. Add it from the library with Upload." };
   }
   if (!b || b.kind !== KIND || !b.data || typeof b.data !== 'object') {
     return { ok: false, error: "That file isn't an Arborous backup." };

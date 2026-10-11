@@ -95,7 +95,7 @@ export function parseFragment(raw: unknown, fallbackSectionId: string): ParseFra
 
   return {
     ok: false,
-    error: `This doesn't look like course content:\n${formatZodError(asFragment.error)}`,
+    error: `This doesn't look like lecture content:\n${formatZodError(asFragment.error)}`,
   };
 }
 

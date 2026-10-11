@@ -96,25 +96,25 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
 };
 
 const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
-  learn: { title: 'Nothing to learn yet', text: 'This course has no items to walk through.' },
+  learn: { title: 'Nothing to learn yet', text: 'This lecture has no items to walk through.' },
   weakest: {
     title: 'Nothing to rank',
-    text: 'Weakest First orders the questions and flashcards you can be scored on, and this course has none yet.',
+    text: 'Weakest First orders the questions and flashcards you can be scored on, and this lecture has none yet.',
   },
-  quiz: { title: 'No MCQ items', text: "This course doesn't have any MCQ items yet. Try Browse or Mixed mode." },
+  quiz: { title: 'No MCQ items', text: "This lecture doesn't have any MCQ items yet. Try Browse or Mixed mode." },
   flashcards: {
     title: 'No Flashcard items',
-    text: "This course doesn't have any Flashcard items yet. Try Browse or Mixed mode.",
+    text: "This lecture doesn't have any Flashcard items yet. Try Browse or Mixed mode.",
   },
   definitions: {
     title: 'No terms',
-    text: "This course doesn't have any definitions to ask you for yet. Try Browse or Mixed mode.",
+    text: "This lecture doesn't have any definitions to ask you for yet. Try Browse or Mixed mode.",
   },
   review: {
     title: 'Nothing is due',
     text: 'Everything you have studied is still fresh. Review brings items back as they start to fade. New material comes through Learn.',
   },
-  mixed: { title: 'No items', text: 'This course has no items yet.' },
+  mixed: { title: 'No items', text: 'This lecture has no items yet.' },
   today: {
     title: 'Nothing for today',
     text: 'Nothing is due and everything here has been studied. Add material after your next lecture, or practise with Quiz or Mixed.',
@@ -417,7 +417,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
           to={`/study/${courseId}`}
           className="press press-ink mt-4"
         >
-          Back to Course
+          Back to lecture
         </Link>
       </div>
     );
@@ -514,7 +514,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
             to={`/study/${courseId}`}
             className="press tap-safe"
           >
-            Back to course
+            Back to lecture
           </Link>
         </div>
         {mode === 'today' && nextCourse && (

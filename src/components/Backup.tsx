@@ -37,7 +37,7 @@ export function RestoreButton({ className = 'press tap-safe', label = 'Restore f
     const n = coursesIn(read.backup);
     const when = read.backup.createdAt ? new Date(read.backup.createdAt).toLocaleDateString() : 'an unknown date';
     const ok = window.confirm(
-      `Restore the backup from ${when}, with ${n} ${n === 1 ? 'course' : 'courses'}?\n\nThis replaces every course and all progress on this device.`,
+      `Restore the backup from ${when}, with ${n} ${n === 1 ? 'lecture' : 'lectures'}?\n\nThis replaces every lecture and all progress on this device.`,
     );
     if (!ok) return;
     if (!restoreBackup(read.backup)) {

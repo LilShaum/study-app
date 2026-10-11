@@ -71,9 +71,9 @@ export async function fetchSharedCourse(id: string): Promise<Course> {
   const sb = await cloud();
   const { data, error } = await sb.rpc('get_shared_course', { share_id: id });
   if (error) throw error;
-  if (!data) throw new Error('This link doesn’t point to a course. It may have been unshared.');
+  if (!data) throw new Error('This link doesn’t point to a lecture. It may have been unshared.');
   const parsed = parseCourse(data);
-  if (!parsed.ok) throw new Error('The shared course couldn’t be read.');
+  if (!parsed.ok) throw new Error('The shared lecture couldn’t be read.');
   return parsed.course;
 }
 

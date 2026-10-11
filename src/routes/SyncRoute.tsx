@@ -42,7 +42,7 @@ export function SyncRoute() {
   const signOut = async () => {
     await (await cloud()).auth.signOut();
     setEmail(null);
-    toast('Signed out. Your courses stay on this device.', { type: 'info' });
+    toast('Signed out. Your lectures stay on this device.', { type: 'info' });
   };
 
   return (
@@ -52,7 +52,7 @@ export function SyncRoute() {
       </Link>
       <h1 className="mt-3 font-display text-display text-text">Sync</h1>
       <p className="mt-2 text-small text-text-2">
-        Sign in on each device you study on, and your courses and progress follow you between them. Without an account,
+        Sign in on each device you study on, and your lectures and progress follow you between them. Without an account,
         everything stays on this device, as before.
       </p>
 

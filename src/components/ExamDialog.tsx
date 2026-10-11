@@ -162,7 +162,7 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
           {date && siblings.length > 0 && (
             <fieldset>
               <legend className="mb-1 text-sm font-medium text-text">Same exam for</legend>
-              <p className="mb-2 text-xs text-text-3">Other {code} courses this exam also covers.</p>
+              <p className="mb-2 text-xs text-text-3">Other {code} lectures this exam also covers.</p>
               <ul className="border-y border-border">
                 {siblings.map(([id, c]) => (
                   <li key={id} className="border-b border-border last:border-b-0">
@@ -178,7 +178,7 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
 
           {sharedTotal != null ? (
             <p className="text-small text-text-3">
-              Time a day comes from one daily time for all your courses ({sharedTotal} min), shared by how soon each
+              Time a day comes from one daily time for all your lectures ({sharedTotal} min), shared by how soon each
               exam is. Change it under Today on the library page.
             </p>
           ) : (

@@ -86,11 +86,11 @@ describe('DiagramsRoute', () => {
       courses: { plain: { ...course, sections: [course.sections[2]] } as Course },
     });
     renderDiagrams('plain');
-    expect(screen.getByText('This course has no diagrams.')).toBeTruthy();
+    expect(screen.getByText('This lecture has no diagrams.')).toBeTruthy();
   });
 
   it('does not crash on an unknown course id', () => {
     expect(() => renderDiagrams('nope')).not.toThrow();
-    expect(screen.getByText(/Course not found/)).toBeTruthy();
+    expect(screen.getByText(/Lecture not found/)).toBeTruthy();
   });
 });

@@ -131,5 +131,5 @@ export const CONTINUE_ASK =
 export function cutMessage(cut: { lastSection: string | null }): string {
   return `The reply was cut off before the end, so only its complete part is here${
     cut.lastSection ? `. Section "${cut.lastSection}" may be missing its last items, and any sections after it are missing` : ''
-  }. Add this, then in the same chat send: ${CONTINUE_ASK} Paste what comes back into Add material on the course.`;
+  }. Add this, then in the same chat send: ${CONTINUE_ASK} Paste what comes back into Add material on the lecture.`;
 }

@@ -72,6 +72,6 @@ describe('ProgressRoute', () => {
 
   it('handles a course id that does not exist', () => {
     expect(() => renderProgress('nope')).not.toThrow();
-    expect(screen.getByText(/Course not found/)).toBeTruthy();
+    expect(screen.getByText(/Lecture not found/)).toBeTruthy();
   });
 });

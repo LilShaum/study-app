@@ -131,7 +131,7 @@ export function DiagramsRoute() {
   if (!course) {
     return (
       <div className="py-6 text-center text-text-2">
-        Course not found.{' '}
+        Lecture not found.{' '}
         <Link to="/" className="text-accent hover:underline">
           Back to Library
         </Link>
@@ -151,7 +151,7 @@ export function DiagramsRoute() {
           <span className="inline-flex text-text-3">
             <Icon name="diagram" size={28} />
           </span>
-          <p className="mt-3 text-text-2">This course has no diagrams.</p>
+          <p className="mt-3 text-text-2">This lecture has no diagrams.</p>
           <p className="mx-auto mt-1 max-w-md text-sm text-text-3">
             The generator only draws one where a picture genuinely clarifies something: a cycle, a
             structure, a flowchart. If your notes have figures it skipped, &ldquo;More

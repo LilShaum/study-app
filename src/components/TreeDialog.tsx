@@ -92,7 +92,7 @@ export function TreeDialog({ courseId, course, progress, onClose }: TreeDialogPr
               ref={aboutRef}
               className="paper-grain absolute right-0 top-full z-20 mt-2 w-72 max-w-full rounded-sm border border-border-strong bg-surface p-4 text-small text-text-2 shadow-md"
             >
-              <p>Each branch is one section of the course.</p>
+              <p>Each branch is one section of the lecture.</p>
               <p className="mt-1.5">
                 Its leaves grow as you study that section. As you forget it, they fall to the ground
                 below.

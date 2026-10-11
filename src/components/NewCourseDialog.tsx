@@ -11,7 +11,7 @@ import { Icon } from './Icon';
 import { cutMessage, readReply } from '@/lib/readReply';
 
 const STORAGE_FULL =
-  "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a course you've finished and remove it, then try again.";
+  "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
 
 interface NewCourseDialogProps {
   onClose: () => void;
@@ -87,7 +87,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
 
   const openCourse = (id: string, title: string, saved: boolean) => {
     // Never announce a save that didn't happen — see safeStorage.persisted.
-    if (saved) toast(`"${title || 'Course'}" added.`, { type: 'success' });
+    if (saved) toast(`"${title || 'Lecture'}" added.`, { type: 'success' });
     else toast(STORAGE_FULL, { type: 'error', duration: 12000 });
     onClose();
     navigate(`/study/${id}`);
@@ -126,11 +126,11 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
       role="dialog"
       aria-modal="true"
-      aria-label="Create a new course"
+      aria-label="Create a new lecture"
     >
       <div className="my-8 w-full max-w-2xl paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="font-semibold text-text">New course</h2>
+          <h2 className="font-semibold text-text">New lecture</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">
             <Icon name="x" size={18} />
           </button>
@@ -143,7 +143,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
             </div>
             <p className="mb-2 text-sm text-text-2">
               Copy this prompt into an AI chat, attach your slides, PDF or notes, and it will return
-              a course. The prompt is the full generator spec. It tells the model to inventory
+              a lecture. The prompt is the full generator spec. It tells the model to inventory
               every term, objective and formula in your notes first, so the result covers the
               material rather than skimming it.
             </p>
@@ -160,7 +160,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
           <section>
             <label className="block">
               <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-3">
-                Step 2: paste the course back
+                Step 2: paste the lecture back
               </span>
               <textarea
                 value={pasted}
@@ -199,7 +199,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
           {course && (
             <div className="border-l-2 border-border-strong bg-bg py-2 pl-3 text-sm">
               <div className="font-medium text-text">
-                {course.metadata.title || 'Untitled course'}
+                {course.metadata.title || 'Untitled lecture'}
                 {course.metadata.course_code && (
                   <span className="font-normal text-text-3"> · {course.metadata.course_code}</span>
                 )}
@@ -229,7 +229,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
             disabled={!course}
             className="press press-ink"
           >
-            Add course
+            Add lecture
           </button>
         </div>
       </div>

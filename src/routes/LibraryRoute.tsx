@@ -37,7 +37,7 @@ function todayLine(c: CourseToday): string {
 }
 
 const STORAGE_FULL =
-  "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a course you've finished and remove it, then try again.";
+  "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
 
 /**
  * The entry's number in the contents list.
@@ -173,7 +173,7 @@ export function LibraryRoute() {
     } else if (ok) {
       // Same title replaces the course in place (see addCourse): say so, since
       // a student re-uploading a fixed file wants to know it didn't duplicate.
-      const title = imported.course.metadata.title || 'Course';
+      const title = imported.course.metadata.title || 'Lecture';
       toast(had.has(imported.id) ? `"${title}" updated. Your progress on it is kept.` : `"${title}" uploaded.`, { type: 'success' });
     } else {
       toast(STORAGE_FULL, { type: 'error', duration: 12000 });
@@ -205,7 +205,7 @@ export function LibraryRoute() {
     <div>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div>
-          <h1 className="font-display text-display font-semibold text-text">My courses</h1>
+          <h1 className="font-display text-display font-semibold text-text">My lectures</h1>
           <p className="mark mt-1 text-text-3">
             {isFiltering
               ? `${filteredIds.length} of ${ids.length} shown`
@@ -219,7 +219,7 @@ export function LibraryRoute() {
           </button>
           <button type="button" className="press press-ink tap-safe" onClick={() => setCreating(true)}>
             <Icon name="plus" size={13} />
-            New course
+            New lecture
           </button>
         </div>
         <input
@@ -238,7 +238,7 @@ export function LibraryRoute() {
           </div>
           <p className="font-display text-heading text-text">The library is empty.</p>
           <p className="mx-auto mt-2 max-w-md text-small">
-            A course is a{' '}
+            A lecture is a{' '}
             <code className="font-mono text-text-2">.study.json</code> file generated from your own
             notes. Start here and the app will give you the prompt.
           </p>
@@ -248,7 +248,7 @@ export function LibraryRoute() {
             className="press press-ink tap-safe mt-6"
           >
             <Icon name="plus" size={13} />
-            New course
+            New lecture
           </button>
           <p className="mt-6 text-small">
             Studied on another device?{' '}
@@ -297,7 +297,7 @@ export function LibraryRoute() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="title, code or subject"
-                aria-label="Search courses"
+                aria-label="Search lectures"
                 className="field w-full text-small"
               />
             </label>
@@ -337,7 +337,7 @@ export function LibraryRoute() {
 
           {filteredIds.length === 0 ? (
             <div className="border-y border-border py-12 text-center text-text-2">
-              No matching courses. Try a different search, or clear the class or tag you picked.
+              No matching lectures. Try a different search, or clear the class or tag you picked.
             </div>
           ) : (
             /* A contents list, not a card grid.
@@ -471,16 +471,16 @@ function DailyTime() {
   if (!open) {
     return (
       <button type="button" onClick={() => setOpen(true)} className="tap-safe text-small text-text-3 hover:text-text">
-        {total != null ? `${total} min a day, all courses ▸` : 'Set one daily time for all courses ▸'}
+        {total != null ? `${total} min a day, all lectures ▸` : 'Set one daily time for all lectures ▸'}
       </button>
     );
   }
   return (
     <div className="w-full">
       <p className="mb-1 text-xs text-text-3">
-        Shared between courses by how soon each exam is, so the nearest gets the most.
+        Shared between lectures by how soon each exam is, so the nearest gets the most.
       </p>
-      <div role="radiogroup" aria-label="Minutes a day, all courses" className="flex flex-wrap gap-x-4 gap-y-2">
+      <div role="radiogroup" aria-label="Minutes a day, all lectures" className="flex flex-wrap gap-x-4 gap-y-2">
         {DAILY_CHOICES.map((m) => (
           <button
             key={m}
@@ -507,7 +507,7 @@ function DailyTime() {
             }}
             className="tap-safe text-small text-text-3 hover:text-text"
           >
-            Each course its own
+            Each lecture its own
           </button>
         )}
       </div>

@@ -51,7 +51,7 @@ export function SectionRoute() {
       <div className="py-6 text-center text-text-2">
         Section not found.{' '}
         <Link to={course ? `/study/${id}` : '/'} className="text-accent hover:underline">
-          {course ? 'Back to course' : 'Back to Library'}
+          {course ? 'Back to lecture' : 'Back to Library'}
         </Link>
       </div>
     );
@@ -141,7 +141,7 @@ export function SectionRoute() {
         // times over; one line says it once.
         <p className="mt-6 border-y border-border py-5 text-center text-sm text-text-2">
           This section is empty. The generator created it but put no items in it. &ldquo;More
-          practice&rdquo; on the course page can fill it, or you can add items yourself in Browse.
+          practice&rdquo; on the lecture page can fill it, or you can add items yourself in Browse.
         </p>
       ) : (
         <>

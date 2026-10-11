@@ -263,7 +263,7 @@ export function CourseRoute() {
   if (!course) {
     return (
       <div className="py-6 text-center text-text-2">
-        Course not found.{' '}
+        Lecture not found.{' '}
         <Link to="/" className="text-accent hover:underline">
           Back to Library
         </Link>
@@ -482,7 +482,7 @@ export function CourseRoute() {
           </div>
         </div>
         <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
-          <span className="mark shrink-0 text-text-3 sm:w-16">Course</span>
+          <span className="mark shrink-0 text-text-3 sm:w-16">Lecture</span>
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 sm:gap-x-5">
             <ToolButton onClick={() => setAdding('material')}>Add material</ToolButton>
             <ToolButton onClick={() => setAdding('practice')}>More practice</ToolButton>
@@ -490,7 +490,7 @@ export function CourseRoute() {
             <ToolButton
               onClick={() => {
                 exportCourse(id, course);
-                toast('Course exported.', { type: 'success' });
+                toast('Lecture exported.', { type: 'success' });
               }}
             >
               Export
@@ -657,7 +657,7 @@ function PinnedBar({ children }: { children: ReactNode }) {
  */
 async function share(course: Course) {
   if (!hasSavedSignIn()) {
-    toast('Sign in to share a course.', {
+    toast('Sign in to share a lecture.', {
       type: 'info',
       actionLabel: 'Sign in',
       onAction: () => window.location.assign('#/sync'),
@@ -673,7 +673,7 @@ async function share(course: Course) {
     }
     try {
       await navigator.clipboard.writeText(url);
-      toast('Link copied. Anyone with it can add this course.', { type: 'success' });
+      toast('Link copied. Anyone with it can add this lecture.', { type: 'success' });
     } catch {
       window.prompt('Copy this link:', url);
     }

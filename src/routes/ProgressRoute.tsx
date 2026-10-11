@@ -103,7 +103,7 @@ export function ProgressRoute() {
   if (!course) {
     return (
       <div className="py-6 text-center text-text-2">
-        Course not found.{' '}
+        Lecture not found.{' '}
         <Link to="/" className="text-accent hover:underline">
           Back to Library
         </Link>
@@ -128,7 +128,7 @@ export function ProgressRoute() {
           to={`/study/${id}`}
           className="press press-ink mt-4"
         >
-          Back to Course
+          Back to lecture
         </Link>
       </div>
     );

@@ -30,7 +30,7 @@ function useLocationName(): string {
 
   if (pathname === '/help') return 'Using Arborous';
   if (pathname === '/sync') return 'Sync';
-  if (pathname.startsWith('/shared/')) return 'Shared course';
+  if (pathname.startsWith('/shared/')) return 'Shared lecture';
   if (pathname.startsWith('/session/')) return title ?? 'Session';
   if (pathname.includes('/progress')) return title ? `${title} · Progress` : 'Progress';
   if (pathname.includes('/diagrams')) return title ? `${title} · Plates` : 'Plates';

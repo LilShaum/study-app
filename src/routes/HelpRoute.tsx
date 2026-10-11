@@ -25,7 +25,7 @@ interface HelpSection {
 const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   {
     name: 'Today',
-    what: 'The one to press most days. It reviews what you are starting to forget, then carries on with new material, and ends when your daily time is up. Set the time, and your exam date and what it covers, from the line under Today on the course page. If one exam covers several courses with the same course code, you can set it on all of them at once there. In the last few days before an exam it makes more room for anything on it you have not studied yet. Once your time is used up, coming back a few hours later gives a five-minute catch-up on what you missed, which does more for those cards than going over them again straight away. With more than one course, you can set one daily time for all of them under Today on the library page: it is shared by how soon each exam is, so the nearest gets the most.',
+    what: 'The one to press most days. It reviews what you are starting to forget, then carries on with new material, and ends when your daily time is up. Set the time, and your exam date and what it covers, from the line under Today on the lecture page. If one exam covers several lectures with the same class code, you can set it on all of them at once there. In the last few days before an exam it makes more room for anything on it you have not studied yet. Once your time is used up, coming back a few hours later gives a five-minute catch-up on what you missed, which does more for those cards than going over them again straight away. With more than one lecture, you can set one daily time for all of them under Today on the library page: it is shared by how soon each exam is, so the nearest gets the most.',
     scored: true,
   },
   {
@@ -48,7 +48,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
     what: 'You are shown a definition and type the term. Small typos are accepted; a different term is not. If you think it marked you wrongly, tap to change it.',
     scored: true,
   },
-  { name: 'Mixed', what: 'Everything in the course, shuffled.', scored: true },
+  { name: 'Mixed', what: 'Everything in the lecture, shuffled.', scored: true },
   {
     name: 'Weakest first',
     what: 'Everything you can be scored on, starting with what you are most likely to have forgotten by now. Things you have not tried yet come in the middle.',
@@ -56,7 +56,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Review',
-    what: 'Brings back what you have studied as you start to forget it, most forgotten first, as many as fit in your daily time. If you set an exam date (under Today on the course page), it also makes sure things are fresh on the day.',
+    what: 'Brings back what you have studied as you start to forget it, most forgotten first, as many as fit in your daily time. If you set an exam date (under Today on the lecture page), it also makes sure things are fresh on the day.',
     scored: true,
   },
   {
@@ -66,12 +66,12 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Browse',
-    what: 'The whole course to read through. You can edit, delete or add items here.',
+    what: 'The whole lecture to read through. You can edit, delete or add items here.',
     scored: false,
   },
   {
     name: 'Glossary',
-    what: 'Every term in the course from A to Z, with its meaning, to look things up. Find it under View on the course page.',
+    what: 'Every term in the lecture from A to Z, with its meaning, to look things up. Find it under View on the lecture page.',
     scored: false,
   },
 ];
@@ -88,26 +88,26 @@ const SHORTCUTS: { keys: string; what: string }[] = [
 const SECTIONS: HelpSection[] = [
   {
     id: 'start',
-    title: 'Getting a course in',
+    title: 'Getting a lecture in',
     body: (
       <>
         <p>
-          A course is made from your own notes, slides or textbook pages. You make it with an AI
+          A lecture is made from your own notes, slides or textbook pages. You make it with an AI
           chat, using a prompt the app gives you.
         </p>
         <ol className="mt-2 list-decimal space-y-1 pl-5">
           <li>
-            On the library page, tap <strong>New course</strong>.
+            On the library page, tap <strong>New lecture</strong>.
           </li>
           <li>
             Copy the prompt and paste it into a chat with an AI such as Claude. Attach your notes in
             the same message.
           </li>
           <li>
-            Copy the reply and paste it into the New course box. Or save it as a{' '}
+            Copy the reply and paste it into the New lecture box. Or save it as a{' '}
             <span className="font-mono">.study.json</span> file and open that.
           </li>
-          <li>Check the preview, then add the course.</li>
+          <li>Check the preview, then add the lecture.</li>
         </ol>
         <p className="mt-2">
           If someone gives you a <span className="font-mono">.study.json</span> file, use{' '}
@@ -138,7 +138,7 @@ const SECTIONS: HelpSection[] = [
     title: 'Picking up where you left off',
     body: (
       <p>
-        If you leave a session partway through, the course page shows a <strong>Continue</strong>{' '}
+        If you leave a session partway through, the lecture page shows a <strong>Continue</strong>{' '}
         bar that takes you back to the same card. Starting a mode from its own button always begins
         again. Finishing the session, or tapping × on the bar, clears it.
       </p>
@@ -150,11 +150,11 @@ const SECTIONS: HelpSection[] = [
     body: (
       <>
         <p>
-          Tap a section on a course page to see how you are doing in it and to study just that
+          Tap a section on a lecture page to see how you are doing in it and to study just that
           section.
         </p>
         <p className="mt-2">
-          In a whole-course session, the menu above the card shows which section you are in and lets
+          In a whole-lecture session, the menu above the card shows which section you are in and lets
           you jump to another. It is not shown in Mixed, Weakest first, Review or Review missed,
           because those are not in section order.
         </p>
@@ -166,7 +166,7 @@ const SECTIONS: HelpSection[] = [
     title: 'Diagrams',
     body: (
       <p>
-        If a course has diagrams, its page has a <strong>Diagrams</strong> link that shows them all
+        If a lecture has diagrams, its page has a <strong>Diagrams</strong> link that shows them all
         on one page.
       </p>
     ),
@@ -177,7 +177,7 @@ const SECTIONS: HelpSection[] = [
     body: (
       <>
         <ul className="list-disc space-y-1 pl-5">
-          <li>Each branch is a section of the course.</li>
+          <li>Each branch is a section of the lecture.</li>
           <li>A section you have not studied has no leaves.</li>
           <li>
             Leaves grow as you study a section. As you forget it they fall and collect under the
@@ -186,7 +186,7 @@ const SECTIONS: HelpSection[] = [
           <li>Reviewing the section grows them back.</li>
         </ul>
         <p className="mt-2">
-          Tap the tree on a course page to open it larger. Choose a branch to see its name, how many
+          Tap the tree on a lecture page to open it larger. Choose a branch to see its name, how many
           items are due, and a button to review just that section; the leaves it has lost fall as
           you choose it. At the end of a session, the leaves you won back rise from the ground.
         </p>
@@ -202,7 +202,7 @@ const SECTIONS: HelpSection[] = [
         <p className="mt-2">
           An answer counts wherever you give it, in any mode. The app uses your answers to work out
           how well you remember each item, and that decides what Review brings back, how full the
-          tree is, and the order of Weakest first. <strong>Progress</strong> on a course page shows
+          tree is, and the order of Weakest first. <strong>Progress</strong> on a lecture page shows
           it section by section.
         </p>
       </>
@@ -210,7 +210,7 @@ const SECTIONS: HelpSection[] = [
   },
   {
     id: 'growing',
-    title: 'Adding to a course',
+    title: 'Adding to a lecture',
     body: (
       <>
         <ul className="list-disc space-y-2 pl-5">
@@ -223,7 +223,7 @@ const SECTIONS: HelpSection[] = [
             does not need the notes again.
           </li>
           <li>
-            <strong>Send these to your AI to fix</strong>, in the course check, asks the AI to fix
+            <strong>Send these to your AI to fix</strong>, in the lecture check, asks the AI to fix
             what the check found.
           </li>
         </ul>
@@ -236,23 +236,23 @@ const SECTIONS: HelpSection[] = [
   },
   {
     id: 'organising',
-    title: 'Course details',
+    title: 'Lecture details',
     body: (
       <p>
-        <strong>Edit details</strong> on a course page changes the title, course code, subject,
-        description and tags. The course code is what shows at the top of the screen and groups
-        courses of one class in the library, and tags let you filter it. Renaming a course keeps your
+        <strong>Edit details</strong> on a lecture page changes the title, class code, subject,
+        description and tags. The class code is what shows at the top of the screen and groups
+        lectures of one class in the library, and tags let you filter it. Renaming a lecture keeps your
         progress.
       </p>
     ),
   },
   {
     id: 'check',
-    title: 'The course check',
+    title: 'The lecture check',
     body: (
       <>
         <p>
-          The line under a course&rsquo;s title checks the course the AI made. It shows how many of
+          The line under a lecture&rsquo;s title checks the lecture the AI made. It shows how many of
           the terms from your notes got a definition, and lists things worth checking, such as
           questions where the right answer is easy to guess, or terms that no question makes you
           use.
@@ -260,8 +260,8 @@ const SECTIONS: HelpSection[] = [
         <p className="mt-2">
           A red cross means something is broken, such as a question that cannot be marked. Tap the
           line for details. <strong>Send these to your AI to fix</strong> gives you a prompt for the
-          chat that made the course. What comes back fixes those items without replacing your
-          course or your scores.
+          chat that made the lecture. What comes back fixes those items without replacing your
+          lecture or your scores.
         </p>
         <p className="mt-2">
           The check cannot see your original notes, so it cannot tell you whether every item is
@@ -291,26 +291,26 @@ const SECTIONS: HelpSection[] = [
   },
   {
     id: 'data',
-    title: 'Where your courses are saved',
+    title: 'Where your lectures are saved',
     body: (
       <>
         <p>
-          Your courses and progress are saved in this browser, on this device. If you clear the
-          browser&rsquo;s data, your courses go with it.
+          Your lectures and progress are saved in this browser, on this device. If you clear the
+          browser&rsquo;s data, your lectures go with it.
         </p>
         <p className="mt-2">
           <strong>Sync</strong> (at the foot of every page) is optional: sign in with an email and a
-          password on each device you study on, and your courses and progress follow you between
-          them. Without it nothing leaves this device. <strong>Share</strong> on a course page makes
-          a link anyone can open to add that course to their own library; it needs you signed in,
+          password on each device you study on, and your lectures and progress follow you between
+          them. Without it nothing leaves this device. <strong>Share</strong> on a lecture page makes
+          a link anyone can open to add that lecture to their own library; it needs you signed in,
           and opening it does not.
         </p>
         <p className="mt-2">
-          <strong>Back up everything</strong> saves every course, all your progress and your
+          <strong>Back up everything</strong> saves every lecture, all your progress and your
           settings as one file. Keep it somewhere safe, or restore it on another device or in the
           installed app to carry on exactly where you left off. Restoring replaces what is on the
-          device you restore it on. To give one course to a classmate, use <strong>Export</strong>{' '}
-          on its course page instead.
+          device you restore it on. To give one lecture to a classmate, use <strong>Export</strong>{' '}
+          on its lecture page instead.
         </p>
         <div className="mt-3 flex flex-wrap gap-3">
           <BackupButton />
@@ -322,10 +322,10 @@ const SECTIONS: HelpSection[] = [
           menu.
         </p>
         <p className="mt-2">
-          On an iPhone the installed app has its own storage, separate from Safari, so courses added
+          On an iPhone the installed app has its own storage, separate from Safari, so lectures added
           in Safari will not appear in it. Back up in Safari and restore in the app.
         </p>
-        <p className="mt-2">If you delete a course by mistake, tap Undo on the message that appears.</p>
+        <p className="mt-2">If you delete a lecture by mistake, tap Undo on the message that appears.</p>
         <div className="mt-2">
           <StorageUsage />
         </div>
@@ -349,9 +349,9 @@ function StorageUsage() {
   const tight = pct >= 80;
   return (
     <p className={tight ? 'text-warning' : 'text-text-3'}>
-      Your courses are using about {Math.round(usage.used / 1024)} KB of the {Math.round(usage.limit / 1024 / 1024)}{' '}
+      Your lectures are using about {Math.round(usage.used / 1024)} KB of the {Math.round(usage.limit / 1024 / 1024)}{' '}
       MB this browser allows ({pct}%).
-      {tight ? ' Export a course you have finished and remove it to make room.' : ''}
+      {tight ? ' Export a lecture you have finished and remove it to make room.' : ''}
     </p>
   );
 }
@@ -409,9 +409,9 @@ function TestingTools() {
     <section className="mt-8 border-t border-border pt-6">
       <h2 className="mb-2 font-display text-heading font-semibold text-text">Testing</h2>
       <p className="text-small text-text-2">
-        A test copy is a separate course with every item marked as answered right, so its tree is in
-        leaf; your real course is not touched. Aging a course moves its answer times back, so its
-        leaves fall; that cannot be undone. A leaf falls once; Fall again lets a course's lost leaves
+        A test copy is a separate lecture with every item marked as answered right, so its tree is in
+        leaf; your real lecture is not touched. Aging a lecture moves its answer times back, so its
+        leaves fall; that cannot be undone. A leaf falls once; Fall again lets a lecture's lost leaves
         fall one more time.
       </p>
       <ul className="mt-3 border-t border-border">
