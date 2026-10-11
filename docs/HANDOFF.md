@@ -26,7 +26,11 @@ re-baselined). The glossary (`/study/:id/glossary`, `GlossaryRoute.tsx`,
 `lib/glossary.ts`). Two proposals for the owner, both waiting on answers:
 `docs/proposals/learn.md` (what Learn lacks, A–F) and
 `docs/proposals/classes.md` (class page, class exam, "course" vs
-"lecture", more than one exam).
+"lecture", more than one exam). Diagrams are cleaned by DOMPurify (SVG
+profile, colour remap and sizing as hooks in its pass) and the built page
+carries a CSP meta (`vite.config.ts`, `contentSecurityPolicy`); checked in a
+browser on every screen with no refusals. `npm audit` flags
+`brace-expansion`, a build-time dependency only.
 
 1. **Learn, the larger changes** (§6 A). Wait for the owner's answer to
    `docs/proposals/learn.md`. C, D, E there are small (misses stay in their
@@ -37,8 +41,8 @@ re-baselined). The glossary (`/study/:id/glossary`, `GlossaryRoute.tsx`,
    `docs/proposals/classes.md`, then build the class page and the class
    exam dialog. Done when: tests for the dialog's writes, screenshots at
    phone and desktop, Help updated, live.
-3. **Security fix** (§6 item 1), then the sync gaps and polish (items
-   2–3). These don't wait on anyone.
+3. **Sync gaps and polish** (§6 items 2–3). These don't wait on anyone.
+   (The security fix, item 1, is done.)
 
 Seen in passing, not yet fixed: the mode label on the study screen
 ("Learn" in a rounded box beside the counter) is a pill, against §3.
@@ -245,7 +249,7 @@ C. **Classes as a real thing.** The owner's idea: organise by class, add
 
 Then, in order. Items 1–3 are small.
 
-1. **Security: diagrams from other people.** `src/lib/prepareSvg.ts` is a
+1. **Security: diagrams from other people.** (Done 2026-10-11.) `src/lib/prepareSvg.ts` is a
    hand-written denylist and can be got past (control characters before
    `javascript:` in a link, or `<animate>`/`<set>` swapping a link in).
    Share links make a course from someone else a real input. Replace with
