@@ -116,6 +116,21 @@ export const InventorySchema = z.looseObject({
   objectives: z.array(z.string()).optional(),
 });
 
+/**
+ * One of a class's exams, as stored on a lecture it covers (lib/classExams).
+ * Every lecture of the class carries the exams that cover it, with its own
+ * sections, so the list syncs, backs up and travels in a share link with the
+ * lectures themselves. Bounded, because a share link is someone else's file.
+ */
+export const ClassExamSchema = z.object({
+  id: z.string().min(1).max(64),
+  name: z.string().max(80),
+  /** YYYY-MM-DD. */
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  /** This lecture's sections it covers; all of them when absent. */
+  sections: z.array(z.string().max(200)).max(500).optional(),
+});
+
 export const CourseMetadataSchema = z.looseObject({
   title: z.string(),
   course_code: z.string().optional(),
@@ -123,6 +138,11 @@ export const CourseMetadataSchema = z.looseObject({
   exam_date: z.string().optional(),
   /** Section ids the exam covers; all of them when absent. Set with the exam date. */
   exam_sections: z.array(z.string()).optional(),
+  /**
+   * The class's exams that cover this lecture (a midterm, a final). A
+   * malformed list is dropped rather than refusing the whole lecture.
+   */
+  exams: z.array(ClassExamSchema).max(20).optional().catch(undefined),
   subject: z.string().optional(),
   description: z.string().optional(),
   tags: z.array(z.string()).optional(),
@@ -140,6 +160,7 @@ export const CourseSchema = z.looseObject({
 export type ItemCounts = z.infer<typeof ItemCountsSchema>;
 export type Inventory = z.infer<typeof InventorySchema>;
 export type CourseMetadata = z.infer<typeof CourseMetadataSchema>;
+export type ClassExam = z.infer<typeof ClassExamSchema>;
 export type Section = z.infer<typeof SectionSchema>;
 export type StudyItem = z.infer<typeof StudyItemSchema>;
 export type ItemType = StudyItem['type'];

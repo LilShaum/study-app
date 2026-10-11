@@ -47,7 +47,15 @@ export function parseCourse(raw: unknown): ParseCourseResult {
 
   // Return the caller's own object (not Zod's parsed copy) so that export
   // round-trips are byte-for-byte lossless, including any unknown fields.
-  return { ok: true, course: raw as Course };
+  // The one exception: a malformed exam list, which the schema drops rather
+  // than refusing the lecture, is dropped here too (lib/classExams).
+  const course = raw as Course;
+  if (result.data.metadata.exams === undefined && 'exams' in course.metadata) {
+    const metadata = { ...course.metadata };
+    delete metadata.exams;
+    return { ok: true, course: { ...course, metadata } };
+  }
+  return { ok: true, course };
 }
 
 /** Parses a File (e.g. from an <input type="file"> upload) as a course. */

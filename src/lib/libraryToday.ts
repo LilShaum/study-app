@@ -1,4 +1,5 @@
 import type { Course } from '@/schema/course';
+import { lectureExam } from '@/lib/classExams';
 import type { ItemResult } from '@/store/progress';
 import { buildSessionItems } from './buildSessionItems';
 import { examRule } from './exam';
@@ -67,7 +68,7 @@ export function todayAcrossCourses(
       catchUp,
       review: items.filter((i) => i._block === 'review').length,
       hasNew: items.some((i) => i._block !== 'review'),
-      examDays: daysToExam(course.metadata.exam_date, now),
+      examDays: daysToExam(lectureExam(course, now).date, now),
     });
   }
   // Array.prototype.sort is stable, so ties keep the library's order.

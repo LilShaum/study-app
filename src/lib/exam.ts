@@ -2,6 +2,7 @@ import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { examTime } from './memory';
 import { scoredEntries } from './scored';
+import { lectureExam } from './classExams';
 
 /**
  * When the exam date starts to steer Review, and for which items.
@@ -55,9 +56,10 @@ function itemSections(course: Course): Map<string, string> {
 }
 
 export function examRule(course: Course, progress: Record<string, ItemResult>, now: number): ExamRule {
-  const date = examTime(course.metadata.exam_date);
+  const exam = lectureExam(course, now);
+  const date = examTime(exam.date);
   const at = date != null && date > now ? date : null;
-  const listed = course.metadata.exam_sections?.filter((id) => course.sections.some((s) => s.id === id));
+  const listed = exam.sections?.filter((id) => course.sections.some((s) => s.id === id));
   const scope = listed?.length ? new Set(listed) : null;
   const inScope = (sectionId: string | undefined) => !scope || (sectionId != null && scope.has(sectionId));
 
@@ -103,10 +105,11 @@ export function examAfterAdding(
   newSectionIds: string[],
   now: number,
 ): { examSections: string[]; included: boolean } | null {
-  const at = examTime(course.metadata.exam_date);
+  const exam = lectureExam(course, now);
+  const at = examTime(exam.date);
   if (at == null || at <= now || !newSectionIds.length) return null;
   const fresh = new Set(newSectionIds);
-  const before = course.metadata.exam_sections ?? course.sections.map((s) => s.id).filter((id) => !fresh.has(id));
+  const before = exam.sections ?? course.sections.map((s) => s.id).filter((id) => !fresh.has(id));
   const included = at - now > PROTECT_FROM_DAYS * DAY_MS;
   return { examSections: included ? [...before, ...newSectionIds] : before, included };
 }

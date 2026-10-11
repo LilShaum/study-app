@@ -1,4 +1,5 @@
 import type { Course } from '@/schema/course';
+import { lectureExam } from '@/lib/classExams';
 import type { ItemResult } from '@/store/progress';
 import { examRule } from '@/lib/exam';
 import { examTime, isDueFor, memoryBefore, nextStability, reviewUrgency, stabilityOf } from '@/lib/memory';
@@ -88,11 +89,12 @@ export function forecast(
   now: number,
   minutes: number,
 ): Forecast | null {
-  const examAt = examTime(course.metadata.exam_date);
+  const exam = lectureExam(course, now);
+  const examAt = examTime(exam.date);
   if (examAt == null || examAt <= now) return null;
 
   const sections = sortedSections(course);
-  const scope = new Set(course.metadata.exam_sections?.length ? course.metadata.exam_sections : sections.map((s) => s.id));
+  const scope = new Set(exam.sections?.length ? exam.sections : sections.map((s) => s.id));
   const typeOf = new Map<string, string>();
   const sectionOf = new Map<string, string>();
   // Seconds Learn takes per scored item in a section, reading included.

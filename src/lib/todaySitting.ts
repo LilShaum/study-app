@@ -1,4 +1,5 @@
 import type { Course } from '@/schema/course';
+import { lectureExam } from '@/lib/classExams';
 import type { ItemResult } from '@/store/progress';
 import { usePlanStore } from '@/store/plan';
 import { dayKey, useStudyLogStore } from '@/store/studyLog';
@@ -33,7 +34,7 @@ export function plannedMinutes(courseId: string, now: number): number {
     plan.total,
     Object.entries(courses).map(([id, c]) => ({
       id,
-      examDays: daysToExam(c.metadata.exam_date, now),
+      examDays: daysToExam(lectureExam(c, now).date, now),
       active: hasWork(c, progress[id] ?? {}, now),
     })),
   );

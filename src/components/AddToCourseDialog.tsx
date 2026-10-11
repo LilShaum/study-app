@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { withExamSections } from '@/lib/classExams';
 import { useDialog } from '@/lib/useDialog';
 import type { Course } from '@/schema/course';
 import { parseFragment } from '@/schema/fragment';
@@ -115,7 +116,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
     if (!current || !decision) return;
     const setSections = (examSections: string[]) => {
       const latest = useCoursesStore.getState().courses[courseId];
-      if (latest) updateCourse(courseId, { ...latest, metadata: { ...latest.metadata, exam_sections: examSections } });
+      if (latest) updateCourse(courseId, withExamSections(latest, examSections, Date.now()));
     };
     setSections(decision.examSections);
     const name = titles.length === 1 ? `“${titles[0]}”` : `${titles.length} new sections`;
