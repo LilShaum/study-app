@@ -29,11 +29,18 @@ import { sortedSections } from './sortedSections';
 export function examsOf(course: Course): ClassExam[] {
   const list: unknown = course.metadata.exams;
   if (!Array.isArray(list)) return [];
-  return list.flatMap((e) => {
+  // Read on every plan of every lecture; a stored list is replaced, never
+  // changed in place, so it is checked once.
+  const known = checked.get(list);
+  if (known) return known;
+  const out = list.flatMap((e) => {
     const r = ClassExamSchema.safeParse(e);
     return r.success ? [r.data] : [];
   });
+  checked.set(list, out);
+  return out;
 }
+const checked = new WeakMap<object, ClassExam[]>();
 
 export interface LectureExam {
   /** YYYY-MM-DD, or undefined with no exam at all. */

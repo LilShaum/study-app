@@ -159,4 +159,12 @@ describe('Learn in steps', () => {
     const progress = Object.fromEntries(items.filter((i) => i.type === 'recall').map((i) => [i.id, { got: 1, missed: 1, lastSeen: 1 }]));
     expect(learn(defs, progress).length).toBeGreaterThan(0);
   });
+
+  it('keeps every part of a long step to the cap, with each flashcard shown in the part that asks it', () => {
+    // One term and fifteen new flashcards on it: 1 + 15 shown + 15 asked + 1 typed.
+    const cards = Array.from({ length: 15 }, (_, k) => card(`f${k}`, `Card ${k} about ${TERMS[0]}?`));
+    const items = learn([defs[0], ...cards]);
+    for (let s = 0; s < items[0]._steps!; s++) expect(items.filter((i) => i._step === s).length).toBeLessThanOrEqual(STEP_CARDS);
+    for (let k = 0; k < 15; k++) expect(stepOf(items, `f${k}~preview`)).toBe(stepOf(items, `f${k}`));
+  });
 });

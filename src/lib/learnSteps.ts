@@ -161,36 +161,49 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       .map(({ k }) => k),
   );
   const defWords = defs.map((d) => excerptWords(d));
+  // What each item matches does not depend on how the terms are cut into
+  // steps, so it is worked out once, not once per try below.
+  const termsOf = new Map<SessionItem, number[]>();
+  const passagesOf = new Map<SessionItem, { k: number; score: number }[]>();
+  for (const item of others) {
+    const hits = defs.map((_, k) => k).filter((k) => uses(texts.get(item)!, defNames[k]));
+    const specific = hits.filter((k) => !genericIdx.has(k));
+    const pick = specific.length ? specific : hits;
+    if (pick.length) {
+      termsOf.set(item, pick);
+      continue;
+    }
+    const words = excerptWords(item);
+    passagesOf.set(
+      item,
+      defs.map((_, k) => ({ k, score: overlap(words, defWords[k]) })).filter((p) => p.score >= MIN_OVERLAP),
+    );
+  }
 
   /** Which step every item goes in, with the terms cut into `defSteps` steps. */
   const place = (defSteps: number) => {
+    const stepOfK = (k: number) => Math.floor((k * defSteps) / defs.length);
     const stepOfDef = new Map<string, number>();
     // Spread evenly, so 9 terms are 3+3+3 and not 4+4+1.
-    defs.forEach((d, k) => stepOfDef.set(d.id, Math.floor((k * defSteps) / defs.length)));
+    defs.forEach((d, k) => stepOfDef.set(d.id, stepOfK(k)));
     const stepOf = new Map<SessionItem, number>();
-    const unplaced: SessionItem[] = [];
-    for (const item of others) {
-      const text = texts.get(item)!;
-      const hits = defs.map((d, k) => ({ step: stepOfDef.get(d.id)!, k })).filter(({ k }) => uses(text, defNames[k]));
-      const specific = hits.filter(({ k }) => !genericIdx.has(k));
-      const pick = specific.length ? specific : hits;
-      // The LAST step among the terms it uses: by then all of them are taught.
-      if (pick.length) stepOf.set(item, Math.max(...pick.map((d) => d.step)));
-      else unplaced.push(item);
-    }
-    // An item that names no term but quotes the same passage as a definition
-    // was written from what that definition teaches: it goes in that step.
     const leftover: SessionItem[] = [];
-    for (const item of unplaced) {
-      const words = excerptWords(item);
+    for (const item of others) {
+      const terms = termsOf.get(item);
+      // The LAST step among the terms it uses: by then all of them are taught.
+      if (terms) {
+        stepOf.set(item, Math.max(...terms.map(stepOfK)));
+        continue;
+      }
+      // An item that names no term but quotes the same passage as a
+      // definition was written from what that definition teaches: it goes in
+      // that step. Ties go to the later step: by then both have been read.
       let best: { step: number; score: number } | null = null;
-      defs.forEach((d, k) => {
-        const step = stepOfDef.get(d.id)!;
-        const score = overlap(words, defWords[k]);
-        // Ties go to the later step: by then both passages have been read.
-        if (score >= MIN_OVERLAP && (!best || score > best.score || (score === best.score && step > best.step))) best = { step, score };
-      });
-      if (best) stepOf.set(item, (best as { step: number }).step);
+      for (const { k, score } of passagesOf.get(item) ?? []) {
+        const step = stepOfK(k);
+        if (!best || score > best.score || (score === best.score && step > best.step)) best = { step, score };
+      }
+      if (best) stepOf.set(item, best.step);
       else leftover.push(item);
     }
     // What still matches nothing waits for a last step of its own, after every
@@ -246,25 +259,33 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
     built = place(++defSteps);
   }
   // A step still too long (one term with many questions, or the last step of
-  // what fits no term) asks the rest in a step of its own. It only asks about
-  // what the step before it taught, so nothing is asked before it is shown.
+  // what fits no term) asks the rest in a step of its own, after its reading,
+  // so nothing is asked before it is shown. A flashcard's reading card goes
+  // with the part that asks it, never a step earlier.
   const cut: SessionItem[][] = [];
   for (const step of built) {
     if (step.length <= STEP_CARDS) {
       cut.push(step);
       continue;
     }
-    const reads = step.filter((i) => phaseOf(i.type) === 'read');
+    const reads = step.filter((i) => phaseOf(i.type) === 'read' && i.type !== 'preview');
+    const shown = new Map(step.filter((i) => i.type === 'preview').map((i) => [(i as { target: { id: string } }).target.id, i]));
     const asks = step.filter((i) => phaseOf(i.type) !== 'read');
-    const parts = Math.ceil(step.length / STEP_CARDS);
-    const per = Math.ceil(asks.length / parts);
-    // The first part keeps every reading card and asks at least a few; the
-    // rest is shared out evenly.
-    const firstAsks = Math.max(Math.min(per, asks.length), Math.min(asks.length, STEP_CARDS - reads.length));
-    cut.push([...reads, ...asks.slice(0, firstAsks)]);
-    const rest = asks.slice(firstAsks);
-    const more = Math.ceil(rest.length / STEP_CARDS);
-    for (let k = 0; k < more; k++) cut.push(rest.slice(Math.floor((k * rest.length) / more), Math.floor(((k + 1) * rest.length) / more)));
+    let part = { previews: [] as SessionItem[], asks: [] as SessionItem[], size: reads.length };
+    const parts = [part];
+    for (const ask of asks) {
+      const preview = shown.get(ask.id);
+      const cost = preview ? 2 : 1;
+      // Every part asks at least one thing, however much it has to read.
+      if (part.asks.length && part.size + cost > STEP_CARDS) {
+        part = { previews: [], asks: [], size: 0 };
+        parts.push(part);
+      }
+      if (preview) part.previews.push(preview);
+      part.asks.push(ask);
+      part.size += cost;
+    }
+    parts.forEach((p, k) => cut.push([...(k === 0 ? reads : []), ...p.previews, ...p.asks]));
   }
   // A step can end up empty: every term known and nothing else placed in it.
   const steps = cut.filter((s) => s.length);

@@ -1,4 +1,4 @@
-import { CourseSchema, SCHEMA_VERSION, type Course } from './course';
+import { ClassExamSchema, CourseSchema, SCHEMA_VERSION, type Course } from './course';
 import { formatZodError } from './formatZodError';
 import { cutMessage, readReply } from '@/lib/readReply';
 
@@ -47,12 +47,18 @@ export function parseCourse(raw: unknown): ParseCourseResult {
 
   // Return the caller's own object (not Zod's parsed copy) so that export
   // round-trips are byte-for-byte lossless, including any unknown fields.
-  // The one exception: a malformed exam list, which the schema drops rather
-  // than refusing the lecture, is dropped here too (lib/classExams).
+  // The one exception: the exam list (lib/classExams). It is someone else's
+  // file, so only well-formed exams are kept, at most twenty, and a bad one
+  // costs only itself, never the lecture or the other exams.
   const course = raw as Course;
-  if (result.data.metadata.exams === undefined && 'exams' in course.metadata) {
-    const metadata = { ...course.metadata };
-    delete metadata.exams;
+  if ('exams' in course.metadata) {
+    const list: unknown = course.metadata.exams;
+    const exams = (Array.isArray(list) ? list : []).flatMap((e) => {
+      const r = ClassExamSchema.safeParse(e);
+      return r.success ? [r.data] : [];
+    }).slice(0, 20);
+    const metadata = { ...course.metadata, exams };
+    if (!exams.length) delete metadata.exams;
     return { ok: true, course: { ...course, metadata } };
   }
   return { ok: true, course };

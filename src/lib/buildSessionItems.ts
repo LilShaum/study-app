@@ -390,7 +390,11 @@ export function buildSessionItems(
       // Once every step is done, Learn is the whole thing again.
       const done = new Set<string>();
       const blocks = new Map<string, SessionItem[]>();
-      for (const i of all) blocks.set(i._block!, [...(blocks.get(i._block!) ?? []), i]);
+      for (const i of all) {
+        const list = blocks.get(i._block!);
+        if (list) list.push(i);
+        else blocks.set(i._block!, [i]);
+      }
       for (const [block, list] of blocks) {
         const asks = list.filter(isGradable);
         if (asks.length && asks.every((i) => { const r = progress?.[i.id]; return !!r && r.got + r.missed > 0; })) done.add(block);

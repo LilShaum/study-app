@@ -112,17 +112,19 @@ describe('the exam list from someone else’s file', () => {
     expect(r.ok && r.course.metadata.exams).toEqual([{ id: 'f', name: 'Final', date: '2026-12-15', sections: ['s'] }]);
   });
 
-  it('drops a malformed or oversized list rather than refusing the lecture', () => {
-    for (const bad of [
-      [{ id: 'f', name: 'Final', date: 'next Tuesday' }],
-      [{ id: 'f', name: 'x'.repeat(500), date: '2026-12-15' }],
-      Array.from({ length: 50 }, (_, k) => ({ id: `e${k}`, name: 'E', date: '2026-12-15' })),
-      'Final',
-    ]) {
+  it('drops a malformed list rather than refusing the lecture', () => {
+    for (const bad of [[{ id: 'f', name: 'Final', date: 'next Tuesday' }], [{ id: 'f', name: 'x'.repeat(500), date: '2026-12-15' }], 'Final']) {
       const r = parseCourse(file(bad));
       expect(r.ok).toBe(true);
       expect(r.ok && r.course.metadata.exams).toBeUndefined();
     }
+  });
+
+  it('keeps the good exams when one is bad, and at most twenty', () => {
+    const r = parseCourse(file([{ id: 'x', name: 'Bad', date: 'soon' }, { id: 'f', name: 'Final', date: '2026-12-15' }]));
+    expect(r.ok && r.course.metadata.exams).toEqual([{ id: 'f', name: 'Final', date: '2026-12-15' }]);
+    const many = parseCourse(file(Array.from({ length: 50 }, (_, k) => ({ id: `e${k}`, name: 'E', date: '2026-12-15' }))));
+    expect(many.ok && many.course.metadata.exams).toHaveLength(20);
   });
 });
 

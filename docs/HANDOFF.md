@@ -62,7 +62,11 @@ done when it is tested and live (see §7). Load `working-method`,
 Open from it: two devices editing the same exam on different lectures at
 once can leave the name or date differing between lectures (each lecture
 syncs on its own); the class page shows the first it finds. Unlikely, and
-saving the exam again fixes it.
+saving the exam again fixes it. Also left from the code review, on
+purpose: a Learn step of only reading cards (examples, diagrams) is
+skipped by Today once "done" but repeated by Learn, as before; and a
+lecture with no sections at all can end up with an empty section list on
+an exam (reads as "all"). Both small; fix if they show up.
 
 **Done 2026-10-11, first session (live):** Learn no longer asks a step about what it
 didn't show (`stepSection` places a term-less item by its

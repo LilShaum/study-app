@@ -75,14 +75,23 @@ export function ClassExamDialog({ code, lectures, exams, exam, onClose }: ClassE
 
   const remove = () => {
     if (!exam) return;
-    // Undo puts back exactly what the lectures held, own exams included.
-    const before = Object.fromEntries(lectures);
+    // Undo puts back the exams the lectures held, own exams included, and
+    // only those: anything else changed since (an edit, a sync) stays.
+    const before = lectures.map(([id, c]) => [id, c.metadata.exams, c.metadata.exam_date, c.metadata.exam_sections] as const);
     write(exams.filter((x) => x.id !== exam.id));
     toast(`${exam.name} removed.`, {
       type: 'info',
       actionLabel: 'Undo',
       onAction: () => {
-        for (const [id, course] of Object.entries(before)) updateCourse(id, course);
+        persisted(() => {
+          for (const [id, list, date, sections] of before) {
+            const now = useCoursesStore.getState().courses[id];
+            if (!now) continue;
+            const metadata = { ...now.metadata, exams: list, exam_date: date, exam_sections: sections };
+            for (const key of ['exams', 'exam_date', 'exam_sections'] as const) if (metadata[key] === undefined) delete metadata[key];
+            updateCourse(id, { ...now, metadata });
+          }
+        });
       },
     });
     onClose();
@@ -139,11 +148,21 @@ export function ClassExamDialog({ code, lectures, exams, exam, onClose }: ClassE
                       <label className="tap-safe flex min-w-0 flex-1 cursor-pointer items-baseline gap-3">
                         <input
                           type="checkbox"
-                          checked={on.length > 0}
+                          checked={all.length === 0 ? !!covers[id] : on.length > 0}
                           ref={(el) => {
                             if (el) el.indeterminate = some;
                           }}
-                          onChange={() => setTicked(id, course, on.length === all.length ? [] : all)}
+                          onChange={() =>
+                            // A lecture with no sections yet is on the exam or not, as a whole.
+                            all.length === 0
+                              ? setCovers((prev) => {
+                                  const next = { ...prev };
+                                  if (next[id]) delete next[id];
+                                  else next[id] = 'all';
+                                  return next;
+                                })
+                              : setTicked(id, course, on.length === all.length ? [] : all)
+                          }
                         />
                         <span className="mark w-7 shrink-0 text-right text-text-3">{roman(i + 1)}</span>
                         <span className={`min-w-0 ${on.length ? 'text-text' : 'text-text-3'}`}>{course.metadata.title}</span>
