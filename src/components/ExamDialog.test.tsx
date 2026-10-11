@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
 import { usePlanStore } from '@/store/plan';
@@ -55,41 +56,30 @@ describe('ExamDialog', () => {
     expect(saved().exam_sections).toBeUndefined();
   });
 
-  describe('other courses of the same class', () => {
-    const coded = (title: string, extra = {}) =>
-      ({ ...course, metadata: { title, course_code: 'BIOL 365', ...extra } }) as unknown as Course;
+  describe('a lecture in a class', () => {
+    const inClass = { ...course, metadata: { title: 'Bio', course_code: 'BIOC301', exams: [{ id: 'f', name: 'Final', date: '2099-12-15' }] } } as Course;
 
-    it('sets the same date on the courses ticked, covering all their sections', () => {
-      useCoursesStore.setState({ courses: { bio: coded('Bio'), endo: coded('Endo'), cell: coded('Cell') } });
-      render(<ExamDialog courseId="bio" course={useCoursesStore.getState().courses.bio} onClose={() => {}} />);
-      setDate('2026-10-27');
-      fireEvent.click(screen.getByLabelText('Endo'));
-      fireEvent.click(screen.getByText('Save'));
-      const all = useCoursesStore.getState().courses;
-      expect(all.endo.metadata.exam_date).toBe('2026-10-27');
-      expect(all.endo.metadata.exam_sections).toEqual(['a', 'b', 'c']);
-      expect(all.cell.metadata.exam_date).toBeUndefined();
+    it('shows the class exams that cover it and sends you to the class to set them', () => {
+      useCoursesStore.setState({ courses: { bio: inClass } });
+      render(
+        <MemoryRouter>
+          <ExamDialog courseId="bio" course={inClass} onClose={() => {}} />
+        </MemoryRouter>,
+      );
+      expect(screen.getByText('Final')).toBeTruthy();
+      expect(screen.queryByLabelText('Exam date')).toBeNull();
+      expect(screen.getByText('Set the exams for BIOC301').getAttribute('href')).toBe('/class/BIOC301');
     });
 
-    it('clears a course that shared the date once it is unticked', () => {
-      const exam = { exam_date: '2026-10-27', exam_sections: ['a'] };
-      useCoursesStore.setState({ courses: { bio: coded('Bio', exam), endo: coded('Endo', exam) } });
-      render(<ExamDialog courseId="bio" course={useCoursesStore.getState().courses.bio} onClose={() => {}} />);
-      expect((screen.getByLabelText('Endo') as HTMLInputElement).checked).toBe(true);
-      fireEvent.click(screen.getByLabelText('Endo'));
+    it('saves the time a day without touching the lecture', () => {
+      useCoursesStore.setState({ courses: { bio: inClass } });
+      render(
+        <MemoryRouter>
+          <ExamDialog courseId="bio" course={inClass} onClose={() => {}} />
+        </MemoryRouter>,
+      );
       fireEvent.click(screen.getByText('Save'));
-      expect(useCoursesStore.getState().courses.endo.metadata.exam_date).toBeUndefined();
-    });
-
-    it('keeps the sections chosen on a course that shares the exam when the date moves', () => {
-      const exam = { exam_date: '2026-10-27', exam_sections: ['a'] };
-      useCoursesStore.setState({ courses: { bio: coded('Bio', exam), endo: coded('Endo', { ...exam, exam_sections: ['b'] }) } });
-      render(<ExamDialog courseId="bio" course={useCoursesStore.getState().courses.bio} onClose={() => {}} />);
-      setDate('2026-11-03');
-      fireEvent.click(screen.getByText('Save'));
-      const endo = useCoursesStore.getState().courses.endo.metadata;
-      expect(endo.exam_date).toBe('2026-11-03');
-      expect(endo.exam_sections).toEqual(['b']);
+      expect(useCoursesStore.getState().courses.bio).toBe(inClass);
     });
   });
 });

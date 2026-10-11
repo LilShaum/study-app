@@ -24,6 +24,8 @@ export function SessionRoute() {
   // "?resume=1" is what the course page's Continue card adds; opening a mode
   // from its own tile deliberately starts fresh.
   const resume = search.get('resume') === '1';
+  // "?class=CODE": Today started from a class page carries on within the class.
+  const classCode = search.get('class') ?? undefined;
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
 
   if (!id || !isStudyMode(mode)) return <Navigate to="/" replace />;
@@ -46,6 +48,6 @@ export function SessionRoute() {
   return mode === 'browse' ? (
     <BrowseSession courseId={id} course={course} />
   ) : (
-    <CardSession courseId={id} course={course} mode={mode} sectionId={scoped} resume={resume} />
+    <CardSession courseId={id} course={course} mode={mode} sectionId={scoped} resume={resume} classCode={classCode} />
   );
 }

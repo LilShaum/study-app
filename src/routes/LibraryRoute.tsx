@@ -18,48 +18,15 @@ import { examRule } from '@/lib/exam';
 import { RestoreButton } from '@/components/Backup';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { usePlanStore } from '@/store/plan';
-import { todayAcrossCourses, type CourseToday } from '@/lib/libraryToday';
+import { todayAcrossCourses, todayLine } from '@/lib/libraryToday';
 import { plannedMinutes, studiedToday } from '@/lib/todaySitting';
+import { roman } from '@/lib/roman';
 
 /** The most courses the Today block names; the list below carries the rest. */
 const TODAY_ROWS = 3;
 
-/** "12 to review · new material · exam in 4 days" — only the parts that apply. */
-function todayLine(c: CourseToday): string {
-  return [
-    c.catchUp ? null : `${Math.round(c.minutes)} min`,
-    c.catchUp ? `catch-up: ${c.review} to look at again` : c.review > 0 ? `${c.review} to review` : null,
-    c.hasNew ? 'new material' : null,
-    c.examDays === 0 ? 'exam today' : c.examDays === 1 ? 'exam tomorrow' : c.examDays != null ? `exam in ${c.examDays} days` : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-}
-
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
-
-/**
- * The entry's number in the contents list.
- *
- * Roman for the same reason a book uses it in the front matter: it numbers
- * the entries without competing with the arabic figures in the right-hand
- * column, which are the ones carrying information.
- */
-function roman(n: number): string {
-  const table: [number, string][] = [
-    [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'],
-    [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I'],
-  ];
-  let out = '';
-  for (const [value, sign] of table) {
-    while (n >= value) {
-      out += sign;
-      n -= value;
-    }
-  }
-  return out;
-}
 
 /** A course's totals, aggregated from the same per-section figures the course page uses. */
 function courseTotals(course: Course, progress: Record<string, ItemResult>, now: number) {
@@ -350,7 +317,26 @@ export function LibraryRoute() {
               {filteredIds.map((id, index) => {
                 const course = courses[id];
                 const stats = courseTotals(course, allProgress[id] ?? EMPTY_PROGRESS, now);
-                return (
+                const code = course.metadata.course_code?.trim() || null;
+                // A class opens its own page: lectures, exams, Today for all of
+                // it. Its name heads its lectures like a part title in a book.
+                const opensClass = code && (index === 0 || courses[filteredIds[index - 1]].metadata.course_code?.trim() !== code);
+                const inClass = code ? ids.filter((i) => courses[i].metadata.course_code?.trim() === code).length : 0;
+                return [
+                  opensClass && (
+                    <li key={`class:${code}`} className="border-b border-border">
+                      <Link
+                        to={`/class/${encodeURIComponent(code)}`}
+                        className="group tap-safe flex items-baseline gap-3 pb-2 pt-5"
+                      >
+                        <span className="mark text-text group-hover:text-accent">{code}</span>
+                        <span className="text-small text-text-3">
+                          {inClass} lecture{inClass === 1 ? '' : 's'}
+                        </span>
+                        <span className="mark ml-auto text-text-3 group-hover:text-text">The class ▸</span>
+                      </Link>
+                    </li>
+                  ),
                   <li key={id} className="group relative border-b border-border">
                     <Link to={`/study/${id}`} className="entry py-4 pr-8">
                       <span className="entry-num mark text-right text-text-3">
@@ -363,11 +349,7 @@ export function LibraryRoute() {
                         className="entry-art h-12 w-12 sm:h-16 sm:w-16"
                       />
                       <span className="entry-body min-w-0">
-                        {course.metadata.course_code && (
-                          <span className="mark block text-text-3">
-                            {course.metadata.course_code}
-                          </span>
-                        )}
+                        {/* The class heads the group now; a lecture with no class has no code. */}
                         {/* The leaders sit on the TITLE's baseline, so they
                             share a line with the entry whose eye they are
                             carrying — not the code above it. Hidden on a
@@ -406,8 +388,8 @@ export function LibraryRoute() {
                     >
                       <Icon name="x" size={14} />
                     </button>
-                  </li>
-                );
+                  </li>,
+                ];
               })}
             </ul>
           )}

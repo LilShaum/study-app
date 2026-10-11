@@ -15,6 +15,8 @@ const STORAGE_FULL =
 
 interface NewCourseDialogProps {
   onClose: () => void;
+  /** Adding a lecture to a class: the lecture gets this class code, whatever the file says. */
+  classCode?: string;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -41,7 +43,7 @@ function plural(n: number, word: string): string {
  * in a chat window — making you save it to disk first is a step that buys
  * nothing.
  */
-export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
+export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   useDialog(onClose);
   const [pasted, setPasted] = useState('');
   const [copied, setCopied] = useState(false);
@@ -95,7 +97,8 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
 
   const confirmPaste = () => {
     if (!course) return;
-    const { result: id, ok } = persisted(() => addCourse(course));
+    const placed = classCode ? { ...course, metadata: { ...course.metadata, course_code: classCode } } : course;
+    const { result: id, ok } = persisted(() => addCourse(placed));
     openCourse(id, course.metadata.title, ok);
   };
 
@@ -106,6 +109,10 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
     beginWriteCheck();
     const imported = await importCourse(file);
     const ok = writesLanded();
+    if (imported.ok && classCode) {
+      const added = useCoursesStore.getState().courses[imported.id];
+      if (added) useCoursesStore.getState().updateCourse(imported.id, { ...added, metadata: { ...added.metadata, course_code: classCode } });
+    }
     if (imported.ok) openCourse(imported.id, imported.course.metadata.title, ok);
     else toast(imported.error, { type: 'error' });
   };
@@ -130,7 +137,7 @@ export function NewCourseDialog({ onClose }: NewCourseDialogProps) {
     >
       <div className="my-8 w-full max-w-2xl paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="font-semibold text-text">New lecture</h2>
+          <h2 className="font-semibold text-text">{classCode ? `New lecture for ${classCode}` : 'New lecture'}</h2>
           <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">
             <Icon name="x" size={18} />
           </button>

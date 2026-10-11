@@ -18,7 +18,7 @@ import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog'
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
 import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
 import type { StudyMode } from '@/lib/buildSessionItems';
-import { CATCH_UP_HOURS, examTime, isDueFor } from '@/lib/memory';
+import { CATCH_UP_HOURS, isDueFor } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
 import { examRule } from '@/lib/exam';
 import { buildSessionItems } from '@/lib/buildSessionItems';
@@ -28,6 +28,8 @@ import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 import { usePlanStore } from '@/store/plan';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { ExamDialog } from '@/components/ExamDialog';
+import { examLabel, ranges } from '@/lib/examLabel';
+import { classOf, lectureExam } from '@/lib/classExams';
 
 interface ModeCard {
   mode: StudyMode;
@@ -90,36 +92,7 @@ const MODE_LABELS: Record<string, string> = Object.fromEntries(
   ]),
 );
 
-/** 1,2,3,5,7,8 → "1–3, 5, 7–8". */
-function ranges(numbers: number[]): string {
-  const sorted = [...new Set(numbers)].sort((a, b) => a - b);
-  const out: string[] = [];
-  for (let i = 0; i < sorted.length; i++) {
-    let j = i;
-    while (j + 1 < sorted.length && sorted[j + 1] === sorted[j] + 1) j++;
-    out.push(j > i ? `${sorted[i]}–${sorted[j]}` : `${sorted[i]}`);
-    i = j;
-  }
-  return out.join(', ');
-}
-
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
-
-/** "Thu 12 Nov · in 48 days" — the date and the distance, which is the part that matters. */
-function examLabel(date: string | undefined): string | null {
-  const at = examTime(date);
-  if (at == null) return null;
-  const day = new Date(at).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const exam = new Date(at);
-  exam.setHours(0, 0, 0, 0);
-  const days = Math.round((exam.getTime() - today.getTime()) / 86_400_000);
-  if (days < 0) return `${day} · passed`;
-  if (days === 0) return `${day} · today`;
-  if (days === 1) return `${day} · tomorrow`;
-  return `${day} · in ${days} days`;
-}
 
 /** "5 minutes ago" — precise enough to tell you whether this is today's work. */
 function ago(ts: number): string {
@@ -293,14 +266,17 @@ export function CourseRoute() {
         ]
           .filter(Boolean)
           .join(', ');
-  const covered = course.metadata.exam_sections;
+  // The exam this lecture is planned for now: its own, or the next class exam on it.
+  const exam = lectureExam(course, now);
+  const classCode = classOf(course);
+  const covered = exam.sections;
   const coverage = covered?.length
     ? `section${covered.length === 1 ? '' : 's'} ${ranges(
         covered.map((sid) => sectionsInOrder.findIndex((s) => s.id === sid) + 1).filter((n) => n > 0),
       )}`
     : 'every section';
-  const examLine = course.metadata.exam_date
-    ? `Exam ${examLabel(course.metadata.exam_date)}, on ${coverage} · Change`
+  const examLine = exam.date
+    ? `${exam.name ?? 'Exam'} ${examLabel(exam.date)}, on ${coverage} · Change`
     : 'Exam coming up? Add its date and what it covers';
 
   const tree = (
@@ -330,7 +306,7 @@ export function CourseRoute() {
         rows={[
           { label: 'Code', value: course.metadata.course_code },
           { label: 'Subject', value: course.metadata.subject },
-          { label: 'Exam', value: examLabel(course.metadata.exam_date) },
+          { label: 'Exam', value: exam.date ? `${exam.name ? `${exam.name}, ` : ''}${examLabel(exam.date)}` : null },
           {
             label: 'Contents',
             value: `${counts.total} item${counts.total === 1 ? '' : 's'} in ${
@@ -560,9 +536,19 @@ export function CourseRoute() {
   return (
     // Room under the page on a phone for the pinned Start bar.
     <div className={wide ? '' : 'pb-20 sm:pb-0'}>
-      <Link to="/" className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
-        ← Library
-      </Link>
+      <span className="flex items-baseline gap-2 text-sm text-text-3">
+        <Link to="/" className="tap-safe inline-flex items-center text-text-2 hover:text-text">
+          ← Library
+        </Link>
+        {classCode && (
+          <>
+            <span aria-hidden="true">·</span>
+            <Link to={`/class/${encodeURIComponent(classCode)}`} className="tap-safe inline-flex items-center text-text-2 hover:text-text">
+              {classCode}
+            </Link>
+          </>
+        )}
+      </span>
 
       {/* Two layouts, not one stretched. On a desktop the course page is
           where you look around, so it spreads into two columns: the tree

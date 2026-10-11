@@ -29,6 +29,8 @@ interface CardSessionProps {
   sectionId?: string;
   /** Start from the saved bookmark for this course rather than at item 1. */
   resume?: boolean;
+  /** Today from a class page: the next lecture offered is the class's. */
+  classCode?: string;
 }
 
 const MODE_LABELS: Record<CardMode, string> = {
@@ -190,7 +192,7 @@ interface Pause {
 }
 
 /** Every mode except Browse — one item at a time. */
-export function CardSession({ courseId, course, mode, sectionId, resume = false }: CardSessionProps) {
+export function CardSession({ courseId, course, mode, sectionId, resume = false, classCode }: CardSessionProps) {
   const navigate = useNavigate();
   // Read after the session has recorded its results, so the tree on the
   // finish screen is the tree this session just grew.
@@ -281,6 +283,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
       measuredPace(useStudyLogStore.getState().byCourse),
       (id) => studiedToday(id, now),
     ).filter((c) => c.id !== courseId);
+    if (classCode) return others.find((c) => c.code === classCode) ?? null;
     return others[0] ?? null;
   };
   const appointmentFor = (): string | null => {
@@ -519,7 +522,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false 
         </div>
         {mode === 'today' && nextCourse && (
           <Link
-            to={`/session/${nextCourse.id}/today`}
+            to={`/session/${nextCourse.id}/today${classCode ? `?class=${encodeURIComponent(classCode)}` : ''}`}
             className="press tap-safe mt-3 max-w-full"
           >
             Next: Today in {nextCourse.title}

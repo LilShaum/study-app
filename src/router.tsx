@@ -11,6 +11,7 @@ import { GlossaryRoute } from '@/routes/GlossaryRoute';
 import { HelpRoute } from '@/routes/HelpRoute';
 import { SyncRoute } from '@/routes/SyncRoute';
 import { SharedRoute } from '@/routes/SharedRoute';
+import { ClassRoute } from '@/routes/ClassRoute';
 
 // Hash routing (createHashRouter) is required, not a preference — GitHub
 // Pages serves this as a static site with no server-side rewrite, so a
@@ -28,6 +29,7 @@ export const router = createHashRouter([
       { path: 'study/:id/section/:sectionId', element: <SectionRoute /> },
       { path: 'study/:id/diagrams', element: <DiagramsRoute /> },
       { path: 'study/:id/glossary', element: <GlossaryRoute /> },
+      { path: 'class/:code', element: <ClassRoute /> },
       { path: 'help', element: <HelpRoute /> },
       { path: 'sync', element: <SyncRoute /> },
       { path: 'shared/:id', element: <SharedRoute /> },

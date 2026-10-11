@@ -79,3 +79,15 @@ export function todayAcrossCourses(
     return b.review - a.review;
   });
 }
+
+/** "12 to review · new material · exam in 4 days" — only the parts that apply. */
+export function todayLine(c: CourseToday): string {
+  return [
+    c.catchUp ? null : `${Math.round(c.minutes)} min`,
+    c.catchUp ? `catch-up: ${c.review} to look at again` : c.review > 0 ? `${c.review} to review` : null,
+    c.hasNew ? 'new material' : null,
+    c.examDays === 0 ? 'exam today' : c.examDays === 1 ? 'exam tomorrow' : c.examDays != null ? `exam in ${c.examDays} days` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}

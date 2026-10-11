@@ -20,8 +20,10 @@ Done 2026-10-02: a catch-up later the same day for missed cards (simulator: seve
 
 Done 2026-10-11: Learn places a question that names no term by the passage it quotes, and keeps leftovers for a last step, so a step only asks about what it showed. A glossary per course (View → Glossary). Diagrams cleaned by DOMPurify, plus a Content-Security-Policy. Proposals for the owner in docs/proposals/ (Learn gaps, classes).
 
+Done 2026-10-11 (second session), the owner's decisions in docs/proposals/decisions.md: Learn A–F (a new flashcard read open before it is asked; steps of at most 12 cards; misses stay in their step, never straight after themselves; the notes open after a miss; the next section at the end; finished steps skipped; simulated, sim/FINDINGS.md). "Lecture" in everything a student reads. Classes: a class page (lectures, exams, Today for the class, Add a lecture) and several exams per class, kept on the lectures they cover so they sync, back up and share with them; each lecture follows the next exam it is on.
+
 Next:
-- Owner's answers to docs/proposals/learn.md and classes.md, then build.
+- The owner and the friend try Learn and a class on a phone.
 - Sync gaps: share plan.total, merge study logs by union (HANDOFF §6 item 2).
 - Share links and sync are live (`src/lib/cloud.ts`, `docs/supabase.sql`) and
   confirmed working by the owner on real devices, 2026-09-27. Cloud sessions

@@ -247,6 +247,27 @@ const SECTIONS: HelpSection[] = [
     ),
   },
   {
+    id: 'classes',
+    title: 'Classes and their exams',
+    body: (
+      <>
+        <p>
+          Lectures with the same class code make a class. In the library, tap the class name above them to open
+          its page: its lectures in order, its exams, and <strong>Today</strong> for the whole class, which starts
+          with the lecture whose exam is nearest and carries on through the others. <strong>Add a lecture</strong>{' '}
+          there makes a new one with the class code already set.
+        </p>
+        <p className="mt-2">
+          A class can have several exams, say two midterms and a final. <strong>Add an exam</strong>, give it a
+          name and a date, and tick what is on it: whole lectures, or open one and tick its sections. Each lecture
+          is planned for the next exam it is on; once a midterm has passed, its lectures move on to the next exam
+          that covers them without you doing anything. The exams go with the lectures when you sync, back up or
+          share them.
+        </p>
+      </>
+    ),
+  },
+  {
     id: 'check',
     title: 'The lecture check',
     body: (

@@ -7,6 +7,9 @@ import { usePlanStore } from '@/store/plan';
 import { persisted } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
+import { Link } from 'react-router-dom';
+import { classExams, lecturesOf } from '@/lib/classExams';
+import { examLabel } from '@/lib/examLabel';
 
 const MINUTE_CHOICES = [15, 20, 30, 45, 60, 90];
 
@@ -27,7 +30,9 @@ interface ExamDialogProps {
  * not on it.
  *
  * The exam lives in the course file (a classmate you share it with sits the
- * same exam); the minutes live on this device (store/plan).
+ * same exam); the minutes live on this device (store/plan). A lecture in a
+ * class shows the class's exams instead, which are set on the class page
+ * (lib/classExams): several lectures, several exams.
  */
 export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
   useDialog(onClose);
@@ -43,24 +48,8 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
   );
   const [minutes, setMinutesDraft] = useState(minutesNow);
 
-  // One class's exam often covers several of its courses (a course is
-  // usually a lecture set), so the date can be set on those in one go.
   const allCourses = useCoursesStore((s) => s.courses);
   const code = course.metadata.course_code?.trim();
-  const siblings = code
-    ? Object.entries(allCourses).filter(([id, c]) => id !== courseId && c.metadata.course_code?.trim() === code)
-    : [];
-  const linkedBefore = new Set(
-    course.metadata.exam_date ? siblings.filter(([, c]) => c.metadata.exam_date === course.metadata.exam_date).map(([id]) => id) : [],
-  );
-  const [alsoFor, setAlsoFor] = useState<Set<string>>(linkedBefore);
-  const toggleAlso = (id: string) =>
-    setAlsoFor((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
 
   const toggle = (id: string) =>
     setCovered((prev) => {
@@ -70,8 +59,19 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
       return next;
     });
 
+  // A lecture in a class follows the class's exams, set on the class page.
+  const [now] = useState(Date.now);
+  const lectures = code ? lecturesOf(allCourses, code) : [];
+  const theirs = code ? classExams(lectures, now).filter((x) => x.covers[courseId]) : [];
+
   const save = (e: FormEvent) => {
     e.preventDefault();
+    if (code) {
+      setMinutes(courseId, minutes);
+      toast('Saved.', { type: 'success' });
+      onClose();
+      return;
+    }
     const metadata = { ...course.metadata };
     if (date) metadata.exam_date = date;
     else delete metadata.exam_date;
@@ -80,24 +80,7 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
     if (date && covered.size) metadata.exam_sections = sections.map((s) => s.id).filter((id) => covered.has(id));
     else delete metadata.exam_sections;
     setMinutes(courseId, minutes);
-    const { ok } = persisted(() => {
-      updateCourse(courseId, { ...course, metadata });
-      if (!date) return;
-      for (const [id, other] of siblings) {
-        const m = { ...other.metadata };
-        if (alsoFor.has(id)) {
-          // Already sharing this exam (the date may be moving): keep the
-          // sections chosen for it there. Newly ticked: all of them.
-          if (!linkedBefore.has(id) || !m.exam_sections?.length) m.exam_sections = sortedSections(other).map((s) => s.id);
-          m.exam_date = date;
-        } else if (linkedBefore.has(id)) {
-          // Unticked: not the same exam after all.
-          delete m.exam_date;
-          delete m.exam_sections;
-        } else continue;
-        updateCourse(id, { ...other, metadata: m });
-      }
-    });
+    const { ok } = persisted(() => updateCourse(courseId, { ...course, metadata }));
     toast(ok ? 'Saved.' : "Browser storage is full, so this wasn't saved.", { type: ok ? 'success' : 'error' });
     onClose();
   };
@@ -118,6 +101,30 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
         </div>
 
         <div className="space-y-6 px-5 py-4">
+          {code ? (
+            <div>
+              <span className="mb-1 block text-sm font-medium text-text">Exams</span>
+              {theirs.length ? (
+                <ul className="border-y border-border">
+                  {theirs.map((x) => (
+                    <li key={x.id} className="flex items-baseline gap-3 border-b border-border py-2 text-small last:border-b-0">
+                      <span className="min-w-0 flex-1 text-text">{x.name}</span>
+                      <span className="mark shrink-0 text-text-2">{examLabel(x.date)}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-small text-text-2">No exam covers this lecture yet.</p>
+              )}
+              <p className="mt-2 text-small text-text-2">
+                Exams are set for the whole class: each one, and what it covers across {code}&rsquo;s lectures.{' '}
+                <Link to={`/class/${encodeURIComponent(code)}`} onClick={onClose} className="tap-safe text-text underline decoration-border-strong underline-offset-4 hover:decoration-text">
+                  Set the exams for {code}
+                </Link>
+              </p>
+            </div>
+          ) : (
+          <>
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-text">Exam date</span>
             <span className="flex items-baseline gap-4">
@@ -159,21 +166,7 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
             </fieldset>
           )}
 
-          {date && siblings.length > 0 && (
-            <fieldset>
-              <legend className="mb-1 text-sm font-medium text-text">Same exam for</legend>
-              <p className="mb-2 text-xs text-text-3">Other {code} lectures this exam also covers.</p>
-              <ul className="border-y border-border">
-                {siblings.map(([id, c]) => (
-                  <li key={id} className="border-b border-border last:border-b-0">
-                    <label className="tap-safe flex cursor-pointer items-baseline gap-3 py-2 text-small">
-                      <input type="checkbox" checked={alsoFor.has(id)} onChange={() => toggleAlso(id)} />
-                      <span className={alsoFor.has(id) ? 'text-text' : 'text-text-3'}>{c.metadata.title}</span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </fieldset>
+          </>
           )}
 
           {sharedTotal != null ? (
@@ -211,7 +204,7 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
           <button type="button" onClick={onClose} className="press">
             Cancel
           </button>
-          <button type="submit" disabled={Boolean(date) && covered.size === 0} className="press press-ink">
+          <button type="submit" disabled={!code && Boolean(date) && covered.size === 0} className="press press-ink">
             Save
           </button>
         </div>

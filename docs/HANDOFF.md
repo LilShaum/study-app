@@ -9,7 +9,7 @@ Other records: `docs/next.md` (running done/next list), `sim/FINDINGS.md`
 (every study-design result, with numbers), `docs/evidence.md` (the learning
 science), `README.md` (code tour).
 
-Last updated 2026-10-11.
+Last updated 2026-10-11 (second session that day).
 
 ---
 
@@ -19,7 +19,52 @@ Start here. Make each step a task, keep one in progress, and only mark it
 done when it is tested and live (see §7). Load `working-method`,
 `arborous-design` and `app-making` at the start; `simulate` before Learn.
 
-**Done 2026-10-11 (live):** Learn no longer asks a step about what it
+**Done 2026-10-11, second session (live):** the owner's decisions in
+`docs/proposals/decisions.md`, all built.
+
+- **Learn A–F.** A flashcard never answered is read open first ("Read
+  first, asked in a moment", a session-only `preview` item, `PreviewItem`
+  in `buildSessionItems.ts`), then asked in the same step; the notes are
+  open on Learn's reading cards. A step holds at most 12 cards
+  (`STEP_CARDS` in `learnSteps.ts`: fewer terms a step, then overflow
+  questions in a following step after the reading). A miss comes back in
+  its own step, never straight after itself (`requeue` in
+  `store/session.ts`). After a miss the passage from the notes is open.
+  Learn's finish screen offers the next section; Learn skips steps already
+  answered. Simulated (sim/FINDINGS.md, three entries): A+B within noise
+  (busy-20 30→28% ±2 is the one to watch), C slightly better under `fsrs`,
+  level under `harsh`; re-baselined. The "Learn" pill on the study screen
+  is now small caps.
+- **"Lecture"** in everything a student reads ("course code" is "class
+  code"). Code names, storage keys and `.study.json` unchanged. The
+  generator prompt still says "course" (only the AI reads it).
+- **Classes.** `/class/:code` (`ClassRoute.tsx`): lectures in order, the
+  class's exams (next first), Today for the class (starts in the class
+  lecture with the nearest exam, `?class=` keeps "Next: Today in…" inside
+  the class), Add a lecture (New lecture with the class code set), Add an
+  exam. The library heads each class's lectures with a link to it; a
+  lecture page has "← Library · CODE".
+- **Several exams per class** (`lib/classExams.ts`,
+  `ClassExamDialog.tsx`). **Where they live, and why:** on the lectures.
+  Each lecture's `metadata.exams` holds the class exams that cover it, with
+  its own sections. A lecture already syncs (whole JSON, last edit wins),
+  backs up, exports and travels in a share link, so the exams go
+  everywhere with no new table, no Supabase migration and no new merge
+  rule; the class list is gathered by exam id. The scheduler asks
+  `lectureExam(course, now)`: the nearest upcoming exam covering the
+  lecture (its own old single exam counts too), so after a midterm its
+  lectures follow the final with nothing to do. Checked on the way in
+  (`ClassExamSchema`, bounded; a bad list is dropped, not the lecture;
+  `examsOf` re-checks for backups and sync). Security review: no findings.
+  A lecture in a class shows the class's exams in its exam dialog and
+  links to the class page; a lecture with no class keeps the old dialog.
+
+Open from it: two devices editing the same exam on different lectures at
+once can leave the name or date differing between lectures (each lecture
+syncs on its own); the class page shows the first it finds. Unlikely, and
+saving the exam again fixes it.
+
+**Done 2026-10-11, first session (live):** Learn no longer asks a step about what it
 didn't show (`stepSection` places a term-less item by its
 `source_excerpt`; leftovers go in a last step; simulator within noise,
 re-baselined). The glossary (`/study/:id/glossary`, `GlossaryRoute.tsx`,
@@ -32,20 +77,14 @@ carries a CSP meta (`vite.config.ts`, `contentSecurityPolicy`); checked in a
 browser on every screen with no refusals. `npm audit` flags
 `brace-expansion`, a build-time dependency only.
 
-1. **Learn, the larger changes** (§6 A). Wait for the owner's answer to
-   `docs/proposals/learn.md`. C, D, E there are small (misses stay in their
-   step and never back to back; a next-section button at the end; the
-   definition shown after a miss). A and B change what is asked and when:
-   simulate first.
-2. **Classes** (§6 C). Wait for the owner's answer to
-   `docs/proposals/classes.md`, then build the class page and the class
-   exam dialog. Done when: tests for the dialog's writes, screenshots at
-   phone and desktop, Help updated, live.
-3. **Sync gaps and polish** (§6 items 2–3). These don't wait on anyone.
-   (The security fix, item 1, is done.)
+Next, in order:
 
-Seen in passing, not yet fixed: the mode label on the study screen
-("Learn" in a rounded box beside the counter) is a pill, against §3.
+1. **Ask the owner (and the friend) to try Learn and a class on a phone.**
+   The simulator cannot see whether "read first, then asked" fixes "it
+   asks about things it didn't show"; only a real student can.
+2. **Sync gaps and polish** (§6 items 2–3). These don't wait on anyone.
+3. Watch busy-20 in the simulator after any Learn change: the reading
+   cards cost a 20-minute student about two points there.
 
 Before ending the session: update this file (what changed, what is open)
 and `docs/next.md`, and tell the owner in a few plain lines.
@@ -219,7 +258,7 @@ First, from a friend's real use of Learn (2026-10-10) and the owner's own
 idea. These come before the list below.
 
 A. **Learn asks about things it hasn't taught.** (Placement fixed
-   2026-10-11; the rest is in `docs/proposals/learn.md`.) "You learn 4 terms, then
+   2026-10-11; `docs/proposals/learn.md` A–F built the same day.) "You learn 4 terms, then
    the recall asks about things the read part didn't show." The cause is in
    `src/lib/learnSteps.ts`: an MCQ or flashcard that names none of the
    section's defined terms is spread across the steps by its position
@@ -235,7 +274,8 @@ B. **A glossary.** (Built 2026-10-11.) A per-course page listing every term and 
    its meaning, alphabetical and searchable, to read rather than be quizzed
    on (the friend asked for it; Browse shows items by section, not as a
    reference). Built from the definition items; set like a book's index.
-C. **Classes as a real thing.** The owner's idea: organise by class, add
+C. **Classes as a real thing.** (Built 2026-10-11, with several exams per
+   class; see §0.) The owner's idea: organise by class, add
    lectures to a class, and when an exam comes, pick from the whole class
    what is on it. Today a class is only a shared course code: the library
    groups and filters by it, and one exam date can be copied to sibling
@@ -323,6 +363,7 @@ Supabase.
 | `src/lib/memory.ts` | R = exp(−t/S), due below 0.75, a miss due again after 3 h |
 | `src/lib/buildSessionItems.ts` | Builds every session |
 | `src/lib/today.ts`, `todaySitting.ts`, `dailyShare.ts`, `libraryToday.ts`, `exam.ts` | Today, time left, catch-up, shared daily time, exam steering |
+| `src/lib/classExams.ts`, `src/routes/ClassRoute.tsx`, `src/components/ClassExamDialog.tsx` | Classes: a class's exams, kept on its lectures; the class page |
 | `src/lib/courseHealth.ts`, `questionQuality.ts` | The course check |
 | `src/lib/growTree.ts`, `src/components/CourseTree.tsx` | The tree |
 | `src/lib/cloud.ts`, `syncMerge.ts`, `autoSync.ts` | Sync and share links |
