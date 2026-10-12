@@ -82,6 +82,9 @@ export const SECONDS: Record<SessionItem['type'], number> = {
   recall: 15,
   mcq: 35,
   preview: 10,
+  // The card that sends the student to their own slides; the reading itself
+  // happens outside the app. Simulated courses have no slide ranges.
+  slides: 5,
 };
 
 /**
