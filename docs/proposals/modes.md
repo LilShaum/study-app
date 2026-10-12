@@ -21,11 +21,11 @@ Diagrams**). Thirteen doors.
 | Learn | First time through new material | Fair. Fixed a lot this week, but see "Learn" below | Rework |
 | Quiz / Flashcards / Terms / Mixed | One card type each | They sort by *format*, which is not a goal a student has | Merge into one Practice |
 | Weakest first / Review missed | Drill what is going badly | Overlaps Review and Today | Merge into Practice as a choice |
-| (none) | The last days before an exam | Today shifts a little toward review; that is all | **Add Cram** |
+| (none) | The last days before an exam | Today shifts a little toward review; that is all | Cram tested, lost; Today now splits the last 3 days into 3 sittings |
 | Progress, Browse, Glossary, Diagrams | Look things up, check how it is going | Fine | Keep, as pages, not modes |
 
-After: **Today, Learn, Cram, Practice**, plus the pages. Four doors, each
-with one job.
+After: **Today, Learn, Practice**, plus the pages. Three doors, each with
+one job. (Cram was tested and folded into Today; see below.)
 
 ## Learn
 
@@ -121,6 +121,12 @@ days, under both students. If it doesn't beat what Today already does in
 the crammer and late-start scenarios, it doesn't get built, and Today's
 last days get whatever part of it did help.
 
+**Result (2026-10-12): not built.** Cram lost 6–9 points under both
+students: it re-drilled the same weak cards and left a quarter to a third
+of the exam never studied. Splitting the day into sittings a few hours
+apart is what helped, so Today now does that in the last three days
+(sim/FINDINGS.md).
+
 ## Practice
 
 **Why it's here.** "Drill this lecture now", outside the plan: before a
@@ -136,7 +142,7 @@ nobody mistakes it for the daily work.
 1. Learn: the later first ask, and the passage after every answer (small,
    simulator check).
 2. Cram, simulator first.
-3. Modes down to Today, Learn, Cram, Practice.
+3. Modes down to Today, Learn, Practice.
 4. Learn "with my slides" (needs slide numbers in the generator prompt).
 5. Fit the memory model to the student, once there is a month of real
    study.

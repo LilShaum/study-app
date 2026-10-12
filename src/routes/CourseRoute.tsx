@@ -22,7 +22,7 @@ import { CATCH_UP_HOURS, isDueFor } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
 import { examRule } from '@/lib/exam';
 import { buildSessionItems } from '@/lib/buildSessionItems';
-import { DEFAULT_MINUTES } from '@/lib/today';
+import { DEFAULT_MINUTES, PARTS } from '@/lib/today';
 import { plannedMinutes, studiedToday, todaySitting } from '@/lib/todaySitting';
 import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 import { usePlanStore } from '@/store/plan';
@@ -219,13 +219,15 @@ export function CourseRoute() {
     });
     const review = items.filter((i) => i._block === 'review').length;
     const firstNew = items.find((i) => i._block !== 'review');
+    // A sitting is planned in whole steps and usually ends a little short of
+    // its part, so a part counts as done at three quarters of its time.
     // Done for today: when the day's misses are worth one more look.
     const studied = studiedToday(id, now) > 0;
     const backAt = Object.values(progress)
       .filter((r) => r.lastGot === false && r.lastSeen != null && now - r.lastSeen < CATCH_UP_HOURS * 3_600_000)
       .map((r) => r.lastSeen! + CATCH_UP_HOURS * 3_600_000);
     const catchUpAt = backAt.length && new Date(Math.min(...backAt)).toDateString() === new Date(now).toDateString() ? Math.min(...backAt) : null;
-    return { review, firstNew, empty: items.length === 0, minutes: Math.round(sitting.minutes), catchUp: sitting.catchUp, studied, catchUpAt, waiting: backAt.length };
+    return { review, firstNew, empty: items.length === 0, minutes: Math.round(sitting.minutes), catchUp: sitting.catchUp, part: sitting.part, partNo: sitting.part ? Math.min(PARTS, Math.floor(studiedToday(id, now) / 60 / sitting.part + 0.25) + 1) : 0, studied, catchUpAt, waiting: backAt.length };
   }, [course, id, progress, now, minutes, pace, logs]);
 
   // A bookmark outlives the item it points at — the item can be edited away,
@@ -268,6 +270,11 @@ export function CourseRoute() {
           .join(', ');
   // The exam this lecture is planned for now: its own, or the next class exam on it.
   const exam = lectureExam(course, now);
+  // The last days before it, the day comes in parts (lib/today.ts, partMinutes).
+  const partLine =
+    today?.part != null && !today.catchUp && !today.empty
+      ? `Close to the exam, ${PARTS === 3 ? 'three' : PARTS} sittings of about ${Math.round(today.part)} minutes a few hours apart do more than one long one.`
+      : null;
   const classCode = classOf(course);
   const covered = exam.sections;
   const coverage = covered?.length
@@ -397,11 +404,12 @@ export function CourseRoute() {
                   {!today?.empty && (
                     <span className="mark tabular-nums text-text-2">
                       {today?.catchUp ? 'catch-up · ' : ''}
-                      {today?.minutes ?? minutes} min{today && !today.catchUp && today.minutes < minutes ? ' left' : ''}
+                      {today?.minutes ?? minutes} min{today?.part != null && !today.catchUp ? ` · ${today.partNo} of ${PARTS}` : today && !today.catchUp && today.minutes < minutes ? ' left' : ''}
                     </span>
                   )}
                 </span>
                 <span className="mt-0.5 block text-small text-text-2">{todaySummary}</span>
+                {partLine && <span className="mt-1 block text-small text-text-3">{partLine}</span>}
                 <button
                   type="button"
                   onClick={() => setExamOpen(true)}

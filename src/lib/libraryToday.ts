@@ -4,7 +4,7 @@ import type { ItemResult } from '@/store/progress';
 import { buildSessionItems } from './buildSessionItems';
 import { examRule } from './exam';
 import { examTime } from './memory';
-import { dueCount, minutesLeft } from './today';
+import { dueCount, minutesLeft, partMinutes } from './today';
 
 export interface CourseToday {
   id: string;
@@ -51,7 +51,9 @@ export function todayAcrossCourses(
   const out: CourseToday[] = [];
   for (const [id, course] of Object.entries(courses)) {
     const progress = progressByCourse[id] ?? {};
-    const { minutes, catchUp } = minutesLeft(minutesFor(id), studiedToday(id), dueCount(course, progress, now));
+    const planned = minutesFor(id);
+    const part = partMinutes(planned, daysToExam(lectureExam(course, now).date, now));
+    const { minutes, catchUp } = minutesLeft(planned, studiedToday(id), dueCount(course, progress, now), part);
     const items = buildSessionItems(course, 'today', {
       progress,
       now,

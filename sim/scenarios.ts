@@ -165,6 +165,15 @@ export const SCENARIOS: Scenario[] = [
     tellsScope: true,
     memory: 'harsh',
   },
+  // 2026-10-12: the last days before an exam. A student who starts four
+  // days out, and the crammer under the harsher student; the `-split` ones
+  // are the hand-set three sittings that showed the gain, kept to compare
+  // with Today's own parts.
+  { ...base, name: 'crammer-harsh', why: 'crammer under the harsher student.', memory: 'harsh', minutes: (d: number) => (d >= 24 ? 90 : 10) },
+  { ...base, name: 'late-start', why: 'Nothing until four days out, then two hours a day.', minutes: (d: number) => (d >= 27 ? 120 : 0) },
+  { ...base, name: 'late-start-harsh', why: 'late-start under the harsher student.', memory: 'harsh', minutes: (d: number) => (d >= 27 ? 120 : 0) },
+  { ...base, name: 'crammer-split', why: 'crammer, the last three days in three sittings set by hand.', minutes: (d: number) => (d >= 24 ? 90 : 10), policy: 'today-3-split' },
+  { ...base, name: 'late-start-split', why: 'late-start, the last three days in three sittings set by hand.', minutes: (d: number) => (d >= 27 ? 120 : 0), policy: 'today-3-split' },
 ];
 
 /**

@@ -1,7 +1,8 @@
 import type { Course } from '@/schema/course';
 import { recallId, type SessionItem } from '@/lib/buildSessionItems';
 import { examRule } from '@/lib/exam';
-import { splitSitting } from '@/lib/today';
+import { partMinutes, PART_GAP_HOURS, splitSitting } from '@/lib/today';
+import { daysToExam } from '@/lib/libraryToday';
 import { forecast } from './experiments/forecast';
 import { examTime, isDueFor, retrievability, setPersonalScale, stabilityOf } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
@@ -128,6 +129,8 @@ export interface Day {
   available: number;
   /** Open Review, as the course page does, and study until it ends or time does. */
   review: (capMs?: number) => 'done' | 'out' | 'empty';
+  /** Whether the app plans this day in parts a few hours apart (lib/today.ts, partMinutes). */
+  parts: boolean;
   /** Press Today: one sitting the app sizes to the day's minutes (or to capMs). */
   today: (capMs?: number) => 'done' | 'out' | 'empty';
   /** A fresh Today sitting of this many ms, whatever was studied earlier in the day. */
@@ -171,9 +174,37 @@ const eveningMisses =
     d.missedAgain(d.usedMs() + minutes * MIN);
   };
 
+/**
+ * The student presses Today, and takes "Keep going" while they still have
+ * time. When the app plans the day in parts (the last days before an exam),
+ * they come back for the next part a few hours later, as it says.
+ */
 const todayButton: Policy = (d) => {
-  for (let k = 0; k < 5 && d.usedMs() < d.budgetMs; k++) if (d.today() !== 'done') break;
+  for (let k = 0; k < 5 && d.usedMs() < d.budgetMs; k++) {
+    if (k && d.parts) d.later(PART_GAP_HOURS);
+    if (d.today() !== 'done') break;
+  }
 };
+
+/**
+ * Experiment, 2026-10-12: the last `days` days in `sittings` sittings three
+ * hours apart, through Today with the time set by hand, before the app had
+ * parts. A Cram mode was tried the same way and lost (sim/FINDINGS.md).
+ */
+const splitLast =
+  (days: number, sittings: number): Policy =>
+  (d) => {
+    if (d.daysLeft > days) {
+      for (let k = 0; k < 5 && d.usedMs() < d.budgetMs; k++) if (d.today() !== 'done') break;
+      return;
+    }
+    const each = d.budgetMs / sittings;
+    for (let k = 0; k < sittings; k++) {
+      if (k) d.later(3);
+      const until = Math.min(d.budgetMs, (k + 1) * each);
+      for (let n = 0; n < 5 && d.usedMs() < until - 60_000; n++) if (d.todayFor(until - d.usedMs()) !== 'done') break;
+    }
+  };
 
 export const POLICIES: Record<string, Policy> = {
   /**
@@ -205,6 +236,7 @@ export const POLICIES: Record<string, Policy> = {
    * personal-pace fit). Same minutes as today-button.
    */
   'today-personal': todayButton,
+  'today-3-split': splitLast(3, 3),
   /** The student presses Today once, with their minutes set, and stops when it ends. */
   'today-button-once': (d) => {
     d.today();
@@ -212,10 +244,9 @@ export const POLICIES: Record<string, Policy> = {
   /**
    * The same, and takes "Keep going" at the end while they still have time:
    * the sitting is planned in whole steps and usually ends a little early.
+   * Near the exam, the next part a few hours later (todayButton).
    */
-  'today-button': (d) => {
-    for (let k = 0; k < 5 && d.usedMs() < d.budgetMs; k++) if (d.today() !== 'done') break;
-  },
+  'today-button': todayButton,
   /** The Today plan as the app ships it (lib/today.ts defaults). */
   today: today(),
   /**
@@ -412,6 +443,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
     const d: Day = {
       day,
       budgetMs,
+      parts: sc.examDate && partMinutes(budgetMs / MIN, daysToExam(examIso, now)) != null,
       usedMs: () => used,
       available,
       daysLeft: sc.days - day,

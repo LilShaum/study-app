@@ -10,6 +10,55 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-12 — Cram: not built. Today's last three days come in three parts
+
+**Question** (`docs/proposals/modes.md`, the owner's go-ahead to build Cram
+if the simulator says it helps). A Cram mode for the last days: only the
+exam's sections; first everything that would arrive at the exam below
+EXAM_TARGET, weakest on the day first, for 40% of the sitting while
+anything is new; then new material in Learn's steps without the worked
+examples and diagrams; a miss back a few cards on. Built as a real session
+mode and driven through the store, in the last three days, as one sitting
+or three sittings three hours apart. Against Today as shipped, and Today
+in three sittings set by hand (5 seeds):
+
+| Last 3 days by | crammer | crammer, harsh | late-start | late-start, harsh |
+|---|---|---|---|---|
+| Today, one sitting | 69% | — | 58% | 33% |
+| Cram, one sitting | 60% | 23% | 50% | 27% |
+| Cram, three sittings | 63% | 26% | 54% | 31% |
+| Today, three sittings | 71% | 32% | 60% | 36% |
+
+**Decision: no Cram mode.** It loses 6–9 points under both students. It
+drills the same weak cards again in every sitting, where the truth model
+gives a review seconds or hours after the last one little growth, and it
+leaves a quarter to a third of the exam never studied (26–36% against
+7–8%). Today already times reviews for the exam (memory.ts, isDueFor) and
+stops re-asking a card once it has been reviewed inside the window.
+
+**What helped was the spacing.** So Today now plans the last three days
+before an exam in three parts, three hours apart (lib/today.ts,
+partMinutes; only when the day is 30 minutes or more), says so on the
+course page ("10 min · 1 of 3") and names the next sitting's time on the
+finish screen. The default policy follows it: the student comes back for
+the next part when the app plans parts. Whole suite, 5 seeds, against the
+baseline: crammer 69→72%, steady-45 77→80%, steady-60 89→93%,
+steady-45-cutoff-scope 86→90%, steady-30-half-scope 83→86%,
+steady-45-cutoff-harsh 24→26%; late-start 58→62% and late-start-harsh
+33→38% (new scenarios). No-date scenarios level, as they must be.
+steady-30 level at 57% with never-studied +5 (10-minute parts).
+
+**Assumptions.** Sim days start at 7pm, so the parts fall at 7pm, 10pm
+and 1am, and sleep is not modelled. The gain rests on the truth model's
+spacing within a day; a student who cannot come back the same day gets
+one 10–40 minute part and the rest through "Keep going".
+
+**Scenarios added:** crammer-harsh, late-start, late-start-harsh, and
+crammer-split and late-start-split (the hand-set sittings, policy
+`today-3-split`). The Cram door is gone with the mode. Re-baselined.
+
+---
+
 ## 2026-10-12 — Learn: ask in the order it was read; a miss is not asked again at the section's end
 
 **Change** (`docs/proposals/modes.md` step 1). Inside a step, everything is

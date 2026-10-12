@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
 import { recallId } from './scored';
-import { CAP_WITHIN_DAYS, CATCH_UP_MINUTES, minutesLeft, REVIEW_CAP, REVIEW_SECONDS, splitSitting } from './today';
+import { CAP_WITHIN_DAYS, CATCH_UP_MINUTES, minutesLeft, partMinutes, REVIEW_CAP, REVIEW_SECONDS, splitSitting } from './today';
 
 const DAY = 86_400_000;
 const exam = new Date(2026, 9, 27, 9).getTime();
@@ -59,5 +59,23 @@ describe('minutesLeft', () => {
 
   it('is nothing once the plan is spent and nothing is due', () => {
     expect(minutesLeft(30, 40 * 60, 0)).toEqual({ minutes: 0, catchUp: false });
+  });
+});
+
+describe('the day in parts near an exam', () => {
+  it('splits only in the last three days, and only a day long enough to split', () => {
+    expect(partMinutes(90, 2)).toBe(30);
+    expect(partMinutes(90, 3)).toBe(30);
+    expect(partMinutes(90, 4)).toBeNull();
+    expect(partMinutes(90, 0)).toBeNull();
+    expect(partMinutes(90, null)).toBeNull();
+    expect(partMinutes(20, 1)).toBeNull();
+  });
+
+  it('gives one part at a time, then the catch-up once the day is spent', () => {
+    expect(minutesLeft(90, 0, 0, 30)).toEqual({ minutes: 30, catchUp: false });
+    expect(minutesLeft(90, 30 * 60, 0, 30)).toEqual({ minutes: 30, catchUp: false });
+    expect(minutesLeft(90, 70 * 60, 0, 30)).toEqual({ minutes: 20, catchUp: false });
+    expect(minutesLeft(90, 90 * 60, 3, 30)).toEqual({ minutes: CATCH_UP_MINUTES, catchUp: true });
   });
 });

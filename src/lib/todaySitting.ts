@@ -8,7 +8,7 @@ import { useProgressStore } from '@/store/progress';
 import { scoredEntries } from './scored';
 import { daysToExam } from './libraryToday';
 import { shareMinutes } from './dailyShare';
-import { dueCount, minutesLeft } from './today';
+import { dueCount, minutesLeft, partMinutes } from './today';
 
 /** Seconds studied in a course so far today, from the study log. */
 export function studiedToday(courseId: string, now: number): number {
@@ -52,8 +52,10 @@ export function todaySitting(
   progress: Record<string, ItemResult>,
   now: number,
   fullDay = false,
-): { minutes: number; catchUp: boolean } {
+): { minutes: number; catchUp: boolean; part: number | null } {
   const planned = plannedMinutes(courseId, now);
-  if (fullDay) return { minutes: planned, catchUp: false };
-  return minutesLeft(planned, studiedToday(courseId, now), dueCount(course, progress, now));
+  if (fullDay) return { minutes: planned, catchUp: false, part: null };
+  // Near the exam, the day comes in parts a few hours apart (lib/today.ts).
+  const part = partMinutes(planned, daysToExam(lectureExam(course, now).date, now));
+  return { ...minutesLeft(planned, studiedToday(courseId, now), dueCount(course, progress, now), part), part };
 }
