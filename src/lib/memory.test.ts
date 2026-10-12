@@ -172,4 +172,14 @@ describe('a miss is worth one more look the same day', () => {
     const since: ItemResult = { ...missed, got: 1, lastGot: true, stability: 2 };
     expect(catchUpDue(since, T0 + 4 * H)).toBe(false);
   });
+
+  it('still, when a retry in the same sitting put it right', () => {
+    // Missed, then right on a retry two minutes later: the retry is not the later look.
+    const retried: ItemResult = { ...missed, got: 1, lastGot: true, lastSeen: T0 + 120_000, missedAt: T0, stability: 1 };
+    expect(catchUpDue(retried, T0 + 120_000 + (CATCH_UP_HOURS + 0.1) * H)).toBe(true);
+    expect(nextDueAt(retried, T0 + 120_000, null)).toBe(T0 + 120_000 + CATCH_UP_HOURS * H);
+    // Got right at the catch-up itself, hours after the miss: done with.
+    const caught: ItemResult = { ...retried, got: 2, lastSeen: T0 + 4 * H };
+    expect(catchUpDue(caught, T0 + 8 * H)).toBe(false);
+  });
 });

@@ -186,9 +186,28 @@ export function isDueFor(r: ItemResult | undefined, now: number, examAt: number 
  * often found nothing waiting; this brings it forward to CATCH_UP_HOURS.
  */
 export const CATCH_UP_HOURS = 3;
+
+/**
+ * A sitting, for telling a retry from a later look: answers within this of
+ * the miss are the same sitting.
+ */
+const SITTING_MS = 3_600_000;
+
+/**
+ * Missed in its latest sitting: the last answer was wrong, or it was wrong
+ * and then put right by a retry within the hour. The retry helps for now,
+ * but it is not the later look the catch-up is for, and it used to take the
+ * card out of it (the owner, cramming before a midterm, 2026-10-12).
+ */
+export function missedThisSitting(r: ItemResult | undefined): boolean {
+  if (!r || r.lastSeen == null) return false;
+  if (r.lastGot === false) return true;
+  return r.missedAt != null && r.lastSeen - r.missedAt < SITTING_MS;
+}
+
 export function catchUpDue(r: ItemResult | undefined, now: number): boolean {
-  if (!r || r.lastGot !== false || r.lastSeen == null) return false;
-  return now - r.lastSeen >= CATCH_UP_HOURS * 3_600_000;
+  if (!missedThisSitting(r)) return false;
+  return now - r!.lastSeen! >= CATCH_UP_HOURS * 3_600_000;
 }
 
 /**
@@ -224,7 +243,7 @@ export function nextDueAt(r: ItemResult | undefined, now: number, examAt: number
   const s = stabilityOf(r);
   if (s == null) return null;
   let normal = r!.lastSeen! + -Math.log(DUE_BELOW) * s * personalScale * DAY_MS;
-  if (r!.lastGot === false) normal = Math.min(normal, r!.lastSeen! + CATCH_UP_HOURS * 3_600_000);
+  if (missedThisSitting(r)) normal = Math.min(normal, r!.lastSeen! + CATCH_UP_HOURS * 3_600_000);
   const latest = examReviewFrom(r, s * personalScale, now, examAt);
   return latest == null ? normal : Math.min(normal, latest);
 }

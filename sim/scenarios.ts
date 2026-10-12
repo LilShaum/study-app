@@ -193,6 +193,14 @@ export const SCENARIOS: Scenario[] = [
     policy: 'questions-first',
   })),
   { ...base, name: 'steady-45-harsh', why: 'steady-45 under the harsher student.', memory: 'harsh', minutes: () => 45 },
+  // 2026-10-12: Today, then the catch-up a few hours later, as the app asks.
+  // For a catch-up that keeps misses put right by a retry in the sitting.
+  { ...base, name: 'steady-30-evening', why: 'steady-30, then Today again 4 hours later for the 5-minute catch-up.', minutes: () => 30, policy: 'evening-today' },
+  { ...base, name: 'steady-30-evening-harsh', why: 'steady-30-evening under the harsher student.', memory: 'harsh', minutes: () => 30, policy: 'evening-today' },
+  { ...base, name: 'crammer-evening', why: 'crammer, with the evening catch-up.', minutes: (d: number) => (d >= 24 ? 90 : 10), policy: 'evening-today' },
+  { ...base, name: 'steady-30-retry', why: 'steady-30, retrying the misses at once, then the catch-up 4 hours later.', minutes: () => 30, policy: 'retry-then-evening' },
+  { ...base, name: 'steady-30-retry-harsh', why: 'steady-30-retry under the harsher student.', memory: 'harsh', minutes: () => 30, policy: 'retry-then-evening' },
+  { ...base, name: 'crammer-retry', why: 'crammer, retrying the misses at once, then the catch-up.', minutes: (d: number) => (d >= 24 ? 90 : 10), policy: 'retry-then-evening' },
 ];
 
 /**

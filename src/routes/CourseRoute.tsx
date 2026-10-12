@@ -17,7 +17,7 @@ import { TreeDialog } from '@/components/TreeDialog';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
 import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
-import { CATCH_UP_HOURS, isDueFor } from '@/lib/memory';
+import { CATCH_UP_HOURS, isDueFor, missedThisSitting } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
 import { examRule } from '@/lib/exam';
 import { buildSessionItems } from '@/lib/buildSessionItems';
@@ -184,7 +184,7 @@ export function CourseRoute() {
     // Done for today: when the day's misses are worth one more look.
     const studied = studiedToday(id, now) > 0;
     const backAt = Object.values(progress)
-      .filter((r) => r.lastGot === false && r.lastSeen != null && now - r.lastSeen < CATCH_UP_HOURS * 3_600_000)
+      .filter((r) => missedThisSitting(r) && now - r.lastSeen! < CATCH_UP_HOURS * 3_600_000)
       .map((r) => r.lastSeen! + CATCH_UP_HOURS * 3_600_000);
     const catchUpAt = backAt.length && new Date(Math.min(...backAt)).toDateString() === new Date(now).toDateString() ? Math.min(...backAt) : null;
     return { review, firstNew, empty: items.length === 0, minutes: Math.round(sitting.minutes), catchUp: sitting.catchUp, part: sitting.part, partNo: sitting.part ? Math.min(PARTS, Math.floor(studiedToday(id, now) / 60 / sitting.part + 0.25) + 1) : 0, studied, catchUpAt, waiting: backAt.length };

@@ -11,7 +11,7 @@ import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { SectionJump } from './SectionJump';
 import { SessionRail } from './SessionRail';
-import { CATCH_UP_HOURS, nextDueAt, whenLabel } from '@/lib/memory';
+import { CATCH_UP_HOURS, missedThisSitting, nextDueAt, whenLabel } from '@/lib/memory';
 import { examRule } from '@/lib/exam';
 import { useCoursesStore } from '@/store/courses';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
@@ -332,13 +332,14 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       const left = todaySitting(courseId, course, prog, now);
       const back = now + PART_GAP_HOURS * 3_600_000;
       if (left.part != null && !left.catchUp && left.minutes >= CATCH_UP_MINUTES && new Date(back).toDateString() === new Date(now).toDateString()) {
-        const missedAny = [...results.keys()].some((i) => prog[done[i]?.id ?? '']?.lastGot === false);
+        const missedAny = [...results.keys()].some((i) => missedThisSitting(prog[done[i]?.id ?? '']));
         return `Next sitting after ${new Date(back).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}${missedAny ? ', and what you missed comes back in it' : ''}. This close to the exam, a few shorter sittings spread over the day do more than one long one.`;
       }
     }
     // Misses first: one more look a few hours on is the cheapest gain there is
     // (lib/memory.ts, catchUpDue), but only if the student knows to come back.
-    const missed = [...new Set([...results.keys()].map((i) => done[i]?.id).filter((id): id is string => !!id && prog[id]?.lastGot === false))];
+    // Put right by a retry still counts: the later look is what lasts.
+    const missed = [...new Set([...results.keys()].map((i) => done[i]?.id).filter((id): id is string => !!id && missedThisSitting(prog[id])))];
     if (missed.length) {
       const back = Math.max(...missed.map((id) => prog[id].lastSeen ?? now)) + CATCH_UP_HOURS * 3_600_000;
       const sameDay = new Date(back).toDateString() === new Date(now).toDateString();

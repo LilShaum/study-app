@@ -233,6 +233,18 @@ export const POLICIES: Record<string, Policy> = {
     d.later(Number(process.env.SIM_GAP ?? 4));
     d.todayFor(5 * MIN);
   },
+  /**
+   * Experiment, 2026-10-12: a student who crams. Today less ten minutes,
+   * then straight away the sitting's misses again, then four hours later
+   * Today for five minutes, the catch-up.
+   */
+  'retry-then-evening': (d) => {
+    const main = Math.max(0, d.budgetMs - 10 * MIN);
+    for (let k = 0; k < 5 && d.usedMs() < main; k++) if (d.today(main) !== 'done') break;
+    d.missedAgain(d.usedMs() + 5 * MIN);
+    d.later(4);
+    d.todayFor(5 * MIN);
+  },
   'evening-misses-3h': eveningMisses(3, 5),
   'evening-misses-10h': eveningMisses(10, 5),
   'evening-misses-0h': eveningMisses(0, 5),

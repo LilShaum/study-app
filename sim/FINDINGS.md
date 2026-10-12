@@ -10,6 +10,34 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-12 — The catch-up keeps misses put right by a retry; retrying at once costs new material
+
+**Change.** A card missed and then got right by a retry minutes later in
+the same sitting used to leave the catch-up (`catchUpDue` looked only at
+the latest answer), so a student who crammed their misses lost the later
+look. Now a miss in the latest sitting counts (`missedAt` on the record,
+`missedThisSitting` in lib/memory.ts). The owner asked for it before a
+midterm. Fixed with it: a typed answer's mix-up (`confusedWith`) was
+dropped by the card's next answer of any kind, so a confused pair was put
+side by side in one session at most; it now stays until the term is got
+right on a later day.
+
+**Result** (5 seeds). New scenarios: `-evening` (Today, then Today again
+four hours later for five minutes) and `-retry` (Today less ten minutes,
+the misses straight away, then the catch-up). Old rule → new rule:
+steady-30-evening 62→63%, steady-30-evening-harsh 18→18%, crammer-evening
+76→76%; steady-30-retry 52→52%, steady-30-retry-harsh 17→17%,
+crammer-retry 70→72%. Level to slightly ahead under both students. The
+suite without catch-ups is unchanged.
+
+**Also seen.** Retrying the misses at once, with the same daily minutes,
+was 4 to 11 points behind using those minutes for Today
+(steady-30-evening 63% against steady-30-retry 52%, crammer 76% against
+72%): the misses come back in the catch-up anyway, and the minutes buy
+new material. The retry stays, never as the lead button (2026-10-12).
+
+---
+
 ## 2026-10-12 — Questions first in Learn: built as a switch. A failed first try now counts like reading
 
 **Assumption changed.** A never-learned item answered wrong, with the

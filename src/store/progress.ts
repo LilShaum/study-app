@@ -23,6 +23,12 @@ export interface ItemResult {
   confusedWith?: string[];
   /** Whether the latest answer was right. Absent on records from before it was kept. */
   lastGot?: boolean;
+  /**
+   * When it was last answered wrong. A miss put right by a retry minutes
+   * later in the same sitting is still worth the catch-up a few hours on
+   * (lib/memory.ts, missedThisSitting).
+   */
+  missedAt?: number;
 }
 
 /**
@@ -31,6 +37,11 @@ export interface ItemResult {
  * "missed" used to mean everywhere — and was wrong for an item missed three
  * times and then got right twice, which still counted as missed.
  */
+/** Two moments on the same local calendar day. */
+function sameDay(a: number, b: number): boolean {
+  return new Date(a).toDateString() === new Date(b).toDateString();
+}
+
 export function isMissed(r: ItemResult | undefined): boolean {
   if (!r || r.got + r.missed === 0) return false;
   return r.lastGot != null ? !r.lastGot : r.missed > r.got;
@@ -101,6 +112,13 @@ export const useProgressStore = create<ProgressState>()(
             stability: nextStability(before, got, now),
             before,
             lastGot: got,
+            ...(got ? (prev.missedAt != null ? { missedAt: prev.missedAt } : {}) : { missedAt: now }),
+            // A mix-up is kept until the term is got right on a later day.
+            // It used to be dropped by the next answer of any kind, so a pair
+            // was put side by side in one session at most.
+            ...(prev.confusedWith?.length && !(got && prev.lastSeen != null && !sameDay(prev.lastSeen, now))
+              ? { confusedWith: prev.confusedWith }
+              : {}),
           };
           return {
             byCourse: {
@@ -119,8 +137,13 @@ export const useProgressStore = create<ProgressState>()(
           if (!prev) return state;
           const from = got ? prev.missed : prev.got;
           if (from <= 0) return state;
+          // The latest answer is the one revised: an overruled miss did not
+          // happen, and a miss recorded on review did.
+          const { missedAt: _wasMissedAt, ...rest } = prev;
+          void _wasMissedAt;
           const next: ItemResult = {
-            ...prev,
+            ...rest,
+            ...(got ? (prev.missedAt != null && prev.missedAt !== prev.lastSeen ? { missedAt: prev.missedAt } : {}) : prev.lastSeen != null ? { missedAt: prev.lastSeen } : {}),
             got: prev.got + (got ? 1 : -1),
             missed: prev.missed + (got ? -1 : 1),
             lastGot: got,
