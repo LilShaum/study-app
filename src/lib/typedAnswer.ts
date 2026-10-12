@@ -30,6 +30,8 @@ export type Verdict =
   | { correct: true; kind: 'typo'; spelled: string }
   /** Matched, or was nearer to, a DIFFERENT term in the course. */
   | { correct: false; kind: 'confused'; with: string }
+  /** Some of the words of the answer and nothing else: "target" for "target organ". */
+  | { correct: false; kind: 'partial' }
   | { correct: false; kind: 'wrong' };
 
 /**
@@ -195,6 +197,18 @@ export function gradeTyped(input: string, target: Answerable, others: readonly A
       if (o.forms.some((f) => within(typed, f.norm, allowedSlips(f.norm.length)) !== null)) {
         return { correct: false, kind: 'confused', with: o.term };
       }
+    }
+    // Part of the answer, and nothing that is not in it: "target" for
+    // "target organ", "enzyme" for "enzyme-substrate complex". Still wrong,
+    // but it is a different miss from a blank, and saying so tells the
+    // student what they had.
+    const words = (s: string) => s.split(' ').filter((w) => w.length >= 3);
+    const got = words(typed);
+    if (got.length && mine.some((f) => {
+      const all = words(f.norm);
+      return got.length < all.length && got.every((w) => all.some((a) => a === w || within(w, a, allowedSlips(a.length)) !== null));
+    })) {
+      return { correct: false, kind: 'partial' };
     }
     return { correct: false, kind: 'wrong' };
   }

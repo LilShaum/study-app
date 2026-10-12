@@ -202,6 +202,28 @@ interface Pause {
   terms: string[];
   got: number;
   asked: number;
+  /** What the step's last answer to it was wrong, named for the student. */
+  shaky: string[];
+  /** When those are worth one more look: the catch-up (lib/memory.ts). */
+  backAt: number;
+}
+
+/** A card named in a few words: its term, or the start of its question. */
+function shortName(item: SessionItem): string {
+  const clip = (s: string) => {
+    const words = s.trim().split(/\s+/);
+    return words.length > 7 ? `${words.slice(0, 7).join(' ')}…` : s.trim();
+  };
+  switch (item.type) {
+    case 'recall':
+      return item.question ? clip(item.question) : item.target.term;
+    case 'flashcard':
+      return clip(item.front);
+    case 'mcq':
+      return clip(item.question);
+    default:
+      return '';
+  }
 }
 
 /** Every mode except Browse — one item at a time. */
@@ -360,6 +382,17 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       ).filter((t, i, list) => t && list.indexOf(t) === i),
       got: first.filter(({ n }) => results.get(n)).length,
       asked: first.length,
+      // The latest answer to each card in the step, copies included.
+      shaky: [
+        ...inStep
+          .filter(({ n }) => results.has(n))
+          .reduce((last, { item, n }) => last.set(item.id, { item, got: results.get(n)! }), new Map<string, { item: SessionItem; got: boolean }>())
+          .values(),
+      ]
+        .filter((r) => !r.got)
+        .map((r) => shortName(r.item))
+        .filter(Boolean),
+      backAt: Date.now() + CATCH_UP_HOURS * 3_600_000,
     };
   };
 
@@ -436,7 +469,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   if (total === 0) {
     const copy = EMPTY_COPY[mode];
     return (
-      <div className="mx-auto max-w-2xl p-10 text-center">
+      <div className="mx-auto max-w-2xl py-10 text-center sm:px-10">
         <Link to={`/study/${courseId}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
           ← Back
         </Link>
@@ -469,7 +502,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
        * number cannot show you that a branch you had never opened is now in
        * leaf.
        */
-      <div className="mx-auto flex max-w-2xl flex-col items-center p-10 text-center">
+      <div className="mx-auto flex max-w-2xl flex-col items-center py-10 text-center sm:px-10">
         <CourseTree
           courseId={courseId}
           course={course}
@@ -559,7 +592,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-6 lg:grid lg:max-w-5xl lg:grid-cols-[minmax(0,1fr)_13rem] lg:gap-12">
+    <div className="mx-auto max-w-2xl py-6 sm:px-6 lg:grid lg:max-w-5xl lg:grid-cols-[minmax(0,1fr)_13rem] lg:gap-12">
       <div className="min-w-0">
       <div className="mb-4 flex items-center justify-between">
         <Link to={`/study/${courseId}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
@@ -657,6 +690,23 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           )}
           {!pause.reviewDone && pause.terms.length > 0 && (
             <p className="mx-auto mt-2 max-w-prose text-small text-text-2">{pause.terms.join(' · ')}</p>
+          )}
+          {/* What did not settle, by name, and when it comes back: the
+              catch-up a few hours on (lib/memory.ts, catchUpDue). */}
+          {pause.shaky.length > 0 && (
+            <p className="mx-auto mt-3 max-w-prose text-small text-text-2">
+              <span className="text-error">Not yet: </span>
+              {(() => {
+                // Four by name at most; the rest as a count, so a hard step
+                // does not fill the screen. No full stop after a clipped name.
+                const named = pause.shaky.slice(0, 4).join(' · ');
+                const more = pause.shaky.length - 4;
+                const list = more > 0 ? `${named} and ${more} more` : named;
+                return list.endsWith('…') ? list : `${list}.`;
+              })()}{' '}
+              {pause.shaky.length === 1 ? 'It comes' : 'They come'} back in Today after{' '}
+              {new Date(pause.backAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.
+            </p>
           )}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button type="button" onClick={() => {

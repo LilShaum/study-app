@@ -173,3 +173,20 @@ describe('maskTerm', () => {
     expect(maskTerm('Rasterised figure of the pathway.', t('Ras'))).toBe('Rasterised figure of the pathway.');
   });
 });
+
+describe('part of the answer', () => {
+  it('says so when the words typed are all in the answer, and fewer', () => {
+    expect(grade('natriuretic peptide', 'Atrial natriuretic peptide (ANP)')).toEqual({ correct: false, kind: 'partial' });
+    expect(grade('menten', 'Michaelis–Menten equation')).toEqual({ correct: false, kind: 'partial' });
+    // A slip in a word is still the word.
+    expect(grade('michaelis menton', 'Michaelis–Menten equation')).toEqual({ correct: false, kind: 'partial' });
+  });
+
+  it('does not call a word that is not in the answer part of it', () => {
+    expect(grade('peptide hormone', 'Atrial natriuretic peptide (ANP)').kind).toBe('wrong');
+  });
+
+  it('a different term named in full is still the confusion, not part of this one', () => {
+    expect(grade('receptor', 'Dissociation constant (Kd) for ligand–receptor binding').kind).toBe('confused');
+  });
+});

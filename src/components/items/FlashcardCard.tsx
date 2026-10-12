@@ -19,9 +19,11 @@ const FACE = 'flip-face flex min-h-[220px] w-full flex-col items-center justify-
 
 export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false, learning = false }: FlashcardCardProps) {
   const [flipped, setFlipped] = useState(false);
+  const [hintShown, setHintShown] = useState(false);
 
   const grade = (got: boolean) => {
     setFlipped(false);
+    setHintShown(false);
     if (got) onGot?.();
     else onMissed?.();
   };
@@ -56,6 +58,25 @@ export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false, 
           {/* Front */}
           <div className={FACE} aria-hidden={flipped}>
             <p className="font-display text-heading text-text">{item.front}</p>
+            {/* A hint helps only before the answer is seen: offered here, on
+                the front, for the student to ask for. It used to be printed
+                on the back, under the answer it was meant to lead to. */}
+            {item.hint &&
+              (hintShown ? (
+                <p className="flex items-center gap-1.5 text-sm text-text-2">
+                  <Icon name="bulb" size={13} />
+                  {item.hint}
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  tabIndex={flipped ? -1 : 0}
+                  onClick={() => setHintShown(true)}
+                  className="tap-safe text-sm text-text-3 underline-offset-4 hover:text-text hover:underline"
+                >
+                  Show a hint
+                </button>
+              ))}
             <button
               type="button"
               tabIndex={flipped ? -1 : 0}
@@ -68,13 +89,10 @@ export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false, 
 
           {/* Back */}
           <div className={`${FACE} flip-face--back`} aria-hidden={!flipped}>
+            {/* The question stays in view above its answer, to check the one
+                against the other before saying whether you got it. */}
+            <p className="text-small text-text-3">{item.front}</p>
             <p className="font-display text-heading text-text">{item.back}</p>
-            {item.hint && (
-              <p className="flex items-center gap-1.5 text-sm text-text-3">
-                <Icon name="bulb" size={13} />
-                {item.hint}
-              </p>
-            )}
             <div className="flex gap-2">
               <button
                 type="button"

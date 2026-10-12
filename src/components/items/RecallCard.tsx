@@ -31,6 +31,8 @@ function verdictLine(v: Verdict, answer: string, asked: 'term' | 'question'): st
       return `✓ Accepted: it is spelled ${v.spelled}`;
     case 'confused':
       return asked === 'term' ? `✗ That is ${v.with}. This one is ${answer}.` : `✗ That is ${v.with}. The answer is ${answer}.`;
+    case 'partial':
+      return asked === 'term' ? `✗ Part of it. The full term is ${answer}.` : `✗ Part of it. The answer is ${answer}.`;
     case 'wrong':
       return `✗ The answer is ${answer}.`;
   }

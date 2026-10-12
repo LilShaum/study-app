@@ -86,6 +86,10 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
   }, keyboardEnabled);
 
   const correct = selected === item.correct_index;
+  // Only when the key can be trusted. With a broken key nothing is known to
+  // be right, so telling the student their pick is wrong would be a claim
+  // the file cannot support.
+  const chosenWrongOf = (i: number) => revealed && i === selected && i !== item.correct_index && !keyBroken;
 
   return (
     <div className={FRAME[frame]}>
@@ -104,21 +108,24 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
         {options.map((opt, i) => {
           const isSelected = i === selected;
           const isCorrectOpt = i === item.correct_index;
-          let stateClasses = 'border-border hover:border-text-3';
+          // One colour class each: a default text colour beside a state one
+          // let the default win, and the right answer was never marked.
+          let stateClasses = 'border-border text-text hover:border-text-3';
           if (revealed && keyBroken) {
             // Nothing is known to be right, so colour nothing.
-            if (isSelected) stateClasses = 'border-text';
+            if (isSelected) stateClasses = 'border-text text-text';
           } else if (revealed) {
             if (isCorrectOpt) stateClasses = 'border-success text-success';
             else if (isSelected) stateClasses = 'border-error text-error';
+            else stateClasses = 'border-border text-text-2';
           } else if (isSelected) {
-            stateClasses = 'border-text';
+            stateClasses = 'border-text text-text';
           }
+          // Once revealed the mark says what the letter cannot: this one is
+          // the answer, this one was yours and wrong.
+          const mark = revealed && !keyBroken && isCorrectOpt ? '✓' : chosenWrongOf(i) ? '✗' : ('ABCD'[i] ?? String(i + 1));
           const rationale = revealed ? rationales?.[i] || undefined : undefined;
-          // Only when the key can be trusted. With a broken key nothing is
-          // known to be right, so telling the student their pick is wrong
-          // would be a claim the file cannot support.
-          const chosenWrong = isSelected && !isCorrectOpt && !keyBroken;
+          const chosenWrong = chosenWrongOf(i);
           return (
             <div key={i}>
               <button
@@ -128,10 +135,13 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
                 tabIndex={isSelected || (selected < 0 && i === 0) ? 0 : -1}
                 disabled={revealed}
                 onClick={() => selectOption(i)}
-                className={`flex w-full items-center gap-3 border-0 border-b px-1 py-3 text-left text-small text-text transition-colors disabled:cursor-default ${stateClasses}`}
+                className={`flex w-full items-center gap-3 border-0 border-b px-1 py-3 text-left text-small transition-colors disabled:cursor-default ${stateClasses}`}
               >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold">
-                  {'ABCD'[i] ?? i + 1}
+                <span
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold"
+                  aria-label={mark === '✓' ? `${'ABCD'[i] ?? i + 1}, the answer` : mark === '✗' ? `${'ABCD'[i] ?? i + 1}, your answer` : undefined}
+                >
+                  {mark}
                 </span>
                 <span>{opt}</span>
               </button>
@@ -179,7 +189,8 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
             </div>
           ) : (
             <div className={`font-medium ${correct ? 'text-success' : 'text-error'}`}>
-              {correct ? '✓ Correct!' : `✗ Incorrect: the answer is ${options[item.correct_index] ?? ''}`}
+              {/* The answer is marked in the list above; naming its letter is enough. */}
+              {correct ? '✓ Correct' : `✗ Not this time: the answer is ${'ABCD'[item.correct_index] ?? item.correct_index + 1}.`}
             </div>
           )}
           {item.explanation && <div className="mt-1 text-sm text-text-2">{item.explanation}</div>}

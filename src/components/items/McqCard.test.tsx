@@ -27,7 +27,8 @@ describe('McqCard', () => {
     render(<McqCard item={item()} onAnswered={onAnswered} />);
     answer('beta');
     expect(onAnswered).toHaveBeenCalledWith(true);
-    expect(screen.getByText('✓ Correct!')).toBeTruthy();
+    expect(screen.getByText('✓ Correct')).toBeTruthy();
+    expect(screen.getByLabelText('B, the answer')).toBeTruthy();
   });
 
   it('names the correct option when you get it wrong', () => {
@@ -35,7 +36,10 @@ describe('McqCard', () => {
     render(<McqCard item={item()} onAnswered={onAnswered} />);
     answer('gamma');
     expect(onAnswered).toHaveBeenCalledWith(false);
-    expect(screen.getByText(/the answer is beta/)).toBeTruthy();
+    // The answer is marked in the list, and the verdict names its letter.
+    expect(screen.getByText(/the answer is B\./)).toBeTruthy();
+    expect(screen.getByLabelText('B, the answer')).toBeTruthy();
+    expect(screen.getByLabelText('C, your answer')).toBeTruthy();
   });
 
   /**
