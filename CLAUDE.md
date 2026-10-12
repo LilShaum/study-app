@@ -22,7 +22,8 @@ must never be committed, pushed, or saved inside this folder.
 - `prompts/generator.md` is the generator prompt the app hands out (imported
   with `?raw`). It is not instructions for coding here; edit it only when the
   task is to change that prompt.
-- Checks: `npx tsc --noEmit -p .`, `npx eslint src`, `npx vitest run`.
+- Checks: `npm run build` (the same `tsc -b` CI runs, which also covers `sim/`;
+  `npx tsc --noEmit -p .` does not), `npx eslint src`, `npx vitest run`.
 - The study simulator (`.claude/skills/simulate`) is for anything that
   changes scheduling, Review, Learn or the memory model.
 
