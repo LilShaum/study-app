@@ -17,6 +17,8 @@ interface RecallCardProps {
   /** True only for the one card in a study session. */
   keyboardEnabled?: boolean;
   frame?: ItemFrame;
+  /** Learn: the passage opens after every answer, right or wrong (see SourceNote). */
+  learning?: boolean;
 }
 
 /** What the verdict says, in the words a student needs to read next. */
@@ -52,6 +54,7 @@ export function RecallCard({
   onNext,
   keyboardEnabled = false,
   frame = 'card',
+  learning = false,
 }: RecallCardProps) {
   const inputId = useId();
   const [typed, setTyped] = useState('');
@@ -182,7 +185,7 @@ export function RecallCard({
       )}
 
       {/* After a miss the passage is open: the lesson again, not only the right word. */}
-      {verdict && <SourceNote excerpt={item.source_excerpt} open={!verdict.correct} />}
+      {verdict && <SourceNote excerpt={item.source_excerpt} open={learning || !verdict.correct} />}
     </div>
   );
 }

@@ -10,6 +10,33 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-12 — Learn: ask in the order it was read; a miss is not asked again at the section's end
+
+**Change** (`docs/proposals/modes.md` step 1). Inside a step, everything is
+read first and then asked in the order it was read, typed terms before
+flashcards, questions last. Before, flashcards came straight after their
+reading cards and the typed terms were rotated half-way round. First read,
+first asked puts each ask as far from its reading as the step allows.
+Karpicke & Roediger (2007): delaying the first test helped long-term
+retention. In Learn, the passage from the notes now opens after every
+answer, right or wrong, not only after a miss (Karpicke & Roediger 2010).
+
+**Tried and dropped.** A first miss also asked once more at the end of its
+section. 6 seeds: crammer 71→68% (held ≥0.8 −9), steady-30-cutoff 69→66%
+with +5 never studied, under `fsrs`; level under `harsh`. Without it
+(reorder only): crammer 69%, cutoff 68%, steady-30 57%, all within the
+spread. It is also a second right answer in the first sitting, which
+Vaughn et al. (2016) found buys nothing once Review relearns it. Not built.
+
+**Result** (3 seeds, whole suite, reorder and passage). Within noise
+everywhere under both students (largest: busy-20 −2 ±1, crammer −2 ±1,
+quota −3, an old reference policy). Items are independent here and a
+recall minutes after reading counts the same as one seconds after, so the
+simulator cannot see the benefit; it shows the order costs nothing.
+Passage reading time after an answer is not modelled. Re-baselined.
+
+---
+
 ## 2026-10-11 — Learn: a miss comes back inside its own step, never straight after itself
 
 **Change** (`docs/proposals/learn.md` C). A missed card came back three

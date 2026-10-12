@@ -14,6 +14,8 @@ export function SourceNote({ excerpt, open = false }: { excerpt?: string; open?:
   return (
     // Open on Learn's reading cards: there the passage is the lesson, and a
     // question later may ask for what only it says (docs/proposals/learn.md).
+    // Open after every answer in Learn too: feedback that restudied the
+    // passage beat feedback without it (Karpicke & Roediger 2010).
     <details open={open} className="group/src mt-3 border-t border-border-light pt-2">
       <summary className="tap-safe flex cursor-pointer list-none items-center text-xs text-text-3 hover:text-text-2">
         <span className="group-open/src:hidden">From your notes ▸</span>

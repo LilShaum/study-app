@@ -41,16 +41,19 @@ export function phaseOf(type: AnyItem['type']): LearnPhase | null {
   return null;
 }
 
-// Inside a step: the terms, then what uses them; the flashcards before the
-// typed terms, so a few cards stand between reading a term and being asked
-// for it; the questions last.
+// Inside a step: everything to read, then the asking in the order it was
+// read, the questions last. First read, first asked puts every ask as far
+// from its reading as the step allows: asked two cards after it was shown,
+// the answer is still in mind and is repeated, not recalled. Delaying the
+// first test is what helped long-term retention in Karpicke & Roediger
+// (2007, docs/evidence.md).
 const ORDER: Record<AnyItem['type'], number> = {
   definition: 0,
   example: 1,
   graphic: 2,
   preview: 3,
-  flashcard: 4,
-  recall: 5,
+  recall: 4,
+  flashcard: 5,
   mcq: 6,
 };
 
@@ -180,6 +183,8 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
     );
   }
 
+  const readAt = new Map(defs.map((d, k) => [d.id, k]));
+
   /** Which step every item goes in, with the terms cut into `defSteps` steps. */
   const place = (defSteps: number) => {
     const stepOfK = (k: number) => Math.floor((k * defSteps) / defs.length);
@@ -234,17 +239,17 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
         if (item.type === 'flashcard' && !answered(item, progress)) inStep.push(previewOf(item));
         inStep.push(item);
       });
-      const sorted = inStep
-        .map((item, i) => ({ item, i }))
-        .sort((a, b) => ORDER[a.item.type] - ORDER[b.item.type] || a.i - b.i)
-        .map(({ item }) => item);
-      // Typed terms in a different order from the reading, half-way round, so
-      // the first one asked is not the one read last.
-      const recalls = sorted.filter((i) => i.type === 'recall');
-      const half = Math.floor(recalls.length / 2);
-      const turned = [...recalls.slice(half), ...recalls.slice(0, half)];
-      let r = 0;
-      out.push(sorted.map((item) => (item.type === 'recall' ? turned[r++] : item)));
+      // A typed term is asked in the order its definition was read, which is
+      // the order of the definitions in the section; one whose definition is
+      // not here goes after them.
+      const rank = (item: SessionItem, i: number) =>
+        item.type === 'recall' ? (readAt.get(item.target.id) ?? group.length + i) : i;
+      out.push(
+        inStep
+          .map((item, i) => ({ item, i: rank(item, i) }))
+          .sort((a, b) => ORDER[a.item.type] - ORDER[b.item.type] || a.i - b.i)
+          .map(({ item }) => item),
+      );
     }
     return out;
   };

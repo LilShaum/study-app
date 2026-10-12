@@ -41,16 +41,19 @@ simulator cannot see this either way; it treats every answer the same.
 
 **What I'd change.**
 
-1. **Ask later.** The first ask comes at the end of the step, or after the
-   next step, not two cards on. A miss comes back at the end of the section
-   as well as in its step.
+1. **Ask later.** Everything in a step is read, then asked in the order it
+   was read, so no answer is asked straight after it was shown. (Live
+   2026-10-12. Also asking a miss again at the section's end was tried in
+   the simulator and dropped: it cost time and is a second right answer in
+   one sitting, which Vaughn et al. 2016 found buys nothing.)
 2. **Ask first when you've just read it elsewhere.** When the student is
    working through their slides (your plan, below), Learn asks first and
    shows the answer after, like Anki. Kornell et al. (2009): trying first
    helps even when the try fails. When the student hasn't seen the material
    at all, Learn keeps teaching first.
 3. **Show the passage after every answer, right or wrong.** Feedback with
-   the passage beat feedback without it (Karpicke & Roediger 2010).
+   the passage beat feedback without it (Karpicke & Roediger 2010). (Live
+   2026-10-12.)
 
 ## Your plan: Learn while going through the slides
 
@@ -143,3 +146,9 @@ nobody mistakes it for the daily work.
 - Fold Review and the six practice modes into Today and one Practice?
 - Cram: build it if the simulator says it helps?
 - "With my slides": worth adding slide numbers to the generator prompt?
+
+## The owner's decisions (2026-10-12)
+
+Yes to all three: fold Review and the six practice modes into Today and one
+Practice; build Cram if the simulator says it helps; add slide numbers to
+the generator prompt for "with my slides". Build in the order above.

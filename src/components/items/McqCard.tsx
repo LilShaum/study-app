@@ -14,9 +14,11 @@ interface McqCardProps {
   /** Only true for the single card in a study session, never in Browse. */
   keyboardEnabled?: boolean;
   frame?: ItemFrame;
+  /** Learn: the passage opens after every answer, right or wrong (see SourceNote). */
+  learning?: boolean;
 }
 
-export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, frame = 'card' }: McqCardProps) {
+export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, frame = 'card', learning = false }: McqCardProps) {
   const [selected, setSelected] = useState(-1);
   const [revealed, setRevealed] = useState(false);
   const options = item.options ?? [];
@@ -192,7 +194,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
         </div>
       )}
       {/* After a miss the passage is open: the lesson again, not only the right option. */}
-      {revealed && <SourceNote excerpt={item.source_excerpt} open={!correct && !keyBroken} />}
+      {revealed && <SourceNote excerpt={item.source_excerpt} open={(learning || !correct) && !keyBroken} />}
     </div>
   );
 }

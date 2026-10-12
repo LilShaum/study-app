@@ -23,7 +23,7 @@ interface ItemRendererProps {
   keyboardEnabled?: boolean;
   /** 'sheet' in a session, where the page is the item's boundary. See frame.ts. */
   frame?: ItemFrame;
-  /** Learn: reading cards show the passage from the notes open. */
+  /** Learn: reading cards show the passage from the notes open, and so does every answer. */
   learning?: boolean;
 }
 
@@ -43,11 +43,11 @@ export function ItemRenderer({
   switch (item.type) {
     case 'mcq':
       return (
-        <McqCard item={item} onAnswered={onAnswered} onNext={onNext} keyboardEnabled={keyboardEnabled} frame={frame} />
+        <McqCard item={item} onAnswered={onAnswered} onNext={onNext} keyboardEnabled={keyboardEnabled} frame={frame} learning={learning} />
       );
     case 'flashcard':
       return (
-        <FlashcardCard item={item} onGot={onGot} onMissed={onMissed} keyboardEnabled={keyboardEnabled} />
+        <FlashcardCard item={item} onGot={onGot} onMissed={onMissed} keyboardEnabled={keyboardEnabled} learning={learning} />
       );
     case 'definition':
       return (
@@ -75,6 +75,7 @@ export function ItemRenderer({
           onNext={onNext}
           keyboardEnabled={keyboardEnabled}
           frame={frame}
+          learning={learning}
         />
       );
   }

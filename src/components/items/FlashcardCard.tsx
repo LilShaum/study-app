@@ -11,11 +11,13 @@ interface FlashcardCardProps {
   onMissed?: () => void;
   /** Only true for the single card in a study session, never in Browse. */
   keyboardEnabled?: boolean;
+  /** Learn: the passage opens after every answer, right or wrong (see SourceNote). */
+  learning?: boolean;
 }
 
 const FACE = 'flip-face flex min-h-[220px] w-full flex-col items-center justify-center gap-4 text-center';
 
-export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false }: FlashcardCardProps) {
+export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false, learning = false }: FlashcardCardProps) {
   const [flipped, setFlipped] = useState(false);
 
   const grade = (got: boolean) => {
@@ -95,7 +97,7 @@ export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false }
         </div>
       </div>
 
-      {flipped && <SourceNote excerpt={item.source_excerpt} />}
+      {flipped && <SourceNote excerpt={item.source_excerpt} open={learning} />}
     </div>
   );
 }

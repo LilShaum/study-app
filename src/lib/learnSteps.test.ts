@@ -76,6 +76,13 @@ describe('Learn in steps', () => {
     for (const d of defs.slice(0, 4)) expect(stepOf(items, recallId(d.id))).toBe(stepOf(items, d.id));
   });
 
+  it('asks in the order it read, so no term is asked straight after its reading', () => {
+    const items = learn(defs.slice(0, 4));
+    const read = items.filter((i) => i.type === 'definition').map((i) => i.id);
+    const asked = items.filter((i) => i.type === 'recall').map((i) => (i as { target: { id: string } }).target.id);
+    expect(asked).toEqual(read);
+  });
+
   it('skips reading a term already answered right, and still asks for it', () => {
     const progress = { [recallId('d0')]: { got: 1, missed: 0, lastSeen: 0 } };
     const items = learn(defs, progress);
