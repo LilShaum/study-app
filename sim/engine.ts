@@ -12,9 +12,10 @@ import { useProgressStore } from '@/store/progress';
 import { usePlanStore } from '@/store/plan';
 import { useStudyLogStore } from '@/store/studyLog';
 import { useSessionStore } from '@/store/session';
+import { useLearnStore } from '@/store/learn';
 import { makeCourse, SHAPES } from './course';
 import { rng, type Rand } from './random';
-import { chanceRight, FIRST_TIME, MEMORY, SECONDS } from './student';
+import { chanceRight, FIRST_TIME, MCQ_GUESS, MEMORY, SECONDS } from './student';
 
 const DAY = 864e5;
 const MIN = 6e4;
@@ -118,6 +119,11 @@ interface Truth {
   lapsed: boolean;
   /** Right answers since it was first learned or last missed. */
   successes: number;
+  /**
+   * Never learned, and the one try so far was wrong, with the answer shown
+   * after. Its next right answer counts as the first (2026-10-12).
+   */
+  firstMiss?: boolean;
 }
 
 /** The context a policy gets each day: its budget and the app's two doors. */
@@ -237,6 +243,8 @@ export const POLICIES: Record<string, Policy> = {
    */
   'today-personal': todayButton,
   'today-3-split': splitLast(3, 3),
+  /** Experiment, 2026-10-12: Today with Learn set to questions first (store/learn.ts). */
+  'questions-first': todayButton,
   /** The student presses Today once, with their minutes set, and stops when it ends. */
   'today-button-once': (d) => {
     d.today();
@@ -334,6 +342,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
   const reviewing = (item: SessionItem, mode: string) => mode === 'review' || item._block === 'review';
 
   useProgressStore.setState({ byCourse: {} });
+  useLearnStore.setState({ questionsFirst: sc.policy === 'questions-first' });
   // The simulated student's card times are the simulator's own assumptions;
   // logging them would feed them back as "measured" pace.
   // SIM_KEEP_LOG keeps it, so scripts/calibrate-log.mjs can be checked on a
@@ -380,7 +389,14 @@ export function simulate(sc: Scenario, seed: number): RunResult {
     const answer = (item: SessionItem, mode: string) => {
       const R = recallAt(item.id, now);
       let p: number;
-      if (R != null) p = chanceRight(item, R);
+      // Questions first (store/learn.ts): nothing in the step was read, so a
+      // first answer is what the student brought with them. SIM_COLD is how
+      // much that is: 0.15 never met (FIRST_TIME.coldRecall), about 0.5 for
+      // a student who sat the lecture or read the slides.
+      const cold = Number(process.env.SIM_COLD) || FIRST_TIME.coldRecall;
+      if (R == null && item._step !== undefined && useLearnStore.getState().questionsFirst)
+        p = item.type === 'mcq' ? cold + (1 - cold) * MCQ_GUESS : cold;
+      else if (R != null) p = chanceRight(item, R);
       else if (item.type === 'recall' || (item.type === 'flashcard' && primed.has(item.id))) {
         const at = primed.get(item.id);
         p = at != null ? FIRST_TIME.primedRecall * Math.exp(-(now - at) / (FIRST_TIME.primedFadeMinutes * MIN)) : FIRST_TIME.coldRecall;
@@ -409,12 +425,19 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       const appS = stabilityOf(before);
       if (appS != null) seenByApp.push({ days: (now - before!.lastSeen!) / DAY, s: appS, mcq: item.type === 'mcq', got });
       if (!got) missedToday.set(item.id, { ...item, _again: undefined, _block: 'review' });
+      // A wrong first try with the answer shown after teaches at least as
+      // well as reading it (Kornell, Hays & Bjork 2009, docs/evidence.md):
+      // the next right answer counts as the first, not as a review of a
+      // memory of a few hours. Counted as equal to reading, no bonus.
+      // SIM_OLD_FIRST_MISS restores the rule before 2026-10-12.
+      const fromFirstMiss = !!T?.firstMiss && !process.env.SIM_OLD_FIRST_MISS;
       truth.set(item.id, {
-        s: got ? (T ? memory.grow(T.s, R ?? 0, e) : memory.first(e)) : memory.lapse(T?.s ?? null, e),
+        s: got ? (T && !fromFirstMiss ? memory.grow(T.s, R ?? 0, e) : memory.first(e)) : memory.lapse(T?.s ?? null, e),
         last: now,
         lapsed: !got,
         // A first right answer starts the count; a right review adds to it.
         successes: got ? (T && !T.lapsed ? T.successes + 1 : 0) : 0,
+        firstMiss: !got && (T == null || !!T.firstMiss),
       });
       store().record(got);
     };

@@ -10,6 +10,49 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-12 — Questions first in Learn: built as a switch. A failed first try now counts like reading
+
+**Assumption changed.** A never-learned item answered wrong, with the
+answer shown after, used to take the truth model's lapse stability (0.4
+days under `fsrs`), and the right answer a few cards later then grew that
+by almost nothing. So a first miss was nearly worthless, which the evidence
+contradicts: a failed try followed by the answer teaches at least as well
+as reading it (Kornell, Hays & Bjork 2009, docs/evidence.md). Now the next
+right answer after such a miss counts as the first (`firstMiss` in
+engine.ts), equal to reading, no bonus. `SIM_OLD_FIRST_MISS=1` restores the
+old rule. No app change; the whole suite moves up because first-time MCQ
+misses (40% of them) now teach: steady-30 57→60%, steady-45 79→85%,
+crammer 71→77%, late-start 62→68%, busy-20 level, harsh +0 to +3.
+
+**Question.** The owner found Learn's reading tiring: 43% of its cards on
+the test course are reading cards, about three before a step's first
+question. Questions first drops the cards that give answers (definitions,
+flashcards shown open) so each card is asked first, with the answer and
+passage after; examples and diagrams stay. `SIM_COLD` is the first-try
+accuracy with nothing read: 0.15 for material never met, 0.5 for a
+student who sat the lecture. 5 seeds:
+
+| | read first | questions first, never met | questions first, met in lecture |
+|---|---|---|---|
+| steady-30 | 60% | 61% | 64% |
+| steady-45 | 84% | 83% | 86% |
+| busy-20 | 30% | 29% | 29% |
+| crammer | 77% | 79% | 83% |
+| steady-30-harsh | 19% | 19% | 20% |
+| steady-45-harsh | 24% | 24% | 25% |
+
+**Decision: a switch, read first by default.** Level for material never
+met, ahead for material met before, under both students in direction.
+The test course drops from 243 cards to 151. "Skip the reading" on the
+step line turns it on for every lecture (store/learn.ts); "Read first"
+turns it off. Default stays read first: the gain depends on having met the
+material, which the app cannot know.
+
+**Scenarios added:** six `-questions-first` (policy `questions-first`) and
+steady-45-harsh. Re-baselined with the new assumption.
+
+---
+
 ## 2026-10-12 — Cram: not built. Today's last three days come in three parts
 
 **Question** (`docs/proposals/modes.md`, the owner's go-ahead to build Cram

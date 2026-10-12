@@ -174,6 +174,25 @@ export const SCENARIOS: Scenario[] = [
   { ...base, name: 'late-start-harsh', why: 'late-start under the harsher student.', memory: 'harsh', minutes: (d: number) => (d >= 27 ? 120 : 0) },
   { ...base, name: 'crammer-split', why: 'crammer, the last three days in three sittings set by hand.', minutes: (d: number) => (d >= 24 ? 90 : 10), policy: 'today-3-split' },
   { ...base, name: 'late-start-split', why: 'late-start, the last three days in three sittings set by hand.', minutes: (d: number) => (d >= 27 ? 120 : 0), policy: 'today-3-split' },
+  // 2026-10-12: Learn set to questions first, against the same students
+  // reading first (steady-30, steady-45, busy-20, crammer and their harsh
+  // versions). Run with SIM_COLD=0.5 for a student who sat the lecture.
+  ...([
+    ['steady-30', 'fsrs', () => 30],
+    ['steady-45', 'fsrs', () => 45],
+    ['busy-20', 'fsrs', (d: number, r: () => number) => (d % 7 === 0 || r() < 0.17 ? 0 : 20)],
+    ['crammer', 'fsrs', (d: number) => (d >= 24 ? 90 : 10)],
+    ['steady-30-harsh', 'harsh', () => 30],
+    ['steady-45-harsh', 'harsh', () => 45],
+  ] as const).map(([name, memory, minutes]) => ({
+    ...base,
+    name: `${name}-questions-first`,
+    why: `${name}, with Learn set to questions first.`,
+    memory,
+    minutes,
+    policy: 'questions-first',
+  })),
+  { ...base, name: 'steady-45-harsh', why: 'steady-45 under the harsher student.', memory: 'harsh', minutes: () => 45 },
 ];
 
 /**

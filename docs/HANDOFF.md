@@ -45,6 +45,15 @@ owner's go-ahead. New evidence entries in `docs/evidence.md`.
   first (`askFirst` in the store, `SlidesCard`). Existing courses have no
   ranges until regenerated or re-added.
 
+- **Questions first** (switch on Learn's step line, "Skip the reading" /
+  "Read first", `store/learn.ts`, one setting for every lecture): drops the
+  cards that give answers, so each card is asked first with the answer and
+  passage after; examples and diagrams stay. Simulated level for material
+  never met and ahead for material met in a lecture (+2 to +6); default
+  stays read first. The simulator now credits a failed first try with the
+  answer shown like reading it (Kornell 2009), which raised every scenario;
+  see FINDINGS.
+
 Open from it: the Continue card resumes a kind-filtered Practice session
 without its filter; the Practice "Due now" count is everything due while
 the session is sized to the daily minutes (it offers more at the end).

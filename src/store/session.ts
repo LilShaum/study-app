@@ -4,6 +4,7 @@ import { buildSessionItems, recallId, type CardKind, type SessionItem, type Stud
 import { isMissed, useProgressStore, type ItemResult } from './progress';
 import { examRule } from '@/lib/exam';
 import { usePlanStore } from './plan';
+import { useLearnStore } from './learn';
 import { todaySitting } from '@/lib/todaySitting';
 import { measuredPace, useStudyLogStore } from './studyLog';
 import { retrievability } from '@/lib/memory';
@@ -162,6 +163,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
           : usePlanStore.getState().minutesFor(courseId),
       pace: measuredPace(useStudyLogStore.getState().byCourse),
       kind: get().pendingKind ?? undefined,
+      questionsFirst: useLearnStore.getState().questionsFirst,
     });
     shownAt = Date.now();
     // Resume by id, not position: Mixed and Review Missed reshuffle each start

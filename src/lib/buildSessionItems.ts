@@ -179,6 +179,12 @@ export interface SessionOptions {
    * whole lecture.
    */
   kind?: CardKind;
+  /**
+   * Learn and Today's new material: no reading cards (definitions, and
+   * flashcards shown open), so each card is asked before it is shown
+   * (store/learn.ts).
+   */
+  questionsFirst?: boolean;
 }
 
 export type CardKind = 'questions' | 'flashcards' | 'terms';
@@ -206,6 +212,8 @@ function learnOrder(
   progress?: Record<string, ItemResult>,
   /** Section id to where it is in the student's slides (Section.source_range). */
   ranges?: ReadonlyMap<string, string>,
+  /** Questions first (store/learn.ts): no reading cards, and no slides card to ask for it. */
+  questionsFirst = false,
 ): SessionItem[] {
   // Grouped by section first: the sections are already in authored order,
   // and ordering across a boundary would put the whole course's terms first.
@@ -216,7 +224,11 @@ function learnOrder(
     else groups.set(item._sectionId, [item]);
   }
   return [...groups.values()].flatMap((group) => {
-    const steps = stepSection(group, progress);
+    const all = stepSection(group, progress);
+    // The steps are cut with the reading in, so a step still holds the
+    // terms it would have taught; only the cards that give answers go.
+    const steps = questionsFirst ? all.filter((i) => i.type !== 'definition' && i.type !== 'preview') : all;
+    if (questionsFirst) return steps;
     const range = ranges?.get(group[0]._sectionId);
     const first = steps[0];
     // A section that says where it is in the slides opens with that, as part
@@ -288,7 +300,7 @@ function weakestFirst(items: SessionItem[], now: number, progress?: Record<strin
 export function buildSessionItems(
   course: Course,
   mode: StudyMode,
-  { missedIds, sectionId, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES, pace, kind }: SessionOptions = {},
+  { missedIds, sectionId, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES, pace, kind, questionsFirst }: SessionOptions = {},
 ): SessionItem[] {
   const sections = sectionId
     ? sortedSections(course).filter((s) => s.id === sectionId)
@@ -444,7 +456,7 @@ export function buildSessionItems(
       break;
     case 'learn': {
       // Read the definition, then recall it a few cards later in its step.
-      const all = learnOrder(withRecall(items), progress, ranges);
+      const all = learnOrder(withRecall(items), progress, ranges, questionsFirst);
       // Pick up where you stopped, as Today does: a step whose every question
       // has been answered is done, and Review brings it back when it fades.
       // Once every step is done, Learn is the whole thing again.
@@ -491,7 +503,7 @@ export function buildSessionItems(
       let full = false;
       for (const { section } of sectionsToLearn(course, progress ?? {}, now)) {
         if (full) break;
-        const steps = learnOrder(withRecall(items.filter((i) => i._sectionId === section.id)), progress, ranges);
+        const steps = learnOrder(withRecall(items.filter((i) => i._sectionId === section.id)), progress, ranges, questionsFirst);
         for (let s = 0; s < (steps[0]?._steps ?? 0); s++) {
           const step = steps.filter((i) => i._step === s);
           // Carry on where Learn left off: a step whose every question has

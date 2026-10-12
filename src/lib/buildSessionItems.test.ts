@@ -516,3 +516,24 @@ describe('Learn with the student\'s own slides', () => {
     expect(items.find((i) => i._block !== 'review')?.type).toBe('slides');
   });
 });
+
+describe('Learn, questions first', () => {
+  it('drops the cards that give answers, and keeps what is asked and the worked material', () => {
+    const items = buildSessionItems(mixedCourse, 'learn', { sectionId: 'sa', questionsFirst: true });
+    expect(items.map((i) => i.id)).toEqual(['a_eg', 'a_gfx', 'a_def~recall', 'a_card', 'a_mcq']);
+  });
+
+  it('leaves out the slides card too: there is no reading to ask for', () => {
+    const withRange = {
+      ...mixedCourse,
+      sections: mixedCourse.sections.map((s) => ({ ...s, source_range: 'slides 1–3' })),
+    } as Course;
+    expect(buildSessionItems(withRange, 'learn', { questionsFirst: true }).some((i) => i.type === 'slides')).toBe(false);
+  });
+
+  it('applies to the new material in Today as well', () => {
+    const items = buildSessionItems(mixedCourse, 'today', { minutes: 60, questionsFirst: true });
+    expect(items.some((i) => i.type === 'definition' || i.type === 'preview')).toBe(false);
+    expect(items.some((i) => i.type === 'recall')).toBe(true);
+  });
+});
