@@ -7,6 +7,7 @@ import { SessionRoute } from '@/routes/SessionRoute';
 import { ProgressRoute } from '@/routes/ProgressRoute';
 import { SectionRoute } from '@/routes/SectionRoute';
 import { DiagramsRoute } from '@/routes/DiagramsRoute';
+import { PracticeRoute } from '@/routes/PracticeRoute';
 import { GlossaryRoute } from '@/routes/GlossaryRoute';
 import { HelpRoute } from '@/routes/HelpRoute';
 import { SyncRoute } from '@/routes/SyncRoute';
@@ -29,6 +30,7 @@ export const router = createHashRouter([
       { path: 'study/:id/section/:sectionId', element: <SectionRoute /> },
       { path: 'study/:id/diagrams', element: <DiagramsRoute /> },
       { path: 'study/:id/glossary', element: <GlossaryRoute /> },
+      { path: 'study/:id/practice', element: <PracticeRoute /> },
       { path: 'class/:code', element: <ClassRoute /> },
       { path: 'help', element: <HelpRoute /> },
       { path: 'sync', element: <SyncRoute /> },

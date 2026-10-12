@@ -3,7 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { scoredEntries } from '@/lib/scored';
 import { isDueFor } from '@/lib/memory';
 import { useCoursesStore } from '@/store/courses';
-import { EMPTY_PROGRESS, isMissed, useProgressStore } from '@/store/progress';
+import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { availableModes, findSection, sectionStats } from '@/lib/sectionStats';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { CourseTree } from '@/components/CourseTree';
@@ -63,23 +63,27 @@ export function SectionRoute() {
   const scored = scoredEntries(section.items);
   const examAt = examRule(course, progress, now).forSection(section.id);
   const due = scored.filter(({ id: itemId }) => isDueFor(progress[itemId], now, examAt)).length;
-  const missed = scored.filter(({ id: itemId }) => {
-    return isMissed(progress[itemId]);
-  }).length;
 
-  const MODE_LINKS: { mode: string; label: string; count: number; lead?: boolean; unit?: string }[] = [
-    // Review leads while it has work and is absent when it has none, as on
-    // the course page.
-    ...(due > 0
-      ? [{ mode: 'review', label: 'Review', count: due, lead: true, unit: `${due} due` }]
-      : []),
-    { mode: 'learn', label: 'Learn', count: modes.learn, lead: true },
-    { mode: 'quiz', label: 'Quiz', count: modes.quiz },
-    { mode: 'flashcards', label: 'Flashcards', count: modes.flashcards },
-    { mode: 'definitions', label: 'Terms', count: modes.definitions },
-    { mode: 'mixed', label: 'Mixed', count: modes.mixed },
-    { mode: 'weakest', label: 'Weakest first', count: modes.weakest },
-    ...(missed > 0 ? [{ mode: 'missed', label: 'Review missed', count: missed }] : []),
+  // Learn leads; Practice holds the rest (the page that replaced the six
+  // format-named modes), opened with this section chosen.
+  const practice = `/study/${id}/practice?section=${encodeURIComponent(section.id)}`;
+  const MODE_LINKS: {
+    to: string;
+    label: string;
+    unit: string;
+    lead?: boolean;
+  }[] = [
+    {
+      to: `/session/${id}/learn?section=${encodeURIComponent(section.id)}`,
+      label: 'Learn',
+      unit: plural(modes.learn, 'item'),
+      lead: true,
+    },
+    {
+      to: practice,
+      label: 'Practice this section',
+      unit: due > 0 ? `${due} due` : 'any part',
+    },
   ];
 
   return (
@@ -91,20 +95,10 @@ export function SectionRoute() {
           dropped back, so a section is always somewhere in a whole rather
           than a page you arrived at from a list. */}
       <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:gap-8">
-        <CourseTree
-          courseId={id}
-          course={course}
-          progress={progress}
-          className="h-24 sm:h-36"
-          highlight={section.id}
-        />
+        <CourseTree courseId={id} course={course} progress={progress} className="h-24 sm:h-36" highlight={section.id} />
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-title font-semibold text-text sm:text-display">
-            {section.title}
-          </h1>
-          {section.description && (
-            <p className="mt-2 max-w-prose text-small text-text-2">{section.description}</p>
-          )}
+          <h1 className="font-display text-title font-semibold text-text sm:text-display">{section.title}</h1>
+          {section.description && <p className="mt-2 max-w-prose text-small text-text-2">{section.description}</p>}
 
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-2">
             <span>{plural(stats.total, 'item')}</span>
@@ -140,17 +134,15 @@ export function SectionRoute() {
         // Six greyed-out "none here" tiles told an empty section's story six
         // times over; one line says it once.
         <p className="mt-6 border-y border-border py-5 text-center text-sm text-text-2">
-          This section is empty. The generator created it but put no items in it. &ldquo;More
-          practice&rdquo; on the lecture page can fill it, or you can add items yourself in Browse.
+          This section is empty. The generator created it but put no items in it. &ldquo;More practice&rdquo; on the
+          lecture page can fill it, or you can add items yourself in Browse.
         </p>
       ) : (
         <>
           {/* The heading says what these are. The paragraph that used to sit
               under it explained what Learn does, on a page where Learn is one
               of five tiles that all say what they are. */}
-          <h2 className="mb-3 mt-8 font-display text-title font-semibold text-text">
-            Study just this section
-          </h2>
+          <h2 className="mb-3 mt-8 font-display text-title font-semibold text-text">Study just this section</h2>
           {/* The same ruled list the course page uses. This was a grid of
               tiles — icon, then label, then count, stacked — so on a phone
               each mode was a quarter of a screen tall and six of them ran on
@@ -158,12 +150,15 @@ export function SectionRoute() {
               here. */}
           <ul className="border-t border-border">
             {MODE_LINKS.map((m) => (
-              <li key={m.mode} className="border-b border-border">
-                {m.count > 0 ? (
-                  <Link
-                    to={`/session/${id}/${m.mode}?section=${encodeURIComponent(section.id)}`}
-                    className="group tap-safe flex items-baseline gap-3 py-3"
-                  >
+              <li key={m.label} className="border-b border-border">
+                {m.unit === '0 items' ? (
+                  <div aria-disabled="true" className="flex items-baseline gap-3 py-3 text-text-3">
+                    <span className="font-display text-body">{m.label}</span>
+                    <span className="leaders hidden sm:block" aria-hidden="true" />
+                    <span className="mark shrink-0">none here</span>
+                  </div>
+                ) : (
+                  <Link to={m.to} className="group tap-safe flex items-baseline gap-3 py-3">
                     <span
                       className={`font-display text-text group-hover:text-accent ${
                         m.lead ? 'text-heading font-semibold' : 'text-body'
@@ -172,14 +167,8 @@ export function SectionRoute() {
                       {m.label}
                     </span>
                     <span className="leaders hidden sm:block" aria-hidden="true" />
-                    <span className="mark shrink-0 tabular-nums text-text-3">{m.unit ?? plural(m.count, 'item')}</span>
+                    <span className="mark shrink-0 tabular-nums text-text-3">{m.unit}</span>
                   </Link>
-                ) : (
-                  <div aria-disabled="true" className="flex items-baseline gap-3 py-3 text-text-3">
-                    <span className="font-display text-body">{m.label}</span>
-                    <span className="leaders hidden sm:block" aria-hidden="true" />
-                    <span className="mark shrink-0">none here</span>
-                  </div>
                 )}
               </li>
             ))}

@@ -25,7 +25,7 @@ interface HelpSection {
 const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   {
     name: 'Today',
-    what: 'The one to press most days. It reviews what you are starting to forget, then carries on with new material, and ends when your daily time is up. Set the time, and your exam date and what it covers, from the line under Today on the lecture page. If one exam covers several lectures with the same class code, you can set it on all of them at once there. In the last few days before an exam it makes more room for anything on it you have not studied yet. Once your time is used up, coming back a few hours later gives a five-minute catch-up on what you missed, which does more for those cards than going over them again straight away. With more than one lecture, you can set one daily time for all of them under Today on the library page: it is shared by how soon each exam is, so the nearest gets the most.',
+    what: 'The one to press most days. It reviews what you are starting to forget, then carries on with new material, and ends when your daily time is up. Set the time, and your exam date and what it covers, from the line under Today on the lecture page. If one exam covers several lectures with the same class code, you can set it on all of them at once there. In the last few days before an exam it makes more room for anything on it you have not studied yet, and in the last three it splits your daily time into three sittings a few hours apart, which does more than one long one. Once your time is used up, coming back a few hours later gives a five-minute catch-up on what you missed, which does more for those cards than going over them again straight away. With more than one lecture, you can set one daily time for all of them under Today on the library page: it is shared by how soon each exam is, so the nearest gets the most.',
     scored: true,
   },
   {
@@ -34,34 +34,8 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
     scored: true,
   },
   {
-    name: 'Quiz',
-    what: 'Multiple-choice questions, with an explanation after each one. A question you have already got right may come back without its options, and you type the answer.',
-    scored: true,
-  },
-  {
-    name: 'Flashcards',
-    what: 'Read the front, think of the answer, flip the card, and mark whether you got it.',
-    scored: true,
-  },
-  {
-    name: 'Terms',
-    what: 'You are shown a definition and type the term. Small typos are accepted; a different term is not. If you think it marked you wrongly, tap to change it.',
-    scored: true,
-  },
-  { name: 'Mixed', what: 'Everything in the lecture, shuffled.', scored: true },
-  {
-    name: 'Weakest first',
-    what: 'Everything you can be scored on, starting with what you are most likely to have forgotten by now. Things you have not tried yet come in the middle.',
-    scored: true,
-  },
-  {
-    name: 'Review',
-    what: 'Brings back what you have studied as you start to forget it, most forgotten first, as many as fit in your daily time. If you set an exam date (under Today on the lecture page), it also makes sure things are fresh on the day.',
-    scored: true,
-  },
-  {
-    name: 'Review missed',
-    what: 'Only the items you got wrong the last time you answered them.',
+    name: 'Practice',
+    what: 'For drilling a lecture outside the plan, before a class quiz or on a section that feels shaky. Choose which cards (due now, weakest first, missed last time, or everything), which kind (questions, flashcards or typed terms) and which part of the lecture, then Start. Today still decides what comes back when, so a card that is not fading yet gains little from more practice. Review on a branch of the tree or on the Progress page is the same as Due now, for that section.',
     scored: true,
   },
   {
@@ -155,8 +129,8 @@ const SECTIONS: HelpSection[] = [
         </p>
         <p className="mt-2">
           In a whole-lecture session, the menu above the card shows which section you are in and lets
-          you jump to another. It is not shown in Mixed, Weakest first, Review or Review missed,
-          because those are not in section order.
+          you jump to another. It is not shown in most Practice sessions, because they are not in section
+          order.
         </p>
       </>
     ),
@@ -201,8 +175,8 @@ const SECTIONS: HelpSection[] = [
         <p>Questions, flashcards and typed terms are scored. Examples and diagrams are for reading.</p>
         <p className="mt-2">
           An answer counts wherever you give it, in any mode. The app uses your answers to work out
-          how well you remember each item, and that decides what Review brings back, how full the
-          tree is, and the order of Weakest first. <strong>Progress</strong> on a lecture page shows
+          how well you remember each item, and that decides what comes back in Today and Practice, how full the
+          tree is, and the order of Weakest first in Practice. <strong>Progress</strong> on a lecture page shows
           it section by section.
         </p>
       </>

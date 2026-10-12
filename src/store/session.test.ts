@@ -353,3 +353,36 @@ describe('session store: answers stay with their cards as copies come and go', (
     ]);
   });
 });
+
+describe('session store: kind filter', () => {
+  const mixed = {
+    schema_version: '1.0',
+    metadata: { title: 'Net' },
+    sections: [
+      {
+        id: 's1',
+        title: 'One',
+        items: [mcq('q1', 'A?'), { id: 'f1', type: 'flashcard', front: 'f', back: 'b' } as StudyItem],
+      },
+    ],
+  } as Course;
+
+  beforeEach(() => {
+    useSessionStore.setState({ pendingKind: null });
+  });
+
+  it('init keeps only the pending kind in weakest mode', () => {
+    useSessionStore.getState().setPendingKind('flashcards');
+    useSessionStore.getState().init('net', mixed, 'weakest');
+    expect(useSessionStore.getState().items.map((i) => i.id)).toEqual(['f1']);
+  });
+
+  it('serves every kind with none pending, and keeps the filter across a restart', () => {
+    useSessionStore.getState().init('net', mixed, 'weakest');
+    expect(useSessionStore.getState().items).toHaveLength(2);
+    useSessionStore.getState().setPendingKind('questions');
+    useSessionStore.getState().init('net', mixed, 'weakest');
+    useSessionStore.getState().init('net', mixed, 'weakest');
+    expect(useSessionStore.getState().items.map((i) => i.id)).toEqual(['q1']);
+  });
+});

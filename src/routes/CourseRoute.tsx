@@ -7,7 +7,7 @@ import { cloudError, hasSavedSignIn, shareCourse } from '@/lib/cloud';
 import { sortedSections } from '@/lib/sortedSections';
 import { sectionStats } from '@/lib/sectionStats';
 import { scoredEntries } from '@/lib/scored';
-import { EMPTY_PROGRESS, isMissed, useProgressStore } from '@/store/progress';
+import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { bookmarkResolves, useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
@@ -17,7 +17,6 @@ import { TreeDialog } from '@/components/TreeDialog';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
 import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
-import type { StudyMode } from '@/lib/buildSessionItems';
 import { CATCH_UP_HOURS, isDueFor } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
 import { examRule } from '@/lib/exam';
@@ -31,22 +30,11 @@ import { ExamDialog } from '@/components/ExamDialog';
 import { examLabel, ranges } from '@/lib/examLabel';
 import { classOf, lectureExam } from '@/lib/classExams';
 
-interface ModeCard {
-  mode: StudyMode;
-  label: string;
-  desc?: string;
-  /** How many items this mode would serve, for the count under the label. */
-  count: (c: Counts) => number;
-}
-
 interface Counts {
   total: number;
-  mcq: number;
-  flashcard: number;
   definition: number;
   graphic: number;
   gradable: number;
-  missed: number;
   /** Studied items due for review now (see lib/memory.ts). */
   due: number;
   /** Scorable items answered at least once. */
@@ -55,42 +43,21 @@ interface Counts {
 }
 
 /**
- * Learn leads, because it is the one mode that is a course rather than a
- * filter. It gets the whole width; the rest share a grid of identical tiles.
- *
- * The page used to group these under four headings — Learn, Practise, Review,
- * Browse — which put a heading above a single button and stacked "Study" over
- * "Learn" over "Learn". Six tiles do not need to be sorted into named bins.
+ * What a saved place is called on the Continue card. Every mode can still be
+ * bookmarked and resumed, though only Learn and Practice are offered here.
  */
-const LEARN: ModeCard = {
-  mode: 'learn',
-  label: 'Learn',
-  desc: 'A few terms at a time: read them, recall them, then answer questions on them',
-  // Every item, plus the typed-recall question each definition adds.
-  count: (c) => c.total + c.definition,
+const MODE_LABELS: Record<string, string> = {
+  learn: 'Learn',
+  quiz: 'Quiz',
+  flashcards: 'Flashcards',
+  definitions: 'Terms',
+  mixed: 'Mixed',
+  weakest: 'Weakest first',
+  missed: 'Review missed',
+  review: 'Review',
+  browse: 'Browse',
+  today: 'Today',
 };
-
-/**
- * Label and count, nothing else. These carried a line of description each,
- * which left every tile a different height — two lines here, one there, three
- * where the text wrapped — and the grid read as ragged rather than as a set.
- * Six labels this plain do not need captioning.
- */
-const PRACTICE: ModeCard[] = [
-  { mode: 'quiz', label: 'Quiz', count: (c) => c.mcq },
-  { mode: 'flashcards', label: 'Flashcards', count: (c) => c.flashcard },
-  { mode: 'definitions', label: 'Terms', count: (c) => c.definition },
-  { mode: 'mixed', label: 'Mixed', count: (c) => c.total },
-  { mode: 'weakest', label: 'Weakest first', count: (c) => c.gradable },
-  { mode: 'missed', label: 'Review missed', count: (c) => c.missed },
-];
-
-const MODE_LABELS: Record<string, string> = Object.fromEntries(
-  [LEARN, ...PRACTICE, { mode: 'browse', label: 'Browse' }, { mode: 'review', label: 'Review' }].map((m) => [
-    m.mode,
-    m.label,
-  ]),
-);
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
@@ -157,16 +124,9 @@ export function CourseRoute() {
     }
     return {
       total: items.length,
-      mcq: byType('mcq'),
-      flashcard: byType('flashcard'),
       definition: byType('definition'),
       graphic: byType('graphic'),
       gradable: gradableIds.length,
-      // Counted here rather than via progress.missedIds(), which builds a new
-      // Set on every call and would change the store snapshot each render.
-      missed: gradableIds.filter((itemId) => {
-        return isMissed(progress[itemId]);
-      }).length,
       studied,
       due: gradableIds.filter((itemId) => isDueFor(progress[itemId], now, exam?.forItem(itemId) ?? null)).length,
       accuracy: attempts > 0 ? Math.round((got / attempts) * 100) : null,
@@ -376,23 +336,17 @@ export function CourseRoute() {
         </div>
       )}
 
-      {/* The ways to work, set as an index rather than a tile grid.
-          This was a big shadowed card over a 3x2 grid of smaller shadowed
-          cards — the most dashboard-looking block in the app, and on the
-          page you see most. As ruled entries with the counts in a right-hand
-          column it reads as part of the same book as the library's contents
-          list, and the counts line up so you can actually compare them,
-
       {/* The ways to work, set as an index rather than a tile grid: ruled
-          entries with the counts in a right-hand column, the same book as
+          entries with the figures in a right-hand column, the same book as
           the library's contents list.
 
           Today leads. It is the one entry that answers "what should I do
-          now" — review what is fading, then carry on with new material,
-          sized to the time the student has — and the simulator found a
+          now" (review what is fading, then carry on with new material,
+          sized to the time the student has), and the simulator found a
           student who simply presses it every day does better than one who
-          works the course page by hand (sim/FINDINGS.md). The modes under
-          it are for choosing yourself. */}
+          works the course page by hand (sim/FINDINGS.md). Learn and
+          Practice are for choosing yourself; Practice holds what used to be
+          six format-named modes and a Review row. */}
       <section className="mt-8">
         <h2 className="mark mb-2 text-text-3">Ways to work</h2>
         <ul className="border-t border-border">
@@ -426,20 +380,22 @@ export function CourseRoute() {
             </div>
           </li>
           {[
-            ...(counts.due > 0 ? [{ mode: 'review', label: 'Review', unit: `${counts.due} due` }] : []),
             {
-              mode: nextUp ? `learn?section=${encodeURIComponent(nextUp.section.id)}` : LEARN.mode,
+              to: nextUp ? `learn?section=${encodeURIComponent(nextUp.section.id)}` : 'learn',
               label: 'Learn',
-              unit: nextUp ? `section ${nextUp.index + 1}` : plural(LEARN.count(counts), 'item'),
+              unit: nextUp ? `section ${nextUp.index + 1}` : plural(counts.total + counts.definition, 'item'),
             },
-            ...PRACTICE.filter((m) => m.mode !== 'missed' || counts.missed > 0).map((m) => ({
-              mode: m.mode,
-              label: m.label,
-              unit: plural(m.count(counts), 'item'),
-            })),
+            {
+              to: null,
+              label: 'Practice',
+              unit: counts.due > 0 ? `${counts.due} due` : 'any part',
+            },
           ].map((m) => (
             <li key={m.label} className="border-b border-border">
-              <Link to={`/session/${id}/${m.mode}`} className="group tap-safe flex items-baseline gap-3 py-3">
+              <Link
+                to={m.to === null ? `/study/${id}/practice` : `/session/${id}/${m.to}`}
+                className="group tap-safe flex items-baseline gap-3 py-3"
+              >
                 <span className="font-display text-body text-text group-hover:text-accent">{m.label}</span>
                 <span className="leaders hidden sm:block" aria-hidden="true" />
                 <span className="mark shrink-0 tabular-nums text-text-3">{m.unit}</span>

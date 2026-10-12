@@ -365,6 +365,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         exam: examRule(course, useProgressStore.getState().getProgress(courseId), Date.now()),
         // Every card still due, not one more sitting's worth.
         minutes: Infinity,
+        // The Practice page's kind, which "Keep reviewing" keeps too.
+        kind: useSessionStore.getState().pendingKind ?? undefined,
       }).length;
       setMoreDue(still);
       // While more is due now, "these come back tomorrow" is not the news.

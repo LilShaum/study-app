@@ -160,7 +160,22 @@ export interface SessionOptions {
   minutes?: number;
   /** Measured seconds per card type (store/studyLog). 'today' only. */
   pace?: Record<string, number>;
+  /**
+   * Keep only one kind of card: questions, flashcards or terms. 'review',
+   * 'weakest' and 'missed' only; the other modes are already one kind or the
+   * whole lecture.
+   */
+  kind?: CardKind;
 }
+
+export type CardKind = 'questions' | 'flashcards' | 'terms';
+
+/** The file item type each kind keeps (a term is a definition until a mode asks for it). */
+const KIND_TYPE: Record<CardKind, StudyItem['type']> = {
+  questions: 'mcq',
+  flashcards: 'flashcard',
+  terms: 'definition',
+};
 
 const isGradable = (i: AnyItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall';
 
@@ -236,7 +251,7 @@ function weakestFirst(items: SessionItem[], now: number, progress?: Record<strin
 export function buildSessionItems(
   course: Course,
   mode: StudyMode,
-  { missedIds, sectionId, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES, pace }: SessionOptions = {},
+  { missedIds, sectionId, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES, pace, kind }: SessionOptions = {},
 ): SessionItem[] {
   const sections = sectionId
     ? sortedSections(course).filter((s) => s.id === sectionId)
@@ -250,6 +265,12 @@ export function buildSessionItems(
       _sectionOrder: section.order ?? 0,
     })),
   );
+
+  // Before the mode turns definitions into typed recall, and right-answered
+  // questions into typed questions, so each kind keeps what it was.
+  if (kind && (mode === 'review' || mode === 'weakest' || mode === 'missed')) {
+    items = items.filter((i) => i.type === KIND_TYPE[kind]);
+  }
 
   // The pool is the WHOLE course's definitions even when the session is one
   // section: a term confused with one from another section is still a
@@ -408,7 +429,9 @@ export function buildSessionItems(
       break;
     case 'review':
       // Unlimited minutes is how the finish screen counts everything due.
-      items = pairConfusions(fitMinutes(dueFirst(items), minutes, pace).slice(0, Number.isFinite(minutes) ? REVIEW_MAX : undefined));
+      items = fitMinutes(dueFirst(items), minutes, pace).slice(0, Number.isFinite(minutes) ? REVIEW_MAX : undefined);
+      // A mixed-up partner is a typed term: not in a session kept to questions or flashcards.
+      if (!kind || kind === 'terms') items = pairConfusions(items);
       break;
     case 'today': {
       // Nothing left of the day's time and nothing to catch up on (lib/today.ts, minutesLeft).

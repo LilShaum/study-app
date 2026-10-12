@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Course } from '@/schema/course';
-import { buildSessionItems, recallId, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
+import { buildSessionItems, recallId, type CardKind, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { isMissed, useProgressStore, type ItemResult } from './progress';
 import { examRule } from '@/lib/exam';
 import { usePlanStore } from './plan';
@@ -52,6 +52,13 @@ interface SessionState {
   /** True when this session started from a saved bookmark rather than item 1. */
   resumed: boolean;
 
+  /**
+   * Which kind of card Review, Weakest and Missed keep (the Practice page's
+   * "Kind"), or null for all of them. Set by SessionRoute before the session
+   * starts and left set, so restarting or "Keep reviewing" keeps the filter.
+   */
+  pendingKind: CardKind | null;
+  setPendingKind: (kind: CardKind | null) => void;
   /** `fullDay`: Today planned at the full daily time, ignoring what was studied today ("Keep going"). */
   init: (courseId: string, course: Course, mode: StudyMode, sectionId?: string, resumeItemId?: string, fullDay?: boolean) => void;
   /** The section this session is scoped to, or null for the whole course. */
@@ -122,6 +129,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   finished: false,
   resumed: false,
   sectionId: null,
+  pendingKind: null,
+  setPendingKind: (kind) => set({ pendingKind: kind }),
 
   init: (courseId, course, mode, sectionId, resumeItemId, fullDay = false) => {
     const progressStore = useProgressStore.getState();
@@ -145,6 +154,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
             todaySitting(courseId, course, progress, Date.now(), fullDay || !!resumeItemId).minutes
           : usePlanStore.getState().minutesFor(courseId),
       pace: measuredPace(useStudyLogStore.getState().byCourse),
+      kind: get().pendingKind ?? undefined,
     });
     shownAt = Date.now();
     // Resume by id, not position: Mixed and Review Missed reshuffle each start

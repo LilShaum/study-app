@@ -444,3 +444,48 @@ describe('buildSessionItems — a review sitting has a ceiling', () => {
     expect(buildSessionItems(big, 'review', { progress, now, minutes: Infinity })).toHaveLength(300);
   });
 });
+
+describe('buildSessionItems — kind', () => {
+  const DAY = 86_400_000;
+  const now = 100 * DAY;
+  const at = (daysAgo: number) => ({ got: 1, missed: 0, lastSeen: now - daysAgo * DAY, stability: 2 });
+  const progress = { a_mcq: at(10), b_mcq: at(10), a_card: at(10), 'a_def~recall': at(10), 'b_def~recall': at(10) };
+  const ids = (mode: 'weakest' | 'review' | 'missed', kind?: 'questions' | 'flashcards' | 'terms') =>
+    buildSessionItems(mixedCourse, mode, {
+      now,
+      progress,
+      minutes: Infinity,
+      kind,
+      missedIds: new Set(['a_mcq', 'a_card', 'a_def~recall', 'b_mcq']),
+    })
+      .map((i) => i.id)
+      .sort();
+
+  it('keeps only questions in weakest, review and missed', () => {
+    expect(ids('weakest', 'questions')).toEqual(['a_mcq', 'b_mcq']);
+    expect(ids('review', 'questions')).toEqual(['a_mcq', 'b_mcq']);
+    expect(ids('missed', 'questions')).toEqual(['a_mcq', 'b_mcq']);
+  });
+
+  it('keeps only flashcards', () => {
+    expect(ids('weakest', 'flashcards')).toEqual(['a_card']);
+    expect(ids('review', 'flashcards')).toEqual(['a_card']);
+    expect(ids('missed', 'flashcards')).toEqual(['a_card']);
+  });
+
+  it('keeps only terms, asked as typed recall', () => {
+    expect(ids('weakest', 'terms')).toEqual(['a_def~recall', 'b_def~recall']);
+    expect(ids('review', 'terms')).toEqual(['a_def~recall', 'b_def~recall']);
+    expect(ids('missed', 'terms')).toEqual(['a_def~recall']);
+  });
+
+  it('serves every kind when none is chosen', () => {
+    expect(ids('weakest')).toHaveLength(5);
+    expect(ids('review')).toHaveLength(5);
+  });
+
+  it('ignores the kind in the modes that are already one kind', () => {
+    const quiz = buildSessionItems(mixedCourse, 'quiz', { kind: 'flashcards' });
+    expect(quiz.map((i) => i.id)).toEqual(['a_mcq', 'b_mcq']);
+  });
+});
