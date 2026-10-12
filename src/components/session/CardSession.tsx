@@ -4,7 +4,8 @@ import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
 import { buildSessionItems, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { phaseOf, type LearnPhase } from '@/lib/learnSteps';
-import { useSessionStore, restartCardTimer } from '@/store/session';
+import { useSessionStore, restartCardTimer, fileItemOf } from '@/store/session';
+import { toast } from '@/store/toast';
 import { useResumeStore } from '@/store/resume';
 import { CourseTree } from '@/components/CourseTree';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
@@ -268,8 +269,12 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       bookmark && bookmark.mode === mode && (bookmark.sectionId ?? undefined) === sectionId
         ? bookmark.itemId
         : undefined;
-    init(courseId, course, mode, sectionId, usable);
-  }, [courseId, course, mode, sectionId, resume, init]);
+    // The lecture as it is now, read rather than subscribed to: setting a
+    // card aside mid-sitting (or a sync landing) changes the lecture, and a
+    // subscription restarted the sitting from its first card.
+    const atStart = useCoursesStore.getState().courses[courseId];
+    if (atStart) init(courseId, atStart, mode, sectionId, usable);
+  }, [courseId, mode, sectionId, resume, init]);
 
   // Remember where you are, so closing the tab 60 cards into a 151-card
   // session doesn't mean starting again. Item 1 is not worth remembering —
@@ -395,6 +400,28 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         .filter(Boolean),
       backAt: Date.now() + CATCH_UP_HOURS * 3_600_000,
     };
+  };
+
+  // "Not needed?" under the card: which of the two reasons, once asked.
+  // Tied to the card it was opened on, so it closes when the card changes.
+  const [askingAt, setAskingAt] = useState<number | null>(null);
+  const asking = askingAt === index;
+  const setAsking = (on: boolean) => setAskingAt(on ? index : null);
+  const setAsideNow = (reason: 'not-needed' | 'wrong') => {
+    setAsking(false);
+    const card = useSessionStore.getState().current();
+    if (!card) return;
+    const fileId = fileItemOf(card);
+    const sectionOf = course.sections.find((sec) => sec.items.some((i) => i.id === fileId));
+    if (!sectionOf) return;
+    useCoursesStore.getState().setAside(courseId, sectionOf.id, fileId, reason);
+    useSessionStore.getState().dropAhead(fileId);
+    toast(reason === 'wrong' ? 'Set aside as wrong. It is under Set aside on the lecture page, and in Fix.' : 'Set aside. It is under Set aside on the lecture page, to put back any time.', {
+      type: 'success',
+      actionLabel: 'Undo',
+      onAction: () => useCoursesStore.getState().setAside(courseId, sectionOf.id, fileId, null),
+    });
+    handleNext();
   };
 
   const handleNext = () => {
@@ -773,6 +800,32 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           {hasNext ? 'Next →' : 'Finish'}
         </button>
       </div>
+
+      {/* Set a card aside without leaving the sitting: a slide shown to
+          illustrate, a table the teacher said to skip, a card that is wrong.
+          Kept in the file, listed under Set aside on the lecture page. */}
+      {current && current.type !== 'slides' && !pause && (
+        <div className="mt-3 flex flex-wrap items-baseline justify-end gap-x-4 gap-y-1 text-small">
+          {asking ? (
+            <>
+              <span className="text-text-3">Set aside as</span>
+              <button type="button" className="tap-safe text-text-2 underline-offset-4 hover:text-text hover:underline" onClick={() => setAsideNow('not-needed')}>
+                not on my exam
+              </button>
+              <button type="button" className="tap-safe text-text-2 underline-offset-4 hover:text-text hover:underline" onClick={() => setAsideNow('wrong')}>
+                wrong or badly written
+              </button>
+              <button type="button" className="tap-safe text-text-3 hover:text-text" onClick={() => setAsking(false)}>
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button type="button" className="tap-safe text-text-3 underline-offset-4 hover:text-text hover:underline" onClick={() => setAsking(true)}>
+              Not needed?
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Hidden on touch, where there's no keyboard to hint about. */}
       <p

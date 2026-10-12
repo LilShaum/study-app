@@ -48,6 +48,11 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
     what: 'Every term in the lecture from A to Z, with its meaning, to look things up. Find it under View on the lecture page.',
     scored: false,
   },
+  {
+    name: 'Set aside',
+    what: 'Not needed? under any card while you study takes it out of study: choose not on my exam (a table the teacher said to skip, a slide shown only to illustrate) or wrong or badly written. Nothing is deleted. Set aside, under View on the lecture page, lists them all with Put back, and Fix there hands the wrong ones to the AI to rewrite. Browse shows them too.',
+    scored: false,
+  },
 ];
 
 const SHORTCUTS: { keys: string; what: string }[] = [

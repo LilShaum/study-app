@@ -15,6 +15,8 @@ const MAX_FAULTY_ITEMS = 25;
  * teach less well: a question with no valid answer key scores nothing at all.
  */
 const CORRECTABLE = [
+  // The student's own verdict while studying comes first: they met it.
+  'student-flagged',
   'correct-index-out-of-range',
   'option-count',
   'rationale-misaligned',
@@ -27,6 +29,8 @@ const CORRECTABLE = [
 const RANK = new Map(CORRECTABLE.map((id, n) => [id, n]));
 
 const FAULT_LABELS: Record<string, string> = {
+  'student-flagged':
+    'I marked it as wrong or badly written while studying: check it against my notes and rewrite it, or tell me it should go',
   'correct-index-out-of-range': 'the answer key points outside the options, so no option can be marked correct',
   'rationale-misaligned': "the distractor_rationale array isn't index-aligned with the options",
   'no-explanation': 'there is no explanation shown after answering',
@@ -40,7 +44,11 @@ const FAULT_LABELS: Record<string, string> = {
 };
 
 function itemJson(item: StudyItem): string {
-  return JSON.stringify(item, null, 2)
+  // The set-aside mark is the student's, not the content's: a corrected item
+  // comes back without it and so returns to study.
+  const { set_aside: _mark, ...content } = item;
+  void _mark;
+  return JSON.stringify(content, null, 2)
     .split('\n')
     .map((l) => `  ${l}`)
     .join('\n');
@@ -70,6 +78,12 @@ export function planFixes(course: Course): FixPromptPlan {
     if (!RANK.has(finding.id)) continue;
     for (const id of finding.items ?? []) {
       faultsByItem.set(id, [...(faultsByItem.get(id) ?? []), finding.id]);
+    }
+  }
+
+  for (const section of course.sections) {
+    for (const item of section.items) {
+      if (item.set_aside?.reason === 'wrong') faultsByItem.set(item.id, ['student-flagged', ...(faultsByItem.get(item.id) ?? [])]);
     }
   }
 

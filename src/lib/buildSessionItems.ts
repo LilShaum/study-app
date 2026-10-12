@@ -307,7 +307,9 @@ export function buildSessionItems(
     : sortedSections(course);
 
   let items: SessionItem[] = sections.flatMap((section) =>
-    section.items.map((item) => ({
+    // Set aside by the student (schema: set_aside): out of every session.
+    // Browse renders from the file and shows them with Put back.
+    section.items.filter((item) => mode === 'browse' || !item.set_aside).map((item) => ({
       ...item,
       _sectionTitle: section.title,
       _sectionId: section.id,

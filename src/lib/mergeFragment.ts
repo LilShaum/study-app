@@ -48,6 +48,9 @@ export interface MergeOptions {
 function changedFields(before: StudyItem, after: StudyItem): string[] {
   const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
   keys.delete('id');
+  // The student's set-aside mark is not content: a correction drops it, and
+  // the preview should not list it as something the AI changed.
+  keys.delete('set_aside');
   const b = before as unknown as Record<string, unknown>;
   const a = after as unknown as Record<string, unknown>;
   return [...keys].filter((k) => JSON.stringify(b[k]) !== JSON.stringify(a[k]));

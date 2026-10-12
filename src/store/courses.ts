@@ -25,6 +25,8 @@ interface CoursesState {
   deleteItem: (courseId: string, sectionId: string, itemId: string) => { item: StudyItem; index: number } | null;
   /** Inserts an item (new item, or an undo restore), at the given index or the end. */
   insertItem: (courseId: string, sectionId: string, item: StudyItem, atIndex?: number) => void;
+  /** Set an item aside (out of study, kept in the file), or put it back with null. */
+  setAside: (courseId: string, sectionId: string, itemId: string, reason: 'not-needed' | 'wrong' | null) => void;
   /** Appends a planned set of new items to an existing course. */
   mergeIntoCourse: (courseId: string, plan: MergePlan) => void;
 
@@ -86,6 +88,27 @@ export const useCoursesStore = create<CoursesState>()(
           const sections = course.sections.map((s) =>
             s.id === sectionId
               ? { ...s, items: s.items.map((it) => (it.id === itemId ? updated : it)) }
+              : s,
+          );
+          return { courses: { ...state.courses, [courseId]: { ...course, sections } } };
+        });
+      },
+
+      setAside: (courseId, sectionId, itemId, reason) => {
+        set((state) => {
+          const course = state.courses[courseId];
+          if (!course) return state;
+          const sections = course.sections.map((s) =>
+            s.id === sectionId
+              ? {
+                  ...s,
+                  items: s.items.map((it) => {
+                    if (it.id !== itemId) return it;
+                    const { set_aside: _was, ...rest } = it;
+                    void _was;
+                    return (reason ? { ...rest, set_aside: { reason, at: Date.now() } } : rest) as StudyItem;
+                  }),
+                }
               : s,
           );
           return { courses: { ...state.courses, [courseId]: { ...course, sections } } };

@@ -37,6 +37,7 @@ function useLocationName(): string {
   if (pathname.includes('/diagrams')) return title ? `${title} · Plates` : 'Plates';
   if (pathname.endsWith('/glossary')) return title ? `${title} · Glossary` : 'Glossary';
   if (pathname.endsWith('/practice')) return title ? `${title} · Practice` : 'Practice';
+  if (pathname.endsWith('/set-aside')) return title ? `${title} · Set aside` : 'Set aside';
   if (title) return title;
   return 'The library';
 }
@@ -56,6 +57,7 @@ function useTabTitle(here: string): void {
     else if (pathname.includes('/diagrams')) name = `${title} · Plates`;
     else if (pathname.endsWith('/glossary')) name = `${title} · Glossary`;
     else if (pathname.endsWith('/practice')) name = `${title} · Practice`;
+    else if (pathname.endsWith('/set-aside')) name = `${title} · Set aside`;
     else name = title;
   }
   useEffect(() => {

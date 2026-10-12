@@ -61,7 +61,12 @@ export function cloudError(e: unknown): string {
 /** Uploads a course and returns the link that opens it. Needs a sign-in. */
 export async function shareCourse(course: Course): Promise<string> {
   const sb = await cloud();
-  const { data, error } = await sb.from('shared_courses').insert({ course }).select('id').single();
+  // What one student set aside is theirs; a classmate gets the whole lecture.
+  const clean = {
+    ...course,
+    sections: course.sections.map((s) => ({ ...s, items: s.items.map(({ set_aside: _mine, ...item }) => (void _mine, item)) })),
+  };
+  const { data, error } = await sb.from('shared_courses').insert({ course: clean }).select('id').single();
   if (error) throw error;
   return `${window.location.origin}${BASE_PATH}#/shared/${data.id}`;
 }

@@ -207,6 +207,7 @@ export function CourseRoute() {
   }
 
   const tags = course.metadata.tags ?? [];
+  const setAsideCount = course.sections.reduce((n, sec) => n + sec.items.filter((i) => i.set_aside).length, 0);
   const sectionsInOrder = sortedSections(course);
   const clock = (t: number) => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const todaySummary =
@@ -418,6 +419,9 @@ export function CourseRoute() {
             <ToolLink to={`/study/${id}/progress`}>Progress</ToolLink>
             <ToolLink to={`/session/${id}/browse`}>Browse and edit</ToolLink>
             {counts.definition > 0 && <ToolLink to={`/study/${id}/glossary`}>Glossary ({counts.definition})</ToolLink>}
+            {/* Shown whenever anything is set aside, so a card set aside by
+                mistake is always one tap from coming back. */}
+            {setAsideCount > 0 && <ToolLink to={`/study/${id}/set-aside`}>Set aside ({setAsideCount})</ToolLink>}
             {counts.graphic > 0 && <ToolLink to={`/study/${id}/diagrams`}>Diagrams ({counts.graphic})</ToolLink>}
           </div>
         </div>

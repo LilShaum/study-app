@@ -27,6 +27,8 @@ export const previewId = (flashcardId: string) => `${flashcardId}~preview`;
 export function scoredEntries(items: readonly StudyItem[]): { id: string; item: StudyItem }[] {
   const out: { id: string; item: StudyItem }[] = [];
   for (const item of items) {
+    // Set aside by the student: out of every count, as it is out of every session.
+    if (item.set_aside) continue;
     if (item.type === 'mcq' || item.type === 'flashcard') out.push({ id: item.id, item });
     else if (item.type === 'definition') out.push({ id: recallId(item.id), item });
   }

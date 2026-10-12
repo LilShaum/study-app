@@ -49,6 +49,19 @@ export function EditableItem({ courseId, sectionId, item }: EditableItemProps) {
 
   return (
     <div className="group relative">
+      {/* Set aside while studying: shown here with the way back. */}
+      {item.set_aside && (
+        <div className="mb-2 flex items-baseline justify-between gap-3 border-l-2 border-border-strong pl-3 text-small text-text-2">
+          <span>Set aside{item.set_aside.reason === 'wrong' ? ' as wrong' : ', not on my exam'}: out of study.</span>
+          <button
+            type="button"
+            className="tap-safe shrink-0 text-text-3 underline-offset-4 hover:text-text hover:underline"
+            onClick={() => useCoursesStore.getState().setAside(courseId, sectionId, item.id, null)}
+          >
+            Put back
+          </button>
+        </div>
+      )}
       <ItemRenderer item={item} />
       {/* Hover-reveal on pointer devices; always visible (but muted) on touch,
           where there is no hover and the controls would be unreachable. */}

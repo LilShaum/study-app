@@ -21,6 +21,10 @@ const itemBase = {
   // to fill it in — it's the main lever against fabricated content, and
   // lets a student spot-check an item against their own notes.
   source_excerpt: z.string().optional(),
+  // Set aside by the student while studying: kept in the file, out of every
+  // session, plan and count, and put back from the lecture's Set aside list.
+  // "wrong" also goes to the Fix prompt. Dropped from shared copies.
+  set_aside: z.object({ reason: z.enum(['not-needed', 'wrong']), at: z.number() }).optional(),
 };
 
 export const McqItemSchema = z.looseObject({

@@ -421,3 +421,20 @@ describe('session store: Learn after reading the slides', () => {
     expect(s().current()?.type).not.toBe('slides');
   });
 });
+
+describe('session store: a card set aside leaves the sitting', () => {
+  it('drops it and its copies still ahead', () => {
+    const c = {
+      schema_version: '1.0',
+      metadata: { title: 'D' },
+      sections: [{ id: 's1', title: 'One', items: [mcq('q1', 'A?'), mcq('q2', 'B?'), mcq('q3', 'C?')] }],
+    } as Course;
+    const s = () => useSessionStore.getState();
+    useProgressStore.setState({ byCourse: {} });
+    s().init('drop', c, 'quiz');
+    const first = s().current()!.id;
+    s().dropAhead('q3');
+    expect(s().items.map((i) => i.id)).not.toContain('q3');
+    expect(s().current()!.id).toBe(first);
+  });
+});

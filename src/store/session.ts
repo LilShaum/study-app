@@ -90,6 +90,12 @@ interface SessionState {
    * the session moves on.
    */
   askFirst: (sectionId: string) => void;
+  /**
+   * The card on screen was set aside: it and every copy of it still ahead
+   * leave the sitting (their file item, so a definition takes its typed term
+   * with it). The caller moves the session on.
+   */
+  dropAhead: (fileItemId: string) => void;
   /** Marks the session complete; cleared by init(). */
   finish: () => void;
   /**
@@ -118,6 +124,13 @@ function shifted(s: { answeredIndices: Set<number>; results: Map<number, boolean
     answeredIndices: new Set([...s.answeredIndices].map(move)),
     results: new Map([...s.results].map(([n, got]) => [move(n), got] as [number, boolean])),
   };
+}
+
+/** The course-file item a session card comes from: a typed term is its definition's. */
+export function fileItemOf(item: SessionItem): string {
+  if (item.type === 'recall') return item.question ? item.id : item.target.id;
+  if (item.type === 'preview') return item.target.id;
+  return item.id;
 }
 
 const isGradable = (item: SessionItem) =>
@@ -320,6 +333,17 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     if (idx < 0) return;
     logCurrentCard(get());
     set({ index: idx, activeSectionId: sectionId });
+  },
+
+  dropAhead: (fileItemId) => {
+    const { items, index } = get();
+    const keep = items.map((item, n) => n <= index || fileItemOf(item) !== fileItemId || get().answeredIndices.has(n));
+    const moved = new Map<number, number>();
+    let to = 0;
+    keep.forEach((k, n) => {
+      if (k) moved.set(n, to++);
+    });
+    set((s) => ({ items: items.filter((_, n) => keep[n]), ...shifted(s, (n) => moved.get(n) ?? n) }));
   },
 
   askFirst: (sectionId) => {

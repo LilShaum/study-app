@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course } from '@/schema/course';
 import { buildSessionItems } from './buildSessionItems';
+import { scoredEntries } from './scored';
 import type { ExamRule } from './exam';
 
 const course = {
@@ -535,5 +536,32 @@ describe('Learn, questions first', () => {
     const items = buildSessionItems(mixedCourse, 'today', { minutes: 60, questionsFirst: true });
     expect(items.some((i) => i.type === 'definition' || i.type === 'preview')).toBe(false);
     expect(items.some((i) => i.type === 'recall')).toBe(true);
+  });
+});
+
+describe('set aside', () => {
+  const aside = {
+    ...mixedCourse,
+    sections: mixedCourse.sections.map((s) => ({
+      ...s,
+      items: s.items.map((i) => (i.id === 'a_mcq' || i.id === 'a_def' ? { ...i, set_aside: { reason: 'not-needed', at: 1 } } : i)),
+    })),
+  } as Course;
+
+  it('leaves every session but Browse', () => {
+    for (const mode of ['learn', 'quiz', 'mixed', 'definitions', 'weakest'] as const) {
+      const ids = buildSessionItems(aside, mode).map((i) => i.id);
+      expect(ids).not.toContain('a_mcq');
+      expect(ids).not.toContain('a_def');
+      expect(ids).not.toContain('a_def~recall');
+    }
+    expect(buildSessionItems(aside, 'browse').map((i) => i.id)).toContain('a_mcq');
+  });
+
+  it('leaves every count', () => {
+    const ids = aside.sections.flatMap((s) => scoredEntries(s.items).map((e) => e.id));
+    expect(ids).not.toContain('a_mcq');
+    expect(ids).not.toContain('a_def~recall');
+    expect(ids).toContain('a_card');
   });
 });

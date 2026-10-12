@@ -119,3 +119,20 @@ describe('buildFixPrompt', () => {
     expect(prompt).not.toMatch(/Questions with something wrong/);
   });
 });
+
+describe('cards the student set aside as wrong', () => {
+  const flagged = mcq('q9', 'Which is right?', { set_aside: { reason: 'wrong', at: 1 } });
+  it('go to the front of the Fix prompt, without the mark', () => {
+    const plan = planFixes(course([mcq('q1', 'Fine?'), flagged]));
+    expect(plan.faultyItems[0].item.id).toBe('q9');
+    expect(plan.faultyItems[0].faults[0]).toBe('student-flagged');
+    const prompt = buildFixPrompt(course([flagged]));
+    expect(prompt).toContain('I marked it as wrong or badly written');
+    expect(prompt).not.toContain('set_aside');
+  });
+
+  it('set aside as not needed is not a fault', () => {
+    const plan = planFixes(course([mcq('q2', 'Fine?', { set_aside: { reason: 'not-needed', at: 1 } })]));
+    expect(plan.faultyItems.some((f) => f.item.id === 'q2')).toBe(false);
+  });
+});
