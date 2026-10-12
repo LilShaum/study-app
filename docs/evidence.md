@@ -149,6 +149,99 @@ is closest to the app's typed terms and furthest from its application
 questions. It is also a single paper with two experiments, not a
 meta-analysis.
 
+### The first test should wait a little
+
+Karpicke, J. D., & Roediger, H. L. (2007). *Expanding retrieval practice
+promotes short-term retention, but equally spaced retrieval enhances
+long-term retention.* J Exp Psychol Learn Mem Cogn.
+[10.1037/0278-7393.33.4.704](https://doi.org/10.1037/0278-7393.33.4.704)
+
+> "Delaying the first test improved long-term retention, regardless of how
+> the repeated tests were spaced. The important factor for promoting
+> long-term retention is delaying initial retrieval to make it more
+> difficult."
+
+Karpicke, J. D., & Roediger, H. L. (2010). *Is expanding retrieval a
+superior method for learning text materials?* Memory & Cognition.
+[10.3758/MC.38.1.116](https://doi.org/10.3758/MC.38.1.116)
+
+> "(1) repeated testing enhanced retention more than did taking a single
+> test, (2) testing with feedback (restudying the passages) produced better
+> retention than testing without feedback, but most importantly (3) there
+> were no differences between expanding and equally spaced schedules."
+
+**What it licenses in the app.** Asking a card two or three cards after its
+answer was shown is the weakest form of a first test: the answer is still
+in mind. The first ask in Learn should come later in the sitting (the end
+of the step, or after the next one), and the passage should be shown after
+an answer, not only before. The 2010 paper used short texts, which is
+closer to lecture notes than word pairs.
+
+**What it does not license.** A number of cards or minutes to wait.
+
+### Trying before being told helps, even when the try fails
+
+Kornell, N., Hays, M. J., & Bjork, R. A. (2009). *Unsuccessful retrieval
+attempts enhance subsequent learning.* J Exp Psychol Learn Mem Cogn.
+[10.1037/a0015729](https://doi.org/10.1037/a0015729)
+
+> "In the test condition, participants attempted to answer the question
+> before being shown the answer; in the read-only condition, the question
+> and answer were presented together. Unsuccessful retrieval attempts
+> enhanced learning with both types of materials."
+
+**What it licenses in the app.** Where the student has just met the
+material somewhere else (their slides, the lecture), Learn should ask first
+and show the answer after, as Anki does, rather than show the answer
+first.
+
+**What it does not license.** Quizzing on material never seen anywhere.
+The materials were fictional trivia and weak word associates; nothing here
+says a cold guess at a lecture fact the student has never met teaches
+anything.
+
+### Spacing that adapts to each item beats a fixed ladder
+
+Mettler, E., Massey, C. M., & Kellman, P. J. (2016). *A comparison of
+adaptive and fixed schedules of practice.* J Exp Psychol Gen.
+[10.1037/xge0000170](https://doi.org/10.1037/xge0000170)
+
+> "adaptive scheduling outperformed fixed conditions at immediate and
+> delayed tests of retention. No evidence was found for differences between
+> expanding and equal spacing. Yoked conditions showed that learning gains
+> were due to adaptation to individual items and learners."
+
+**What it licenses in the app.** The per-item memory model, rather than
+Anki's older fixed multipliers. It used response time as well as accuracy;
+the app records time per card and could use it.
+
+### Anki in medical school: helps on board exams, mixed on course exams
+
+Frappa, N., et al. (2026). *Anki Use and Academic Performance in Medical
+Education: A Systematic Review.* Medical Science Educator.
+[10.1007/s40670-026-02643-5](https://doi.org/10.1007/s40670-026-02643-5)
+
+> "Three studies demonstrated a consistent positive association between
+> regular Anki use and USMLE Step 1 performance … Evidence for
+> university-administered exams was more mixed … These discrepancies may
+> reflect differences in deck quality, usage consistency, and shorter
+> preparation timelines for in-course exams … evidence is largely
+> observational."
+
+Also read: Gilbert et al. 2023, a cohort of 130 first-years, Anki users
+6–7% higher on course finals
+([10.1007/s40670-023-01826-8](https://doi.org/10.1007/s40670-023-01826-8));
+Deng et al. 2015, unique Anki cards seen predicted Step 1 score
+([10.1007/s40037-015-0220-x](https://doi.org/10.1007/s40037-015-0220-x)).
+
+**What it licenses in the app.** Anki's core (retrieval, per-card spacing,
+a daily habit) is worth copying, and it is already the app's core. The
+weak spot the review names, short timelines for course exams, is the one
+an exam-aware scheduler and a cram mode are for.
+
+**What it does not license.** Causation. Students who use Anki daily may
+simply be the diligent ones.
+
 ---
 
 ## Attributed but not verified
