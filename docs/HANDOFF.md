@@ -19,6 +19,36 @@ Start here. Make each step a task, keep one in progress, and only mark it
 done when it is tested and live (see §7). Load `working-method`,
 `arborous-design` and `app-making` at the start; `simulate` before Learn.
 
+**Done 2026-10-12 (live):** the modes review in `docs/proposals/modes.md`
+(every mode asked "why is it here, how well does it do it"), with the
+owner's go-ahead. New evidence entries in `docs/evidence.md`.
+
+- **Learn asks later.** Inside a step everything is read, then asked first
+  read, first asked (`ORDER` in `learnSteps.ts`); the passage opens after
+  every answer in Learn. Asking a miss again at the section's end was
+  simulated and dropped (cost time; a second right answer in one sitting).
+- **Cram was built in the simulator and lost** (6–9 points under both
+  students). What helped was spacing, so **Today splits the last three days
+  before an exam into three sittings three hours apart** (`partMinutes` in
+  `lib/today.ts`, "10 min · 1 of 3" on the course page, the next sitting's
+  time on the finish screen): +2 to +5. New scenarios: late-start,
+  crammer-harsh. sim/FINDINGS.md has the table.
+- **One Practice page** (`/study/:id/practice`, `PracticeRoute.tsx`)
+  replaced Review and the six format modes on the course and section
+  pages: which cards × which kind × from where. Old session URLs still
+  work; `?kind=` filters review/weakest/missed (`pendingKind` in the
+  session store). Built by a Sonnet subagent to a spec, then reviewed.
+- **Learn with your slides.** A section can carry `source_range` ("slides
+  12–18"); the generator prompt asks for it when the source numbers its
+  slides. Learn opens such a section with a card to read those slides,
+  then "I've read them" drops its reading cards so everything is asked
+  first (`askFirst` in the store, `SlidesCard`). Existing courses have no
+  ranges until regenerated or re-added.
+
+Open from it: the Continue card resumes a kind-filtered Practice session
+without its filter; the Practice "Due now" count is everything due while
+the session is sized to the daily minutes (it offers more at the end).
+
 **Done 2026-10-11, second session (live):** the owner's decisions in
 `docs/proposals/decisions.md`, all built.
 
@@ -199,11 +229,14 @@ look of a generic web app. Keep it.
 - **Course check.** Flags undefined terms, answer-length bias in MCQs
   (correct option longest too often), stems that restate their excerpt,
   sections that only test recall, structural faults.
-- **Study modes.** Today; Learn (per section, in small steps: read → recall
-  → apply, misses come back within the step, natural stopping points);
-  Review (most-forgotten first, sized to the day's minutes); Quiz,
-  Flashcards, Terms (typed), Mixed, Weakest first, Review missed. Confusable
-  terms are paired. A side rail on desktop.
+- **Study modes.** Today (the daily button; three sittings in the last
+  three days before an exam); Learn (per section, in small steps: read,
+  then asked in the order read, misses come back within the step; can
+  start from the student's own slides and ask first); Practice (one page:
+  due, weakest, missed or everything × questions, flashcards or terms ×
+  lecture or section; behind it the old Review, Quiz, Flashcards, Terms,
+  Mixed, Weakest first and Review missed sessions). Confusable terms are
+  paired. A side rail on desktop.
 - **Planning.** Exam date and which sections it covers, per course; one exam
   date can be set on several courses of the same class. Today splits the
   day between review and new material, uses only what is left of the day's

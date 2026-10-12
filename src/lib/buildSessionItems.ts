@@ -108,7 +108,20 @@ export interface PreviewItem {
   target: FlashcardItem;
 }
 
-export type AnyItem = StudyItem | RecallItem | PreviewItem;
+/**
+ * Learn's first card in a section whose place in the student's own slides is
+ * known (Section.source_range): read those slides, then either be asked
+ * first, with the answers after, or be taught here as usual
+ * (components/items/SlidesCard). Session-only, never scored.
+ */
+export interface SlidesItem {
+  id: string;
+  type: 'slides';
+  /** "slides 12–18", as the course gives it. */
+  range: string;
+}
+
+export type AnyItem = StudyItem | RecallItem | PreviewItem | SlidesItem;
 
 // A discriminated union, so this must be an intersection (an `interface
 // extends` can't add fields to a non-object union type).
@@ -188,7 +201,12 @@ const isGradable = (i: AnyItem) => i.type === 'mcq' || i.type === 'flashcard' ||
  * (see lib/learnSteps), so studying the whole course walks it section by
  * section, a few terms at a time.
  */
-function learnOrder(items: SessionItem[], progress?: Record<string, ItemResult>): SessionItem[] {
+function learnOrder(
+  items: SessionItem[],
+  progress?: Record<string, ItemResult>,
+  /** Section id to where it is in the student's slides (Section.source_range). */
+  ranges?: ReadonlyMap<string, string>,
+): SessionItem[] {
   // Grouped by section first: the sections are already in authored order,
   // and ordering across a boundary would put the whole course's terms first.
   const groups = new Map<string, SessionItem[]>();
@@ -197,7 +215,26 @@ function learnOrder(items: SessionItem[], progress?: Record<string, ItemResult>)
     if (group) group.push(item);
     else groups.set(item._sectionId, [item]);
   }
-  return [...groups.values()].flatMap((group) => stepSection(group, progress));
+  return [...groups.values()].flatMap((group) => {
+    const steps = stepSection(group, progress);
+    const range = ranges?.get(group[0]._sectionId);
+    const first = steps[0];
+    // A section that says where it is in the slides opens with that, as part
+    // of its first step: once the step is done, the card goes with it.
+    if (!range || !first || first._step !== 0) return steps;
+    const slides: SessionItem = {
+      id: `${first._sectionId}~slides`,
+      type: 'slides',
+      range,
+      _sectionTitle: first._sectionTitle,
+      _sectionId: first._sectionId,
+      _sectionOrder: first._sectionOrder,
+      _step: 0,
+      _steps: first._steps,
+      _block: first._block,
+    };
+    return [slides, ...steps];
+  });
 }
 
 /**
@@ -271,6 +308,8 @@ export function buildSessionItems(
   if (kind && (mode === 'review' || mode === 'weakest' || mode === 'missed')) {
     items = items.filter((i) => i.type === KIND_TYPE[kind]);
   }
+
+  const ranges = new Map(course.sections.filter((s) => s.source_range?.trim()).map((s) => [s.id, s.source_range!.trim()]));
 
   // The pool is the WHOLE course's definitions even when the session is one
   // section: a term confused with one from another section is still a
@@ -405,7 +444,7 @@ export function buildSessionItems(
       break;
     case 'learn': {
       // Read the definition, then recall it a few cards later in its step.
-      const all = learnOrder(withRecall(items), progress);
+      const all = learnOrder(withRecall(items), progress, ranges);
       // Pick up where you stopped, as Today does: a step whose every question
       // has been answered is done, and Review brings it back when it fades.
       // Once every step is done, Learn is the whole thing again.
@@ -452,7 +491,7 @@ export function buildSessionItems(
       let full = false;
       for (const { section } of sectionsToLearn(course, progress ?? {}, now)) {
         if (full) break;
-        const steps = learnOrder(withRecall(items.filter((i) => i._sectionId === section.id)), progress);
+        const steps = learnOrder(withRecall(items.filter((i) => i._sectionId === section.id)), progress, ranges);
         for (let s = 0; s < (steps[0]?._steps ?? 0); s++) {
           const step = steps.filter((i) => i._step === s);
           // Carry on where Learn left off: a step whose every question has

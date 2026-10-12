@@ -489,3 +489,30 @@ describe('buildSessionItems — kind', () => {
     expect(quiz.map((i) => i.id)).toEqual(['a_mcq', 'b_mcq']);
   });
 });
+
+describe('Learn with the student\'s own slides', () => {
+  const withRange = {
+    ...mixedCourse,
+    sections: mixedCourse.sections.map((s) => (s.id === 'sa' ? { ...s, source_range: 'slides 12–18' } : s)),
+  } as Course;
+
+  it('opens a section that says where it is in the slides with that, in its first step', () => {
+    const items = buildSessionItems(withRange, 'learn', { sectionId: 'sa' });
+    expect(items[0]).toMatchObject({ id: 'sa~slides', type: 'slides', range: 'slides 12–18', _step: 0 });
+    expect(items[0]._block).toBe(items[1]._block);
+  });
+
+  it('leaves it out of sections without a range, and once the first step is done', () => {
+    expect(buildSessionItems(withRange, 'learn', { sectionId: 'sb' }).some((i) => i.type === 'slides')).toBe(false);
+    const asks = buildSessionItems(withRange, 'learn', { sectionId: 'sa' }).filter((i) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall');
+    const progress = Object.fromEntries(asks.map((i) => [i.id, { got: 1, missed: 0, lastSeen: 1 }]));
+    const again = buildSessionItems(withRange, 'learn', { sectionId: 'sa', progress: progress as never });
+    // Every step done: Learn is the whole section again, slides card first.
+    expect(again[0].type).toBe('slides');
+  });
+
+  it('starts Today\'s new material with it too', () => {
+    const items = buildSessionItems(withRange, 'today', { minutes: 60 });
+    expect(items.find((i) => i._block !== 'review')?.type).toBe('slides');
+  });
+});

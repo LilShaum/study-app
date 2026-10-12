@@ -35,7 +35,7 @@ const GENERIC_SHARE = 0.4;
 export type LearnPhase = 'read' | 'recall' | 'apply';
 
 export function phaseOf(type: AnyItem['type']): LearnPhase | null {
-  if (type === 'definition' || type === 'example' || type === 'graphic' || type === 'preview') return 'read';
+  if (type === 'definition' || type === 'example' || type === 'graphic' || type === 'preview' || type === 'slides') return 'read';
   if (type === 'flashcard' || type === 'recall') return 'recall';
   if (type === 'mcq') return 'apply';
   return null;
@@ -48,6 +48,7 @@ export function phaseOf(type: AnyItem['type']): LearnPhase | null {
 // first test is what helped long-term retention in Karpicke & Roediger
 // (2007, docs/evidence.md).
 const ORDER: Record<AnyItem['type'], number> = {
+  slides: -1,
   definition: 0,
   example: 1,
   graphic: 2,

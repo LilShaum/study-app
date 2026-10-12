@@ -137,6 +137,14 @@ way Mixed does now.
 It should say that cards which aren't fading yet count for little, so
 nobody mistakes it for the daily work.
 
+## Status (2026-10-12)
+
+All built and live: Learn's later first ask and passage after every answer;
+Cram tested and folded into Today as three sittings in the last three days;
+Practice in place of Review and the six format modes; Learn with your
+slides (`source_range`). Fitting the memory model to the student waits on a
+month of real study.
+
 ## Order
 
 1. Learn: the later first ask, and the passage after every answer (small,

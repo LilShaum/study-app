@@ -30,7 +30,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Learn',
-    what: 'Teaches a section a few terms at a time, about a dozen cards a step. Each step: read the terms and the flashcards it will ask, type the terms from memory, then answer questions that use them. Anything you get wrong comes back a few cards later in the same step, with the passage from your notes. After each step you can stop, and Learn picks up at the next one. At the end it offers the next section.',
+    what: 'Teaches a section a few terms at a time, about a dozen cards a step. Each step: read the terms and the flashcards it will ask, type the terms from memory, then answer questions that use them. Anything you get wrong comes back a few cards later in the same step, with the passage from your notes. After each step you can stop, and Learn picks up at the next one. At the end it offers the next section. When the lecture says which slides a section covers, Learn starts there: read those slides yourself, tap I’ve read them, and it asks before it shows, which helps even when you get it wrong. Studying alongside your slides works best this way: read a few, put them away, then answer.',
     scored: true,
   },
   {

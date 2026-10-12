@@ -6,6 +6,7 @@ import { ExampleCard } from './ExampleCard';
 import { GraphicCard } from './GraphicCard';
 import { RecallCard } from './RecallCard';
 import { PreviewCard } from './PreviewCard';
+import { SlidesCard } from './SlidesCard';
 import type { ItemFrame } from './frame';
 
 interface ItemRendererProps {
@@ -25,6 +26,8 @@ interface ItemRendererProps {
   frame?: ItemFrame;
   /** Learn: reading cards show the passage from the notes open, and so does every answer. */
   learning?: boolean;
+  /** Learn, on a section's slides card: the student has read them, so ask first. */
+  onReadThem?: () => void;
 }
 
 /** Routes to the right card by item.type — the one place that needs to know them all. */
@@ -39,8 +42,20 @@ export function ItemRenderer({
   keyboardEnabled,
   frame = 'card',
   learning = false,
+  onReadThem,
 }: ItemRendererProps) {
   switch (item.type) {
+    case 'slides':
+      return (
+        <SlidesCard
+          range={item.range}
+          sectionTitle={'_sectionTitle' in item ? String(item._sectionTitle) : ''}
+          keyboardEnabled={keyboardEnabled}
+          onReadThem={onReadThem}
+          onTeachHere={onNext}
+          frame={frame}
+        />
+      );
     case 'mcq':
       return (
         <McqCard item={item} onAnswered={onAnswered} onNext={onNext} keyboardEnabled={keyboardEnabled} frame={frame} learning={learning} />

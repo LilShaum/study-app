@@ -386,3 +386,38 @@ describe('session store: kind filter', () => {
     expect(useSessionStore.getState().items.map((i) => i.id)).toEqual(['q1']);
   });
 });
+
+describe('session store: Learn after reading the slides', () => {
+  const course = {
+    schema_version: '1.0',
+    metadata: { title: 'S' },
+    sections: [
+      {
+        id: 's1',
+        title: 'One',
+        source_range: 'slides 1–4',
+        items: [
+          { id: 'd0', type: 'definition', term: 'Alpha', definition: 'meaning 0' },
+          { id: 'f0', type: 'flashcard', front: 'Front about Alpha', back: 'Back' },
+          mcq('q0', 'Which is Alpha?'),
+        ],
+      },
+    ],
+  } as unknown as Course;
+  const s = () => useSessionStore.getState();
+
+  beforeEach(() => {
+    useProgressStore.setState({ byCourse: {} });
+    s().init('slides', course, 'learn');
+  });
+
+  it('drops the reading cards ahead, so every card is asked first, and moves on', () => {
+    expect(s().current()?.type).toBe('slides');
+    s().askFirst('s1');
+    const types = s().items.slice(s().index).map((i) => i.type);
+    expect(types).not.toContain('definition');
+    expect(types).not.toContain('preview');
+    expect(types).toEqual(expect.arrayContaining(['recall', 'flashcard', 'mcq']));
+    expect(s().current()?.type).not.toBe('slides');
+  });
+});

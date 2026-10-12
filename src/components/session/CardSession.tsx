@@ -663,6 +663,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
             record(false);
             handleNext();
           }}
+          onReadThem={() => useSessionStore.getState().askFirst(current._sectionId)}
           onOverride={setResult}
           onConfused={(otherId) => useProgressStore.getState().noteConfusion(courseId, current.id, otherId)}
           onNext={handleNext}

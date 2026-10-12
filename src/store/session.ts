@@ -82,6 +82,13 @@ interface SessionState {
    */
   setResult: (got: boolean) => void;
   jumpToSection: (sectionId: string) => void;
+  /**
+   * Learn: the student has read this section in their own slides. Its
+   * reading cards still ahead (definitions and flashcards shown open) are
+   * dropped, so each card is asked first and its passage shown after, then
+   * the session moves on.
+   */
+  askFirst: (sectionId: string) => void;
   /** Marks the session complete; cleared by init(). */
   finish: () => void;
   /**
@@ -311,6 +318,27 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     if (idx < 0) return;
     logCurrentCard(get());
     set({ index: idx, activeSectionId: sectionId });
+  },
+
+  askFirst: (sectionId) => {
+    const { items, index } = get();
+    const drop = (item: SessionItem, n: number) =>
+      n > index &&
+      item._sectionId === sectionId &&
+      (item.type === 'definition' || item.type === 'preview') &&
+      !get().answeredIndices.has(n);
+    const keep = items.map((item, n) => !drop(item, n));
+    // Answers are kept by position: what was answered past here moves with its card.
+    const moved = new Map<number, number>();
+    let to = 0;
+    keep.forEach((k, n) => {
+      if (k) moved.set(n, to++);
+    });
+    set((s) => ({
+      items: items.filter((_, n) => keep[n]),
+      ...shifted(s, (n) => moved.get(n) ?? n),
+    }));
+    get().next();
   },
 
   finish: () => {
