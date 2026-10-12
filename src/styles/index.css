@@ -466,6 +466,18 @@
   .app-header {
     padding-top: env(safe-area-inset-top);
   }
+  /* The page scrolls up under the status bar in the installed app; without
+     a cover the clock sat on top of whatever line was passing beneath it
+     (the owner's iPhone). Opaque, the page's own colour, above everything
+     that scrolls. */
+  .status-bar-cover {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    height: env(safe-area-inset-top);
+    z-index: 60;
+    pointer-events: none;
+  }
   /* Room under the page for anything pinned to the bottom of the screen
      (the course page's Start bar on a phone), so it covers nothing. On the
      shell, not the body: the body is held to the viewport's height. */
