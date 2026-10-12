@@ -121,6 +121,17 @@ export function PracticeRoute() {
         Drill this lecture outside the plan: before a class quiz, or a section that feels shaky. Today still decides
         what comes back when; a card that is not fading yet gains little from more practice.
       </p>
+      {/* Practice drills what has been taught. On a lecture never opened,
+          every choice is the whole lecture cold, so say where to begin. */}
+      {Object.keys(progress).length === 0 && (
+        <p className="mt-3 max-w-prose text-small text-text-2">
+          Nothing in this lecture has been studied yet.{' '}
+          <Link to={`/session/${id}/learn`} className="text-accent underline-offset-4 hover:underline">
+            Learn
+          </Link>{' '}
+          teaches it a few terms at a time; Practice is for after.
+        </p>
+      )}
 
       <div className="mt-6 space-y-5 border-y border-border py-5">
         <Choices

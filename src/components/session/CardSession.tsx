@@ -553,7 +553,11 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
             <button
               type="button"
               onClick={retryMissed}
-              className={`press tap-safe ${moreDue > 0 || mode === 'today' || nextSection ? '' : 'press-ink'}`}
+              // Never the lead: the screen has just said the misses are
+              // worth one more look in a few hours, and the simulator found
+              // re-asking them now adds nothing to that (sim/FINDINGS.md,
+              // 2026-10-02). There for a quiz in ten minutes.
+              className="press tap-safe"
             >
               Try the {missedNow} you missed again
             </button>
@@ -574,7 +578,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           )}
           <Link
             to={`/study/${courseId}`}
-            className="press tap-safe"
+            // The lead when nothing else is: with misses waiting for later,
+            // stopping here is the advice.
+            className={`press tap-safe ${missedNow > 0 && !(moreDue > 0 || mode === 'today' || nextSection) ? 'press-ink' : ''}`}
           >
             Back to lecture
           </Link>
