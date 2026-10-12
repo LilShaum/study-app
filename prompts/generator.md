@@ -211,6 +211,7 @@ file must be valid JSON matching this shape exactly:
       "title": string,               // required
       "description": string?,
       "order": number?,
+      "source_range": string?,       // where it is in the source, unit included: "slides 12–18", "pages 4–6"
       "items": [ /* see item types below */ ]
     }
   ]
@@ -224,6 +225,12 @@ with the same section ids — never the course again from the start.
 
 Mirror the structure of the source material in your sections — if the notes
 have chapters/lectures/weeks/topics, each becomes a section, in that order.
+
+When the source numbers its slides or pages, give each section its
+`source_range`, with the unit: `"slides 12–18"`, `"pages 4–6"`. Students
+read that part of their own slides and then answer the section's questions
+from memory, so the range must cover exactly the slides the section's items
+come from. Leave it out when the source has no numbers; never guess one.
 
 Every item, of any type, carries these common fields:
 

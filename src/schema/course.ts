@@ -85,6 +85,12 @@ export const SectionSchema = z.looseObject({
   title: z.string(),
   description: z.string().optional(),
   order: z.number().optional(),
+  /**
+   * Where the section is in the student's source, unit included: "slides
+   * 12–18", "pages 4–6". Learn uses it to send the student to read that part
+   * first and then asks before it shows (docs/proposals/modes.md).
+   */
+  source_range: z.string().max(60).optional(),
   items: z.array(StudyItemSchema),
 });
 
