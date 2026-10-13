@@ -8,6 +8,7 @@ import { startAutoSync } from '@/lib/autoSync';
 import { setStorageFailureHandler } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { router } from './router';
+import { watchStatusBar } from '@/lib/statusBarFallback';
 import '@/styles/index.css';
 
 // Let the storage layer surface write failures (quota, blocked site data)
@@ -20,6 +21,7 @@ setStorageFailureHandler((message) => toast(message, { type: 'error', duration: 
 runLegacyMigration();
 watchForRestore();
 startAutoSync();
+watchStatusBar();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

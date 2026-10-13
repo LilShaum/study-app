@@ -464,7 +464,9 @@
     padding-right: env(safe-area-inset-right);
   }
   .app-header {
-    padding-top: env(safe-area-inset-top);
+    /* The fallback is for iPhones that draw under the status bar and report
+       no inset (lib/statusBarFallback); 0 everywhere else. */
+    padding-top: max(env(safe-area-inset-top), var(--safe-top-fallback, 0px));
   }
   /* The page scrolls up under the status bar in the installed app; without
      a cover the clock sat on top of whatever line was passing beneath it
@@ -474,7 +476,7 @@
     position: fixed;
     inset-inline: 0;
     top: 0;
-    height: env(safe-area-inset-top);
+    height: max(env(safe-area-inset-top), var(--safe-top-fallback, 0px));
     z-index: 60;
     pointer-events: none;
   }
