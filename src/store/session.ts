@@ -7,7 +7,8 @@ import { usePlanStore } from './plan';
 import { useLearnStore } from './learn';
 import { todaySitting } from '@/lib/todaySitting';
 import { measuredPace, useStudyLogStore } from './studyLog';
-import { retrievability } from '@/lib/memory';
+import { getPersonalScale, retrievability } from '@/lib/memory';
+import { applyPersonalScale } from '@/lib/personalScale';
 import { twinsOf } from '@/lib/linkedTerms';
 import { useCoursesStore } from './courses';
 
@@ -190,6 +191,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
 
   init: (courseId, course, mode, sectionId, resumeItemId, fullDay = false) => {
     adoptLinkedTerms(courseId);
+    // The student's own forgetting rate, refitted from their answers so far.
+    applyPersonalScale();
     const progressStore = useProgressStore.getState();
     const missedIds = mode === 'missed' ? progressStore.missedIds(courseId) : undefined;
     // Weakest-first ranks by the student's own history, so it is the one mode
@@ -298,6 +301,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       // that did not rise means that answer was a miss.
       afterMiss: isMissed(before),
       predicted: retrievability(before, now),
+      scale: getPersonalScale(),
     });
     useProgressStore.getState().recordResult(courseId, item.id, got);
     // The same term in the student's other lectures (lib/linkedTerms).

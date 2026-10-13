@@ -63,6 +63,19 @@ export const MEMORY: Record<string, MemoryModel> = {
     grow: (s, recall, ease) => s * (1.15 + 2.5 * ease * (1 - recall)),
   },
 };
+// Added 2026-10-13: a student who forgets much more slowly than either of
+// the above, as the owner's first backup suggested (reviews a week after
+// first answers: about 8% expected, 11 of 12 right; likely material met in
+// lectures). FSRS-shaped, with first learning and lapses held four times as
+// long. A third case for conclusions to survive, not a fit.
+MEMORY.slow = {
+  ...MEMORY.fsrs,
+  name: 'slow',
+  source: 'As fsrs, with first stability and lapses four times as long. A slow forgetter; not a fit.',
+  first: (ease) => 4 * 2.4 * ease,
+  lapse: (before) => 4 * (before == null ? 0.4 : 0.4 + 0.15 * before),
+};
+
 // Added 2026-09-26 (audit): `fsrs` shares the app's exponential curve, so
 // agreement between "App thinks" and the truth under it is partly built in.
 // This is the same student with a power-law curve, for that one question.

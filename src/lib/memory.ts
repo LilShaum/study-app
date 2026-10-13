@@ -63,11 +63,15 @@ const clamp = (s: number) => Math.min(CEILING_DAYS, Math.max(FLOOR_DAYS, s));
 /**
  * How much slower (above 1) or faster (below 1) this student forgets than
  * the model assumes, applied to every stability when reading recall. 1 until
- * there are enough of the student's own answers to fit it (lib/personalPace).
+ * there are enough of the student's own answers to fit it (lib/personalScale).
  */
 let personalScale = 1;
 export function setPersonalScale(scale: number): void {
   personalScale = scale;
+}
+/** The scale in effect (lib/personalScale), logged with each answer so a later fit can undo it. */
+export function getPersonalScale(): number {
+  return personalScale;
 }
 
 /**

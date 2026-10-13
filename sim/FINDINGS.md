@@ -32,6 +32,49 @@ its list, so real sittings overshoot (re-asks are not planned). Open.
 
 ---
 
+## 2026-10-13 (personal rate) — The app fits the student's forgetting rate: a slow forgetter gains 8–11 points
+
+**Why.** The fresh-eyes review found every sitting from day 3 is review at
+30 min/day: a first right answer is due again after about 14 hours
+(`FIRST_RIGHT_DAYS` 2, due below 0.75). The owner's backup had reviews a
+week or more after first answers where the app expected about 8% and they
+got 11 of 12. The personal-scale hook (`setPersonalScale`) existed but
+nothing set it.
+
+**Change.** `lib/personalScale.ts` fits one number (how much slower or
+faster this student forgets) from every logged review, shrunk toward 1 by
+a log-normal prior (`PRIOR_SD` 0.3), held to [1/3, 4], ignoring answers
+within an hour of the last; refitted at app start and every session start.
+Each answer now logs the scale it was predicted with. **Simulator**: answers
+are now logged in every scenario (so the app's fit runs; `SIM_NO_PERSONAL=1`
+turns it off), and a third student, `slow` (fsrs with first learning and
+lapses four times as long), with scenarios steady-30-slow, busy-20-slow,
+late-start-slow. An assumption added, not a fit.
+
+**Result** (5 seeds, equal, without → with; exam / held):
+
+| | without | PRIOR_SD 0.5 | PRIOR_SD 0.3 (shipped) |
+|---|---|---|---|
+| steady-30 | 60 / 45 | 59 / 45 | 60 / 46 |
+| steady-45 | 84 / 71 | 82 / 66 | 83 / 68 |
+| busy-20 | 30 / 18 | 28 / 16 | 31 / 20 |
+| steady-30-half-scope | 84 / 72 | 86 / 73 | 86 / 75 |
+| steady-30-harsh | 19 / 2 | 20 / 4 | 20 / 3 |
+| steady-30-slow | 80 / 82 | 89 / 90 | 88 / 88 |
+| busy-20-slow | 43 / 39 | 50 / 46 | 52 / 46 |
+
+The full suite at 3 seeds against the previous baseline: `fsrs` scenarios
+within ±2 in exam score, "held" down 3 to 5 in steady-45, crammer and
+crammer-split; `harsh` level to +3. **Not a clean win under both standard
+students**: under `fsrs` the fit moves above 1 (that student gains more per
+review than the app assumes), reviews thin out, and held at the exam dips.
+Shipped because the fit only moves on the student's own answers, the
+owner's answers point strongly one way, and the gain for a slow forgetter
+is several times the cost. Watch it; recheck when there is a real log
+(#63). Re-baselined.
+
+---
+
 ## 2026-10-13 (late) — New material is only what was never answered: level
 
 **Bug, found by the owner.** Learn counted a step done only when every card

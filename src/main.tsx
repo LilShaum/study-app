@@ -8,6 +8,7 @@ import { startAutoSync } from '@/lib/autoSync';
 import { setStorageFailureHandler } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { router } from './router';
+import { applyPersonalScale } from '@/lib/personalScale';
 import { watchStatusBar } from '@/lib/statusBarFallback';
 import '@/styles/index.css';
 
@@ -19,6 +20,9 @@ setStorageFailureHandler((message) => toast(message, { type: 'error', duration: 
 // already created (and synchronously rehydrated) them, so this just seeds
 // data from the vanilla app's localStorage keys into the new ones if needed.
 runLegacyMigration();
+// Due counts and the course page read recall with the student's own
+// forgetting rate (lib/personalScale), so it is set before anything renders.
+applyPersonalScale();
 watchForRestore();
 startAutoSync();
 watchStatusBar();

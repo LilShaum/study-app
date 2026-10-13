@@ -201,6 +201,11 @@ export const SCENARIOS: Scenario[] = [
   { ...base, name: 'steady-30-retry', why: 'steady-30, retrying the misses at once, then the catch-up 4 hours later.', minutes: () => 30, policy: 'retry-then-evening' },
   { ...base, name: 'steady-30-retry-harsh', why: 'steady-30-retry under the harsher student.', memory: 'harsh', minutes: () => 30, policy: 'retry-then-evening' },
   { ...base, name: 'crammer-retry', why: 'crammer, retrying the misses at once, then the catch-up.', minutes: (d: number) => (d >= 24 ? 90 : 10), policy: 'retry-then-evening' },
+  // A student who forgets far more slowly than the app assumes (MEMORY.slow,
+  // 2026-10-13): what the personal forgetting rate is for.
+  { ...base, name: 'steady-30-slow', why: 'steady-30, a slow forgetter.', memory: 'slow', minutes: () => 30 },
+  { ...base, name: 'busy-20-slow', why: 'busy-20, a slow forgetter.', memory: 'slow', minutes: (d: number, r: () => number) => (d % 7 === 0 || r() < 0.17 ? 0 : 20) },
+  { ...base, name: 'late-start-slow', why: 'late-start, a slow forgetter.', memory: 'slow', minutes: (d: number) => (d >= 27 ? 120 : 0) },
 ];
 
 /**

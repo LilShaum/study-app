@@ -359,8 +359,16 @@ export function simulate(sc: Scenario, seed: number): RunResult {
   // logging them would feed them back as "measured" pace.
   // SIM_KEEP_LOG keeps it, so scripts/calibrate-log.mjs can be checked on a
   // student whose forgetting is known (sim/calibrate.sim.ts).
+  // Answers are logged as in the app: the app fits the student's forgetting
+  // rate from them (lib/personalScale, 2026-10-13). SIM_NO_PERSONAL drops
+  // them, which leaves the app on its default rate, as before.
   if (process.env.SIM_KEEP_LOG) useStudyLogStore.setState({ byCourse: {} });
-  else useStudyLogStore.setState({ byCourse: {}, logCard: () => {}, logAnswer: () => {} });
+  else
+    useStudyLogStore.setState({
+      byCourse: {},
+      logCard: () => {},
+      ...(process.env.SIM_NO_PERSONAL ? { logAnswer: () => {} } : {}),
+    });
   const store = useSessionStore.getState;
   let now = START;
   Date.now = () => now;

@@ -32,6 +32,8 @@ export interface AnswerEvent {
   afterMiss: boolean;
   /** Recall the app's model expected at this moment, or null the first time. */
   predicted: number | null;
+  /** The personal scale `predicted` was read with (lib/personalScale); 1 when absent. */
+  scale?: number;
 }
 
 interface CourseLog {
