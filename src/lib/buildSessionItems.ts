@@ -5,7 +5,7 @@ import { sortedSections } from './sortedSections';
 import { recallId } from './scored';
 import { isDueFor, retrievability, reviewUrgency } from './memory';
 import { acceptedForms, normalise } from './typedAnswer';
-import { stepSection } from './learnSteps';
+import { spaced, stepSection } from './learnSteps';
 import { givesAway, restatesDefinition } from './contentChecks';
 import { sectionsToLearn } from './nextToLearn';
 import { cardSeconds, DEFAULT_MINUTES, splitSitting } from './today';
@@ -536,7 +536,7 @@ export function buildSessionItems(
       break;
     case 'review':
       // Unlimited minutes is how the finish screen counts everything due.
-      items = fitMinutes(dueFirst(items), minutes, pace).slice(0, Number.isFinite(minutes) ? REVIEW_MAX : undefined);
+      items = spaced(fitMinutes(dueFirst(items), minutes, pace).slice(0, Number.isFinite(minutes) ? REVIEW_MAX : undefined));
       // A mixed-up partner is a typed term: not in a session kept to questions or flashcards.
       if (!kind || kind === 'terms') items = pairConfusions(items);
       break;
@@ -550,7 +550,7 @@ export function buildSessionItems(
       // share of the time, then Learn's steps for the rest (lib/today.ts).
       const due = dueFirst(items);
       const plan = splitSitting(course, progress ?? {}, now, minutes, undefined, undefined, due.reduce((n, i) => n + cardSeconds(i, pace), 0));
-      const review = plan.reviewMinutes > 0 ? fitMinutes(due, plan.reviewMinutes, pace) : [];
+      const review = plan.reviewMinutes > 0 ? spaced(fitMinutes(due, plan.reviewMinutes, pace)) : [];
       const learn: SessionItem[] = [];
       let learnSpent = 0;
       // Time ran out at a step that would not fit. Stop there: going on to a

@@ -10,6 +10,28 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-13 (fresh eyes) — Review spaced like Learn; Keep going in exam week is one part: level
+
+**Found with the new real-lecture harness** (`sim/lecture.sim.ts`, the
+owner's five lectures, studied states): Review and Today's review part put a
+term's cards side by side, so 2 to 11 review cards a sitting came within five
+cards of one that printed their answer. Now `spaced()` (lib/learnSteps)
+reorders the same cards: 0 to 2. Keep going during the exam-week parts
+planned the whole day again (40-minute part, then 132 minutes); now one part.
+
+**Result** (5 seeds, equal seeds, against the code before): steady-30 60→61,
+busy-20 31→30, steady-30-half-scope 85→85, steady-30-harsh 19→20, late-start
+69→69, late-start-harsh 41→41, crammer 79→78. Level, as expected: the
+synthetic course's random wording never trips the same-fact rule, and the
+simulated student presses no Keep going in parts. Baseline not re-saved.
+
+**Assumption seen.** The harness uses the owner's measured seconds per card
+(typed term 25 s, MCQ 41 s against the suite's 15 and 35). The suite's
+student stops a sitting at its budget; the app's sitting runs to the end of
+its list, so real sittings overshoot (re-asks are not planned). Open.
+
+---
+
 ## 2026-10-13 (late) — New material is only what was never answered: level
 
 **Bug, found by the owner.** Learn counted a step done only when every card

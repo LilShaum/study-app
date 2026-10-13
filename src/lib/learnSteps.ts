@@ -191,6 +191,34 @@ export function tooClose(list: readonly SessionItem[]): [number, number] | null 
 }
 
 /**
+ * A review list in the same order, except that no card comes fewer than
+ * MIN_GAP cards after one that answers it, where the list allows. Learn
+ * spaces its cards this way (apart, below) but Review had no rule: due cards
+ * sorted by urgency put a term's cards side by side, and on the owner's five
+ * lectures 2 to 16 cards a review sitting came a card or two after one that
+ * printed their answer (sim/lecture.sim.ts, 2026-10-13). Same cards, so the
+ * same time; each takes the first place far enough from its twins, and one
+ * that fits nowhere keeps its place at the end.
+ */
+export function spaced(list: SessionItem[]): SessionItem[] {
+  const out: SessionItem[] = [];
+  const left = [...list];
+  while (left.length) {
+    const k = left.findIndex((item) => {
+      const shown = shownOf(item);
+      if (!shown) return true;
+      for (let i = Math.max(0, out.length - MIN_GAP); i < out.length; i++) {
+        const before = shownOf(out[i]);
+        if (before && out[i].id !== item.id && answers(before, item, shown.asked)) return false;
+      }
+      return true;
+    });
+    out.push(...left.splice(k < 0 ? 0 : k, 1));
+  }
+  return out;
+}
+
+/**
  * Steps with no card asked in the step of one that answers it, or fewer than
  * MIN_GAP cards after it, as far as the section allows. A definition read
  * counts as showing its meaning: an MCQ whose answer is the term just read

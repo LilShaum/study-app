@@ -54,8 +54,12 @@ export function todaySitting(
   fullDay = false,
 ): { minutes: number; catchUp: boolean; part: number | null } {
   const planned = plannedMinutes(courseId, now);
-  if (fullDay) return { minutes: planned, catchUp: false, part: null };
   // Near the exam, the day comes in parts a few hours apart (lib/today.ts).
   const part = partMinutes(planned, daysToExam(lectureExam(course, now).date, now));
+  // Keep going during the parts is one more part, not the whole day again: it
+  // planned 120 minutes straight after a 40-minute part (sim/lecture.sim.ts,
+  // late start, 2026-10-13), past the day's time and without the spacing the
+  // parts are for.
+  if (fullDay) return { minutes: part ?? planned, catchUp: false, part: null };
   return { ...minutesLeft(planned, studiedToday(courseId, now), dueCount(course, progress, now), part), part };
 }

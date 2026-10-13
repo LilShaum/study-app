@@ -19,6 +19,15 @@ Start here. Make each step a task, keep one in progress, and only mark it
 done when it is tested and live (see §7). Load `working-method`,
 `arborous-design` and `app-making` at the start; `simulate` before Learn.
 
+**Done 2026-10-13, fresh-eyes review (live, partial):** see
+`docs/audits/2026-10-13-fresh-eyes.md`. Review is spaced like Learn (no card
+within five of one that gives its answer; 2–11 a sitting → 0–2 on the
+owner's lectures); Keep going in exam week plans one part, not a whole day;
+`sim/lecture.sim.ts` runs days of study on a real lecture. Open from it:
+Learn's 2-card session on a section's second look, sittings that run long
+(re-asks not planned, guessed card times), calibration waits on real use,
+and brief sections 5.2, 5.3, 5.5–5.7.
+
 **Done 2026-10-13 (live):** the owner's first real study of a lecture, with
 screenshots: cards on one term all at once, an MCQ straight after the
 definition, fill-in and flashcard for it, typed terms whose definition

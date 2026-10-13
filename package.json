@@ -17,7 +17,8 @@
     "shots": "node scripts/screenshots.mjs",
     "sim": "vitest run --config vitest.sim.config.ts sim/run.sim.ts",
     "sim:baseline": "SIM_BASELINE=1 vitest run --config vitest.sim.config.ts sim/run.sim.ts",
-    "sim:shape": "vitest run --config vitest.sim.config.ts sim/shape.sim.ts"
+    "sim:shape": "vitest run --config vitest.sim.config.ts sim/shape.sim.ts",
+    "sim:lecture": "vitest run --config vitest.sim.config.ts sim/lecture.sim.ts"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.4",
