@@ -84,7 +84,7 @@ because it was decided.
 | Tell the app which sections the exam covers | The single biggest lever: 87% vs 50% at 30 min/day | sim | Shipped (exam scope) |
 | Exam-week choice: "learn what's left" or "hold on" | "Learn what's left" worse almost everywhere (up to −6); "hold on" only helps when scope was not told | sim | Not built |
 | A readiness forecast | Every version tried failed its own check (said 1% unstudied, truth 48%) | sim | Not built; a coverage-only line exists |
-| Catch-up: misses back a few hours later the same day | +6 to +8 at the same total time; the gap is what helps (0 h gives nothing) | sim, lit | Shipped (`CATCH_UP_HOURS`) |
+| Catch-up: misses back a few hours later the same day | +7 to +8 for the 30 and 45 min/day students at the same total time; level for the 20-minute student and the crammer; the gap is what helps (0 h gives nothing) | sim, lit | Shipped (`CATCH_UP_HOURS`) |
 | Retry misses straight away | 4 to 11 points behind spending the time on Today | sim | Offered, never the lead button |
 | Personal forgetting rate fitted from answers | Level | sim | Hook built, not driving anything |
 | Several courses, one daily time: split by 1 / days to exam | Better than equal split everywhere, both students | sim | Shipped (library) |
@@ -118,7 +118,7 @@ because it was decided.
 
 | What | Result | Evidence | Status |
 |---|---|---|---|
-| Ten modes down to Today, Learn, Practice | Owner found too many choices | owner | Shipped |
+| Review plus six one-format modes folded into Today, Learn and one Practice page | Owner found too many choices | owner | Shipped |
 | Typed recall from an MCQ answered right | Producing after recognising | lit | Shipped; not when the stem gives the answer or restates the definition |
 | Confused terms come back side by side | Discrimination of confusable items | lit (interleaving meta-analysis) | Shipped |
 | Set aside ("Not needed?") with Put back | Owner asked | owner | Shipped |
