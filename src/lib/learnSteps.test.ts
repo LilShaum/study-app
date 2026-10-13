@@ -8,8 +8,8 @@ const TERMS = ['Adenylyl cyclase', 'Gs protein', 'Protein kinase A', 'Phosphodie
 const def = (n: number): StudyItem =>
   ({ id: `d${n}`, type: 'definition', term: TERMS[n], definition: `meaning of the thing number ${n}` }) as StudyItem;
 const mcq = (id: string, question: string): StudyItem =>
-  ({ id, type: 'mcq', question, options: ['w', 'x', 'y', 'z'], correct_index: 0, explanation: 'because' }) as StudyItem;
-const card = (id: string, front: string): StudyItem => ({ id, type: 'flashcard', front, back: 'answer' }) as StudyItem;
+  ({ id, type: 'mcq', question, options: [`${id} right`, 'x', 'y', 'z'], correct_index: 0, explanation: 'because' }) as StudyItem;
+const card = (id: string, front: string): StudyItem => ({ id, type: 'flashcard', front, back: `${id} answer` }) as StudyItem;
 
 function course(items: StudyItem[]): Course {
   return { schema_version: '1.0', metadata: { title: 'T' }, sections: [{ id: 's', title: 'S', items }] } as Course;
@@ -142,14 +142,31 @@ describe('Learn in steps', () => {
     expect(items.filter((i) => i._step === 1).every((i) => i.type === 'mcq')).toBe(true);
   });
 
-  it('shows a new flashcard open before asking it, in the same step', () => {
+  it('asks a new flashcard without showing it open first', () => {
+    // A reading card with the answer, then the same card asked, read as being
+    // handed the answer and asked for it (docs/proposals/content-quality.md).
     const items = learn([...defs, card('f1', 'Where is Gs protein?')]);
-    const shown = items.findIndex((i) => i.id === 'f1~preview');
-    const asked = items.findIndex((i) => i.id === 'f1');
-    expect(shown).toBeGreaterThanOrEqual(0);
-    expect(shown).toBeLessThan(asked);
-    expect(items[shown]._step).toBe(items[asked]._step);
-    expect(phaseOf(items[shown].type)).toBe('read');
+    expect(items.some((i) => i.type === 'preview')).toBe(false);
+    expect(items.some((i) => i.id === 'f1')).toBe(true);
+  });
+
+  it('never asks one fact twice in a step: the second waits for the next step', () => {
+    const km = (id: string, question: string): StudyItem => ({ id, type: 'flashcard', front: question, back: '10⁻⁶ to 10⁻¹ M' }) as StudyItem;
+    const items = learn([
+      ...defs.slice(0, 4),
+      km('a', 'What range do typical Gs protein Km values fall in?'),
+      mcq('b', 'Typical Gs protein Km values fall in which range?'),
+    ]);
+    expect(stepOf(items, 'a')).toBe(0);
+    expect(stepOf(items, 'b')).toBe(1);
+  });
+
+  it('never asks a term straight after a card that printed it', () => {
+    const items = learn([
+      { id: 'cs', type: 'definition', term: 'Intercellular communication', definition: 'How tissues talk: a signaling cell sends a message and a target cell responds.' } as StudyItem,
+      { id: 'sc', type: 'definition', term: 'Signaling cell', definition: 'The one that sends the message.' } as StudyItem,
+    ]);
+    expect(stepOf(items, recallId('sc'))).toBeGreaterThan(stepOf(items, recallId('cs'))!);
   });
 
   it('picks up where you stopped: a step whose every question is answered is skipped', () => {
@@ -167,11 +184,11 @@ describe('Learn in steps', () => {
     expect(learn(defs, progress).length).toBeGreaterThan(0);
   });
 
-  it('keeps every part of a long step to the cap, with each flashcard shown in the part that asks it', () => {
-    // One term and fifteen new flashcards on it: 1 + 15 shown + 15 asked + 1 typed.
-    const cards = Array.from({ length: 15 }, (_, k) => card(`f${k}`, `Card ${k} about ${TERMS[0]}?`));
+  it('keeps every part of a long step to the cap', () => {
+    // One term and thirty flashcards on it: 1 + 30 asked + 1 typed.
+    const cards = Array.from({ length: 30 }, (_, k) => card(`f${k}`, `Card ${k} about ${TERMS[0]}?`));
     const items = learn([defs[0], ...cards]);
     for (let s = 0; s < items[0]._steps!; s++) expect(items.filter((i) => i._step === s).length).toBeLessThanOrEqual(STEP_CARDS);
-    for (let k = 0; k < 15; k++) expect(stepOf(items, `f${k}~preview`)).toBe(stepOf(items, `f${k}`));
+    expect(items.filter((i) => i.type === 'flashcard')).toHaveLength(30);
   });
 });

@@ -66,4 +66,36 @@ practice, which keep every score.
 
 ## Results
 
-(Filled in as each step ships.)
+Measured on the biochemistry test lecture (`scripts/__fixtures__`), a whole
+Learn and a 60-minute Today with no history. `src/lib/sessionAudit.test.ts`
+holds the "after" column on every change.
+
+| | Learn before | Learn after | Today before | Today after |
+|---|---|---|---|---|
+| Cards | 243 | 198 | 183 | 164 |
+| Reading share | 43% | 34% | 43% | 34% |
+| Typed terms that spell themselves out | 7 | 0 | 4 | 0 |
+| Answers shown, then asked | 38 | 0 | 31 | 0 |
+| A card within 5 cards of one that answers it, or in its step | many | 0 | many | 0 |
+
+Steps 2 to 4 and 6 shipped together (2026-10-13):
+
+- `lib/contentChecks.ts` is the one place that decides a give-away
+  (`givesAway`), the same fact (`sameFact`) and a card answered by an
+  earlier one (`answeredBy`). Calibrated on every pair the test lecture
+  flagged: a plot's slope and intercept, two inhibitors side by side, and a
+  fact with a worked problem that uses it are not repeats; "What range do
+  Km values fall in?" twice, or "why does feedback inhibition target the
+  committed step?" turned round, are.
+- Learn and Today never ask a give-away, never show a flashcard open, and
+  move the later card of a pair to the next step (`learnSteps.apart`). A
+  section with nowhere further puts it at the end of its last step if that
+  is far enough, or in a short step of its own after a pause.
+- The course check lists both (`gives-away`, `same-fact`) and Fix asks for
+  the definition reworded without the term's words, and the repeat asked
+  from a different side.
+- The simulator is level under both students (sim/FINDINGS.md).
+
+Known: a section whose repeats cannot be spaced ends with a step of one or
+two cards. The content fix (Fix, or the generator below) is what removes
+those.

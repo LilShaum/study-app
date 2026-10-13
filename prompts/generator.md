@@ -274,7 +274,10 @@ covers the wrong answers is ambiguous about which slot is which.)
 ```
 The app turns every definition into a question — it shows the definition and
 the student types the term — so write the `definition` so that it identifies
-its term without naming it, and fill `also_known_as` with every other name
+its term without naming it: not the term, and not a word from its family
+("a signaling cell sends a signal" gives away *cell signaling*; "the cell
+that sends the message" does not). The app checks this, and a definition
+that spells out its own term is shown to read but never asked. Fill `also_known_as` with every other name
 **the source itself uses** for the thing (an abbreviation, a synonym, the
 full form of an acronym). That list is what a typed answer is accepted
 against, so a name missing from it marks a right answer wrong; a name the
@@ -398,6 +401,73 @@ student must *apply* needs an MCQ or flashcard, not only a definition. A
 course that is mostly definitions teaches a vocabulary list and measures
 nothing else.
 
+**How the app uses what you write — plan for it.** The app does not show
+a section in the order you wrote it, and it does not show every card once.
+
+- A section is taught in **steps** of a few terms, about a dozen cards each:
+  read the step's definitions (with its examples and diagrams), type each
+  term from its definition, then answer the flashcards and MCQs that use
+  those terms. Then a pause, and the next step.
+- **Flashcards are asked cold**: the front, the student answers in their
+  head, then flips. They are never shown open first. Use them for what a
+  student must produce in their own words: a why, a relationship, a value,
+  an order, a contrast.
+- **MCQs** come last in a step, once every term they use has been read. One
+  answered right comes back later typed, without its options, when its
+  answer is a defined term — so write stems that stand alone.
+- After the first sitting each card returns on **its own schedule**, mixed
+  with cards from every other lecture. So every card must make sense alone,
+  on any day, after any other card.
+- Two cards on one fact, or a card whose answer another card prints (in a
+  definition, a flashcard's back, an explanation), are **kept apart**: the
+  second is answered from the first card's wording, not from memory. The app
+  measures both and lists them as faults.
+
+**Plan each idea before you write it.** For each entry in your inventory,
+decide what it weighs, then which cards it gets — not "one of every type
+because it can":
+
+- **A key idea** (a stated objective, something flagged or repeated, a
+  formula, a mechanism, a comparison the lecture builds on) gets three to
+  five cards, **each from a different side**: name it (the definition);
+  say it in your own words (a flashcard: what it does, why it matters); tell
+  it from its nearest neighbour (an MCQ whose distractors are that
+  neighbour); use it on a case the source sets up (an MCQ or flashcard:
+  apply, predict, calculate); explain why (a flashcard). Recall alone
+  memorises; the other sides are what make it understood.
+- **A supporting fact** gets one or two.
+- **A detail** mentioned once, or seen only in a figure, gets one at most,
+  and often none.
+
+Two cards on one idea must differ in **what the student has to do**, not
+only in their words. If two would read as one question, keep the better one
+and turn the other into a new side.
+
+**Never the same sentence twice.** Do not reuse a definition's wording as a
+flashcard back or an MCQ stem, or one card's front as another's stem. Write
+each card fresh from the idea. Reused wording is learned as wording.
+
+**No card answers another.** A definition that uses two other terms a
+student must type — "a signaling cell sends a signal and a target cell
+responds" — has answered both. Where the relationship is the point, keep it;
+otherwise describe the other parts by their role ("the cell that sends it").
+Keep each flashcard's back and each explanation to its own card's fact.
+
+**Nothing a stranger could answer.** If someone who never took the course
+could answer from everyday English or from the question's own words ("the
+cell that sends a signal is called the…"), the card tests nothing. Ask what
+is specific to the subject instead: what it does, what it is not, what
+happens when it fails.
+
+**What the slide asks students to know.** A slide's text — its bullets,
+headings and what it states in words — is what it asks students to know; a
+complex diagram beside it usually illustrates that text. Test the diagram
+through the text: ask about the part of a pathway the bullets name, in the
+bullets' terms. Labels that appear only in a figure are detail (see above).
+A slide that previews a topic taught later gets its cards where the topic is
+taught. When the student says what their teacher stressed or dismissed,
+that outranks your judgement.
+
 **Across the whole file:**
 - Item `id`s must be unique across the whole course, not just within their
   section — progress is tracked per id, so a duplicate makes two items share
@@ -430,8 +500,14 @@ Check your own draft:
 5. **Scan the stems alone.** Does any mention the notes, the slides or a
    figure? Is any one just its `source_excerpt` reworded into a question?
    Does every section have at least one that asks for more than retrieval?
-6. Is `total_items` / `item_counts` in metadata accurate if you included them?
-7. Is it valid JSON — no trailing commas, no comments, matching quotes?
+6. **Read each section as the app asks it**: definitions, then typed terms,
+   then flashcards, then MCQs. Does any card's answer appear in a card
+   before it? Does any definition contain its own term or a word of its
+   family? Do any two cards ask one thing in different words? Is every key
+   idea asked from at least two sides, and could a stranger answer any card
+   from plain English? Fix each before you output.
+7. Is `total_items` / `item_counts` in metadata accurate if you included them?
+8. Is it valid JSON — no trailing commas, no comments, matching quotes?
 
 If the student's source material is missing, empty, or too vague to ground
 anything in, say so in plain text instead of generating a file — don't

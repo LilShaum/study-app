@@ -2,6 +2,7 @@ import type { Course, StudyItem } from '@/schema/course';
 import { analyseCourseGaps, type CourseGaps } from './courseGaps';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 import { analyseQuestionQuality, type QuestionQuality } from './questionQuality';
+import { givesAway, sameFact, type Asked } from './contentChecks';
 
 export type HealthSeverity = 'problem' | 'warning';
 
@@ -295,6 +296,64 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       id: 'recall-only-sections',
       severity: 'warning',
       message: `${n} section${n === 1 ? '' : 's'} only ever ask you to recall a fact. Nothing asks you to apply or compare: ${quality.recallOnlySections.slice(0, 3).join('; ')}${n > 3 ? `, +${n - 3} more` : ''}.`,
+    });
+  }
+
+  /* ---- what a sitting would ask (docs/proposals/content-quality.md) ---- */
+  if (gaps.thinKeyTerms.length) {
+    const n = gaps.thinKeyTerms.length;
+    findings.push({
+      id: 'thin-key-terms',
+      severity: 'warning',
+      message: `${n} key term${n === 1 ? ' is' : 's are'} asked by only one question or flashcard (${gaps.thinKeyTerms
+        .slice(0, 3)
+        .join(', ')}${n > 3 ? ', …' : ''}), so ${n === 1 ? 'it' : 'each'} can be learned as that card rather than understood. Fix or More practice asks ${n === 1 ? 'it' : 'them'} from other sides.`,
+    });
+  }
+
+  const live = items.filter((i) => !i.set_aside);
+  const giveaways = live.filter((i): i is Extract<StudyItem, { type: 'definition' }> => i.type === 'definition' && givesAway(i.term, i.definition));
+  if (giveaways.length) {
+    const n = giveaways.length;
+    findings.push({
+      id: 'gives-away',
+      severity: 'warning',
+      message: `${n} definition${n === 1 ? ' uses' : 's use'} the words of ${n === 1 ? 'its own term' : 'their own terms'} (${giveaways
+        .slice(0, 2)
+        .map((d) => `"${d.term}"`)
+        .join(', ')}${n > 2 ? ', …' : ''}), so the app shows ${n === 1 ? 'it' : 'them'} to read but never asks you to name the term. Fix can reword ${n === 1 ? 'it' : 'them'}.`,
+      items: giveaways.map((d) => d.id),
+    });
+  }
+
+  // Two cards on one fact in the same section, in nearly the same words: the
+  // app keeps them apart in a sitting, but the second still tests the
+  // wording of the first more than the idea. Only the later of each pair is
+  // named, so Fix rewrites one and keeps the other.
+  const asked = (i: StudyItem): Asked | null =>
+    i.type === 'mcq'
+      ? { question: i.question, answer: i.options?.[i.correct_index] ?? '' }
+      : i.type === 'flashcard'
+        ? { question: i.front, answer: i.back }
+        : i.type === 'definition' && !givesAway(i.term, i.definition)
+          ? { question: i.definition, answer: i.term }
+          : null;
+  const repeats: string[] = [];
+  for (const section of course.sections) {
+    const cards = section.items.filter((i) => !i.set_aside).map((i) => ({ i, a: asked(i) })).filter((x) => x.a);
+    for (let b = 1; b < cards.length; b++) {
+      // A definition is the plain statement; the question is what gets rewritten.
+      if (cards[b].i.type === 'definition') continue;
+      if (cards.slice(0, b).some((x) => sameFact(x.a!, cards[b].a!))) repeats.push(cards[b].i.id);
+    }
+  }
+  if (repeats.length) {
+    const n = repeats.length;
+    findings.push({
+      id: 'same-fact',
+      severity: 'warning',
+      message: `${n} question${n === 1 ? ' asks' : 's ask'} the same fact as another card in ${n === 1 ? 'its' : 'their'} section, in nearly the same words. The app keeps them apart, but a second wording of one fact teaches less than a new angle on it. Fix can rewrite ${n === 1 ? 'it' : 'them'}.`,
+      items: repeats,
     });
   }
 

@@ -113,18 +113,16 @@ const mixedCourse = {
 } as unknown as Course;
 
 describe('buildSessionItems — learn mode', () => {
-  it('orders a section definition → example/diagram → flashcard shown → typed recall → flashcard → mcq', () => {
+  it('orders a section definition → example/diagram → typed recall → flashcard → mcq', () => {
     // Everything is read first, then asked in the order it was read, so each
     // ask is as far from its reading as the step allows. A flashcard never
     // answered is shown open first, then asked.
     const items = buildSessionItems(mixedCourse, 'learn', { sectionId: 'sa' });
-    expect(items.map((i) => i.id)).toEqual(['a_def', 'a_eg', 'a_gfx', 'a_card~preview', 'a_def~recall', 'a_card', 'a_mcq']);
+    expect(items.map((i) => i.id)).toEqual(['a_def', 'a_eg', 'a_gfx', 'a_def~recall', 'a_card', 'a_mcq']);
   });
 
-  it('shows a flashcard first only until it has been answered', () => {
-    const progress = { a_card: { got: 1, missed: 0, lastSeen: 1, lastGot: true } } as never;
-    const items = buildSessionItems(mixedCourse, 'learn', { sectionId: 'sa', progress });
-    expect(items.map((i) => i.id)).not.toContain('a_card~preview');
+  it('never shows a flashcard open before asking it', () => {
+    expect(buildSessionItems(mixedCourse, 'learn').some((i) => i.type === 'preview')).toBe(false);
   });
 
   it('finishes one section before starting the next', () => {
@@ -133,13 +131,13 @@ describe('buildSessionItems — learn mode', () => {
     // course before answering anything.
     const items = buildSessionItems(mixedCourse, 'learn');
     expect(items.map((i) => i.id)).toEqual([
-      'a_def', 'a_eg', 'a_gfx', 'a_card~preview', 'a_def~recall', 'a_card', 'a_mcq',
+      'a_def', 'a_eg', 'a_gfx', 'a_def~recall', 'a_card', 'a_mcq',
       'b_def', 'b_def~recall', 'b_mcq',
     ]);
   });
 
-  it('drops nothing — it reorders, and adds a recall question per definition and a reading card per new flashcard', () => {
-    expect(buildSessionItems(mixedCourse, 'learn')).toHaveLength(10);
+  it('drops nothing — it reorders, and adds a recall question per definition', () => {
+    expect(buildSessionItems(mixedCourse, 'learn')).toHaveLength(9);
   });
 });
 

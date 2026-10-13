@@ -93,6 +93,11 @@ export function buildPractisePrompt(course: Course, notes = course.metadata.stud
       `- These terms are DEFINED in the course, and the app asks for each by name, but no MCQ or flashcard makes the student use one — apply it, predict with it, or tell it apart from a neighbour. Write those items for these first:\n  ${gaps.untestedTerms.join(', ')}`,
     );
   }
+  if (gaps.thinKeyTerms.length) {
+    priorities.push(
+      `- These are key terms (named in an objective or a section title), and only one MCQ or flashcard asks about each, so each can be learned as that one card. Ask each from the sides it is missing — tell it from its neighbour, use it on a case, predict from it, explain why — never another wording of the card it has:\n  ${gaps.thinKeyTerms.join(', ')}`,
+    );
+  }
   if (gaps.thinSections.length) {
     priorities.push(
       `- These sections have little or nothing that can be scored:\n  ${gaps.thinSections

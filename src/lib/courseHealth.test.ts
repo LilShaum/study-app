@@ -176,3 +176,51 @@ describe('analyseCourseHealth — coverage against the declared inventory', () =
     expect(find(h, 'low-gradable')?.message).toContain('25%');
   });
 });
+
+describe('analyseCourseHealth — what a sitting would ask', () => {
+  it('lists a definition that spells out its own term', () => {
+    const giveaway = { id: 'd1', type: 'definition', term: 'Signaling cell', definition: 'The cell that sends a signal.' } as StudyItem;
+    const fine = { id: 'd2', type: 'definition', term: 'Target cell', definition: 'The one that receives a chemical message and responds.' } as StudyItem;
+    expect(find(analyseCourseHealth(course([giveaway, fine])), 'gives-away')?.items).toEqual(['d1']);
+  });
+
+  it('lists the second of two cards on one fact, not the first', () => {
+    const h = analyseCourseHealth(
+      course([
+        { id: 'f1', type: 'flashcard', front: 'What range do typical Km values fall in?', back: 'Between 10⁻⁶ and 10⁻¹ M.' } as StudyItem,
+        mcq('q1', 'Typical Km values for enzymes fall in which range?', { options: ['10⁻⁶ to 10⁻¹ M', 'b', 'c', 'd'] }),
+      ]),
+    );
+    expect(find(h, 'same-fact')?.items).toEqual(['q1']);
+  });
+
+  it('leaves a contrast alone', () => {
+    const h = analyseCourseHealth(
+      course([
+        { id: 'f1', type: 'flashcard', front: 'What does a competitive inhibitor do to apparent Km and apparent Vmax?', back: 'Apparent Km increases; Vmax is unchanged.' } as StudyItem,
+        { id: 'f2', type: 'flashcard', front: 'What does a mixed inhibitor do to apparent Km and apparent Vmax?', back: 'Apparent Km may increase or decrease; apparent Vmax decreases.' } as StudyItem,
+      ]),
+    );
+    expect(find(h, 'same-fact')).toBeUndefined();
+  });
+});
+
+describe('analyseCourseHealth — key terms asked one way', () => {
+  it('lists a term from a section title with only one card on it', () => {
+    const c = {
+      schema_version: '1.0',
+      metadata: { title: 'T' },
+      sections: [
+        {
+          id: 's1',
+          title: 'Osmosis',
+          items: [
+            { id: 'd1', type: 'definition', term: 'Osmosis', definition: 'Water moving down its gradient across a membrane.' },
+            { id: 'f1', type: 'flashcard', front: 'What drives osmosis?', back: 'A difference in solute concentration.' },
+          ],
+        },
+      ],
+    } as Course;
+    expect(find(analyseCourseHealth(c), 'thin-key-terms')?.message).toMatch(/Osmosis/);
+  });
+});

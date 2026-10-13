@@ -12,6 +12,12 @@ export interface SectionGap {
 export interface CourseGaps {
   /** Terms that have a definition but are never named by an MCQ or flashcard. */
   untestedTerms: string[];
+  /**
+   * Key terms (named in a stated objective or a section's title) that only
+   * one MCQ or flashcard uses: asked from one side, so they can be memorised
+   * as that one card rather than understood.
+   */
+  thinKeyTerms: string[];
   /** Sections carrying little or nothing that can actually be scored. */
   thinSections: SectionGap[];
   /** Item counts by type across the whole course. */
@@ -67,6 +73,13 @@ export function analyseCourseGaps(course: Course): CourseGaps {
     .map((d) => d.term)
     .filter((term) => !someTextCoversTerm(gradableTexts, term ?? ''));
 
+  const keyTexts = [...(course.metadata.inventory?.objectives ?? []), ...sections.map((s) => s.title)];
+  const thinKeyTerms = items
+    .filter((i): i is Extract<StudyItem, { type: 'definition' }> => i.type === 'definition' && !i.set_aside)
+    .map((d) => d.term ?? '')
+    .filter((term) => term && someTextCoversTerm(keyTexts, term))
+    .filter((term) => gradableTexts.filter((t) => someTextCoversTerm([t], term)).length === 1);
+
   const thinSections = sections
     .map((s) => ({
       id: s.id,
@@ -80,6 +93,7 @@ export function analyseCourseGaps(course: Course): CourseGaps {
 
   return {
     untestedTerms,
+    thinKeyTerms,
     thinSections,
     byType,
     totalItems: items.length,

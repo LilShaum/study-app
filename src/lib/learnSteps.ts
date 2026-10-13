@@ -1,7 +1,8 @@
-import type { ItemResult } from '@/store/progress';
-import type { AnyItem, SessionItem } from './buildSessionItems';
-import { previewId, recallId } from './scored';
-import { coversTokens, normaliseTerm, termTokens } from './termMatch';
+import type { ItemResult } from "@/store/progress";
+import type { AnyItem, SessionItem } from "./buildSessionItems";
+import { recallId } from "./scored";
+import { answeredBy, type Asked } from "./contentChecks";
+import { coversTokens, normaliseTerm, termTokens } from "./termMatch";
 
 /**
  * Learn, in steps.
@@ -32,12 +33,19 @@ export const STEP_TERMS = 4;
  */
 const GENERIC_SHARE = 0.4;
 
-export type LearnPhase = 'read' | 'recall' | 'apply';
+export type LearnPhase = "read" | "recall" | "apply";
 
-export function phaseOf(type: AnyItem['type']): LearnPhase | null {
-  if (type === 'definition' || type === 'example' || type === 'graphic' || type === 'preview' || type === 'slides') return 'read';
-  if (type === 'flashcard' || type === 'recall') return 'recall';
-  if (type === 'mcq') return 'apply';
+export function phaseOf(type: AnyItem["type"]): LearnPhase | null {
+  if (
+    type === "definition" ||
+    type === "example" ||
+    type === "graphic" ||
+    type === "preview" ||
+    type === "slides"
+  )
+    return "read";
+  if (type === "flashcard" || type === "recall") return "recall";
+  if (type === "mcq") return "apply";
   return null;
 }
 
@@ -47,7 +55,7 @@ export function phaseOf(type: AnyItem['type']): LearnPhase | null {
 // the answer is still in mind and is repeated, not recalled. Delaying the
 // first test is what helped long-term retention in Karpicke & Roediger
 // (2007, docs/evidence.md).
-const ORDER: Record<AnyItem['type'], number> = {
+const ORDER: Record<AnyItem["type"], number> = {
   slides: -1,
   definition: 0,
   example: 1,
@@ -58,33 +66,44 @@ const ORDER: Record<AnyItem['type'], number> = {
   mcq: 6,
 };
 
-type Def = Extract<AnyItem, { type: 'definition' }>;
+type Def = Extract<AnyItem, { type: "definition" }>;
 
 /** Every name a definition goes by, as token sets: "Michaelis constant (Km)" is also "Km". */
 function namesOf(def: Def): Set<string>[] {
-  const term = def.term ?? '';
+  const term = def.term ?? "";
   const inner = [...term.matchAll(/\(([^)]+)\)/g)].map((m) => m[1]);
-  const outer = term.replace(/\([^)]*\)/g, ' ');
-  return [term, outer, ...inner, ...(def.also_known_as ?? [])]
-    // One letter is not a name anything can be matched on.
-    .filter((n) => normaliseTerm(n).replace(/ /g, '').length >= 2)
-    .map(termTokens)
-    .filter((t) => t.size > 0);
+  const outer = term.replace(/\([^)]*\)/g, " ");
+  return (
+    [term, outer, ...inner, ...(def.also_known_as ?? [])]
+      // One letter is not a name anything can be matched on.
+      .filter((n) => normaliseTerm(n).replace(/ /g, "").length >= 2)
+      .map(termTokens)
+      .filter((t) => t.size > 0)
+  );
 }
 
 /** The words an item puts in front of the student. */
 function textOf(item: SessionItem): string {
   switch (item.type) {
-    case 'mcq':
-      return [item.question, item.options?.[item.correct_index] ?? '', item.explanation ?? ''].join(' ');
-    case 'flashcard':
-      return [item.front, item.back].join(' ');
-    case 'example':
-      return [item.title, item.context ?? '', ...(item.steps ?? []), item.takeaway ?? ''].join(' ');
-    case 'graphic':
-      return [item.title, item.caption ?? '', item.alt_text].join(' ');
+    case "mcq":
+      return [
+        item.question,
+        item.options?.[item.correct_index] ?? "",
+        item.explanation ?? "",
+      ].join(" ");
+    case "flashcard":
+      return [item.front, item.back].join(" ");
+    case "example":
+      return [
+        item.title,
+        item.context ?? "",
+        ...(item.steps ?? []),
+        item.takeaway ?? "",
+      ].join(" ");
+    case "graphic":
+      return [item.title, item.caption ?? "", item.alt_text].join(" ");
     default:
-      return '';
+      return "";
   }
 }
 
@@ -95,8 +114,8 @@ function textOf(item: SessionItem): string {
 const MIN_OVERLAP = 0.6;
 
 function excerptWords(item: SessionItem): Set<string> {
-  const excerpt = 'source_excerpt' in item ? item.source_excerpt : undefined;
-  return new Set([...termTokens(excerpt ?? '')].filter((w) => w.length >= 4));
+  const excerpt = "source_excerpt" in item ? item.source_excerpt : undefined;
+  return new Set([...termTokens(excerpt ?? "")].filter((w) => w.length >= 4));
 }
 
 function overlap(a: Set<string>, b: Set<string>): number {
@@ -115,12 +134,6 @@ function knows(def: Def, progress?: Record<string, ItemResult>): boolean {
   return !!r && r.got > 0 && r.got >= r.missed;
 }
 
-/** Answered at least once: the flashcard needs no reading card first. */
-function answered(item: SessionItem, progress?: Record<string, ItemResult>): boolean {
-  const r = progress?.[item.id];
-  return !!r && r.got + r.missed > 0;
-}
-
 /**
  * Cards in a step, at most, readings included. A friend found a step of "4
  * terms" was 22 cards before any misses came back, which did not feel like 4
@@ -128,19 +141,130 @@ function answered(item: SessionItem, progress?: Record<string, ItemResult>): boo
  */
 export const STEP_CARDS = 12;
 
-/** A flashcard's reading card (see PreviewItem), in the same section and step. */
-function previewOf(card: SessionItem & { type: 'flashcard' }): SessionItem {
-  return {
-    id: previewId(card.id),
-    type: 'preview',
-    source_excerpt: card.source_excerpt,
-    difficulty: card.difficulty,
-    tags: card.tags,
-    target: card,
-    _sectionTitle: card._sectionTitle,
-    _sectionId: card._sectionId,
-    _sectionOrder: card._sectionOrder,
-  };
+/** What a card asks and wants, for telling two cards on one fact apart. */
+export function askedOf(item: SessionItem): Asked | null {
+  switch (item.type) {
+    case "mcq":
+      return {
+        question: item.question,
+        answer: item.options[item.correct_index] ?? "",
+        after: item.explanation,
+      };
+    case "flashcard":
+      return { question: item.front, answer: item.back };
+    case "recall":
+      return item.question
+        ? { question: item.question, answer: item.answer ?? item.target.term }
+        : { question: item.target.definition, answer: item.target.term };
+    default:
+      return null;
+  }
+}
+
+/**
+ * Cards between a card and a later one it answers, at least, wherever they
+ * fall: by then the first card's wording is out of mind. Held by
+ * sessionAudit.test.ts on the test lectures.
+ */
+export const MIN_GAP = 5;
+
+/** The first card too close after one that answers it, as [earlier, later] positions, or null. */
+export function tooClose(
+  list: readonly SessionItem[],
+): [number, number] | null {
+  const asks = list
+    .map((item, n) => ({ n, asked: item._again ? null : askedOf(item) }))
+    .filter((x) => x.asked);
+  for (let j = 0; j < asks.length; j++) {
+    for (let i = j - 1; i >= 0 && asks[j].n - asks[i].n - 1 < MIN_GAP; i--) {
+      if (answeredBy(asks[i].asked!, asks[j].asked!))
+        return [asks[i].n, asks[j].n];
+    }
+  }
+  return null;
+}
+
+/**
+ * Steps with no card asked in the step of one that answers it, or fewer than
+ * MIN_GAP cards after it, as far as the section allows. Such a card goes to
+ * the end of the next step, and on again if it is still too close there.
+ * In the last step it goes to the end if that is MIN_GAP cards on, and
+ * otherwise gets a step of its own, a second look at the section once
+ * everything else has been asked.
+ */
+function apart(steps: SessionItem[][]): SessionItem[][] {
+  const out = steps.map((s) => [...s]);
+  const before: { n: number; asked: Asked }[] = [];
+  let n = 0;
+  for (let s = 0; s < out.length; s++) {
+    const inStep: Asked[] = [];
+    const stay: SessionItem[] = [];
+    const moved: SessionItem[] = [];
+    for (const item of out[s]) {
+      const asked = askedOf(item);
+      const at = n + stay.length;
+      // Past the last step a card only moves on from a twin in its own step:
+      // there the gap cannot grow, and each new step holds fewer cards.
+      const clash =
+        !!asked &&
+        (inStep.some((k) => answeredBy(k, asked)) ||
+          (s < steps.length &&
+            before.some(
+              (k) => at - k.n - 1 < MIN_GAP && answeredBy(k.asked, asked),
+            )));
+      if (clash) {
+        moved.push(item);
+        continue;
+      }
+      if (asked) inStep.push(asked);
+      stay.push(item);
+    }
+    stay.forEach((item, k) => {
+      const asked = askedOf(item);
+      if (asked) before.push({ n: n + k, asked });
+    });
+    // The section's last step: at its end, if that is far enough from the
+    // twin, rather than a step of one or two cards with a pause after it.
+    if (
+      moved.length &&
+      s === steps.length - 1 &&
+      !tooClose([...stay, ...moved])
+    ) {
+      out[s] = [...stay, ...moved];
+      break;
+    }
+    n += stay.length;
+    out[s] = stay;
+    if (!moved.length) continue;
+    if (s + 1 === out.length) out.push([]);
+    out[s + 1] = [...out[s + 1], ...moved];
+  }
+  return out.filter((st) => st.length);
+}
+
+/**
+ * A step of a card or two is a pause screen after every card or two. One
+ * that small joins the step before it when the two fit in one and no card
+ * comes too soon after one that answers it; its reading moves up with the
+ * rest of the step's reading, so it is still read before it is asked.
+ */
+function joinSmall(steps: SessionItem[][]): SessionItem[][] {
+  const SMALL = 3;
+  const out: SessionItem[][] = [];
+  for (const step of steps) {
+    const prev = out.at(-1);
+    const joined =
+      prev && [...prev, ...step].sort((a, b) => ORDER[a.type] - ORDER[b.type]);
+    if (
+      prev &&
+      joined!.length <= STEP_CARDS &&
+      Math.min(prev.length, step.length) <= SMALL &&
+      !tooClose(joined!)
+    )
+      out[out.length - 1] = joined!;
+    else out.push(step);
+  }
+  return out;
 }
 
 /**
@@ -148,20 +272,44 @@ function previewOf(card: SessionItem & { type: 'flashcard' }): SessionItem {
  *
  * Each item comes back carrying `_step`, `_steps` and `_block`, which the
  * session uses to say where you are and to pause between steps. A term you
- * have already answered right skips its reading card; it is still asked. A
- * flashcard never answered is shown first, answer and all, then asked a few
- * cards later: teach, then ask.
+ * have already answered right skips its reading card; it is still asked.
+ *
+ * A flashcard is asked, never shown open first. It used to be: its answer
+ * on a reading card, then the same card asked a few cards later, which the
+ * owner's first real study read as being handed the answer and then asked
+ * for it (docs/proposals/content-quality.md). The flip shows the answer
+ * anyway, and a wrong first try with the answer after teaches at least as
+ * well as reading it (Kornell, Hays & Bjork 2009, docs/evidence.md).
+ *
+ * Two cards that ask one fact, or where the first prints the second's answer
+ * (lib/contentChecks, answeredBy), are kept apart: the later one moves to the
+ * next step (see apart), so it is answered from memory of the subject and not
+ * of the card before.
  */
-export function stepSection(group: SessionItem[], progress?: Record<string, ItemResult>): SessionItem[] {
-  const defs = group.filter((i): i is SessionItem & Def => i.type === 'definition');
-  const others = group.filter((i) => i.type !== 'definition' && i.type !== 'recall' && i.type !== 'preview');
+export function stepSection(
+  group: SessionItem[],
+  progress?: Record<string, ItemResult>,
+): SessionItem[] {
+  const defs = group.filter(
+    (i): i is SessionItem & Def => i.type === "definition",
+  );
+  const others = group.filter(
+    (i) =>
+      i.type !== "definition" && i.type !== "recall" && i.type !== "preview",
+  );
   const texts = new Map(others.map((i) => [i, termTokens(textOf(i))]));
-  const uses = (text: Set<string>, n: Set<string>[]) => n.some((t) => coversTokens(text, t));
+  const uses = (text: Set<string>, n: Set<string>[]) =>
+    n.some((t) => coversTokens(text, t));
   const defNames = defs.map((d) => namesOf(d));
   const genericIdx = new Set(
     defNames
       .map((n, k) => ({ n, k }))
-      .filter(({ n }) => others.length > 4 && others.filter((o) => uses(texts.get(o)!, n)).length > others.length * GENERIC_SHARE)
+      .filter(
+        ({ n }) =>
+          others.length > 4 &&
+          others.filter((o) => uses(texts.get(o)!, n)).length >
+            others.length * GENERIC_SHARE,
+      )
       .map(({ k }) => k),
   );
   const defWords = defs.map((d) => excerptWords(d));
@@ -170,7 +318,9 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   const termsOf = new Map<SessionItem, number[]>();
   const passagesOf = new Map<SessionItem, { k: number; score: number }[]>();
   for (const item of others) {
-    const hits = defs.map((_, k) => k).filter((k) => uses(texts.get(item)!, defNames[k]));
+    const hits = defs
+      .map((_, k) => k)
+      .filter((k) => uses(texts.get(item)!, defNames[k]));
     const specific = hits.filter((k) => !genericIdx.has(k));
     const pick = specific.length ? specific : hits;
     if (pick.length) {
@@ -180,7 +330,9 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
     const words = excerptWords(item);
     passagesOf.set(
       item,
-      defs.map((_, k) => ({ k, score: overlap(words, defWords[k]) })).filter((p) => p.score >= MIN_OVERLAP),
+      defs
+        .map((_, k) => ({ k, score: overlap(words, defWords[k]) }))
+        .filter((p) => p.score >= MIN_OVERLAP),
     );
   }
 
@@ -207,7 +359,12 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       let best: { step: number; score: number } | null = null;
       for (const { k, score } of passagesOf.get(item) ?? []) {
         const step = stepOfK(k);
-        if (!best || score > best.score || (score === best.score && step > best.step)) best = { step, score };
+        if (
+          !best ||
+          score > best.score ||
+          (score === best.score && step > best.step)
+        )
+          best = { step, score };
       }
       if (best) stepOf.set(item, best.step);
       else leftover.push(item);
@@ -221,14 +378,17 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       for (const item of leftover) stepOf.set(item, defSteps);
       steps = defSteps + 1;
     } else {
-      for (const type of ['example', 'graphic', 'flashcard', 'mcq'] as const) {
+      for (const type of ["example", "graphic", "flashcard", "mcq"] as const) {
         const ofType = leftover.filter((i) => i.type === type);
-        ofType.forEach((item, k) => stepOf.set(item, Math.floor((k * defSteps) / ofType.length)));
+        ofType.forEach((item, k) =>
+          stepOf.set(item, Math.floor((k * defSteps) / ofType.length)),
+        );
       }
     }
     for (const item of group) {
-      if (item.type === 'definition') stepOf.set(item, stepOfDef.get(item.id)!);
-      if (item.type === 'recall') stepOf.set(item, stepOfDef.get(item.target.id) ?? 0);
+      if (item.type === "definition") stepOf.set(item, stepOfDef.get(item.id)!);
+      if (item.type === "recall")
+        stepOf.set(item, stepOfDef.get(item.target.id) ?? 0);
     }
 
     const out: SessionItem[][] = [];
@@ -236,15 +396,16 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       const inStep: SessionItem[] = [];
       group.forEach((item) => {
         if (stepOf.get(item) !== s) return;
-        if (item.type === 'definition' && knows(item, progress)) return;
-        if (item.type === 'flashcard' && !answered(item, progress)) inStep.push(previewOf(item));
+        if (item.type === "definition" && knows(item, progress)) return;
         inStep.push(item);
       });
       // A typed term is asked in the order its definition was read, which is
       // the order of the definitions in the section; one whose definition is
       // not here goes after them.
       const rank = (item: SessionItem, i: number) =>
-        item.type === 'recall' ? (readAt.get(item.target.id) ?? group.length + i) : i;
+        item.type === "recall"
+          ? (readAt.get(item.target.id) ?? group.length + i)
+          : i;
       out.push(
         inStep
           .map((item, i) => ({ item, i: rank(item, i) }))
@@ -261,41 +422,46 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
     : Math.max(1, Math.ceil(others.length / (STEP_TERMS * 2.5)));
   let built = place(defSteps);
   // Fewer terms a step while a step runs long, down to one term each.
-  while (defs.length && defSteps < defs.length && Math.max(...built.map((s) => s.length)) > STEP_CARDS) {
+  while (
+    defs.length &&
+    defSteps < defs.length &&
+    Math.max(...built.map((s) => s.length)) > STEP_CARDS
+  ) {
     built = place(++defSteps);
   }
+  built = apart(built);
   // A step still too long (one term with many questions, or the last step of
   // what fits no term) asks the rest in a step of its own, after its reading,
-  // so nothing is asked before it is shown. A flashcard's reading card goes
-  // with the part that asks it, never a step earlier.
+  // so nothing is asked before it is shown.
   const cut: SessionItem[][] = [];
   for (const step of built) {
     if (step.length <= STEP_CARDS) {
       cut.push(step);
       continue;
     }
-    const reads = step.filter((i) => phaseOf(i.type) === 'read' && i.type !== 'preview');
-    const shown = new Map(step.filter((i) => i.type === 'preview').map((i) => [(i as { target: { id: string } }).target.id, i]));
-    const asks = step.filter((i) => phaseOf(i.type) !== 'read');
-    let part = { previews: [] as SessionItem[], asks: [] as SessionItem[], size: reads.length };
+    const reads = step.filter((i) => phaseOf(i.type) === "read");
+    const asks = step.filter((i) => phaseOf(i.type) !== "read");
+    let part = { asks: [] as SessionItem[], size: reads.length };
     const parts = [part];
     for (const ask of asks) {
-      const preview = shown.get(ask.id);
-      const cost = preview ? 2 : 1;
       // Every part asks at least one thing, however much it has to read.
-      if (part.asks.length && part.size + cost > STEP_CARDS) {
-        part = { previews: [], asks: [], size: 0 };
+      if (part.asks.length && part.size + 1 > STEP_CARDS) {
+        part = { asks: [], size: 0 };
         parts.push(part);
       }
-      if (preview) part.previews.push(preview);
       part.asks.push(ask);
-      part.size += cost;
+      part.size += 1;
     }
-    parts.forEach((p, k) => cut.push([...(k === 0 ? reads : []), ...p.previews, ...p.asks]));
+    parts.forEach((p, k) => cut.push([...(k === 0 ? reads : []), ...p.asks]));
   }
   // A step can end up empty: every term known and nothing else placed in it.
-  const steps = cut.filter((s) => s.length);
+  const steps = joinSmall(cut.filter((s) => s.length));
   return steps.flatMap((step, s) =>
-    step.map((item) => ({ ...item, _step: s, _steps: steps.length, _block: `${item._sectionId}#${s}` })),
+    step.map((item) => ({
+      ...item,
+      _step: s,
+      _steps: steps.length,
+      _block: `${item._sectionId}#${s}`,
+    })),
   );
 }

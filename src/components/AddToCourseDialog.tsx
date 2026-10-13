@@ -272,13 +272,20 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                         defined but never tested
                       </li>
                     )}
+                    {fixes.thinKeyTerms.length > 0 && (
+                      <li>
+                        ask {plural(fixes.thinKeyTerms.length, 'key term')} from other sides, each
+                        asked by only one card now
+                      </li>
+                    )}
                     {fixes.faultyItems.length > 0 && (
                       <li>
-                        repair {plural(fixes.faultyItems.length, 'question')}
+                        repair {plural(fixes.faultyItems.length, 'card')}
                         {fixes.totalFaulty > fixes.faultyItems.length &&
                           ` (the most serious of ${fixes.totalFaulty}; run this again afterwards for the rest)`}
-                        : broken answer keys first, then answers that give themselves away by length and
-                        questions that point at your notes instead of the subject
+                        : broken answer keys first, then answers that give themselves away by length,
+                        questions that point at your notes instead of the subject, questions that repeat
+                        another in nearly the same words, and definitions that spell out their own term
                       </li>
                     )}
                   </ul>
@@ -287,6 +294,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
             {mode === 'practice' &&
               (gaps.untestedTerms.length > 0 ||
+                gaps.thinKeyTerms.length > 0 ||
                 gaps.thinSections.length > 0 ||
                 gaps.gradableRatio < 0.5) && (
                 <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
@@ -298,6 +306,15 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                         <span className="text-text-3">
                           : {gaps.untestedTerms.slice(0, 4).join(', ')}
                           {gaps.untestedTerms.length > 4 ? '…' : ''}
+                        </span>
+                      </li>
+                    )}
+                    {gaps.thinKeyTerms.length > 0 && (
+                      <li>
+                        {plural(gaps.thinKeyTerms.length, 'key term')} asked only one way
+                        <span className="text-text-3">
+                          : {gaps.thinKeyTerms.slice(0, 4).join(', ')}
+                          {gaps.thinKeyTerms.length > 4 ? '…' : ''}
                         </span>
                       </li>
                     )}

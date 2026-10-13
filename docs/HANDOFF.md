@@ -19,6 +19,40 @@ Start here. Make each step a task, keep one in progress, and only mark it
 done when it is tested and live (see §7). Load `working-method`,
 `arborous-design` and `app-making` at the start; `simulate` before Learn.
 
+**Done 2026-10-13 (live):** the owner's first real study of a lecture, with
+screenshots: cards on one term all at once, an MCQ straight after the
+definition, fill-in and flashcard for it, typed terms whose definition
+spelled them out, the same fact reworded, and too little that asks for
+mastery. Plan, numbers and results in `docs/proposals/content-quality.md`.
+
+- **iPhone header**: the home-screen app reports no status-bar inset, so
+  `lib/statusBarFallback.ts` measures the case and pads the header itself.
+  Waiting on the owner to confirm on the phone.
+- **`lib/contentChecks.ts`** decides a give-away (`givesAway`), one fact
+  (`sameFact`) and a card answered by an earlier one (`answeredBy`), for
+  the session order, the course check and the audit alike.
+- **Learn and Today**: no typed term that spells itself out (read, never
+  asked, out of every count via `scored.ts`); no flashcard shown open first
+  (the `preview` item is no longer made; `PreviewCard` stays for old
+  bookmarks); the later card of a pair moves to the next step
+  (`learnSteps.apart`, `MIN_GAP` = 5 cards). Simulated level under both
+  students; re-baselined.
+- **`sessionAudit.ts` + `sessionAudit.test.ts`** hold the line on the test
+  lectures, and print the whole walk of a real one (`AUDIT_COURSE=`). The
+  arborous-design skill now has "Checking what a student is asked".
+- **Course check and Fix**: `gives-away`, `same-fact` and `thin-key-terms`
+  (a key term only one card asks about); Fix rewords and re-angles them,
+  More practice targets thin key terms.
+- **Generator prompt** (`prompts/generator.md`, Quality bar, so all four
+  prompts carry it): how the app uses each card, a plan per idea with key
+  ideas asked from several sides, no reused sentences, no card answering
+  another, nothing a stranger could answer, the slide's text as what is
+  need-to-know, and a read-as-the-app-asks self-check.
+
+Open from it: a section whose repeats cannot be spaced ends in a step of
+one or two cards (the content fix removes them); existing lectures get the
+better content only through Fix or More practice.
+
 **Done 2026-10-12 (live):** the modes review in `docs/proposals/modes.md`
 (every mode asked "why is it here, how well does it do it"), with the
 owner's go-ahead. New evidence entries in `docs/evidence.md`.

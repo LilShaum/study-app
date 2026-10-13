@@ -58,6 +58,21 @@ describe('planFixes', () => {
     );
   });
 
+  it('asks for a definition that spells out its term to be reworded, and a repeat from a new side', () => {
+    const plan = planFixes(
+      course([
+        { id: 'd1', type: 'definition', term: 'Signaling cell', definition: 'The cell that sends a signal.' } as StudyItem,
+        { id: 'f1', type: 'flashcard', front: 'Why does feedback inhibition usually target the committed step?', back: 'It wastes nothing.' } as StudyItem,
+        { id: 'f2', type: 'flashcard', front: 'Why is the committed step the usual target of feedback inhibition?', back: 'It wastes no intermediates.' } as StudyItem,
+      ]),
+    );
+    expect(plan.faultyItems.find((f) => f.item.id === 'd1')?.faults).toEqual(['gives-away']);
+    expect(plan.faultyItems.find((f) => f.item.id === 'f2')?.faults).toEqual(['same-fact']);
+    expect(plan.faultyItems.find((f) => f.item.id === 'f1')).toBeUndefined();
+    const text = buildFixPrompt(course([{ id: 'd1', type: 'definition', term: 'Signaling cell', definition: 'The cell that sends a signal.' } as StudyItem]));
+    expect(text).toMatch(/without the term's words/);
+  });
+
   it('leaves out faults a model cannot fix', () => {
     // Duplicate ids are the app's problem — the merge renames them — and
     // asking a model to "fix" one would just produce a confusing correction.
@@ -116,7 +131,7 @@ describe('buildFixPrompt', () => {
     // but it should not invent headings for findings that do not exist.
     const prompt = buildFixPrompt(course([mcq('q1', 'What is osmosis?'), def('d1', 'osmosis')]));
     expect(prompt).not.toMatch(/never defined/);
-    expect(prompt).not.toMatch(/Questions with something wrong/);
+    expect(prompt).not.toMatch(/Cards with something wrong/);
   });
 });
 

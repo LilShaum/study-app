@@ -63,6 +63,14 @@ about a second; the suite at 5 seeds is under a minute.
 8. **Model a feature as a policy before building its UI.** If the policy
    does not move the numbers, the screen will not either.
 
+## The sitting itself
+
+The simulator scores memory; it cannot see what a card says. Its synthetic
+lectures have random wording, so repeats and give-aways never happen in it.
+Before calling a Learn or Today change good, also read a real sitting (the
+"Checking what a student is asked" steps in the arborous-design skill) and
+keep `src/lib/sessionAudit.test.ts` passing.
+
 ## Where things are
 
 | File | What it holds |

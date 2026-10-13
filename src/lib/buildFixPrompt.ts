@@ -26,6 +26,8 @@ const CORRECTABLE = [
   'length-tell',
   'lopsided-options',
   'cued-to-source',
+  'same-fact',
+  'gives-away',
 ];
 const RANK = new Map(CORRECTABLE.map((id, n) => [id, n]));
 
@@ -42,6 +44,10 @@ const FAULT_LABELS: Record<string, string> = {
   'lopsided-options': 'one option is more than twice the length of the others, which draws the eye whether or not it is right',
   'cued-to-source':
     'the question refers to "the notes", "the slide" or a figure — ask the same thing about the subject itself, since that cue will not exist in the exam',
+  'same-fact':
+    'it asks the same fact as another card in its section, in nearly the same words, so the second one tests memory of the first wording more than the idea. Keep the fact, but ask it from a different side: use it in a new case, tell it apart from its neighbour, predict from it, or explain why. New wording, not a rephrasing of the other card',
+  'gives-away':
+    "this definition uses its own term's words (\"signaling\" in a definition of \"cell signaling\"), so the app can never ask me to name the term from it. Rewrite the definition to explain the idea without the term's words or their word family, keeping the term exactly as it is; if the idea cannot be stated without them, say so",
 };
 
 function itemJson(item: StudyItem): string {
@@ -58,6 +64,8 @@ function itemJson(item: StudyItem): string {
 export interface FixPromptPlan {
   missingTerms: string[];
   untestedTerms: string[];
+  /** Key terms only one MCQ or flashcard asks about (courseGaps.thinKeyTerms). */
+  thinKeyTerms: string[];
   faultyItems: { item: StudyItem; sectionId: string; faults: string[] }[];
   /** How many items had a correctable fault — more than faultyItems when capped. */
   totalFaulty: number;
@@ -98,6 +106,7 @@ export function planFixes(course: Course): FixPromptPlan {
 
   const missingTerms = health.declaredTermCoverage?.missing ?? [];
   const untestedTerms = health.gaps.untestedTerms;
+  const thinKeyTerms = health.gaps.thinKeyTerms;
 
   // Worst fault first, then course order, before the cap is applied.
   const worst = (faults: string[]) => Math.min(...faults.map((f) => RANK.get(f) ?? 99));
@@ -106,9 +115,10 @@ export function planFixes(course: Course): FixPromptPlan {
   return {
     missingTerms,
     untestedTerms,
+    thinKeyTerms,
     totalFaulty: faultyItems.length,
     faultyItems: faultyItems.slice(0, MAX_FAULTY_ITEMS),
-    empty: missingTerms.length === 0 && untestedTerms.length === 0 && faultyItems.length === 0,
+    empty: missingTerms.length === 0 && untestedTerms.length === 0 && thinKeyTerms.length === 0 && faultyItems.length === 0,
   };
 }
 
@@ -197,10 +207,29 @@ export function buildFixPrompt(course: Course, notes = course.metadata.student_n
     );
   }
 
+  if (fix.thinKeyTerms.length) {
+    blocks.push(
+      [
+        `## ${blocks.length + 1}. Key terms asked only one way (${fix.thinKeyTerms.length})`,
+        '',
+        'These are named in a learning objective or a section title, so they',
+        'matter, and exactly one MCQ or flashcard asks about each. I can learn',
+        'that one card and still not understand the term.',
+        '',
+        fix.thinKeyTerms.map((t) => `  - ${t}`).join('\n'),
+        '',
+        'For each, write one or two gradable items from the sides it is missing:',
+        'tell it from its nearest neighbour, use it on a case the notes set up,',
+        'predict from it, or explain why. Never another wording of the card it',
+        'already has. If the notes say too little about one to ask more, say so.',
+      ].join('\n'),
+    );
+  }
+
   if (fix.faultyItems.length) {
     blocks.push(
       [
-        `## ${blocks.length + 1}. Questions with something wrong with them (${
+        `## ${blocks.length + 1}. Cards with something wrong with them (${
           fix.totalFaulty > fix.faultyItems.length
             ? `the ${fix.faultyItems.length} most serious of ${fix.totalFaulty} — I will send the rest in another round`
             : fix.faultyItems.length

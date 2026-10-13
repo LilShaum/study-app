@@ -78,3 +78,28 @@ reasoning; this is the working version.
 4. `node scripts/contrast-report.mjs` if a colour or token changed.
 5. After shipping, confirm the live site serves it (grep the live JS for a
    string from the change), then report what you looked at.
+
+## Checking what a student is asked
+
+Screens are half of it. A change to Learn, Today, Review or a prompt is
+checked by reading a whole sitting the way a student meets it, not single
+cards. The owner's first real study found the same fact asked twice in a
+row, answers printed on the card before, and terms whose definition spelled
+them out, all of which every screenshot had missed
+(docs/proposals/content-quality.md).
+
+1. Print the walk: `AUDIT_COURSE=<lecture.study.json> npx vitest run
+   src/lib/sessionAudit.test.ts --reporter=verbose` (a real lecture stays
+   outside the repo; the test lectures in `scripts/__fixtures__` are printed
+   with `AUDIT_PRINT=1`).
+2. Read it start to finish and note, for the main ideas: every card on each
+   and the gap between them; any card answered by one before it (marked
+   `!`); any definition that names its own term; whether each key idea is
+   asked from more than one side (name it, tell it apart, use it, explain
+   it) or only reworded; and how much is reading against asking.
+3. Anything wrong in the order is a rule for `lib/learnSteps.ts` or
+   `lib/contentChecks.ts`, with a test in `sessionAudit.test.ts`. Anything
+   wrong in the content is a rule in `prompts/generator.md` (Quality bar, so
+   all four prompts carry it) and, where the app can see it, a course check
+   with a Fix request.
+

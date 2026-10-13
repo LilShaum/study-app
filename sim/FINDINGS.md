@@ -10,6 +10,32 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-13 — Learn asks flashcards cold and keeps one fact's cards apart: level
+
+**Change.** From the owner's first real study of a lecture
+(docs/proposals/content-quality.md). A flashcard is no longer shown open on
+a reading card before it is asked; the flip shows the answer anyway. Two
+cards on one fact, or one whose answer the card before printed
+(lib/contentChecks, `answeredBy`), are never in one step or within five
+cards: the later one moves to the next step. A definition that spells out
+its own term is read but never asked as "name the term" (and leaves every
+count, lib/scored.ts).
+
+**Result** (5 seeds, against the 2026-10-12 baseline). Level under both
+students: every scenario within ±1 point except steady-30-cutoff +2,
+steady-30-cutoff-no-date +3, crammer-evening +2; none lower than −1. The
+synthetic course's random wording rarely trips the same-fact rule, so this
+mostly measures dropping the reading card for flashcards: fewer cards for
+the same readiness (the test lecture's Learn goes from 243 cards to 198, and
+reading from 43% of them to 34%). Re-baselined.
+
+**Assumption.** The simulated student primed by a reading card
+(`SIM_NO_PREVIEW_PRIMING`) no longer matters for Learn: no reading cards are
+made. A cold flashcard counts at FIRST_TIME.flashcard, and a miss with the
+answer after counts as reading (2026-10-12).
+
+---
+
 ## 2026-10-12 — The catch-up keeps misses put right by a retry; retrying at once costs new material
 
 **Change.** A card missed and then got right by a retry minutes later in

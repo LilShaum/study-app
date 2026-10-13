@@ -6,6 +6,7 @@ import { recallId } from './scored';
 import { isDueFor, retrievability, reviewUrgency } from './memory';
 import { acceptedForms, normalise } from './typedAnswer';
 import { stepSection } from './learnSteps';
+import { givesAway } from './contentChecks';
 import { sectionsToLearn } from './nextToLearn';
 import { cardSeconds, DEFAULT_MINUTES, splitSitting } from './today';
 import type { ExamRule } from './exam';
@@ -333,8 +334,12 @@ export function buildSessionItems(
     s.items.filter((i): i is DefinitionItem => i.type === 'definition'),
   );
   const originals = new Map(pool.map((d) => [d.id, d]));
+  // A definition that spells out its own term ("the way cells communicate:
+  // a signaling cell sends a signal" for cell signaling) is still read, but
+  // never asked as "name the term": the card would answer itself
+  // (lib/contentChecks; scored.ts leaves it out of every count the same way).
   const recallFor = (item: SessionItem): SessionItem | null =>
-    item.type === 'definition' ? toRecall(item, pool, originals.get(item.id) ?? item) : null;
+    item.type === 'definition' && !givesAway(item.term, item.definition) ? toRecall(item, pool, originals.get(item.id) ?? item) : null;
   /** Each definition followed by its recall question. */
   const withRecall = (list: SessionItem[]) =>
     list.flatMap((i) => {
@@ -469,10 +474,15 @@ export function buildSessionItems(
         if (list) list.push(i);
         else blocks.set(i._block!, [i]);
       }
-      for (const [block, list] of blocks) {
+      // A step with nothing to ask (every term in it spells itself out, see
+      // recallFor) was read on the way to the step after it, and is done
+      // when that one is. Walked from the end so a run of them follows.
+      const order = [...blocks.entries()].reverse();
+      order.forEach(([block, list], k) => {
         const asks = list.filter(isGradable);
-        if (asks.length && asks.every((i) => { const r = progress?.[i.id]; return !!r && r.got + r.missed > 0; })) done.add(block);
-      }
+        const next = order[k - 1];
+        if (asks.length ? asks.every((i) => { const r = progress?.[i.id]; return !!r && r.got + r.missed > 0; }) : !!next && done.has(next[0])) done.add(block);
+      });
       const left = all.filter((i) => !done.has(i._block!));
       items = left.length ? left : all;
       break;

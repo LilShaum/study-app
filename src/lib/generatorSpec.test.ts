@@ -34,6 +34,20 @@ describe('the sections the prompts quote from prompts/generator.md', () => {
     expect(QUALITY_BAR_SPEC).toMatch(/every section needs at least one gradable item/i);
   });
 
+  it('carries how the app uses each card, so every prompt plans for it', () => {
+    // In the Quality bar, so the new, add, more-practice and fix prompts all
+    // have it (docs/proposals/content-quality.md).
+    expect(QUALITY_BAR_SPEC).toMatch(/How the app uses what you write/);
+    expect(QUALITY_BAR_SPEC).toMatch(/Flashcards are asked cold/);
+    expect(QUALITY_BAR_SPEC).toMatch(/Plan each idea before you write it/);
+    expect(QUALITY_BAR_SPEC).toMatch(/each from a different side/);
+    expect(QUALITY_BAR_SPEC).toMatch(/Never the same sentence twice/);
+    expect(QUALITY_BAR_SPEC).toMatch(/No card answers another/);
+    expect(QUALITY_BAR_SPEC).toMatch(/Nothing a stranger could answer/);
+    expect(QUALITY_BAR_SPEC).toMatch(/What the slide asks students to know/);
+    expect(ITEM_TYPES_SPEC).toMatch(/not a word from its family/);
+  });
+
   it('is quoted verbatim, so the prompts cannot drift from the spec', () => {
     const spec = fs.readFileSync(path.resolve(__dirname, '../../prompts/generator.md'), 'utf8');
     expect(spec).toContain(QUALITY_BAR_SPEC);
@@ -62,6 +76,24 @@ describe('buildPractisePrompt', () => {
     const prompt = buildPractisePrompt(course([mcq('q1', ['aa', 'bb', 'cc', 'dd'], 0)]));
     expect(prompt).toContain(QUALITY_BAR_SPEC);
     expect(prompt).toContain(ITEM_TYPES_SPEC);
+  });
+
+  it('asks for new sides of a key term that only one card asks about', () => {
+    const c = {
+      schema_version: '1.0',
+      metadata: { title: 'T', inventory: { terms: ['Osmosis'], objectives: ['Explain osmosis across a membrane'] } },
+      sections: [
+        {
+          id: 's1',
+          title: 'Water',
+          items: [
+            { id: 'd1', type: 'definition', term: 'Osmosis', definition: 'Water moving down its gradient across a membrane.' },
+            { id: 'f1', type: 'flashcard', front: 'What drives osmosis?', back: 'A difference in solute concentration.' },
+          ],
+        },
+      ],
+    } as unknown as Course;
+    expect(buildPractisePrompt(c)).toMatch(/key terms[^\n]*only one MCQ or flashcard[\s\S]*Osmosis/);
   });
 
   it('says so when a section has more items than it lists', () => {
