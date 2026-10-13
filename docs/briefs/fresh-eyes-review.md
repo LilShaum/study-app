@@ -57,7 +57,100 @@ mistakes; they are the patterns to look for.
 
 ---
 
-## 2. Ground rules
+## 2. What has been tried, and how it went
+
+A neutral record, oldest first within each part. "Evidence" says what the
+result rests on, so you can weigh it:
+
+- **sim**: the simulator only. Uncalibrated, synthetic lectures, two
+  guessed truth models. A sim result is a direction under its assumptions,
+  not a fact about students.
+- **real**: measured on the owner's real lectures (orders, counts), not on
+  learning.
+- **lit**: the research in `docs/evidence.md`.
+- **owner**: what the owner or a friend reported from using it.
+
+Details are in `sim/FINDINGS.md` (dated entries), `docs/HANDOFF.md` §0 and
+§5, and `docs/proposals/`. Re-examine any of these; none is settled just
+because it was decided.
+
+### 2.1 Scheduling: Today, Review and the exam
+
+| What | Result | Evidence | Status |
+|---|---|---|---|
+| A student does what the course page suggests (Review, then Learn) | At 30 min/day about 80% of time went to Review and half the course was never opened; studied sections scored about 90%, the rest the guessing floor | sim | Led to the Today plan |
+| Cap Review all month to make room for new material | Much worse: 28–44% vs 50% at 30 min/day. Things seen once were gone by the exam | sim | Rejected |
+| Cap Review at 40% only in the last 4 days, while exam material is unseen (`REVIEW_CAP`, `CAP_WITHIN_DAYS`) | Better in almost every scenario under both students | sim | Shipped. Applies only with an exam date set |
+| Tell the app which sections the exam covers | The single biggest lever: 87% vs 50% at 30 min/day | sim | Shipped (exam scope) |
+| Exam-week choice: "learn what's left" or "hold on" | "Learn what's left" worse almost everywhere (up to −6); "hold on" only helps when scope was not told | sim | Not built |
+| A readiness forecast | Every version tried failed its own check (said 1% unstudied, truth 48%) | sim | Not built; a coverage-only line exists |
+| Catch-up: misses back a few hours later the same day | +6 to +8 at the same total time; the gap is what helps (0 h gives nothing) | sim, lit | Shipped (`CATCH_UP_HOURS`) |
+| Retry misses straight away | 4 to 11 points behind spending the time on Today | sim | Offered, never the lead button |
+| Personal forgetting rate fitted from answers | Level | sim | Hook built, not driving anything |
+| Several courses, one daily time: split by 1 / days to exam | Better than equal split everywhere, both students | sim | Shipped (library) |
+| Cram mode for the last days | Lost 6–9 points under both students; left a quarter of the exam unseen | sim | Not built |
+| Last three days in three sittings a few hours apart | +2 to +5 | sim | Shipped (`partMinutes`) |
+| Per-term cap on due reviews (2026-10-13) | Held due cards back past their point; −3 to −5 for a 20-minute student | sim | Removed the same night |
+| Late reviews: "half of reviews come too late" | Almost all are the first review after a miss; review earlier helps under `harsh`, hurts under `fsrs` | sim | Left; needs the real after-miss rate |
+
+### 2.2 Learn and the order of a sitting
+
+| What | Result | Evidence | Status |
+|---|---|---|---|
+| Learn as whole blocks (all definitions, then all questions) | A term was asked 50–60 cards after it was read | real | Replaced by steps |
+| Steps of a few terms: read, type, apply | Level to slightly better | sim, lit (Yang 2021) | Shipped |
+| A question waits for the step that teaches what it quotes | Fixed "asks about things it didn't show" | owner, sim level | Shipped |
+| Steps of at most 12 cards | A friend's "4 terms" step was 22 cards before misses came back | owner | Shipped (`STEP_CARDS`) |
+| A miss comes back in its own step, a few cards on, once right is enough | Level or +1–3 under `fsrs`, level under `harsh` | sim, lit (Vaughn 2016) | Shipped |
+| Ask in the order read (a later first test) | Within noise | sim, lit (Karpicke & Roediger 2007) | Shipped |
+| Ask a miss again at the section's end | Cost time, no gain | sim | Dropped |
+| Flashcards shown open before asked (2026-10-11), then removed (2026-10-13) | Owner read it as being handed the answer, then asked. Level either way | owner, sim, lit (Kornell 2009) | Removed |
+| Questions first: skip the reading | +2 to +6 for material met in a lecture; level for never met | sim | A switch; read first is the default |
+| Learn with my slides (`source_range`) | Not measured | — | Shipped |
+| Typed term that spells itself out: read, never asked | 54 of 224 definitions in one real lecture | real | Shipped; Fix rewords them |
+| One fact never within 5 cards of a card that answers it (`apart`) | Level | sim, real | Shipped; makes some 1–2 card steps |
+| At most 3 cards on a term at first meeting (`TERM_BUDGET`), rest a sitting later | Level overall; half-scope −2 score, −4 held | sim, owner | Shipped, under review (task G) |
+| One term in two lectures scored once (`linkedTerms`) | 21 shared terms between two real lectures | real | Shipped; not simulated |
+| New material is only cards never answered (`newOnly`) | Fixed the owner's "review, then the same terms as new"; 25 of 62 "new" cards had been answered | owner, real, sim level | Shipped |
+| Interleave sections in Learn | Evidence favours blocked practice for new material of this kind | lit | Not done |
+
+### 2.3 Modes and screens
+
+| What | Result | Evidence | Status |
+|---|---|---|---|
+| Ten modes down to Today, Learn, Practice | Owner found too many choices | owner | Shipped |
+| Typed recall from an MCQ answered right | Producing after recognising | lit | Shipped; not when the stem gives the answer or restates the definition |
+| Confused terms come back side by side | Discrimination of confusable items | lit (interleaving meta-analysis) | Shipped |
+| Set aside ("Not needed?") with Put back | Owner asked | owner | Shipped |
+| The tree as progress | Owner liked it | owner | Shipped |
+| iPhone status bar | Header under the clock; a measured fallback; study screens no longer scroll for nothing | owner | Unconfirmed on the phone (#88) |
+
+### 2.4 Content and prompts
+
+| What | Result | Evidence | Status |
+|---|---|---|---|
+| Generator prompt with an inventory and coverage obligations | Courses cover the notes | real | Shipped |
+| Option-length tells | The right answer was the longest 55% of the time; a counted rule | real | Shipped, still drifts |
+| Teacher notes kept with the lecture | Owner asked | owner | Shipped |
+| Quality bar rewritten (2026-10-13): how the app uses cards, a weight table, MCQs for nuance not trivia, a counted difficulty mix, parts of one system together | Not yet tested on a real generation | — | Shipped |
+| Course check: give-aways, same fact, MCQs restating a definition, thin key terms; Fix and More practice target them | About one MCQ in eight restates a definition on the real lectures | real | Shipped; detectors are heuristics |
+| "Follows on from" for decks that repeat the previous one's last slides | Matching questions across lectures by wording had false positives | real | Shipped (prompt side) |
+
+### 2.5 What the owner has said, in their words where it matters
+
+- Liked: the level of detail and quality of life at one point; the tree;
+  how Learn and Today adapt.
+- Disliked: too much reading before questions (43% of Learn's cards); being
+  asked about what wasn't shown; the same fact asked again in other words;
+  answers given away by the card before; "every time I start learning it
+  makes me review the same things for 30 minutes"; basics (feedback loops)
+  taking every sitting; MCQs that only re-ask a definition instead of
+  testing nuance; prompt rules too vague to be followed.
+- Wants: mastery, not memorising; more study content for key ideas than
+  for basics; things easy to find; app-side fixes that work without
+  regenerating lectures; an exam mode for a whole class.
+
+## 3. Ground rules
 
 - **Never commit course content.** The repo is public. The owner's
   lectures are theirs. Ask the owner to attach their `.study.json` files,
@@ -80,7 +173,7 @@ mistakes; they are the patterns to look for.
 
 ---
 
-## 3. The system in one page
+## 4. The system in one page
 
 **Content.** A lecture is a `.study.json` made by an AI from the student's
 slides with `prompts/generator.md`. Items: `definition` (asked typed:
@@ -159,14 +252,38 @@ src/lib/sessionAudit.test.ts --reporter=verbose`.
 
 ---
 
-## 4. The work, in priority order
+## 5. The work, in priority order
 
-### 4.1 Scenario review of the scheduling, as a student lives it
+### 5.0 Decisions worth re-opening
+
+These rest mostly on the uncalibrated simulator (section 2). Each may be
+right; check whether it still holds once the simulator is more realistic
+(5.2) or against the research (5.6), and say plainly if it does not.
+
+- **Review first, new material only after**, with the 40% cap only in the
+  last 4 days and only with an exam date. Is "depth beats breadth" true for
+  a real student, and for one who starts a few days out or never sets a
+  date?
+- **No cram mode.** It lost because the truth models give little credit to
+  a review hours after the last; successive relearning research may say
+  otherwise for the last days.
+- **Due below 0.75 recall** and the growth constants, chosen against two
+  guessed students.
+- **Blocked sections in Learn** (no interleaving of new material).
+- **`TERM_BUDGET` = 3** and the second look: helps the owner's experience,
+  costs a little in one scenario.
+- **Typed recall as the only test of a definition**: is typing the term the
+  right first test, or should recognition come first for a brand-new term?
+- **Self-graded flashcards**: students over-rate themselves; does the
+  memory model trust a self-grade as much as a typed answer?
+
+
+### 5.1 Scenario review of the scheduling, as a student lives it
 
 The defaults are tuned for a steady student with a date set a month out.
 Find where they are good on average and bad for a specific student.
 For each scenario: run it (simulator where it can, the multi-day harness
-in 4.4 on a real lecture, the browser in 4.3), say what the student
+in 5.4 on a real lecture, the browser in 5.3), say what the student
 experiences sitting by sitting, and whether the app's choice is the right
 one by the evidence. Start with these; add your own.
 
@@ -208,7 +325,7 @@ For each algorithm constant above (`DUE_BELOW`, `GROWTH`, `LAPSE_KEEPS`,
 `CATCH_UP_HOURS`), ask: where did the number come from (FINDINGS,
 evidence.md, or nowhere), and is there a scenario where it is plainly wrong?
 
-### 4.2 Make the simulator more like a real student
+### 5.2 Make the simulator more like a real student
 
 Every conclusion rests on it. Known gaps, roughly by how much they could
 change a decision:
@@ -238,7 +355,7 @@ change a decision:
 
 Log every assumption change with before and after in `sim/FINDINGS.md`.
 
-### 4.3 Drive the app as a student
+### 5.3 Drive the app as a student
 
 Screenshots of single screens missed the worst problems. A run-through is
 a sequence of sittings over days, read the way a student meets them.
@@ -279,7 +396,7 @@ Write down what you noticed per sitting before forming conclusions, and
 measure what you can (`sessionAudit` on the session's items, counts by
 section and type).
 
-### 4.4 A multi-day harness for real lectures (rebuild it)
+### 5.4 A multi-day harness for real lectures (rebuild it)
 
 A quick one was used 2026-10-13 and deleted. It ran Today for four days on
 a real lecture with `useProgressStore.recordResult` and a seeded random
@@ -291,7 +408,7 @@ cards by section, by type, review vs new, repeats within the sitting, and
 cards already answered that the new part served. This is the tool that
 would have caught the repeat bug.
 
-### 4.5 Are the tests good?
+### 5.5 Are the tests good?
 
 1. Read each test in `src/lib/*.test.ts` and `src/store/*.test.ts` as a
    claim about what helps a student. Flag tests that pin behaviour no
@@ -308,7 +425,7 @@ would have caught the repeat bug.
 4. Mutation check: break a rule on purpose (for example, remove `newOnly`)
    and confirm a test fails. If none does, the rule is untested.
 
-### 4.6 Compare with other apps and the research
+### 5.6 Compare with other apps and the research
 
 `docs/evidence.md` lists what was verified (testing effect, spacing and
 the gap-to-retention ratio, interleaving for categories, one correct
@@ -332,7 +449,7 @@ verify.
 - Add what you verify to `docs/evidence.md` with the source, and mark what
   you only saw cited.
 
-### 4.7 Content: what the AI writes and what the app does with it
+### 5.7 Content: what the AI writes and what the app does with it
 
 `prompts/generator.md` (its "Quality bar" goes into all four prompts) was
 rewritten 2026-10-13. Check it by generating a made-up lecture yourself
@@ -345,7 +462,7 @@ nutrition lectures; a made-up maths or history lecture).
 
 ---
 
-## 5. Open items you inherit (HANDOFF task numbers)
+## 6. Open items you inherit (HANDOFF task numbers)
 
 - **#63** Calibrate the simulator from a real study log.
 - **#88** iPhone header under the status bar (a measured fallback in
@@ -368,7 +485,7 @@ nutrition lectures; a made-up maths or history lecture).
 
 ---
 
-## 6. What to hand back
+## 7. What to hand back
 
 A report in `docs/audits/` (dated), most important first. Each finding:
 
