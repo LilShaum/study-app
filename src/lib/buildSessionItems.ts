@@ -10,6 +10,7 @@ import { givesAway, restatesDefinition } from './contentChecks';
 import { sectionsToLearn } from './nextToLearn';
 import { cardSeconds, DEFAULT_MINUTES, splitSitting } from './today';
 import type { ExamRule } from './exam';
+import { AGAIN_KEY, AGAIN_SHARE } from '@/store/studyLog';
 
 export const STUDY_MODES = [
   'browse',
@@ -599,7 +600,11 @@ export function buildSessionItems(
           // The second look waits for the next sitting when this one has
           // already taught the section (see withoutSecondLook).
           if (fresh[0]._second && (recent(section.id) || learn.some((i) => i._sectionId === section.id && !i._second))) continue;
-          const cost = fresh.reduce((n, i) => n + cardSeconds(i, pace), 0);
+          // A missed first try comes back in its step: new material costs
+          // its cards and the expected re-asks (store/studyLog, AGAIN_KEY).
+          // Questions first asks before it shows, so far more first tries miss.
+          const again = Math.max(pace?.[AGAIN_KEY] ?? AGAIN_SHARE, questionsFirst ? 0.6 : 0);
+          const cost = fresh.reduce((n, i) => n + cardSeconds(i, pace) * (isGradable(i) ? 1 + again : 1), 0);
           // Whole steps only, so the sitting ends where a step does; the
           // first one always fits, or a short sitting would teach nothing.
           if ((learn.length || review.length) && learnSpent + cost > plan.learnMinutes * 60) {

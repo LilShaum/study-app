@@ -86,15 +86,19 @@ MEMORY['fsrs-power'] = {
   recall: powerLaw,
 };
 
-/** Seconds a card takes, by what the student is doing with it. */
+/**
+ * Seconds a card takes, by what the student is doing with it. The first
+ * real student's medians (study log, 2026-10-12) since 2026-10-13; the
+ * guesses before ran about a quarter short (typed term 15 s, MCQ 35 s).
+ */
 export const SECONDS: Record<SessionItem['type'], number> = {
-  definition: 20,
+  definition: 22,
   example: 40,
-  graphic: 30,
-  flashcard: 12,
-  recall: 15,
-  mcq: 35,
-  preview: 10,
+  graphic: 25,
+  flashcard: 13,
+  recall: 25,
+  mcq: 40,
+  preview: 5,
   // The card that sends the student to their own slides; the reading itself
   // happens outside the app. Simulated courses have no slide ranges.
   slides: 5,

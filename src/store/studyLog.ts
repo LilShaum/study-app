@@ -118,6 +118,12 @@ const MIN_SAMPLES = 15;
  * Median seconds per card type across every course on this device, for the
  * types with enough samples; the rest keep the built-in guesses.
  */
+/** The key in a pace record for the share of first tries missed (not a card type). */
+export const AGAIN_KEY = 'again';
+/** First tries missed, before there are answers: the owner's first sittings missed about a third. */
+export const AGAIN_SHARE = 0.3;
+const AGAIN_PRIOR = 20;
+
 export function measuredPace(byCourse: Record<string, CourseLog>): Record<string, number> {
   const byType = new Map<string, number[]>();
   for (const log of Object.values(byCourse)) {
@@ -134,5 +140,11 @@ export function measuredPace(byCourse: Record<string, CourseLog>): Record<string
     // A floor, so a run of fast taps can never make a sitting limitless.
     out[type] = Math.max(3, sorted[Math.floor(sorted.length / 2)]);
   }
+  // Share of first tries missed: each comes back in its step (store/session,
+  // requeue), so new material takes longer than its cards. Pulled toward
+  // AGAIN_SHARE until there are answers to say otherwise.
+  const firsts = Object.values(byCourse).flatMap((log) => log.answers.filter((a) => a.sinceHours == null));
+  const missed = firsts.filter((a) => !a.got).length;
+  out[AGAIN_KEY] = (missed + AGAIN_SHARE * AGAIN_PRIOR) / (firsts.length + AGAIN_PRIOR);
   return out;
 }

@@ -32,14 +32,18 @@ export const DEFAULT_MINUTES = 30;
  * figures the simulator's student uses; replace both with measured ones
  * once the study log exists.
  */
+// The first student's own medians (their study log, 2026-10-12), which
+// replaced guesses that ran about a quarter short: a typed term took 25 s,
+// not 15. A device's own times take over once it has enough of a type
+// (store/studyLog, measuredPace).
 const CARD_SECONDS: Record<string, number> = {
-  definition: 20,
+  definition: 22,
   example: 40,
-  graphic: 30,
-  flashcard: 12,
-  recall: 15,
-  mcq: 35,
-  preview: 10,
+  graphic: 25,
+  flashcard: 13,
+  recall: 25,
+  mcq: 40,
+  preview: 5,
 };
 
 /** Seconds a card takes: measured on this device when there is enough (store/studyLog), guessed otherwise. */

@@ -297,9 +297,9 @@ describe('buildSessionItems — a review sitting has a size', () => {
   const progress = Object.fromEntries(items.map((it, i) => [it.id, { got: 1, missed: 0, lastSeen: now - (1 + i / 10) * DAY, stability: 1 }]));
 
   it('fits the minutes a day, most urgent first', () => {
-    // Flashcards take 12 s by default: 10 minutes is 50 of them.
+    // Flashcards take 13 s by default: 10 minutes is 46 of them.
     const served = buildSessionItems(big, 'review', { progress, now, minutes: 10 });
-    expect(served).toHaveLength(50);
+    expect(served).toHaveLength(46);
     expect(served[0].id).toBe('q199');
   });
 
@@ -619,5 +619,18 @@ describe('buildSessionItems — Today never asks a reviewed card again as new', 
     expect(items.filter((i) => i._block === 'review').length).toBeGreaterThan(0);
     expect(learn.filter((i) => i.type === 'recall' || i.type === 'definition')).toEqual([]);
     expect(learn.map((i) => i.id)).toContain('q');
+  });
+});
+
+describe('buildSessionItems — Today plans for the misses that come back', () => {
+  const defsOnly = {
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: [{ id: 's', title: 'S', items: Array.from({ length: 60 }, (_, k) => ({ id: `d${k}`, type: 'definition', term: `Term ${k}`, definition: `Meaning ${k} of a thing` })) }],
+  } as unknown as Course;
+
+  it('fits less new material when more first tries are missed', () => {
+    const count = (again: number) => buildSessionItems(defsOnly, 'today', { minutes: 15, progress: {}, pace: { again } }).length;
+    expect(count(0.6)).toBeLessThan(count(0));
   });
 });

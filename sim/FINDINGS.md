@@ -32,6 +32,37 @@ its list, so real sittings overshoot (re-asks are not planned). Open.
 
 ---
 
+## 2026-10-13 (pace) — Sittings planned with real card times and the re-asks: the suite's scores drop 3–20 points, the app change is level
+
+**App change.** A 30-minute Today took 39 minutes on the owner's lecture
+(58 with Questions first), found by the fresh-eyes review: default seconds
+per card were guesses about a quarter short of the owner's measured medians
+(typed term 25 s, not 15; MCQ 40, not 35), and a missed first try comes
+back in its step but was not in the plan. Defaults are now the owner's
+medians (`CARD_SECONDS` in lib/today.ts; a device's own times still take
+over after 15 of a type), and new material is planned with the expected
+re-asks: the measured share of first tries missed (`AGAIN_KEY` in
+store/studyLog, pulled toward 30% until there are answers; at least 60%
+with Questions first). On the owner's Endocrinology lecture a 30-minute
+Today now runs 26–29 minutes (28 on day 0 with Questions first).
+
+**Assumption changed.** The simulated student's seconds per card
+(`SECONDS` in sim/student.ts) are now the same measured medians. Every
+scenario's exam score drops (steady-30 60 → 48, steady-45 82 → 67,
+late-start 69 → 57, steady-30-slow 88 → 72): the same minutes cover a
+quarter fewer cards. **Earlier scores in this file were made with the faster
+student and are optimistic for this owner.** Comparisons within an entry
+still hold; absolute levels before this entry do not.
+
+**The app change alone** (same slower student, 5 seeds, before → after):
+steady-30 48 → 47, steady-45 67 → 67, busy-20 26 → 25, crammer 66 → 66,
+half-scope 83 → 81, harsh 17 → 17, late-start 57 → 56, questions-first
+45 → 44, slow 72 → 71. Level. The simulator stops at the budget, so the
+point of the change (sittings that end on time) does not show in it.
+Re-baselined.
+
+---
+
 ## 2026-10-13 (personal rate) — The app fits the student's forgetting rate: a slow forgetter gains 8–11 points
 
 **Why.** The fresh-eyes review found every sitting from day 3 is review at

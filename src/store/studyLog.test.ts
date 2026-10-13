@@ -17,8 +17,17 @@ describe('study log', () => {
 
   it('keeps built-in guesses until a type has enough samples', () => {
     const times = Array.from({ length: 14 }, () => ({ type: 'mcq', seconds: 50 }));
-    expect(measuredPace({ c: { times, answers: [], days: {} } })).toEqual({});
-    expect(measuredPace({ c: { times: [...times, { type: 'mcq', seconds: 50 }], answers: [], days: {} } })).toEqual({ mcq: 50 });
+    expect(measuredPace({ c: { times, answers: [], days: {} } })).toEqual({ again: 0.3 });
+    expect(measuredPace({ c: { times: [...times, { type: 'mcq', seconds: 50 }], answers: [], days: {} } })).toEqual({ mcq: 50, again: 0.3 });
+  });
+
+  it('measures how many first tries are missed, pulled toward a third until there are answers', () => {
+    const first = (got: boolean) => ({ at: 0, type: 'recall', got, sinceHours: null, afterMiss: false, predicted: null });
+    const few = measuredPace({ c: { times: [], answers: [first(false), first(false)], days: {} } }).again;
+    const many = measuredPace({ c: { times: [], answers: Array.from({ length: 200 }, (_, k) => first(k % 10 !== 0)), days: {} } }).again;
+    expect(few).toBeGreaterThan(0.3);
+    expect(few).toBeLessThan(0.4);
+    expect(many).toBeLessThan(0.15);
   });
 
   it('logs each answer, and each card as the student moves on', () => {
