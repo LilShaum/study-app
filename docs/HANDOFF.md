@@ -28,6 +28,14 @@ Learn's 2-card session on a section's second look, sittings that run long
 (re-asks not planned, guessed card times), calibration waits on real use,
 and brief sections 5.2, 5.3, 5.5–5.7.
 
+**Done 2026-10-13, after the fresh-eyes review (live):** see the follow-up
+in `docs/audits/2026-10-13-fresh-eyes.md`. Learn carries on past a
+section's second look; sittings are planned with real card times and the
+re-asks of misses; the app fits each student's forgetting rate
+(`lib/personalScale.ts`); the simulator has a slow-forgetting student and
+real card times (absolute scores dropped; see FINDINGS); the owner's
+lecture wording was taken out of the repo.
+
 **Done 2026-10-13 (live):** the owner's first real study of a lecture, with
 screenshots: cards on one term all at once, an MCQ straight after the
 definition, fill-in and flashcard for it, typed terms whose definition

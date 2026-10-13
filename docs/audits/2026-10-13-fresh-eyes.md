@@ -88,3 +88,32 @@ Not done from the brief: invariant tests over generated states and mutation
 checks (5.5), browser drive (5.3), simulator realism (5.2), research (5.6),
 fresh generated lectures (5.7). The simulator baseline was not re-saved
 (changes were level).
+
+## Follow-up the same day (the building session)
+
+What happened to each open finding above:
+
+1. **Learn gave 2 cards and stopped**: fixed. Learn on a section with only
+   its second look left (or a couple of cards) carries on into the next
+   section; a second look waits `CATCH_UP_HOURS` after the section was last
+   studied. The learn-instead day on Endocrinology: 2 cards → 22.
+2. **Sittings ran long**: fixed. Default card times are the owner's
+   medians; new material is planned with the expected re-asks (measured
+   share of first tries missed, 30% until there are answers, at least 60%
+   with Questions first). A 30-minute Today on Endocrinology now runs 26–29
+   minutes, 28 on day 0 with Questions first (was 39 and 58).
+3. **Review fills whole sittings from day 3**: addressed through finding 4.
+4. **Calibration**: the app now fits the student's forgetting rate itself
+   (`lib/personalScale.ts`), cautiously, from their logged reviews. A slow
+   forgetter gains 8 to 11 points in the simulator; the default student is
+   within noise in exam score, "held" 3 to 5 lower in a few scenarios
+   (sim/FINDINGS.md). The simulated student's card times are now the owner's
+   measured ones, which lowers every absolute score.
+6. **Second-look tails**: measured after the fixes above, a week of
+   30-minute Todays on all five lectures: 0 to 1 close pair per sitting on
+   most days (one day 4). Left.
+
+Also: the owner's lecture wording that had reached the repo (in tests,
+comments, docs and the generator prompt's examples, from several sessions)
+was replaced with made-up examples. It remains in git history.
+
