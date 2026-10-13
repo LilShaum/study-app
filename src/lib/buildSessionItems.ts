@@ -2,8 +2,8 @@ import type { Course, StudyItem } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { shuffle } from './shuffle';
 import { sortedSections } from './sortedSections';
-import { recallId } from './scored';
-import { isDueFor, retrievability, reviewUrgency } from './memory';
+import { recallId, scoredEntries } from './scored';
+import { CATCH_UP_HOURS, isDueFor, retrievability, reviewUrgency } from './memory';
 import { acceptedForms, normalise } from './typedAnswer';
 import { spaced, stepSection } from './learnSteps';
 import { givesAway, restatesDefinition } from './contentChecks';
@@ -302,13 +302,14 @@ function weakestFirst(items: SessionItem[], now: number, progress?: Record<strin
 
 /**
  * A section's second look (SessionItem._second) is left out of a sitting
- * that also teaches the rest of that section: those cards were held back so
- * they come a sitting later. Once the rest is done, the next Learn or Today
- * opens with them.
+ * that also teaches the rest of that section, and for CATCH_UP_HOURS after
+ * the section was last studied: those cards were held back so they come a
+ * sitting later, not minutes later when Learn is pressed again. After that,
+ * the next Learn or Today opens with them.
  */
-function withoutSecondLook(list: SessionItem[]): SessionItem[] {
+function withoutSecondLook(list: SessionItem[], recent: (sectionId: string) => boolean): SessionItem[] {
   const teaching = new Set(list.filter((i) => !i._second).map((i) => i._sectionId));
-  return list.filter((i) => !i._second || !teaching.has(i._sectionId));
+  return list.filter((i) => !i._second || !(teaching.has(i._sectionId) || recent(i._sectionId)));
 }
 
 /**
@@ -433,6 +434,15 @@ export function buildSessionItems(
   };
   const asTyped = (list: SessionItem[]) => list.map((i) => typedFrom(i) ?? i);
 
+  /** Studied in the last few hours: a section's second look waits (see withoutSecondLook). */
+  const lastStudied = new Map<string, number>();
+  for (const section of course.sections)
+    for (const { id } of scoredEntries(section.items)) {
+      const at = progress?.[id]?.lastSeen;
+      if (at != null && at > (lastStudied.get(section.id) ?? 0)) lastStudied.set(section.id, at);
+    }
+  const recent = (sectionId: string) => now - (lastStudied.get(sectionId) ?? -Infinity) < CATCH_UP_HOURS * 3_600_000;
+
   /**
    * A step's new material only: the cards never answered, and the reading
    * for terms not yet asked. Anything answered belongs to Review, on its own
@@ -526,9 +536,29 @@ export function buildSessionItems(
         if (asks.length ? asks.every((i) => { const r = progress?.[i.id]; return !!r && r.got + r.missed > 0; }) : !!next && done.has(next[0])) done.add(block);
       });
       const byBlock = new Map<string, SessionItem[]>();
-      for (const i of withoutSecondLook(all.filter((x) => !done.has(x._block!)))) byBlock.set(i._block!, [...(byBlock.get(i._block!) ?? []), i]);
+      for (const i of withoutSecondLook(all.filter((x) => !done.has(x._block!)), recent)) byBlock.set(i._block!, [...(byBlock.get(i._block!) ?? []), i]);
       const left = [...byBlock.values()].flatMap(newOnly);
-      items = left.length ? left : all;
+      // Learn on one section with little left in it (only its second look,
+      // or a couple of cards) carries on into the next section to learn, in the
+      // same sitting: it used to ask two cards and stop (fresh-eyes review,
+      // 2026-10-13). With nothing after it, the section is the whole thing again.
+      let next: SessionItem[] = [];
+      // Only while the section still has unanswered cards (held back, or a
+      // few): a section chosen when it is all done is studied again whole.
+      const unfinished = all.some((i) => isGradable(i) && !seen(i.id));
+      if (sectionId && unfinished && (left.every((i) => i._second) || left.filter(isGradable).length < 3)) {
+        // Forward only: the sections Learn takes after this one.
+        const order = sectionsToLearn(course, progress ?? {}, now);
+        const at = order.findIndex(({ section }) => section.id === sectionId);
+        for (const { section } of order.slice(at + 1)) {
+          const more = buildSessionItems(course, 'learn', { progress, now, exam, questionsFirst, sectionId: section.id });
+          if (more.some((i) => isGradable(i) && !seen(i.id))) {
+            next = more;
+            break;
+          }
+        }
+      }
+      items = next.length ? [...left, ...next] : left.length ? left : all;
       break;
     }
     case 'weakest':
@@ -568,7 +598,7 @@ export function buildSessionItems(
           if (!fresh.length) continue;
           // The second look waits for the next sitting when this one has
           // already taught the section (see withoutSecondLook).
-          if (fresh[0]._second && learn.some((i) => i._sectionId === section.id && !i._second)) continue;
+          if (fresh[0]._second && (recent(section.id) || learn.some((i) => i._sectionId === section.id && !i._second))) continue;
           const cost = fresh.reduce((n, i) => n + cardSeconds(i, pace), 0);
           // Whole steps only, so the sitting ends where a step does; the
           // first one always fits, or a short sitting would teach nothing.

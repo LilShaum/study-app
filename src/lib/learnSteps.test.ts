@@ -218,3 +218,35 @@ describe('Learn in steps', () => {
     expect(items.filter((i) => i.type === 'flashcard')).toHaveLength(30);
   });
 });
+
+describe('Learn on a section with only its second look left', () => {
+  // Five cards on one term: three at the first meeting, two held back.
+  const qs = Array.from({ length: 5 }, (_, k) => card(`f${k}`, `Angle ${k} on ${TERMS[0]}: ${['why', 'when', 'where', 'how', 'unlike'][k]}?`));
+  const two = {
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: [
+      { id: 's', title: 'S', order: 1, items: [...defs.slice(0, 4), ...qs] },
+      { id: 't', title: 'T', order: 2, items: [{ id: 'e0', type: 'definition', term: 'Xylem', definition: 'Tissue that carries water up from the roots' }, card('g0', 'What carries water up a stem?')] },
+    ],
+  } as Course;
+  const firstMeeting = (at: number) => {
+    const asked = buildSessionItems(two, 'learn', { sectionId: 's' }).filter((i) => phaseOf(i.type) !== 'read');
+    return Object.fromEntries(asked.map((i) => [i.id, { got: 1, missed: 0, lastSeen: at }]));
+  };
+  const DAY = 86_400_000;
+
+  it('asks it and carries on into the next section, the next day', () => {
+    const now = 10 * DAY;
+    const items = buildSessionItems(two, 'learn', { sectionId: 's', progress: firstMeeting(now - DAY), now });
+    expect(items.filter((i) => i._second).length).toBeGreaterThan(0);
+    expect(items.some((i) => i._sectionId === 't')).toBe(true);
+  });
+
+  it('moves straight on when it was just studied: the second look waits a few hours', () => {
+    const now = 10 * DAY;
+    const items = buildSessionItems(two, 'learn', { sectionId: 's', progress: firstMeeting(now - 10 * 60_000), now });
+    expect(items.some((i) => i._second)).toBe(false);
+    expect(items.some((i) => i._sectionId === 't')).toBe(true);
+  });
+});
