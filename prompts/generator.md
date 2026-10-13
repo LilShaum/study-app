@@ -116,6 +116,10 @@ definition item: writing one would mean supplying a meaning from your own
 knowledge, and obligation 1 wins that conflict. Listing it keeps it visible;
 the app will ask whether it deserved more.
 
+The parts of one mechanism (sensor, effector, regulated variable) are the
+exception to "no exceptions": see "Parts of one system are taught together"
+in the Quality bar.
+
 Not every explained term makes a good `definition`, because the app asks for
 it by showing the meaning and having the student type the name. A symbol or
 formula variable (`r_m`, `I_ion`), a descriptive phrase ("resistance of the
@@ -144,10 +148,10 @@ is covered. Pay particular attention to the term list: **every term in
 item or satisfy yourself that the source genuinely says nothing about it.
 
 As a calibration check, count the distinct ideas in your Pass 2 inventory —
-terms, mechanisms, formulas, comparisons, caveats — and expect roughly **two
-to four items per idea**, since recall, application and recognition are
-different skills — scaled by weight: one item for a bare fact stated once and
-never used again, three or four for a formula, mechanism or comparison. Anchor
+terms, mechanisms, formulas, comparisons, caveats — and give each the number
+of items its weight calls for (Quality bar, part 2): three to five for a key
+idea, each from a different side; one or two for a supporting one; the
+definition alone, or one card, for background. Anchor
 on that, never on how many pages or words the source
 happens to be. If your draft is far below it, you have skipped content: go
 back to the inventory. If the inventory itself is genuinely short, a small
@@ -317,6 +321,141 @@ dark mode.
 
 ## Quality bar
 
+Read this section before writing anything. Parts 1 to 5 decide **what**
+you write and how much; the rules after them decide whether each item is
+well made. Every rule here is one the app checks, measures, or acts on.
+
+### 1. How the app uses what you write
+
+The app does not show a section in the order you wrote it, and it does not
+show every card at once. Plan for this:
+
+1. **Steps.** A section is taught in steps of about a dozen cards: read a
+   few definitions (with their examples and diagrams), type each term from
+   its definition, then answer the flashcards and MCQs on those terms.
+2. **Every definition is a question.** The app shows the meaning and the
+   student types the term. So "name the term from its meaning" is already
+   tested for every term you define. Do not spend an MCQ or flashcard on it.
+3. **Flashcards are asked cold**: the front, the student answers in their
+   head, then flips. They are never shown open first.
+4. **MCQs come last in a step.** One answered right comes back later typed,
+   without options, when its answer is a defined term.
+5. **At most three cards on one term at its first meeting.** The rest wait
+   for the next sitting. So the cards beyond the first three on a term must
+   be its hardest sides, not more of the same.
+6. **Each card returns on its own schedule**, mixed with cards from every
+   other lecture. Every card must make sense alone, on any day.
+7. **Two cards on one fact are kept apart**, and so is a card whose answer
+   another card prints. The app lists both as faults for the student to
+   send back to you.
+
+### 2. Plan each idea before you write it
+
+For every entry in your inventory, decide its weight first, then its cards.
+Never write "one of every type because it can".
+
+| Weight | How to recognise it | Cards to write |
+|---|---|---|
+| **Key** | A stated objective; flagged, repeated or emphasised; a formula, mechanism or comparison that later content builds on; what the student says their teacher stressed | 3 to 5, **each from a different side** (list below) |
+| **Supporting** | Explained once and used once | 1 or 2 |
+| **Background** | Taught in passing, or common ground the course repeats in every lecture (what homeostasis is, what a receptor is) | The definition only, or one card |
+| **Example detail** | A value, name or label that belongs to one worked example, figure or table | None, unless the source says it must be known |
+
+The sides of an idea, one card each:
+
+- **Name it**: the definition (the app asks it typed).
+- **Say it**: a flashcard asking what it does or means, in the student's words.
+- **Tell it apart**: an MCQ whose distractors are its nearest neighbours.
+- **Use it**: an MCQ or flashcard applying it to a case the source sets up.
+- **Predict**: what follows when it is blocked, missing, raised or lowered.
+- **Explain why**: the reason the source gives for it.
+
+Two cards on one idea must differ in **what the student has to do**, not
+only in their words.
+
+**Parts of one system are taught together.** When the source names the
+parts of one mechanism (sensor, effector and regulated variable in a
+feedback loop; the steps of a pathway), do not write one definition per
+part in the same sentence pattern ("the component of a feedback loop
+that…" three times). Students then answer the same question three times.
+Write a definition only for a part that is a real term the course uses on
+its own. Cover the system with one flashcard on how the parts connect and
+one MCQ on what happens when one part fails.
+
+### 3. MCQs carry the nuance
+
+**This is where most of your effort goes.** Naming a term from its meaning
+is already tested (1.2). An MCQ is for what naming cannot test, usually
+because the definition leaves it out or buries it in a clause:
+
+1. **The exception or qualifier.** Every "usually", "most", "only when",
+   "unlike", "except" in the source is a question.
+2. **The line between neighbours.** A case where two close terms would each
+   seem to fit, and one detail decides it.
+3. **What follows when something fails.** Block a step, remove a part, raise
+   a concentration: what changes, and what does not?
+4. **Why.** The reason the source gives for a rule.
+5. **Direction and comparison.** Faster or slower, more or less, rises or
+   falls, which lasts longer, when the source says so.
+6. **A misconception.** The wrong belief the source warns about, or the one
+   a half-reader would form, as the most tempting distractor.
+
+**Nuance, not trivia.** A hard question tests a property of the concept
+that holds in any example: the exception, the boundary, the consequence. It
+never tests a detail that belongs only to one example or figure: a value
+from one worked problem, where a label sits, the name in brackets in a
+caption, which example the slide happened to pick. Ask yourself: if the
+lecture had used a different example, would this answer still be true and
+still matter? If not, it is trivia. Do not write it.
+
+| | Example (from real generated lectures) | Why |
+|---|---|---|
+| Restates a definition. Do not write | "A chemical diffuses back to the cell that released it. What kind of signaling is this?" | The typed term already asks exactly this |
+| Trivia. Do not write | "What protein name is given in brackets alongside connexin in the gap junction figure?" | Tests the figure's typesetting, not gap junctions |
+| Lookup. Use sparingly | "To which class of chemical messenger does thyroxine belong?" | One fact, recognised; fine once, not as the pattern |
+| Nuance. Write these | "Most amine messengers are hydrophilic. Which amines are not, and so where are their receptors?" | The exception, and what follows from it |
+| Nuance. Write these | "A drug blocks protein kinase G. What happens to ANP signaling?" | A consequence the student must work out |
+
+**Difficulty means something, and the mix is counted.**
+
+| `difficulty` | What the question asks | Share of a lecture's MCQs |
+|---|---|---|
+| `easy` | Recognise a fact as stated | **At most one in four.** Never a term asked straight from its definition |
+| `medium` | Use one fact on a case, tell two neighbours apart, or apply a qualifier or exception | The rest |
+| `hard` | Chain two or more facts (block this, so that, so this), predict an outcome the source does not state outright, or explain a why. Each distractor is the answer of one specific wrong chain | **At least one MCQ in four is hard** |
+
+Every key idea gets at least one medium or hard MCQ.
+
+### 4. Wording
+
+1. **Never the same sentence twice.** Do not reuse a definition's wording as
+   a flashcard back or an MCQ stem, or one card's front as another's stem.
+   Write each card fresh from the idea. Reused wording is learned as wording.
+2. **No card answers another.** A definition that names two other terms the
+   student must type ("a signaling cell sends a signal and a target cell
+   responds") has answered both. Describe the other parts by their role
+   ("the cell that sends it") unless the relationship is the point. Keep
+   each flashcard's back and each explanation to its own card's fact.
+3. **Nothing a stranger could answer.** If someone who never took the course
+   could answer from everyday English or from the question's own words ("the
+   cell that sends a signal is called the…"), the card tests nothing. Ask
+   what is specific to the subject: what it does, what it is not, what
+   happens when it fails.
+4. **A definition never contains its own term** or a word of its family
+   (see Item types). The app shows such a definition but never asks it.
+
+### 5. What the slide asks students to know
+
+A slide's text (its bullets, headings and what it states in words) is what
+it asks students to know. A complex diagram beside it usually illustrates
+that text. Test the diagram through the text: ask about the part of a
+pathway the bullets name, in the bullets' terms. Labels that appear only in
+a figure are example detail (2). A slide that previews a topic taught later
+gets its cards where the topic is taught. When the student says what their
+teacher stressed or dismissed, that outranks your judgement.
+
+### 6. Item rules
+
 **MCQs are where quality matters most** — a bad MCQ actively teaches the
 wrong thing. For every MCQ:
 - Exactly one option is unambiguously correct per the source.
@@ -360,43 +499,6 @@ distractors. The app now checks this and will report it.
   because "roughly the same length" is easy to believe of your own options.
   A count is not.
 
-**MCQs carry the nuance — this is where most of your effort goes.** The
-app already asks every definition by name: it shows the meaning and the
-student types the term. An MCQ that asks the same thing — "which class is
-thyroxine?", "a chemical diffuses back to the cell that released it: what
-kind of signaling?" — is that definition read again, and teaches nothing the
-typed term did not. An MCQ is for what naming cannot test, usually because
-the definition leaves it out or buries it in a clause:
-
-- **The exception or qualifier.** Every "usually", "most", "only when",
-  "unlike", "except" in the source is a question: most amines are
-  hydrophilic — which are not, and what follows for their receptor?
-- **The line between neighbours.** A case where two close terms would each
-  seem to fit and one detail decides it, with the neighbour as a distractor.
-- **What follows when something fails.** Block a step, remove a component,
-  raise a concentration: what changes downstream, and what does not?
-- **Why.** The reason the source gives for a rule (why steroids cannot be
-  stored, why the committed step is the target).
-- **Direction and comparison.** Faster or slower, more or less, rises or
-  falls, which lasts longer — when the source says so.
-- **A misconception.** The wrong belief the source warns about, or the one
-  a half-reader would form, offered as the most tempting distractor.
-
-Write `difficulty` to mean something, and hold the mix:
-
-- **easy** — recognise a fact as stated. At most one MCQ in four, and never
-  one whose answer is a term asked straight from its own definition.
-- **medium** — use one fact on a case, tell two neighbours apart, or apply a
-  qualifier or exception.
-- **hard** — chain two or more facts (block this, so that, so this), predict
-  an outcome the source does not state outright, or explain a why. Each
-  distractor is the answer of one specific wrong chain. At least one MCQ in
-  four is hard.
-
-Every key idea gets at least one medium or hard MCQ. Before you finish a
-section, read its MCQs alone: if most could be answered by someone who only
-memorised the definitions, rewrite them toward the list above.
-
 **Test understanding, not just recall.** If the source explains a mechanism,
 ask what happens when a step is blocked. If it gives a formula, ask the
 student to apply it. If it draws a distinction, ask for the case that
@@ -438,73 +540,6 @@ student must *apply* needs an MCQ or flashcard, not only a definition. A
 course that is mostly definitions teaches a vocabulary list and measures
 nothing else.
 
-**How the app uses what you write — plan for it.** The app does not show
-a section in the order you wrote it, and it does not show every card once.
-
-- A section is taught in **steps** of a few terms, about a dozen cards each:
-  read the step's definitions (with its examples and diagrams), type each
-  term from its definition, then answer the flashcards and MCQs that use
-  those terms. Then a pause, and the next step.
-- **Flashcards are asked cold**: the front, the student answers in their
-  head, then flips. They are never shown open first. Use them for what a
-  student must produce in their own words: a why, a relationship, a value,
-  an order, a contrast.
-- **MCQs** come last in a step, once every term they use has been read. One
-  answered right comes back later typed, without its options, when its
-  answer is a defined term — so write stems that stand alone.
-- After the first sitting each card returns on **its own schedule**, mixed
-  with cards from every other lecture. So every card must make sense alone,
-  on any day, after any other card.
-- Two cards on one fact, or a card whose answer another card prints (in a
-  definition, a flashcard's back, an explanation), are **kept apart**: the
-  second is answered from the first card's wording, not from memory. The app
-  measures both and lists them as faults.
-
-**Plan each idea before you write it.** For each entry in your inventory,
-decide what it weighs, then which cards it gets — not "one of every type
-because it can":
-
-- **A key idea** (a stated objective, something flagged or repeated, a
-  formula, a mechanism, a comparison the lecture builds on) gets three to
-  five cards, **each from a different side**: name it (the definition);
-  say it in your own words (a flashcard: what it does, why it matters); tell
-  it from its nearest neighbour (an MCQ whose distractors are that
-  neighbour); use it on a case the source sets up (an MCQ or flashcard:
-  apply, predict, calculate); explain why (a flashcard). Recall alone
-  memorises; the other sides are what make it understood.
-- **A supporting fact** gets one or two.
-- **A detail** mentioned once, or seen only in a figure, gets one at most,
-  and often none.
-
-Two cards on one idea must differ in **what the student has to do**, not
-only in their words. If two would read as one question, keep the better one
-and turn the other into a new side.
-
-**Never the same sentence twice.** Do not reuse a definition's wording as a
-flashcard back or an MCQ stem, or one card's front as another's stem. Write
-each card fresh from the idea. Reused wording is learned as wording.
-
-**No card answers another.** A definition that uses two other terms a
-student must type — "a signaling cell sends a signal and a target cell
-responds" — has answered both. Where the relationship is the point, keep it;
-otherwise describe the other parts by their role ("the cell that sends it").
-Keep each flashcard's back and each explanation to its own card's fact.
-
-**Nothing a stranger could answer.** If someone who never took the course
-could answer from everyday English or from the question's own words ("the
-cell that sends a signal is called the…"), the card tests nothing. Ask what
-is specific to the subject instead: what it does, what it is not, what
-happens when it fails.
-
-**What the slide asks students to know.** A slide's text — its bullets,
-headings and what it states in words — is what it asks students to know; a
-complex diagram beside it usually illustrates that text. Test the diagram
-through the text: ask about the part of a pathway the bullets name, in the
-bullets' terms. Labels that appear only in a figure are detail (see above).
-A slide that previews a topic taught later gets its cards where the topic is
-taught. When the student says what their teacher stressed or dismissed,
-that outranks your judgement.
-
 **Across the whole file:**
 - Item `id`s must be unique across the whole course, not just within their
   section — progress is tracked per id, so a duplicate makes two items share
@@ -537,18 +572,22 @@ Check your own draft:
 5. **Scan the stems alone.** Does any mention the notes, the slides or a
    figure? Is any one just its `source_excerpt` reworded into a question?
    Does every section have at least one that asks for more than retrieval?
-6. **Scan the MCQs alone.** At most one in four easy, at least one in four
-   hard. Does any just ask a term back from its own definition? Does every
-   key idea have a medium or hard MCQ on an exception, a neighbour, a
-   consequence or a why?
-7. **Read each section as the app asks it**: definitions, then typed terms,
+6. **Count the MCQs** (Quality bar, part 3). Write down the number that are
+   easy, medium and hard. More than one in four easy, or fewer than one in
+   four hard: rewrite until it holds. Then check each MCQ against the
+   table: does any ask a term back from its own definition, or test a
+   detail that belongs to one example or figure? Rewrite or delete it.
+   Does every key idea have a medium or hard MCQ?
+7. **Count the cards per idea** (part 2). Does any background idea have
+   more than one card beyond its definition? Does any key idea have fewer
+   than three, or two cards that ask the same thing in other words? Are the
+   parts of one system written as same-shaped definitions?
+8. **Read each section as the app asks it**: definitions, then typed terms,
    then flashcards, then MCQs. Does any card's answer appear in a card
    before it? Does any definition contain its own term or a word of its
-   family? Do any two cards ask one thing in different words? Is every key
-   idea asked from at least two sides, and could a stranger answer any card
-   from plain English? Fix each before you output.
-8. Is `total_items` / `item_counts` in metadata accurate if you included them?
-9. Is it valid JSON — no trailing commas, no comments, matching quotes?
+   family? Could a stranger answer any card from plain English? Fix each.
+9. Is `total_items` / `item_counts` in metadata accurate if you included them?
+10. Is it valid JSON — no trailing commas, no comments, matching quotes?
 
 If the student's source material is missing, empty, or too vague to ground
 anything in, say so in plain text instead of generating a file — don't

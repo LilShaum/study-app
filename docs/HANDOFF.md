@@ -59,6 +59,19 @@ mastery. Plan, numbers and results in `docs/proposals/content-quality.md`.
   with a Fix rewrite; More practice asks for medium and hard MCQs when the
   mix is off.
 
+- **Evening, basics over-taught** (the owner: every sitting on feedback
+  loops): at most three cards on a term at a first meeting, the rest in a
+  second look that opens the next sitting (`TERM_BUDGET`, `_second`); at
+  most three due cards on a term in a review sitting (`perTermCap`); one
+  term in two lectures scored once (`lib/linkedTerms`, 21 shared between
+  Cell Signaling and Endocrinology); MCQs that are a definition again stay
+  multiple choice; no colophon on study screens (a card that fits no
+  longer scrolls under the status band). The prompt's Quality bar is now
+  six numbered parts with a weight table (key, supporting, background,
+  example detail), the sides of an idea, "parts of one system taught
+  together", MCQ nuance vs trivia with real examples, and a counted
+  difficulty mix; the self-check counts MCQs and cards per idea.
+
 Open from it: a section whose repeats cannot be spaced ends in a step of
 one or two cards (the content fix removes them); existing lectures get the
 better content only through Fix or More practice.
