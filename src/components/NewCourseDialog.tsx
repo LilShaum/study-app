@@ -49,6 +49,13 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   const [pasted, setPasted] = useState('');
   const [notes, setNotes] = useState('');
   const [copied, setCopied] = useState(false);
+  const lectures = useCoursesStore((s) => s.courses);
+  // In a class, the lecture added last is the likeliest one this deck follows.
+  const [after, setAfter] = useState(() => {
+    if (!classCode) return '';
+    const inClass = Object.entries(lectures).filter(([, c]) => c.metadata.course_code?.trim() === classCode);
+    return inClass.at(-1)?.[0] ?? '';
+  });
   const addCourse = useCoursesStore((s) => s.addCourse);
   const importCourse = useCoursesStore((s) => s.importCourse);
   const navigate = useNavigate();
@@ -67,7 +74,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   const course = result && 'course' in result ? result.course : null;
 
   const copyPrompt = async () => {
-    const prompt = buildNewCoursePrompt(notes);
+    const prompt = buildNewCoursePrompt(notes, after ? lectures[after] : undefined);
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
@@ -167,6 +174,26 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
             <div className="mb-3">
               <TeacherNotesField value={notes} onChange={setNotes} />
             </div>
+            {Object.keys(lectures).length > 0 && (
+              <label className="mb-3 block">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-3">
+                  Follows on from (optional)
+                </span>
+                <span className="mb-1.5 block text-sm text-text-2">
+                  If this deck starts with slides from the end of another lecture, pick it. The AI is told what that
+                  lecture already covers, so the repeated slides aren&rsquo;t made into cards twice.
+                </span>
+                <select value={after} onChange={(e) => setAfter(e.target.value)} className="field w-full text-sm">
+                  <option value="">None</option>
+                  {Object.entries(lectures).map(([id, c]) => (
+                    <option key={id} value={id}>
+                      {c.metadata.title}
+                      {c.metadata.course_code ? ` · ${c.metadata.course_code}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             <button
               type="button"
               onClick={copyPrompt}

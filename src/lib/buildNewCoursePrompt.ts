@@ -2,6 +2,8 @@
 // is byte-for-byte the spec the app parses. Editing it updates both.
 import GENERATOR_SPEC from '../../prompts/generator.md?raw';
 import { teacherNotesBlock } from './teacherNotes';
+import { previousLectureBlock } from './previousLecture';
+import type { Course } from '@/schema/course';
 
 /**
  * The prompt for generating a course from scratch.
@@ -13,7 +15,7 @@ import { teacherNotesBlock } from './teacherNotes';
  * It is the generator spec verbatim, wrapped in the two lines of framing a
  * chat needs: what to do, and where the notes go.
  */
-export function buildNewCoursePrompt(notes?: string): string {
+export function buildNewCoursePrompt(notes?: string, previous?: Course): string {
   return `I want you to turn my course notes into an Arborous study course.
 
 Your full instructions are below. Follow them exactly — especially the
@@ -24,7 +26,7 @@ four-pass reading procedure and the coverage obligations — and reply with the
 
 ${GENERATOR_SPEC}
 
-${teacherNotesBlock(notes)}════════ MY SOURCE MATERIAL ════════
+${teacherNotesBlock(notes)}${previousLectureBlock(previous)}════════ MY SOURCE MATERIAL ════════
 
 <<< ATTACH YOUR SLIDES / PDF / NOTES, OR PASTE THEM BELOW THIS LINE >>>
 `;

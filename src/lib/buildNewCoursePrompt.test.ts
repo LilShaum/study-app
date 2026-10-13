@@ -42,3 +42,33 @@ describe('what the teacher said', () => {
     expect(buildNewCoursePrompt('   ')).not.toContain('WHAT MY TEACHER SAID');
   });
 });
+
+describe('buildNewCoursePrompt — a deck that follows another lecture', () => {
+  const previous = {
+    schema_version: '1.0',
+    metadata: { title: 'Cell Signaling' },
+    sections: [
+      {
+        id: 'last',
+        title: 'Steroid hormones',
+        source_range: 'slides 40–48',
+        items: [{ id: 'd', type: 'definition', term: 'Aldosterone', definition: 'A mineralocorticoid.', source_excerpt: 'Aldosterone: mineralocorticoid' }],
+      },
+    ],
+  } as never;
+
+  it('lists what the previous lecture ends with, and says what to do with repeated slides', () => {
+    const prompt = buildNewCoursePrompt(undefined, previous);
+    expect(prompt).toContain('MY PREVIOUS LECTURE');
+    expect(prompt).toContain('Steroid hormones (slides 40–48 of that deck)');
+    expect(prompt).toContain('Terms already defined: Aldosterone');
+    expect(prompt).toContain('Aldosterone: mineralocorticoid');
+    expect(prompt).toMatch(/write no items, and do not define its terms again/);
+    // Before the student's material, so it is read first.
+    expect(prompt.indexOf('MY PREVIOUS LECTURE')).toBeLessThan(prompt.indexOf('MY SOURCE MATERIAL'));
+  });
+
+  it('says nothing about it when there is none', () => {
+    expect(buildNewCoursePrompt()).not.toContain('MY PREVIOUS LECTURE');
+  });
+});

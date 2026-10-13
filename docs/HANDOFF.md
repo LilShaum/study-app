@@ -73,6 +73,16 @@ mastery. Plan, numbers and results in `docs/proposals/content-quality.md`.
   together", MCQ nuance vs trivia with real examples, and a counted
   difficulty mix; the self-check counts MCQs and cards per idea.
 
+- **Overlapping decks**: New lecture has "Follows on from", which puts the
+  previous lecture's last sections (ranges, terms, quotes) in the prompt
+  with rules for repeated slides (`lib/previousLecture.ts`). Linking
+  questions across lectures by wording was measured on the owner's five
+  lectures and rejected: few true repeats, several false ones. Dialogs no
+  longer sit under the colophon (`.paper-grain > main`, z-index 2).
+- **Not done, on purpose**: "always keep time for new material" and
+  "interleave sections in Learn" were already tested and lost
+  (FINDINGS, `REVIEW_CAP`; task #31).
+
 Open from it: a section whose repeats cannot be spaced ends in a step of
 one or two cards (the content fix removes them); existing lectures get the
 better content only through Fix or More practice.

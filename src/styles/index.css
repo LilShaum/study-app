@@ -446,6 +446,13 @@
     position: relative;
     z-index: 1;
   }
+  /* Each child above is its own layer, so a dialog opened from the page
+     (fixed, z-50, inside <main>) was painted under the colophon, which comes
+     later: the sprig and Help/Sync showed through New lecture on a phone
+     (2026-10-13). The page's layer sits above the head and the colophon. */
+  .paper-grain > main {
+    z-index: 2;
+  }
   @media (prefers-reduced-transparency: reduce) {
     .paper-grain::before {
       display: none;
