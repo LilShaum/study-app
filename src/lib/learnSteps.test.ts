@@ -8,7 +8,7 @@ const TERMS = ['Adenylyl cyclase', 'Gs protein', 'Protein kinase A', 'Phosphodie
 const def = (n: number): StudyItem =>
   ({ id: `d${n}`, type: 'definition', term: TERMS[n], definition: `meaning of the thing number ${n}` }) as StudyItem;
 const mcq = (id: string, question: string): StudyItem =>
-  ({ id, type: 'mcq', question, options: [`${id} right`, 'x', 'y', 'z'], correct_index: 0, explanation: 'because' }) as StudyItem;
+  ({ id, type: 'mcq', question, options: [`Choice ${id.toUpperCase()}`, 'x', 'y', 'z'], correct_index: 0, explanation: 'because' }) as StudyItem;
 const card = (id: string, front: string): StudyItem => ({ id, type: 'flashcard', front, back: `${id} answer` }) as StudyItem;
 
 function course(items: StudyItem[]): Course {

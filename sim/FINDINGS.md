@@ -10,6 +10,22 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-13 (later) — A definition read counts as showing its answer: level
+
+**Change.** Read on the owner's real lectures: an MCQ answered with the
+term just typed from its definition ("Autocrine" after the autocrine
+definition), or a flashcard whose answer rewords a definition read a card
+earlier, is the definition again. `sameName` and a reworded-answer check in
+lib/contentChecks catch them, and Learn's spacing (`apart`) now counts each
+definition read as showing its meaning, so those cards move a step on.
+
+**Result** (3 seeds, against the baseline above). Every scenario within ±2
+points of exam score under both students. Re-baselined. On the owner's five
+lectures, cards within five of one that answers them went to 0 in four and
+1 in the fifth.
+
+---
+
 ## 2026-10-13 — Learn asks flashcards cold and keeps one fact's cards apart: level
 
 **Change.** From the owner's first real study of a lecture

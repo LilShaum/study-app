@@ -1,4 +1,4 @@
-import { normaliseTerm } from "./termMatch";
+import { normaliseTerm } from './termMatch';
 
 /**
  * Two questions about the cards themselves, shared by the session order
@@ -12,8 +12,8 @@ import { normaliseTerm } from "./termMatch";
  */
 
 const STOP = new Set(
-  "the a an and or of to in on at by for with from into onto as is are was were be been being has have had it its this that these those which what who whom whose when where why how does do did can could would should may might will shall than then there their them they not no yes also more most less least very such some any each every both either neither other another between among about after before during over under through within without per via one two three first second".split(
-    " ",
+  'the a an and or of to in on at by for with from into onto as is are was were be been being has have had it its this that these those which what who whom whose when where why how does do did can could would should may might will shall than then there their them they not no yes also more most less least very such some any each every both either neither other another between among about after before during over under through within without per via one two three first second'.split(
+    ' ',
   ),
 );
 
@@ -23,11 +23,7 @@ const STOP = new Set(
  */
 const stemCache = new Map<string, Set<string>>();
 const answerCache = new Map<string, Set<string>>();
-function cached(
-  cache: Map<string, Set<string>>,
-  text: string,
-  make: () => Set<string>,
-): Set<string> {
+function cached(cache: Map<string, Set<string>>, text: string, make: () => Set<string>): Set<string> {
   let hit = cache.get(text);
   if (!hit) {
     if (cache.size > 20_000) cache.clear();
@@ -45,7 +41,7 @@ export function stems(text: string): Set<string> {
     () =>
       new Set(
         normaliseTerm(text)
-          .split(" ")
+          .split(' ')
           // Short symbols count ("x" in x-intercept, "Km"); bare numbers do not.
           .filter((w) => w && !STOP.has(w) && !/^\d+$/.test(w))
           .map((w) => w.slice(0, 5)),
@@ -62,9 +58,7 @@ export function stems(text: string): Set<string> {
  */
 export function givesAway(term: string, definition: string): boolean {
   // Words, not symbols: a definition of "Km" or "X" may well use the symbol.
-  const want = new Set(
-    [...stems(term.replace(/\([^)]*\)/g, " "))].filter((w) => w.length >= 3),
-  );
+  const want = new Set([...stems(term.replace(/\([^)]*\)/g, ' '))].filter((w) => w.length >= 3));
   if (!want.size) return false;
   const have = stems(definition);
   for (const w of want) if (!have.has(w)) return false;
@@ -79,12 +73,8 @@ export interface Asked {
   after?: string;
 }
 
-const SUPERSCRIPT = "⁰¹²³⁴⁵⁶⁷⁸⁹";
-const UNITS = new Set(
-  "1 m mm um nm pm mol mmol umol min s sec h hr l ml ul g mg ug kg kj kcal j k c".split(
-    " ",
-  ),
-);
+const SUPERSCRIPT = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+const UNITS = new Set('1 m mm um nm pm mol mmol umol min s sec h hr l ml ul g mg ug kg kj kcal j k c'.split(' '));
 
 /**
  * The words and numbers of an answer, for comparing answers. Exponents count
@@ -96,12 +86,10 @@ function answerTokens(text: string): Set<string> {
 }
 
 function answerTokensOf(text: string): Set<string> {
-  const folded = text
-    .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (c) => String(SUPERSCRIPT.indexOf(c)))
-    .replace(/\b([A-Z])\b/g, " $1$1$1 ");
+  const folded = text.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (c) => String(SUPERSCRIPT.indexOf(c))).replace(/\b([A-Z])\b/g, ' $1$1$1 ');
   return new Set(
     normaliseTerm(folded)
-      .split(" ")
+      .split(' ')
       // Units say nothing about which answer it is: 50 µmol·min⁻¹ and
       // 100 µmol·min⁻¹ share only their units.
       .filter((w) => w && !STOP.has(w) && !UNITS.has(w))
@@ -110,10 +98,7 @@ function answerTokensOf(text: string): Set<string> {
   );
 }
 
-function share(
-  a: Set<string>,
-  b: Set<string>,
-): { shared: number; share: number } {
+function share(a: Set<string>, b: Set<string>): { shared: number; share: number } {
   const [small, large] = a.size <= b.size ? [a, b] : [b, a];
   let shared = 0;
   for (const w of small) if (large.has(w)) shared++;
@@ -128,6 +113,7 @@ function share(
 export function sameAnswer(a: Asked, b: Asked): boolean {
   const x = normaliseTerm(a.answer);
   if (x.length >= 3 && x === normaliseTerm(b.answer)) return true;
+  if (sameName(a.answer, b.answer)) return true;
   const ax = answerTokens(a.answer);
   const ay = answerTokens(b.answer);
   if (Math.min(ax.size, ay.size) > 4) return false;
@@ -135,11 +121,24 @@ export function sameAnswer(a: Asked, b: Asked): boolean {
   return o.shared >= 2 && o.share >= 0.75;
 }
 
+/**
+ * Two short answers that are one name: "Autocrine" and "Autocrine
+ * signaling", "Steroids" and "Steroid messengers". An MCQ answered with the
+ * term just typed from its definition is that definition asked again.
+ */
+export function sameName(a: string, b: string): boolean {
+  // Names, not values or formulas: 1/Vmax and Km/Vmax are two answers.
+  if (/[\d/=+×·−]/.test(a + b)) return false;
+  const x = answerTokens(a);
+  const y = answerTokens(b);
+  const [small, large] = x.size <= y.size ? [x, y] : [y, x];
+  if (!small.size || large.size > 3 || large.size < 2) return false;
+  for (const w of small) if (!large.has(w)) return false;
+  return true;
+}
+
 /** Share of the smaller question's content words that the other has too, and of the larger's. */
-export function questionOverlap(
-  a: Asked,
-  b: Asked,
-): { shared: number; share: number; ofLarger: number } {
+export function questionOverlap(a: Asked, b: Asked): { shared: number; share: number; ofLarger: number } {
   const x = stems(a.question);
   const y = stems(b.question);
   const o = share(x, y);
@@ -156,10 +155,18 @@ export function questionOverlap(
  * too many are everyday words ("increases").
  */
 export function revealsAnswer(earlier: Asked, later: Asked): boolean {
-  const want = normaliseTerm(later.answer.replace(/\([^)]*\)/g, " "));
-  if (want.length < 6 || !want.includes(" ")) return false;
-  const shown = ` ${normaliseTerm([earlier.question, earlier.answer, earlier.after ?? ""].join(" "))} `;
-  return shown.includes(` ${want} `);
+  const shownText = [earlier.question, earlier.answer, earlier.after ?? ''].join(' ');
+  const want = normaliseTerm(later.answer.replace(/\([^)]*\)/g, ' '));
+  if (want.length >= 6 && want.includes(' ') && ` ${normaliseTerm(shownText)} `.includes(` ${want} `)) return true;
+  // Or reworded: every word the answer adds to its own question is on the
+  // earlier card ("within ranges, by feedback loops" after a definition of
+  // homeostasis that says so). Three words at least, so a one-word answer
+  // that happens to be used ("increases") is not a reveal.
+  const asked = stems(later.question);
+  const adds = [...stems(later.answer)].filter((w) => !asked.has(w) && w.length >= 3);
+  if (adds.length < 3) return false;
+  const shown = stems(shownText);
+  return adds.filter((w) => shown.has(w)).length / adds.length >= 0.8;
 }
 
 /**
@@ -180,19 +187,15 @@ export function revealsAnswer(earlier: Asked, later: Asked): boolean {
  */
 export function sameFact(a: Asked, b: Asked): boolean {
   const q = questionOverlap(a, b);
-  const exact =
-    normaliseTerm(a.answer).length >= 3 &&
-    normaliseTerm(a.answer) === normaliseTerm(b.answer);
+  const exact = normaliseTerm(a.answer).length >= 3 && normaliseTerm(a.answer) === normaliseTerm(b.answer);
   if (exact) return answerTokens(a.answer).size >= 2 || q.shared >= 2;
   // Two parallel questions, each with a subject the other lacks ("what does a
   // competitive inhibitor do…" and "what does a mixed inhibitor do…"): a
   // contrast worth asking side by side, however alike their answers read.
   const x = stems(a.question);
   const y = stems(b.question);
-  const parallel =
-    q.shared >= 2 &&
-    [...x].some((w) => !y.has(w)) &&
-    [...y].some((w) => !x.has(w));
+  const parallel = q.shared >= 2 && [...x].some((w) => !y.has(w)) && [...y].some((w) => !x.has(w));
+  if (sameName(a.answer, b.answer)) return true;
   if (sameAnswer(a, b)) return !parallel;
   // Nearly the same question, whatever the answers say: "What range do
   // typical Km values fall in?" answered in molar, and in words. Both ways

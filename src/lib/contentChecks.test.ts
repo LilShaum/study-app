@@ -92,3 +92,22 @@ describe('contrasts and uses are new angles, not repeats', () => {
     ).toBe(true);
   });
 });
+
+describe('the term just typed, asked again as a question', () => {
+  it('is one fact', () => {
+    expect(
+      sameFact(
+        { question: 'Short-distance indirect signaling in which the messenger diffuses back to the cell that released it.', answer: 'Autocrine signaling' },
+        { question: 'A chemical released by a cell diffuses a short distance and binds receptors on the same cell. What kind of signaling is this?', answer: 'Autocrine' },
+      ),
+    ).toBe(true);
+  });
+  it('a flashcard whose answer rewords the definition before it is answered by it', () => {
+    expect(
+      answeredBy(
+        { question: 'Regulation of physiological processes so that each stays within a range, held there by feedback loops.', answer: 'Homeostasis' },
+        { question: 'How are physiological processes regulated?', answer: 'Within ranges, by feedback loops.' },
+      ),
+    ).toBe(true);
+  });
+});
