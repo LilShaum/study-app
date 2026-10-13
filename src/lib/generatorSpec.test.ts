@@ -47,6 +47,9 @@ describe('the sections the prompts quote from prompts/generator.md', () => {
     expect(QUALITY_BAR_SPEC).toMatch(/What the slide asks students to know/);
     expect(QUALITY_BAR_SPEC).toMatch(/MCQs carry the nuance/);
     expect(QUALITY_BAR_SPEC).toMatch(/Nuance, not trivia/);
+    // A taught pathway is content, never trivia (the owner, 2026-10-13).
+    expect(QUALITY_BAR_SPEC).toMatch(/A pathway is content, not an example/);
+    expect(QUALITY_BAR_SPEC).toMatch(/Taught pathway\. Write these/);
     expect(QUALITY_BAR_SPEC).toMatch(/Parts of one system are taught together/);
     expect(QUALITY_BAR_SPEC).toMatch(/\| \*\*Background\*\* \|/);
     expect(QUALITY_BAR_SPEC).toMatch(/At most three cards on one term at its first meeting/);

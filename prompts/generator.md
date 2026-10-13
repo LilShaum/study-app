@@ -359,7 +359,7 @@ Never write "one of every type because it can".
 | **Key** | A stated objective; flagged, repeated or emphasised; a formula, mechanism or comparison that later content builds on; what the student says their teacher stressed | 3 to 5, **each from a different side** (list below) |
 | **Supporting** | Explained once and used once | 1 or 2 |
 | **Background** | Taught in passing, or common ground the course repeats in every lecture (what homeostasis is, what a receptor is) | The definition only, or one card |
-| **Example detail** | A value, name or label that belongs to one worked example, figure or table | None, unless the source says it must be known |
+| **Illustration detail** | A value, name or label that only belongs to how one worked example, figure or table was drawn (not a pathway, step or value the lecture teaches; see part 3) | None, unless the source or the teacher notes say it must be known |
 
 The sides of an idea, one card each:
 
@@ -400,13 +400,25 @@ because the definition leaves it out or buries it in a clause:
 6. **A misconception.** The wrong belief the source warns about, or the one
    a half-reader would form, as the most tempting distractor.
 
-**Nuance, not trivia.** A hard question tests a property of the concept
-that holds in any example: the exception, the boundary, the consequence. It
-never tests a detail that belongs only to one example or figure: a value
-from one worked problem, where a label sits, the name in brackets in a
-caption, which example the slide happened to pick. Ask yourself: if the
-lecture had used a different example, would this answer still be true and
-still matter? If not, it is trivia. Do not write it.
+**Nuance, not trivia.** Tell apart what the lecture **teaches** from how
+it **illustrated** it.
+
+- **Taught content: test it fully, nuance included.** Anything the slide
+  text states or walks through is the subject: a named pathway and its
+  steps in order, the precursor chain, which enzyme does which step, what
+  a named hormone does, a structure and its parts, a value the lecture
+  gives as a fact to know. A pathway is content, not an example, even when
+  it is drawn in a figure, if the slide text or the student's teacher
+  notes point to it.
+- **Illustration: do not test it.** A detail that only shows how something
+  was drawn or demonstrated: where a label sits, the name in brackets in a
+  caption, the colour or layout of a figure, a number used once in a worked
+  problem only to demonstrate a method (test the method instead), or which
+  case the slide happened to pick when any case would have done.
+
+When unsure, ask: is this detail something a student is expected to
+know, or only the vehicle the lecture used to show something else? Know
+it: test it. Vehicle: test what it showed.
 
 | | Example (from real generated lectures) | Why |
 |---|---|---|
@@ -415,6 +427,7 @@ still matter? If not, it is trivia. Do not write it.
 | Lookup. Use sparingly | "To which class of chemical messenger does thyroxine belong?" | One fact, recognised; fine once, not as the pattern |
 | Nuance. Write these | "Most amine messengers are hydrophilic. Which amines are not, and so where are their receptors?" | The exception, and what follows from it |
 | Nuance. Write these | "A drug blocks protein kinase G. What happens to ANP signaling?" | A consequence the student must work out |
+| Taught pathway. Write these | "Which steroid is the immediate precursor of aldosterone?" and "A drug blocks cyclooxygenase. Which eicosanoids can still be made from arachidonic acid?" | The pathway is the content: its order, its enzymes, and what follows when a step is blocked |
 
 **Difficulty means something, and the mix is counted.**
 
@@ -449,9 +462,10 @@ Every key idea gets at least one medium or hard MCQ.
 A slide's text (its bullets, headings and what it states in words) is what
 it asks students to know. A complex diagram beside it usually illustrates
 that text. Test the diagram through the text: ask about the part of a
-pathway the bullets name, in the bullets' terms. Labels that appear only in
-a figure are example detail (2). A slide that previews a topic taught later
-gets its cards where the topic is taught. When the student says what their
+pathway the bullets name, in the bullets' terms. Labels that appear only
+in a figure, and that the text never names, are illustration detail (2).
+A slide that previews a topic taught later gets its cards where the topic
+is taught. When the student says what their
 teacher stressed or dismissed, that outranks your judgement.
 
 ### 6. Item rules
@@ -576,7 +590,7 @@ Check your own draft:
    easy, medium and hard. More than one in four easy, or fewer than one in
    four hard: rewrite until it holds. Then check each MCQ against the
    table: does any ask a term back from its own definition, or test a
-   detail that belongs to one example or figure? Rewrite or delete it.
+   detail that only belongs to how an example or figure was drawn (a taught pathway is not that)? Rewrite or delete it.
    Does every key idea have a medium or hard MCQ?
 7. **Count the cards per idea** (part 2). Does any background idea have
    more than one card beyond its definition? Does any key idea have fewer
