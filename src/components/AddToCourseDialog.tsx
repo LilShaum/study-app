@@ -284,8 +284,9 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                         {fixes.totalFaulty > fixes.faultyItems.length &&
                           ` (the most serious of ${fixes.totalFaulty}; run this again afterwards for the rest)`}
                         : broken answer keys first, then answers that give themselves away by length,
-                        questions that point at your notes instead of the subject, questions that repeat
-                        another in nearly the same words, and definitions that spell out their own term
+                        questions that point at your notes instead of the subject, questions that only ask a
+                        term back from its definition, questions that repeat another in nearly the same
+                        words, and definitions that spell out their own term
                       </li>
                     )}
                   </ul>

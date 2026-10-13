@@ -224,3 +224,14 @@ describe('analyseCourseHealth — key terms asked one way', () => {
     expect(find(analyseCourseHealth(c), 'thin-key-terms')?.message).toMatch(/Osmosis/);
   });
 });
+
+describe('analyseCourseHealth — an MCQ that asks a term back from its definition', () => {
+  it('is listed; one on what the definition leaves out is not', () => {
+    const items = [
+      { id: 'd1', type: 'definition', term: 'Autocrine signaling', definition: 'Short-distance indirect signaling in which the messenger diffuses back to the cell that released it.' },
+      mcq('q1', 'A messenger diffuses back to the cell that released it. What kind of signaling is this?', { options: ['Autocrine', 'Paracrine', 'Endocrine', 'Neural'] }),
+      mcq('q2', 'Why can thyroid hormones cross the membrane when most amines cannot?', { options: ['They are hydrophobic', 'b', 'c', 'd'] }),
+    ] as StudyItem[];
+    expect(find(analyseCourseHealth(course(items)), 'mcq-restates-definition')?.items).toEqual(['q1']);
+  });
+});

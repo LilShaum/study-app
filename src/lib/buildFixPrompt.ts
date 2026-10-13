@@ -26,6 +26,7 @@ const CORRECTABLE = [
   'length-tell',
   'lopsided-options',
   'cued-to-source',
+  'mcq-restates-definition',
   'same-fact',
   'gives-away',
 ];
@@ -44,6 +45,8 @@ const FAULT_LABELS: Record<string, string> = {
   'lopsided-options': 'one option is more than twice the length of the others, which draws the eye whether or not it is right',
   'cued-to-source':
     'the question refers to "the notes", "the slide" or a figure — ask the same thing about the subject itself, since that cue will not exist in the exam',
+  'mcq-restates-definition':
+    'it asks a term back from its own definition, which the app already does by having me type the term. Keep the id and the idea, but make it a medium or hard question on what the definition leaves out or buries: an exception or qualifier ("usually", "most", "only when"), the case that separates it from its nearest neighbour, what follows when it is blocked or missing, or why it works as it does. Distractors are the specific wrong answers a half-reader would give, and difficulty is set to what it now asks',
   'same-fact':
     'it asks the same fact as another card in its section, in nearly the same words, so the second one tests memory of the first wording more than the idea. Keep the fact, but ask it from a different side: use it in a new case, tell it apart from its neighbour, predict from it, or explain why. New wording, not a rephrasing of the other card',
   'gives-away':

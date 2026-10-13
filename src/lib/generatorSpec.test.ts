@@ -45,6 +45,8 @@ describe('the sections the prompts quote from prompts/generator.md', () => {
     expect(QUALITY_BAR_SPEC).toMatch(/No card answers another/);
     expect(QUALITY_BAR_SPEC).toMatch(/Nothing a stranger could answer/);
     expect(QUALITY_BAR_SPEC).toMatch(/What the slide asks students to know/);
+    expect(QUALITY_BAR_SPEC).toMatch(/MCQs carry the nuance/);
+    expect(QUALITY_BAR_SPEC).toMatch(/At least one MCQ in\s+four is hard/);
     expect(ITEM_TYPES_SPEC).toMatch(/not a word from its family/);
   });
 

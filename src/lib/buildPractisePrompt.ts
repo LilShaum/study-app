@@ -93,6 +93,14 @@ export function buildPractisePrompt(course: Course, notes = course.metadata.stud
       `- These terms are DEFINED in the course, and the app asks for each by name, but no MCQ or flashcard makes the student use one — apply it, predict with it, or tell it apart from a neighbour. Write those items for these first:\n  ${gaps.untestedTerms.join(', ')}`,
     );
   }
+  const mcqs = course.sections.flatMap((s) => s.items).filter((i) => i.type === 'mcq' && !i.set_aside);
+  const easy = mcqs.filter((m) => m.difficulty === 'easy').length;
+  const hard = mcqs.filter((m) => m.difficulty === 'hard').length;
+  if (mcqs.length >= 8 && (hard < mcqs.length / 4 || easy > mcqs.length / 4)) {
+    priorities.push(
+      `- Of the ${mcqs.length} MCQs, ${easy} are easy and only ${hard} are hard. Write this round's MCQs at medium and hard, on what the definitions leave out or bury: the exceptions and qualifiers, the case that separates two neighbours, what follows when a step is blocked or missing, and why. See "MCQs carry the nuance" below.`,
+    );
+  }
   if (gaps.thinKeyTerms.length) {
     priorities.push(
       `- These are key terms (named in an objective or a section title), and only one MCQ or flashcard asks about each, so each can be learned as that one card. Ask each from the sides it is missing — tell it from its neighbour, use it on a case, predict from it, explain why — never another wording of the card it has:\n  ${gaps.thinKeyTerms.join(', ')}`,

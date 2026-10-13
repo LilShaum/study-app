@@ -49,6 +49,16 @@ mastery. Plan, numbers and results in `docs/proposals/content-quality.md`.
   another, nothing a stranger could answer, the slide's text as what is
   need-to-know, and a read-as-the-app-asks self-check.
 
+- **Later the same day, read on the owner's five real lectures**: an MCQ
+  answered with the term just typed, or a flashcard rewording a definition
+  just read, is now spaced like a repeat (`sameName`, reworded reveals,
+  definitions read count as shown). **MCQs**: the prompt's "MCQs carry the
+  nuance" (exceptions, neighbours, consequences, why; a difficulty mix of at
+  most a quarter easy and at least a quarter hard); course check
+  `mcq-restates-definition` (about one MCQ in eight on the real lectures)
+  with a Fix rewrite; More practice asks for medium and hard MCQs when the
+  mix is off.
+
 Open from it: a section whose repeats cannot be spaced ends in a step of
 one or two cards (the content fix removes them); existing lectures get the
 better content only through Fix or More practice.

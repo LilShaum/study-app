@@ -360,6 +360,43 @@ distractors. The app now checks this and will report it.
   because "roughly the same length" is easy to believe of your own options.
   A count is not.
 
+**MCQs carry the nuance — this is where most of your effort goes.** The
+app already asks every definition by name: it shows the meaning and the
+student types the term. An MCQ that asks the same thing — "which class is
+thyroxine?", "a chemical diffuses back to the cell that released it: what
+kind of signaling?" — is that definition read again, and teaches nothing the
+typed term did not. An MCQ is for what naming cannot test, usually because
+the definition leaves it out or buries it in a clause:
+
+- **The exception or qualifier.** Every "usually", "most", "only when",
+  "unlike", "except" in the source is a question: most amines are
+  hydrophilic — which are not, and what follows for their receptor?
+- **The line between neighbours.** A case where two close terms would each
+  seem to fit and one detail decides it, with the neighbour as a distractor.
+- **What follows when something fails.** Block a step, remove a component,
+  raise a concentration: what changes downstream, and what does not?
+- **Why.** The reason the source gives for a rule (why steroids cannot be
+  stored, why the committed step is the target).
+- **Direction and comparison.** Faster or slower, more or less, rises or
+  falls, which lasts longer — when the source says so.
+- **A misconception.** The wrong belief the source warns about, or the one
+  a half-reader would form, offered as the most tempting distractor.
+
+Write `difficulty` to mean something, and hold the mix:
+
+- **easy** — recognise a fact as stated. At most one MCQ in four, and never
+  one whose answer is a term asked straight from its own definition.
+- **medium** — use one fact on a case, tell two neighbours apart, or apply a
+  qualifier or exception.
+- **hard** — chain two or more facts (block this, so that, so this), predict
+  an outcome the source does not state outright, or explain a why. Each
+  distractor is the answer of one specific wrong chain. At least one MCQ in
+  four is hard.
+
+Every key idea gets at least one medium or hard MCQ. Before you finish a
+section, read its MCQs alone: if most could be answered by someone who only
+memorised the definitions, rewrite them toward the list above.
+
 **Test understanding, not just recall.** If the source explains a mechanism,
 ask what happens when a step is blocked. If it gives a formula, ask the
 student to apply it. If it draws a distinction, ask for the case that
@@ -500,14 +537,18 @@ Check your own draft:
 5. **Scan the stems alone.** Does any mention the notes, the slides or a
    figure? Is any one just its `source_excerpt` reworded into a question?
    Does every section have at least one that asks for more than retrieval?
-6. **Read each section as the app asks it**: definitions, then typed terms,
+6. **Scan the MCQs alone.** At most one in four easy, at least one in four
+   hard. Does any just ask a term back from its own definition? Does every
+   key idea have a medium or hard MCQ on an exception, a neighbour, a
+   consequence or a why?
+7. **Read each section as the app asks it**: definitions, then typed terms,
    then flashcards, then MCQs. Does any card's answer appear in a card
    before it? Does any definition contain its own term or a word of its
    family? Do any two cards ask one thing in different words? Is every key
    idea asked from at least two sides, and could a stranger answer any card
    from plain English? Fix each before you output.
-7. Is `total_items` / `item_counts` in metadata accurate if you included them?
-8. Is it valid JSON — no trailing commas, no comments, matching quotes?
+8. Is `total_items` / `item_counts` in metadata accurate if you included them?
+9. Is it valid JSON — no trailing commas, no comments, matching quotes?
 
 If the student's source material is missing, empty, or too vague to ground
 anything in, say so in plain text instead of generating a file — don't

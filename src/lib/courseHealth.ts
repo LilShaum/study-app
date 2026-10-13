@@ -2,7 +2,8 @@ import type { Course, StudyItem } from '@/schema/course';
 import { analyseCourseGaps, type CourseGaps } from './courseGaps';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 import { analyseQuestionQuality, type QuestionQuality } from './questionQuality';
-import { givesAway, sameFact, type Asked } from './contentChecks';
+import { givesAway, sameFact, sameName, stems, type Asked } from './contentChecks';
+import { acceptedForms, normalise } from './typedAnswer';
 
 export type HealthSeverity = 'problem' | 'warning';
 
@@ -323,6 +324,34 @@ export function analyseCourseHealth(course: Course): CourseHealth {
         .map((d) => `"${d.term}"`)
         .join(', ')}${n > 2 ? ', …' : ''}), so the app shows ${n === 1 ? 'it' : 'them'} to read but never asks you to name the term. Fix can reword ${n === 1 ? 'it' : 'them'}.`,
       items: giveaways.map((d) => d.id),
+    });
+  }
+
+  // An MCQ that asks a term back from its own definition: the typed term
+  // already does that, harder. Its answer is a defined term and most of its
+  // stem is that definition's words (measured on the owner's lectures: about
+  // one MCQ in eight).
+  const defsLive = live.filter((i): i is Extract<StudyItem, { type: 'definition' }> => i.type === 'definition');
+  const byForm = new Map<string, Extract<StudyItem, { type: 'definition' }>>();
+  for (const d of defsLive) for (const f of acceptedForms(d)) if (!byForm.has(f.norm)) byForm.set(f.norm, d);
+  const restating = live.filter((i): i is Extract<StudyItem, { type: 'mcq' }> => {
+    if (i.type !== 'mcq') return false;
+    const answer = i.options?.[i.correct_index] ?? '';
+    const d = byForm.get(normalise(answer)) ?? defsLive.find((x) => sameName(x.term, answer));
+    if (!d) return false;
+    const q = stems(i.question);
+    const words = stems(`${d.definition} ${d.example_sentence ?? ''}`);
+    let shared = 0;
+    for (const w of q) if (words.has(w)) shared++;
+    return q.size > 0 && shared / q.size >= 0.4;
+  });
+  if (restating.length) {
+    const n = restating.length;
+    findings.push({
+      id: 'mcq-restates-definition',
+      severity: 'warning',
+      message: `${n} question${n === 1 ? ' asks' : 's ask'} a term back from its own definition, which the typed term already does. Fix can rewrite ${n === 1 ? 'it' : 'them'} to test what the definition leaves out: an exception, the line between it and its neighbour, or what follows when it fails.`,
+      items: restating.map((m) => m.id),
     });
   }
 
