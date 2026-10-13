@@ -5,8 +5,8 @@ import { sortedSections } from './sortedSections';
 import { recallId } from './scored';
 import { isDueFor, retrievability, reviewUrgency } from './memory';
 import { acceptedForms, normalise } from './typedAnswer';
-import { stepSection } from './learnSteps';
-import { givesAway } from './contentChecks';
+import { mainTerms, stepSection, TERM_BUDGET } from './learnSteps';
+import { givesAway, restatesDefinition } from './contentChecks';
 import { sectionsToLearn } from './nextToLearn';
 import { cardSeconds, DEFAULT_MINUTES, splitSitting } from './today';
 import type { ExamRule } from './exam';
@@ -142,6 +142,13 @@ export type SessionItem = AnyItem & {
   _block?: string;
   /** How many times this card has come back after a miss in this sitting. */
   _again?: number;
+  /**
+   * Learn's second look at a section (lib/learnSteps): cards held back from
+   * the first meeting, a repeat that could not be spaced or one card too
+   * many on one term. Asked at the start of the next sitting, never in the
+   * sitting that teaches the rest of the section.
+   */
+  _second?: boolean;
 };
 
 function toRecall(item: SessionItem & DefinitionItem, pool: readonly DefinitionItem[], original: DefinitionItem): SessionItem {
@@ -294,6 +301,17 @@ function weakestFirst(items: SessionItem[], now: number, progress?: Record<strin
 }
 
 /**
+ * A section's second look (SessionItem._second) is left out of a sitting
+ * that also teaches the rest of that section: those cards were held back so
+ * they come a sitting later. Once the rest is done, the next Learn or Today
+ * opens with them.
+ */
+function withoutSecondLook(list: SessionItem[]): SessionItem[] {
+  const teaching = new Set(list.filter((i) => !i._second).map((i) => i._sectionId));
+  return list.filter((i) => !i._second || !teaching.has(i._sectionId));
+}
+
+/**
  * Flattens a course's sections into one item list for a study mode,
  * porting Session._buildList from the vanilla app 1:1 (including the
  * per-mode filtering/shuffling rules).
@@ -393,6 +411,10 @@ export function buildSessionItems(
     const answer = item.options[item.correct_index];
     const target = answer ? defByForm.get(normalise(answer)) : undefined;
     if (!answer || !target) return null;
+    // Typed, a stem that spells out its answer answers itself, and one that
+    // is the term's own definition is that term's typed card again: both
+    // stay multiple choice (lib/contentChecks).
+    if (givesAway(answer, item.question) || restatesDefinition(item.question, target.definition)) return null;
     return {
       id: item.id,
       type: 'recall',
@@ -438,12 +460,32 @@ export function buildSessionItems(
    * items are not here: new material comes through Learn.
    */
   const dueFirst = (list: SessionItem[]) =>
-    asTyped(asRecall(list))
-      .filter(isGradable)
-      .filter((i) => isDueFor(progress?.[i.id], now, exam?.forItem(i.id) ?? null))
-      .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, exam?.forItem(item.id) ?? null) }))
-      .sort((a, b) => a.u - b.u || a.i - b.i)
-      .map((e) => e.item);
+    perTermCap(
+      asTyped(asRecall(list))
+        .filter(isGradable)
+        .filter((i) => isDueFor(progress?.[i.id], now, exam?.forItem(i.id) ?? null))
+        .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, exam?.forItem(item.id) ?? null) }))
+        .sort((a, b) => a.u - b.u || a.i - b.i)
+        .map((e) => e.item),
+    );
+
+  /**
+   * At most TERM_BUDGET due cards on one term in a sitting, the most urgent;
+   * the rest stay due and lead a later sitting. Every card on a big basic
+   * section comes due together, and a sitting of nothing but feedback loops
+   * asked six ways was the owner's complaint. A card on no term is not capped.
+   */
+  const perTermCap = (due: SessionItem[]) => {
+    const term = mainTerms(due, pool);
+    const seen = new Map<string, number>();
+    return due.filter((item) => {
+      const k = term.get(item);
+      if (!k) return true;
+      const n = (seen.get(k) ?? 0) + 1;
+      seen.set(k, n);
+      return n <= TERM_BUDGET;
+    });
+  };
 
   switch (mode) {
     case 'quiz':
@@ -483,7 +525,7 @@ export function buildSessionItems(
         const next = order[k - 1];
         if (asks.length ? asks.every((i) => { const r = progress?.[i.id]; return !!r && r.got + r.missed > 0; }) : !!next && done.has(next[0])) done.add(block);
       });
-      const left = all.filter((i) => !done.has(i._block!));
+      const left = withoutSecondLook(all.filter((i) => !done.has(i._block!)));
       items = left.length ? left : all;
       break;
     }
@@ -525,6 +567,9 @@ export function buildSessionItems(
             return !isGradable(i) || (!!r && r.got + r.missed > 0);
           };
           if (step.every(answered)) continue;
+          // The second look waits for the next sitting when this one has
+          // already taught the section (see withoutSecondLook).
+          if (step[0]?._second && learn.some((i) => i._sectionId === section.id && !i._second)) continue;
           const cost = step.reduce((n, i) => n + cardSeconds(i, pace), 0);
           // Whole steps only, so the sitting ends where a step does; the
           // first one always fits, or a short sitting would teach nothing.

@@ -2,7 +2,7 @@ import type { Course, StudyItem } from '@/schema/course';
 import { analyseCourseGaps, type CourseGaps } from './courseGaps';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 import { analyseQuestionQuality, type QuestionQuality } from './questionQuality';
-import { givesAway, sameFact, sameName, stems, type Asked } from './contentChecks';
+import { givesAway, restatesDefinition, sameFact, sameName, type Asked } from './contentChecks';
 import { acceptedForms, normalise } from './typedAnswer';
 
 export type HealthSeverity = 'problem' | 'warning';
@@ -339,11 +339,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     const answer = i.options?.[i.correct_index] ?? '';
     const d = byForm.get(normalise(answer)) ?? defsLive.find((x) => sameName(x.term, answer));
     if (!d) return false;
-    const q = stems(i.question);
-    const words = stems(`${d.definition} ${d.example_sentence ?? ''}`);
-    let shared = 0;
-    for (const w of q) if (words.has(w)) shared++;
-    return q.size > 0 && shared / q.size >= 0.4;
+    return restatesDefinition(i.question, `${d.definition} ${d.example_sentence ?? ''}`);
   });
   if (restating.length) {
     const n = restating.length;

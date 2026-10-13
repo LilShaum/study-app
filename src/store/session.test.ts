@@ -438,3 +438,28 @@ describe('session store: a card set aside leaves the sitting', () => {
     expect(s().current()!.id).toBe(first);
   });
 });
+
+describe('session store: one term in two lectures', () => {
+  const lecture = (id: string, definition: string) =>
+    ({
+      schema_version: '1.0',
+      metadata: { title: id },
+      sections: [{ id: 's', title: 'S', items: [{ id: `${id}-eff`, type: 'definition', term: 'Effector', definition }] }],
+    }) as Course;
+  const a = lecture('a', 'The component of a feedback loop that acts on the regulated variable.');
+  const b = lecture('b', 'The component of a regulatory circuit that acts on the regulated variable.');
+
+  it('counts a typed term for the same term in the other lecture, and adopts an earlier record', async () => {
+    const { useCoursesStore } = await import('./courses');
+    useCoursesStore.setState({ courses: { a, b } });
+    useProgressStore.setState({ byCourse: {} });
+    useSessionStore.getState().init('a', a, 'definitions');
+    useSessionStore.getState().record(true);
+    expect(useProgressStore.getState().byCourse.b?.['b-eff~recall']?.got).toBe(1);
+
+    // A record made before the link existed is taken up when the other lecture opens.
+    useProgressStore.setState({ byCourse: { a: { 'a-eff~recall': { got: 2, missed: 0, lastSeen: 5 } } } });
+    useSessionStore.getState().init('b', b, 'definitions');
+    expect(useProgressStore.getState().byCourse.b?.['b-eff~recall']?.got).toBe(2);
+  });
+});

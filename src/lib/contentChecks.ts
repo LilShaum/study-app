@@ -210,3 +210,16 @@ export function sameFact(a: Asked, b: Asked): boolean {
 export function answeredBy(earlier: Asked, later: Asked): boolean {
   return sameFact(earlier, later) || revealsAnswer(earlier, later);
 }
+
+/**
+ * A question that asks a term back from its own definition: most of its
+ * words are the definition's. The typed term already asks that, and harder.
+ */
+export function restatesDefinition(question: string, definition: string): boolean {
+  const q = stems(question);
+  if (!q.size) return false;
+  const d = stems(definition);
+  let shared = 0;
+  for (const w of q) if (d.has(w)) shared++;
+  return shared / q.size >= 0.4;
+}

@@ -264,7 +264,7 @@ describe('buildSessionItems — a question answered right comes back typed', () 
         title: 'One',
         order: 1,
         items: [
-          { id: 'pla2', type: 'definition', term: 'Phospholipase A2', definition: 'releases arachidonic acid' },
+          { id: 'pla2', type: 'definition', term: 'Phospholipase A2', definition: 'The lipase that starts eicosanoid synthesis at the membrane.' },
           { id: 'q1', type: 'mcq', question: 'Which enzyme releases arachidonic acid?', options: ['Phospholipase C', 'Phospholipase A2', 'COX', 'PKC'], correct_index: 1, explanation: 'PLA2 does.' },
           { id: 'q2', type: 'mcq', question: 'Which of these is an enzyme?', options: ['Phospholipase A2', 'b', 'c', 'd'], correct_index: 0 },
           { id: 'q3', type: 'mcq', question: 'Which enzyme is it?', options: ['Not a term', 'b', 'c', 'd'], correct_index: 0 },
@@ -561,5 +561,33 @@ describe('set aside', () => {
     expect(ids).not.toContain('a_mcq');
     expect(ids).not.toContain('a_def~recall');
     expect(ids).toContain('a_card');
+  });
+});
+
+describe('buildSessionItems — an MCQ asked again typed', () => {
+  const c = {
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: [
+      {
+        id: 's',
+        title: 'S',
+        items: [
+          { id: 'd', type: 'definition', term: 'Autocrine signaling', definition: 'Signaling in which the messenger diffuses back to the cell that released it.' },
+          { id: 'g', type: 'definition', term: 'Gluconeogenesis', definition: 'Making new glucose in the liver from non-carbohydrate sources.' },
+          { id: 'q1', type: 'mcq', question: 'A messenger diffuses back to the cell that released it. What kind of signaling is this?', options: ['Autocrine signaling', 'b', 'c', 'd'], correct_index: 0 },
+          { id: 'q2', type: 'mcq', question: 'A liver cell runs glycolysis in reverse to make new glucose. What is this process?', options: ['Gluconeogenesis', 'b', 'c', 'd'], correct_index: 0 },
+          { id: 'q3', type: 'mcq', question: 'Which process does glucagon switch on in the liver during a fast?', options: ['Gluconeogenesis', 'b', 'c', 'd'], correct_index: 0 },
+        ],
+      },
+    ],
+  } as unknown as Course;
+  const progress = { q1: { got: 1, missed: 0, lastSeen: 1 }, q2: { got: 1, missed: 0, lastSeen: 1 }, q3: { got: 1, missed: 0, lastSeen: 1 } };
+
+  it('stays multiple choice when typed it would be the definition again or would spell its answer', () => {
+    const items = buildSessionItems(c, 'quiz', { progress });
+    expect(items.find((i) => i.id === 'q1')?.type).toBe('mcq');
+    expect(items.find((i) => i.id === 'q2')?.type).toBe('mcq');
+    expect(items.find((i) => i.id === 'q3')?.type).toBe('recall');
   });
 });

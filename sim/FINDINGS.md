@@ -10,6 +10,33 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-13 (evening) — Basics no longer fill the sitting: level, two "held" figures softer
+
+**Change.** The owner spent every sitting on feedback loops (effector,
+sensor, variable) and felt they answered the same question in different
+formats. Measured on their lectures: Endocrinology's first 30-minute Today
+was 50 of 79 cards on that one section, and 21 terms are defined in both
+Cell Signaling and Endocrinology. Three changes:
+
+- **A first meeting asks at most three cards on one term** (`TERM_BUDGET`,
+  its typed name first); the rest, with any repeat that could not be
+  spaced, form a **second look** (`_second`) that opens the next sitting
+  instead of padding this one with one-card steps.
+- **Review asks at most three due cards on one term a sitting**
+  (`perTermCap`, by `mainTerms`); the rest stay due.
+- **One term in two lectures is scored once** (lib/linkedTerms: same name,
+  definitions sharing most words), and a session adopts the other
+  lecture's earlier record. Not simulated (one course).
+
+**Result** (3 seeds, against the baseline above). Exam score within ±2
+under both students. "Held ≥0.8" fell 3 to 4 points in steady-30-half-scope,
+-half-scope-told, late-start and crammer-evening, about twice their spread:
+the held-back cards come a day later. Watch it; re-baselined. On the
+owner's lectures, Endocrinology's first sitting went from 50 to 44 cards on
+feedback loops and Cell Signaling's reached its third section.
+
+---
+
 ## 2026-10-13 (later) — A definition read counts as showing its answer: level
 
 **Change.** Read on the owner's real lectures: an MCQ answered with the

@@ -25,6 +25,9 @@ import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 /** Terms taught per step. Four keeps a step to roughly ten cards on a dense section. */
 export const STEP_TERMS = 4;
 
+/** Cards asked on one term at its first meeting, its typed name included; the rest wait a sitting. */
+export const TERM_BUDGET = 3;
+
 /**
  * A term that turns up in more than this share of a section's other items is
  * the section's subject, not a step's. "Receptor" in a section on receptors
@@ -89,6 +92,35 @@ function textOf(item: SessionItem): string {
     default:
       return '';
   }
+}
+
+/**
+ * The term each card is mainly about, by the course's definitions: a typed
+ * term is its own; a question or flashcard is the most specific term it
+ * names (a term that is in most of the cards, the section's subject, only
+ * when it names nothing else). Cards that name no term are left out.
+ */
+export function mainTerms(list: readonly SessionItem[], defs: readonly Def[]): Map<SessionItem, string> {
+  const names = defs.map((d) => namesOf(d));
+  const asks = list.filter((i) => i.type === 'mcq' || i.type === 'flashcard');
+  const texts = new Map<SessionItem, Set<string>>(asks.map((i) => [i, termTokens(textOf(i))]));
+  const uses = (text: Set<string>, n: Set<string>[]) => n.some((t) => coversTokens(text, t));
+  const count = names.map((n) => asks.filter((a) => uses(texts.get(a)!, n)).length);
+  const out = new Map<SessionItem, string>();
+  for (const item of list) {
+    if (item.type === 'recall') {
+      out.set(item, item.target.id);
+      continue;
+    }
+    const text = texts.get(item);
+    if (!text) continue;
+    const hits = defs.map((_, k) => k).filter((k) => uses(text, names[k]));
+    if (!hits.length) continue;
+    // The rarest term it names is the most specific one.
+    const k = hits.reduce((a, b) => (count[b] < count[a] ? b : a));
+    out.set(item, defs[k].id);
+  }
+  return out;
 }
 
 /**
@@ -239,7 +271,10 @@ function apart(steps: SessionItem[][]): SessionItem[][] {
     if (s + 1 === out.length) out.push([]);
     out[s + 1] = [...out[s + 1], ...moved];
   }
-  return out.filter((st) => st.length);
+  // Steps past the original last are the second look.
+  return out
+    .map((st, k) => (k < steps.length ? st : st.map((item) => ({ ...item, _second: true }))))
+    .filter((st) => st.length);
 }
 
 /**
@@ -260,6 +295,7 @@ function joinSmall(steps: SessionItem[][]): SessionItem[][] {
     const after = (steps[k + 1] ?? []).slice(0, MIN_GAP);
     if (
       prev &&
+      !!prev[0]._second === !!step[0]._second &&
       joined!.length <= STEP_CARDS &&
       Math.min(prev.length, step.length) <= SMALL &&
       !tooClose([...before, ...joined!, ...after])
@@ -398,7 +434,26 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   while (defs.length && defSteps < defs.length && Math.max(...built.map((s) => s.length)) > STEP_CARDS) {
     built = place(++defSteps);
   }
+  // A first meeting asks at most TERM_BUDGET cards on one term (its typed
+  // name first, in step order); the rest wait for the second look, the next
+  // sitting. Every card on a basic idea in one go was the owner's "all my
+  // time on feedback loops, the same question in different formats".
+  const perTerm = new Map<number, number>();
+  const held: SessionItem[] = [];
+  built = built.map((step) =>
+    step.filter((item) => {
+      if (phaseOf(item.type) === 'read') return true;
+      const k = item.type === 'recall' ? readAt.get(item.target.id) : termsOf.get(item)?.at(-1);
+      if (k === undefined) return true;
+      const n = (perTerm.get(k) ?? 0) + 1;
+      perTerm.set(k, n);
+      if (n <= TERM_BUDGET) return true;
+      held.push(item);
+      return false;
+    }),
+  );
   built = apart(built);
+  if (held.length) built.push(held.map((item) => ({ ...item, _second: true })));
   // A step still too long (one term with many questions, or the last step of
   // what fits no term) asks the rest in a step of its own, after its reading,
   // so nothing is asked before it is shown.

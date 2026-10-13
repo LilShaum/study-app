@@ -122,20 +122,25 @@ export function RootLayout() {
           next, which is what it still does mid-page, while a book ends with
           the printer's own device. Using the leaf for both left an
           unexplained mark at the foot of every page. */}
-      <footer className={`page-block shrink-0 pb-8 pt-10${wide}`}>
-        <div className="mb-5 flex justify-center text-text-3">
-          <Sprig size={22} />
-        </div>
-        <div className="flex items-center justify-center gap-5">
-          <Link to="/help" className="press press-quiet">
-            Help
-          </Link>
-          <Link to="/sync" className="press press-quiet">
-            Sync
-          </Link>
-          <DarkModeToggle />
-        </div>
-      </footer>
+      {/* Not under a card being studied: it made every question page taller
+          than a phone, so the card slid up under the clock band even when it
+          fitted (the owner, 2026-10-13). Help and the theme are a tap back. */}
+      {!pathname.startsWith('/session/') && (
+        <footer className={`page-block shrink-0 pb-8 pt-10${wide}`}>
+          <div className="mb-5 flex justify-center text-text-3">
+            <Sprig size={22} />
+          </div>
+          <div className="flex items-center justify-center gap-5">
+            <Link to="/help" className="press press-quiet">
+              Help
+            </Link>
+            <Link to="/sync" className="press press-quiet">
+              Sync
+            </Link>
+            <DarkModeToggle />
+          </div>
+        </footer>
+      )}
 
       <Toaster />
       <Onboarding />

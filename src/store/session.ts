@@ -8,6 +8,8 @@ import { useLearnStore } from './learn';
 import { todaySitting } from '@/lib/todaySitting';
 import { measuredPace, useStudyLogStore } from './studyLog';
 import { retrievability } from '@/lib/memory';
+import { twinsOf } from '@/lib/linkedTerms';
+import { useCoursesStore } from './courses';
 
 /**
  * When the current card was put in front of the student. Kept outside the
@@ -137,6 +139,39 @@ const isGradable = (item: SessionItem) =>
   item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall';
 
 /** Ephemeral, in-memory only — an active study session is not persisted. */
+/**
+ * A term never answered in this lecture but answered in another one where it
+ * means the same (lib/linkedTerms) starts from that record, so what the
+ * student studied before answers were mirrored counts too. Only fills gaps:
+ * a record this lecture already has is its own.
+ */
+function adoptLinkedTerms(courseId: string): void {
+  const courses = useCoursesStore.getState().courses;
+  const all = useProgressStore.getState().byCourse;
+  const mine = all[courseId] ?? {};
+  const course = courses[courseId];
+  if (!course) return;
+  const adopted: Record<string, ItemResult> = {};
+  for (const section of course.sections) {
+    for (const item of section.items) {
+      if (item.type !== 'definition') continue;
+      const id = recallId(item.id);
+      if (mine[id]) continue;
+      const from = twinsOf(courses, courseId, id)
+        .map((t) => all[t.courseId]?.[t.id])
+        .filter((r): r is ItemResult => !!r && r.lastSeen != null)
+        .sort((a, b) => (b.lastSeen ?? 0) - (a.lastSeen ?? 0))[0];
+      if (from) {
+        const { confusedWith: _ids, ...record } = from;
+        void _ids;
+        adopted[id] = record;
+      }
+    }
+  }
+  if (Object.keys(adopted).length)
+    useProgressStore.setState((st) => ({ byCourse: { ...st.byCourse, [courseId]: { ...(st.byCourse[courseId] ?? {}), ...adopted } } }));
+}
+
 export const useSessionStore = create<SessionState>()((set, get) => ({
   courseId: null,
   mode: null,
@@ -154,6 +189,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   setPendingKind: (kind) => set({ pendingKind: kind }),
 
   init: (courseId, course, mode, sectionId, resumeItemId, fullDay = false) => {
+    adoptLinkedTerms(courseId);
     const progressStore = useProgressStore.getState();
     const missedIds = mode === 'missed' ? progressStore.missedIds(courseId) : undefined;
     // Weakest-first ranks by the student's own history, so it is the one mode
@@ -264,6 +300,9 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       predicted: retrievability(before, now),
     });
     useProgressStore.getState().recordResult(courseId, item.id, got);
+    // The same term in the student's other lectures (lib/linkedTerms).
+    for (const twin of twinsOf(useCoursesStore.getState().courses, courseId, item.id))
+      useProgressStore.getState().recordResult(twin.courseId, twin.id, got);
     if (!got) get().requeue(index);
   },
 
@@ -324,6 +363,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
         : s.score,
     }));
     useProgressStore.getState().reviseResult(courseId, item.id, got);
+    for (const twin of twinsOf(useCoursesStore.getState().courses, courseId, item.id))
+      useProgressStore.getState().reviseResult(twin.courseId, twin.id, got);
     if (got) get().unqueue(index);
     else get().requeue(index);
   },

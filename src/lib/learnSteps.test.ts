@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
 import { buildSessionItems, recallId, type SessionItem } from './buildSessionItems';
-import { phaseOf, STEP_CARDS, STEP_TERMS } from './learnSteps';
+import { phaseOf, STEP_CARDS, STEP_TERMS, TERM_BUDGET } from './learnSteps';
 
 const TERMS = ['Adenylyl cyclase', 'Gs protein', 'Protein kinase A', 'Phosphodiesterase', 'Calmodulin', 'Inositol trisphosphate', 'Diacylglycerol', 'Protein kinase C'];
 
@@ -18,6 +18,12 @@ function course(items: StudyItem[]): Course {
 const defs = TERMS.map((_, n) => def(n));
 const learn = (items: StudyItem[], progress = {}) => buildSessionItems(course(items), 'learn', { progress });
 const stepOf = (items: SessionItem[], id: string) => items.find((i) => i.id === id)?._step;
+/** Learn over two sittings: the first, then the second look it held back (SessionItem._second). */
+const whole = (items: StudyItem[]) => {
+  const first = learn(items);
+  const answered = Object.fromEntries(first.filter((i) => phaseOf(i.type) !== 'read').map((i) => [i.id, { got: 1, missed: 0, lastSeen: 1 }]));
+  return [...first, ...learn(items, answered).filter((i) => i._second)];
+};
 
 describe('Learn in steps', () => {
   it(`teaches ${STEP_TERMS} terms a step`, () => {
@@ -122,7 +128,7 @@ describe('Learn in steps', () => {
     // Four questions on each term: 8 terms would be 2 steps of 4 terms and
     // 4 + 4 + 16 = 24 cards each.
     const qs = TERMS.flatMap((t, n) => [0, 1, 2, 3].map((k) => mcq(`q${n}-${k}`, `Question ${k} about ${t}?`)));
-    const items = learn([...defs, ...qs]);
+    const items = whole([...defs, ...qs]);
     const steps = items[0]._steps!;
     expect(steps).toBeGreaterThan(2);
     for (let s = 0; s < steps; s++) expect(items.filter((i) => i._step === s).length).toBeLessThanOrEqual(STEP_CARDS);
@@ -136,10 +142,11 @@ describe('Learn in steps', () => {
   it('asks the rest of a long step in the next step, after the reading', () => {
     // One term and fifteen questions on it: nothing smaller to cut it into.
     const qs = Array.from({ length: 15 }, (_, k) => mcq(`q${k}`, `Question ${k} about ${TERMS[0]}?`));
-    const items = learn([defs[0], ...qs]);
-    expect(items[0]._steps).toBe(2);
-    expect(items.filter((i) => i._step === 0).length).toBeLessThanOrEqual(STEP_CARDS);
-    expect(items.filter((i) => i._step === 1).every((i) => i.type === 'mcq')).toBe(true);
+    const items = whole([defs[0], ...qs]);
+    expect(items[0]._steps).toBeGreaterThanOrEqual(2);
+    for (let s = 0; s < items[0]._steps!; s++) expect(items.filter((i) => i._step === s).length).toBeLessThanOrEqual(STEP_CARDS);
+    expect(items.filter((i) => i._step! > 0).every((i) => i.type === 'mcq')).toBe(true);
+    expect(items.filter((i) => i.type === 'mcq')).toHaveLength(15);
   });
 
   it('asks a new flashcard without showing it open first', () => {
@@ -152,7 +159,7 @@ describe('Learn in steps', () => {
 
   it('never asks one fact twice in a step: the second waits for the next step', () => {
     const km = (id: string, question: string): StudyItem => ({ id, type: 'flashcard', front: question, back: '10⁻⁶ to 10⁻¹ M' }) as StudyItem;
-    const items = learn([
+    const items = whole([
       ...defs.slice(0, 4),
       km('a', 'What range do typical Gs protein Km values fall in?'),
       mcq('b', 'Typical Gs protein Km values fall in which range?'),
@@ -162,7 +169,7 @@ describe('Learn in steps', () => {
   });
 
   it('never asks a term straight after a card that printed it', () => {
-    const items = learn([
+    const items = whole([
       { id: 'cs', type: 'definition', term: 'Intercellular communication', definition: 'How tissues talk: a signaling cell sends a message and a target cell responds.' } as StudyItem,
       { id: 'sc', type: 'definition', term: 'Signaling cell', definition: 'The one that sends the message.' } as StudyItem,
     ]);
@@ -184,10 +191,25 @@ describe('Learn in steps', () => {
     expect(learn(defs, progress).length).toBeGreaterThan(0);
   });
 
+  it(`asks at most ${TERM_BUDGET} cards on one term at its first meeting; the rest open the next sitting`, () => {
+    // The owner's feedback loops: every card on a basic idea in one go.
+    const qs = Array.from({ length: 5 }, (_, k) => card(`f${k}`, `Angle ${k} on ${TERMS[0]}: ${['why', 'when', 'where', 'how', 'unlike'][k]}?`));
+    const items = learn([...defs.slice(0, 4), ...qs]);
+    const onTerm = items.filter((i) => i.id === recallId('d0') || i.id.startsWith('f'));
+    expect(onTerm.filter((i) => !i._second)).toHaveLength(TERM_BUDGET);
+    // Learn leaves the second look out of a sitting that teaches the section.
+    expect(items.some((i) => i._second)).toBe(false);
+    // Once the rest is answered, it is what Learn opens with.
+    const progress = Object.fromEntries(items.filter((i) => phaseOf(i.type) !== 'read').map((i) => [i.id, { got: 1, missed: 0, lastSeen: 1 }]));
+    const next = learn([...defs.slice(0, 4), ...qs], progress);
+    expect(next.length).toBeGreaterThan(0);
+    expect(next.every((i) => i._second)).toBe(true);
+  });
+
   it('keeps every part of a long step to the cap', () => {
     // One term and thirty flashcards on it: 1 + 30 asked + 1 typed.
     const cards = Array.from({ length: 30 }, (_, k) => card(`f${k}`, `Card ${k} about ${TERMS[0]}?`));
-    const items = learn([defs[0], ...cards]);
+    const items = whole([defs[0], ...cards]);
     for (let s = 0; s < items[0]._steps!; s++) expect(items.filter((i) => i._step === s).length).toBeLessThanOrEqual(STEP_CARDS);
     expect(items.filter((i) => i.type === 'flashcard')).toHaveLength(30);
   });
