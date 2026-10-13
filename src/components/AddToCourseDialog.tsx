@@ -14,6 +14,7 @@ import { useCoursesStore } from '@/store/courses';
 import { persisted } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
+import { TeacherNotesField } from './TeacherNotesField';
 import { cutMessage, readReply } from '@/lib/readReply';
 
 const STORAGE_FULL =
@@ -54,6 +55,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   useDialog(onClose);
   const [mode, setMode] = useState<AddMode>(initialMode);
   const [pasted, setPasted] = useState('');
+  const [notes, setNotes] = useState(course.metadata.student_notes ?? '');
   const [skipDuplicates, setSkipDuplicates] = useState(true);
   const [copied, setCopied] = useState(false);
   const mergeIntoCourse = useCoursesStore((s) => s.mergeIntoCourse);
@@ -84,12 +86,17 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   const fixes = useMemo(() => planFixes(course), [course]);
 
   const copyPrompt = async () => {
+    // Kept on the lecture, so the next prompt for it carries them too.
+    const kept = notes.trim();
+    if (kept !== (course.metadata.student_notes ?? '')) {
+      updateCourse(courseId, { ...course, metadata: { ...course.metadata, student_notes: kept || undefined } });
+    }
     const prompt =
       mode === 'fix'
-        ? buildFixPrompt(course)
+        ? buildFixPrompt(course, kept)
         : mode === 'practice'
-          ? buildPractisePrompt(course)
-          : buildAddPrompt(course);
+          ? buildPractisePrompt(course, kept)
+          : buildAddPrompt(course, kept);
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
@@ -312,6 +319,9 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                   </ul>
                 </div>
               )}
+            <div className="mb-3">
+              <TeacherNotesField value={notes} onChange={setNotes} />
+            </div>
             <button
               type="button"
               onClick={copyPrompt}

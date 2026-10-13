@@ -2,6 +2,7 @@
 // the prompt this app hands out can never drift from the format the app
 // actually parses. Editing it updates both at once.
 import GENERATOR_SPEC from '../../prompts/generator.md?raw';
+import { teacherNotesBlock } from './teacherNotes';
 import type { Course } from '@/schema/course';
 import { allItems } from '@/schema/fragment';
 import { sortedSections } from './sortedSections';
@@ -21,7 +22,7 @@ import { freshIdPrefix } from './idPrefix';
  * `planMerge` defends against all of that anyway; telling the model up front
  * just means it produces less that has to be thrown away.
  */
-export function buildAddPrompt(course: Course): string {
+export function buildAddPrompt(course: Course, notes = course.metadata.student_notes): string {
   const sections = sortedSections(course);
   const items = allItems(course.sections);
 
@@ -94,7 +95,7 @@ ${covered || '(none yet)'}
 
 ${GENERATOR_SPEC}
 
-════════ MY SOURCE MATERIAL ════════
+${teacherNotesBlock(notes)}════════ MY SOURCE MATERIAL ════════
 
 <<< PASTE YOUR NOTES, SLIDES, OR CHAPTER BELOW THIS LINE >>>
 `;

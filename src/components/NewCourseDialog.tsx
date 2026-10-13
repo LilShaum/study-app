@@ -8,6 +8,7 @@ import { useCoursesStore } from '@/store/courses';
 import { beginWriteCheck, persisted, writesLanded } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
+import { TeacherNotesField } from './TeacherNotesField';
 import { cutMessage, readReply } from '@/lib/readReply';
 
 const STORAGE_FULL =
@@ -46,6 +47,7 @@ function plural(n: number, word: string): string {
 export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   useDialog(onClose);
   const [pasted, setPasted] = useState('');
+  const [notes, setNotes] = useState('');
   const [copied, setCopied] = useState(false);
   const addCourse = useCoursesStore((s) => s.addCourse);
   const importCourse = useCoursesStore((s) => s.importCourse);
@@ -65,7 +67,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   const course = result && 'course' in result ? result.course : null;
 
   const copyPrompt = async () => {
-    const prompt = buildNewCoursePrompt();
+    const prompt = buildNewCoursePrompt(notes);
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
@@ -97,7 +99,15 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
 
   const confirmPaste = () => {
     if (!course) return;
-    const placed = classCode ? { ...course, metadata: { ...course.metadata, course_code: classCode } } : course;
+    const placed = {
+      ...course,
+      metadata: {
+        ...course.metadata,
+        ...(classCode ? { course_code: classCode } : {}),
+        // Written before the prompt was copied; kept for every later prompt.
+        ...(notes.trim() ? { student_notes: notes.trim() } : {}),
+      },
+    };
     const { result: id, ok } = persisted(() => addCourse(placed));
     openCourse(id, course.metadata.title, ok);
   };
@@ -154,6 +164,9 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
               every term, objective and formula in your notes first, so the result covers the
               material rather than skimming it.
             </p>
+            <div className="mb-3">
+              <TeacherNotesField value={notes} onChange={setNotes} />
+            </div>
             <button
               type="button"
               onClick={copyPrompt}

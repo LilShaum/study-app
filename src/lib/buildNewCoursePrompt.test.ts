@@ -32,3 +32,13 @@ describe('buildNewCoursePrompt', () => {
     expect(prompt.length).toBeGreaterThan(8000);
   });
 });
+
+describe('what the teacher said', () => {
+  it('goes into the prompt before the source, only when written', async () => {
+    const { buildNewCoursePrompt } = await import('./buildNewCoursePrompt');
+    const withNotes = buildNewCoursePrompt('The table on slide 14 is just to illustrate.');
+    expect(withNotes).toContain('WHAT MY TEACHER SAID');
+    expect(withNotes.indexOf('slide 14')).toBeLessThan(withNotes.indexOf('MY SOURCE MATERIAL'));
+    expect(buildNewCoursePrompt('   ')).not.toContain('WHAT MY TEACHER SAID');
+  });
+});

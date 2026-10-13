@@ -136,3 +136,15 @@ describe('cards the student set aside as wrong', () => {
     expect(plan.faultyItems.some((f) => f.item.id === 'q2')).toBe(false);
   });
 });
+
+describe('what the teacher said, kept on the lecture', () => {
+  it('goes into Add, More practice and Fix prompts for it', async () => {
+    const { buildAddPrompt } = await import('./buildAddPrompt');
+    const { buildPractisePrompt } = await import('./buildPractisePrompt');
+    const c = course([mcq('q1', 'Fine?')], { student_notes: 'Know the whole pathway on slide 22.' });
+    for (const prompt of [buildAddPrompt(c), buildPractisePrompt(c), buildFixPrompt(c)]) {
+      expect(prompt).toContain('WHAT MY TEACHER SAID');
+      expect(prompt).toContain('slide 22');
+    }
+  });
+});

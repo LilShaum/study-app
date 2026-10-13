@@ -3,6 +3,7 @@ import { sortedSections } from './sortedSections';
 import { freshIdPrefix } from './idPrefix';
 import { analyseCourseHealth } from './courseHealth';
 import { QUALITY_BAR_SPEC } from './generatorSpec';
+import { teacherNotesBlock } from './teacherNotes';
 
 /** Keeps a very large course's prompt inside a sane clipboard paste. */
 const MAX_EXCERPTS = 60;
@@ -131,7 +132,7 @@ export function planFixes(course: Course): FixPromptPlan {
  * silently zero every score the student has built; a correction under the
  * same id keeps that item's history.
  */
-export function buildFixPrompt(course: Course): string {
+export function buildFixPrompt(course: Course, notes = course.metadata.student_notes): string {
   const sections = sortedSections(course);
   const fix = planFixes(course);
 
@@ -279,7 +280,7 @@ checks the result against. Anything you write or correct should meet them.
 
 ${QUALITY_BAR_SPEC}
 
-════════ THE COURSE ════════
+${teacherNotesBlock(notes)}════════ THE COURSE ════════
 
 Title: ${course.metadata.title}${course.metadata.course_code ? `\nCourse code: ${course.metadata.course_code}` : ''}
 

@@ -154,6 +154,8 @@ export const CourseMetadataSchema = z.looseObject({
    */
   exams: z.array(ClassExamSchema).max(20).optional().catch(undefined),
   subject: z.string().optional(),
+  /** What the student's teacher said matters, sent with every prompt for this lecture (lib/teacherNotes). */
+  student_notes: z.string().max(4000).optional().catch(undefined),
   description: z.string().optional(),
   tags: z.array(z.string()).optional(),
   total_items: z.number().optional(),
