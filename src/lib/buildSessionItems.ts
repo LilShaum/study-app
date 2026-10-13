@@ -5,7 +5,7 @@ import { sortedSections } from './sortedSections';
 import { recallId } from './scored';
 import { isDueFor, retrievability, reviewUrgency } from './memory';
 import { acceptedForms, normalise } from './typedAnswer';
-import { mainTerms, stepSection, TERM_BUDGET } from './learnSteps';
+import { stepSection } from './learnSteps';
 import { givesAway, restatesDefinition } from './contentChecks';
 import { sectionsToLearn } from './nextToLearn';
 import { cardSeconds, DEFAULT_MINUTES, splitSitting } from './today';
@@ -460,32 +460,15 @@ export function buildSessionItems(
    * items are not here: new material comes through Learn.
    */
   const dueFirst = (list: SessionItem[]) =>
-    perTermCap(
-      asTyped(asRecall(list))
-        .filter(isGradable)
-        .filter((i) => isDueFor(progress?.[i.id], now, exam?.forItem(i.id) ?? null))
-        .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, exam?.forItem(item.id) ?? null) }))
-        .sort((a, b) => a.u - b.u || a.i - b.i)
-        .map((e) => e.item),
-    );
-
-  /**
-   * At most TERM_BUDGET due cards on one term in a sitting, the most urgent;
-   * the rest stay due and lead a later sitting. Every card on a big basic
-   * section comes due together, and a sitting of nothing but feedback loops
-   * asked six ways was the owner's complaint. A card on no term is not capped.
-   */
-  const perTermCap = (due: SessionItem[]) => {
-    const term = mainTerms(due, pool);
-    const seen = new Map<string, number>();
-    return due.filter((item) => {
-      const k = term.get(item);
-      if (!k) return true;
-      const n = (seen.get(k) ?? 0) + 1;
-      seen.set(k, n);
-      return n <= TERM_BUDGET;
-    });
-  };
+    asTyped(asRecall(list))
+      .filter(isGradable)
+      .filter((i) => isDueFor(progress?.[i.id], now, exam?.forItem(i.id) ?? null))
+      .map((item, i) => ({ item, i, u: reviewUrgency(progress?.[item.id], now, exam?.forItem(item.id) ?? null) }))
+      .sort((a, b) => a.u - b.u || a.i - b.i)
+      .map((e) => e.item);
+  // No cap on due cards per term (tried 2026-10-13): holding a due card back
+  // a day lets it fade past its point, and cost a 20-minute student 3 to 5
+  // points in the simulator (sim/FINDINGS.md). A card is asked when it is due.
 
   switch (mode) {
     case 'quiz':

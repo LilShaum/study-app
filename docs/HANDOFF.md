@@ -61,8 +61,9 @@ mastery. Plan, numbers and results in `docs/proposals/content-quality.md`.
 
 - **Evening, basics over-taught** (the owner: every sitting on feedback
   loops): at most three cards on a term at a first meeting, the rest in a
-  second look that opens the next sitting (`TERM_BUDGET`, `_second`); at
-  most three due cards on a term in a review sitting (`perTermCap`); one
+  second look that opens the next sitting (`TERM_BUDGET`, `_second`); a
+  review cap per term was tried and removed the same night (it held due
+  cards past their point; FINDINGS); one
   term in two lectures scored once (`lib/linkedTerms`, 21 shared between
   Cell Signaling and Endocrinology); MCQs that are a definition again stay
   multiple choice; no colophon on study screens (a card that fits no

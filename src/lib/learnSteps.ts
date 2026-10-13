@@ -95,35 +95,6 @@ function textOf(item: SessionItem): string {
 }
 
 /**
- * The term each card is mainly about, by the course's definitions: a typed
- * term is its own; a question or flashcard is the most specific term it
- * names (a term that is in most of the cards, the section's subject, only
- * when it names nothing else). Cards that name no term are left out.
- */
-export function mainTerms(list: readonly SessionItem[], defs: readonly Def[]): Map<SessionItem, string> {
-  const names = defs.map((d) => namesOf(d));
-  const asks = list.filter((i) => i.type === 'mcq' || i.type === 'flashcard');
-  const texts = new Map<SessionItem, Set<string>>(asks.map((i) => [i, termTokens(textOf(i))]));
-  const uses = (text: Set<string>, n: Set<string>[]) => n.some((t) => coversTokens(text, t));
-  const count = names.map((n) => asks.filter((a) => uses(texts.get(a)!, n)).length);
-  const out = new Map<SessionItem, string>();
-  for (const item of list) {
-    if (item.type === 'recall') {
-      out.set(item, item.target.id);
-      continue;
-    }
-    const text = texts.get(item);
-    if (!text) continue;
-    const hits = defs.map((_, k) => k).filter((k) => uses(text, names[k]));
-    if (!hits.length) continue;
-    // The rarest term it names is the most specific one.
-    const k = hits.reduce((a, b) => (count[b] < count[a] ? b : a));
-    out.set(item, defs[k].id);
-  }
-  return out;
-}
-
-/**
  * Two excerpts are the same passage when most of the shorter one's words are
  * in the longer. Short words ("the", "and", "is") say nothing about a passage.
  */

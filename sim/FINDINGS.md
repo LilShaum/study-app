@@ -10,6 +10,28 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-13 (night) — The review cap is taken out: it undid spaced review
+
+**Checked** because the owner asked whether the day's changes had undone
+the earlier, evidence-based scheduling. Each change had looked level
+alone, but the baselines drifted the same way in the everyday scenarios.
+Same five seeds for each (exam score / held ≥0.8):
+
+| | steady-30 | steady-45 | busy-20 | half-scope | 30-harsh | 45-harsh |
+|---|---|---|---|---|---|---|
+| Before 2026-10-13 | 60 / 48 | 84 / 71 | 30 / 19 | 87 / 78 | 19 / 3 | 24 / 4 |
+| With the review cap | 60 / 46 | 84 / 72 | 27 / 16 | 85 / 74 | 19 / 2 | 24 / 4 |
+| Without it | 60 / 47 | 84 / 70 | 32 / 21 | 85 / 74 | 18 / 3 | 24 / 4 |
+
+**Result.** The per-term cap on due cards (`perTermCap`) held due cards
+back a day, past their point: it cost busy-20 3 to 5 points. Removed. The
+first-meeting budget (`TERM_BUDGET`) stays, with a cost to watch:
+half-scope 87 → 85 and held 78 → 74 against before (about twice the
+spread), level elsewhere. Lesson: a cumulative check against the last
+known-good code, on equal seeds, after a day of "level" changes.
+
+---
+
 ## 2026-10-13 (evening) — Basics no longer fill the sitting: level, two "held" figures softer
 
 **Change.** The owner spent every sitting on feedback loops (effector,
