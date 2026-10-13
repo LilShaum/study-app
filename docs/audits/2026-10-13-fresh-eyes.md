@@ -8,10 +8,9 @@ what was done, shipped and left open is below. Most important first.
 ### 1. Review asked a card right after one that gave its answer
 
 **What a student met.** In Review and in Today's review part, a card often
-came one to three cards after a card that printed its answer: "Membrane
-receptor-enzyme used by atrial natriuretic peptide" (type the term), then
-"type the term: atrial natriuretic peptide"; "Name the two sections of the
-pituitary gland", then "type: pituitary gland". Learn has had a spacing rule
+came one to three cards after a card that printed its answer: a typed
+term whose definition names another term, then that other term typed. (The
+owner's own cards are left out of this public repo.) Learn has had a spacing rule
 for this since 2026-10-13 (`apart`, `MIN_GAP` = 5). Review had none: due cards
 sorted by urgency put a term's cards side by side.
 

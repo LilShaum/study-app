@@ -15,18 +15,18 @@ const DAY = 86_400_000;
 const NOW = new Date(2026, 9, 13, 19).getTime();
 
 const TERMS: [string, string][] = [
-  ['Insulin', 'Lowers blood glucose after a meal'],
-  ['Glucagon', 'Raises blood glucose between meals'],
-  ['Somatostatin', 'Made by delta cells of the islet'],
-  ['Oxytocin', 'Drives uterine contraction during childbirth'],
-  ['Prolactin', 'Stimulates milk production in the breast'],
-  ['Dopamine', 'Inhibits prolactin release from the anterior pituitary'],
-  ['Cortisol', 'Steroid released by the adrenal cortex under stress'],
+  ['Phloem', 'Carries sugars from the leaves to the rest of the plant'],
+  ['Cuticle', 'Waxy layer that cuts water loss from the leaf surface'],
+  ['Root hair', 'Thin outgrowth that takes up most of the water from soil'],
+  ['Casparian strip', 'Waxy band that forces water through the endodermis cells'],
+  ['Guttation', 'Droplets pushed out at leaf edges overnight'],
+  ['Wilting', 'Loss of firmness when cells lose more water than they take in'],
+  ['Turgor', 'Pressure of the cell contents against the wall'],
 ];
 const items: StudyItem[] = [
-  { id: 'rgc', type: 'definition', term: 'Receptor guanylate cyclase', definition: 'Membrane receptor-enzyme used by atrial natriuretic peptide' },
+  { id: 'rgc', type: 'definition', term: 'Guard cell', definition: 'One of the pair of cells that open and close a stoma' },
   // The typed term just asked is this card's answer.
-  { id: 'anp', type: 'flashcard', front: 'Through which type of receptor does atrial natriuretic peptide act?', back: 'Receptor guanylate cyclase.' },
+  { id: 'anp', type: 'flashcard', front: 'Which cells open and close a stoma?', back: 'Guard cells.' },
   ...TERMS.map(([term, definition], n) => ({ id: `d${n}`, type: 'definition', term, definition })),
 ] as StudyItem[];
 const course = { schema_version: '1.0', metadata: { title: 'T' }, sections: [{ id: 's', title: 'S', items }] } as Course;

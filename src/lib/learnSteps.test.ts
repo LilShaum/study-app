@@ -174,8 +174,8 @@ describe('Learn in steps', () => {
 
   it('never asks a term straight after a card that printed it', () => {
     const items = whole([
-      { id: 'cs', type: 'definition', term: 'Intercellular communication', definition: 'How tissues talk: a signaling cell sends a message and a target cell responds.' } as StudyItem,
-      { id: 'sc', type: 'definition', term: 'Signaling cell', definition: 'The one that sends the message.' } as StudyItem,
+      { id: 'cs', type: 'definition', term: 'Leaf gas exchange', definition: 'How a leaf trades gases: each pore is opened and closed by a guard cell beside it.' } as StudyItem,
+      { id: 'sc', type: 'definition', term: 'Guard cell', definition: 'The one that opens and shuts a pore.' } as StudyItem,
     ]);
     expect(stepOf(items, recallId('sc'))).toBeGreaterThan(stepOf(items, recallId('cs'))!);
   });

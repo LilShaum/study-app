@@ -116,8 +116,8 @@ definition item: writing one would mean supplying a meaning from your own
 knowledge, and obligation 1 wins that conflict. Listing it keeps it visible;
 the app will ask whether it deserved more.
 
-The parts of one mechanism (sensor, effector, regulated variable) are the
-exception to "no exceptions": see "Parts of one system are taught together"
+The parts of one mechanism (the parts of a feedback loop, the cells of a
+stoma) are the exception to "no exceptions": see "Parts of one system are taught together"
 in the Quality bar.
 
 Not every explained term makes a good `definition`, because the app asks for
@@ -279,8 +279,8 @@ covers the wrong answers is ambiguous about which slot is which.)
 The app turns every definition into a question — it shows the definition and
 the student types the term — so write the `definition` so that it identifies
 its term without naming it: not the term, and not a word from its family
-("a signaling cell sends a signal" gives away *cell signaling*; "the cell
-that sends the message" does not). The app checks this, and a definition
+("pressure in the root that pushes water up" gives away *root pressure*;
+"the push from below that drives sap up the stem" does not). The app checks this, and a definition
 that spells out its own term is shown to read but never asked. Fill `also_known_as` with every other name
 **the source itself uses** for the thing (an abbreviation, a synonym, the
 full form of an acronym). That list is what a typed answer is accepted
@@ -358,7 +358,7 @@ Never write "one of every type because it can".
 |---|---|---|
 | **Key** | A stated objective; flagged, repeated or emphasised; a formula, mechanism or comparison that later content builds on; what the student says their teacher stressed | 3 to 5, **each from a different side** (list below) |
 | **Supporting** | Explained once and used once | 1 or 2 |
-| **Background** | Taught in passing, or common ground the course repeats in every lecture (what homeostasis is, what a receptor is) | The definition only, or one card |
+| **Background** | Taught in passing, or common ground the course repeats in every lecture (what a cell membrane is, what diffusion is) | The definition only, or one card |
 | **Illustration detail** | A value, name or label that only belongs to how one worked example, figure or table was drawn (not a pathway, step or value the lecture teaches; see part 3) | None, unless the source or the teacher notes say it must be known |
 
 The sides of an idea, one card each:
@@ -374,10 +374,9 @@ Two cards on one idea must differ in **what the student has to do**, not
 only in their words.
 
 **Parts of one system are taught together.** When the source names the
-parts of one mechanism (sensor, effector and regulated variable in a
-feedback loop; the steps of a pathway), do not write one definition per
-part in the same sentence pattern ("the component of a feedback loop
-that…" three times). Students then answer the same question three times.
+parts of one mechanism (the parts of a feedback loop; the cells around a
+stoma; the steps of a pathway), do not write one definition per part in
+the same sentence pattern ("the part of the loop that…" three times). Students then answer the same question three times.
 Write a definition only for a part that is a real term the course uses on
 its own. Cover the system with one flashcard on how the parts connect and
 one MCQ on what happens when one part fails.
@@ -420,14 +419,14 @@ When unsure, ask: is this detail something a student is expected to
 know, or only the vehicle the lecture used to show something else? Know
 it: test it. Vehicle: test what it showed.
 
-| | Example (from real generated lectures) | Why |
+| | Example | Why |
 |---|---|---|
-| Restates a definition. Do not write | "A chemical diffuses back to the cell that released it. What kind of signaling is this?" | The typed term already asks exactly this |
-| Trivia. Do not write | "What protein name is given in brackets alongside connexin in the gap junction figure?" | Tests the figure's typesetting, not gap junctions |
-| Lookup. Use sparingly | "To which class of chemical messenger does thyroxine belong?" | One fact, recognised; fine once, not as the pattern |
-| Nuance. Write these | "Most amine messengers are hydrophilic. Which amines are not, and so where are their receptors?" | The exception, and what follows from it |
-| Nuance. Write these | "A drug blocks protein kinase G. What happens to ANP signaling?" | A consequence the student must work out |
-| Taught pathway. Write these | "Which steroid is the immediate precursor of aldosterone?" and "A drug blocks cyclooxygenase. Which eicosanoids can still be made from arachidonic acid?" | The pathway is the content: its order, its enzymes, and what follows when a step is blocked |
+| Restates a definition. Do not write | "Water evaporating from the leaves creates an upward pull on it. What is this called?" | The typed term already asks exactly this |
+| Trivia. Do not write | "In the stem cross-section figure, which tissue is shaded blue?" | Tests how the figure was drawn, not the stem |
+| Lookup. Use sparingly | "Which tissue carries sugars around the plant?" | One fact, recognised; fine once, not as the pattern |
+| Nuance. Write these | "Most of a leaf's water escapes through its stomata. When they close at night, how does some still escape, and what limits it?" | The exception, and what follows from it |
+| Nuance. Write these | "An air bubble forms in one xylem vessel. What happens to the water column in it, and why does the plant still get water?" | A consequence the student must work out |
+| Taught pathway. Write these | "Which cell layer does water cross after the root cortex and before the xylem?" and "Without the Casparian strip, which route could dissolved salts take into the xylem?" | The pathway is the content: its order, its parts, and what follows when a step is missing |
 
 **Difficulty means something, and the mix is counted.**
 
@@ -445,13 +444,14 @@ Every key idea gets at least one medium or hard MCQ.
    a flashcard back or an MCQ stem, or one card's front as another's stem.
    Write each card fresh from the idea. Reused wording is learned as wording.
 2. **No card answers another.** A definition that names two other terms the
-   student must type ("a signaling cell sends a signal and a target cell
-   responds") has answered both. Describe the other parts by their role
-   ("the cell that sends it") unless the relationship is the point. Keep
+   student must type ("water enters at the root hair and leaves through
+   the guard cells") has answered both. Describe the other parts by their
+   role ("the cells that open the pore") unless the relationship is the
+   point. Keep
    each flashcard's back and each explanation to its own card's fact.
 3. **Nothing a stranger could answer.** If someone who never took the course
    could answer from everyday English or from the question's own words ("the
-   cell that sends a signal is called the…"), the card tests nothing. Ask
+   cell that guards the pore is called the…"), the card tests nothing. Ask
    what is specific to the subject: what it does, what it is not, what
    happens when it fails.
 4. **A definition never contains its own term** or a word of its family
@@ -499,8 +499,8 @@ distractors. The app now checks this and will report it.
 
 - Keep the four options within roughly the same length. If the correct one
   needs a qualifier to be true, give the distractors one too.
-- No option carries a parenthetical gloss the others lack — "Connexins
-  (protein complexes) from the two adjacent cells" hands over the answer.
+- No option carries a parenthetical gloss the others lack — "Guard cells
+  (the paired cells around each pore)" hands over the answer.
 - Never let one option run past twice the length of the others.
 - Vary which position is correct, and do not make "the longest", "the most
   detailed" or "the most hedged" option a reliable signal.
@@ -526,22 +526,22 @@ table. The app reports sections where nothing goes beyond recall.
 **Ask about the subject, never about the document.** Two failures here, and
 both produce items that are perfectly grounded and still worthless:
 
-- A stem that cites the source — "according to the notes", "on the Chemical
-  Messengers slide", "which two are listed together on one line", or the
+- A stem that cites the source — "according to the notes", "on the Water
+  Transport slide", "which two share a row of the table", or the
   softer "shown", "listed for", "given in the lecture". The cue will not
   exist in the exam, and the last of those tests typesetting.
 - A stem built by bolting an interrogative onto the source sentence —
-  "Hydrophilic messengers travel to the target cell how?" from a source
-  reading "Travel to target cell dissolved in extracellular fluid". Nothing
+  "Sap travels up the stem how?" from a source reading "Travels up stem,
+  pulled by evaporation from the leaves". Nothing
   is factually wrong here, and one such item is fine; the problem is a whole
   course of them, because the student never has to do anything with a fact
   except recognise it.
 
 Restating is not banned — a definition has to use its own term's words. The
 rule is that a fact stated as a rule should also be **asked as a rule**. The
-same slide says hydrophilic messengers bind transmembrane receptors, so
-besides recalling that, ask it: given a new messenger that is hydrophilic,
-where is its receptor? Same passage, same grounding — nothing added that the
+same slide says water moves from high to low water potential, so besides
+recalling that, ask it: if the soil is saltier than the root's cells, which
+way does water move? Same passage, same grounding — nothing added that the
 slide does not say — and now the student has to use it. Reuse the source's
 terms; don't reuse its sentences. The app
 measures this overlap across the whole course and reports the share.

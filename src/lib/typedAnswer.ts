@@ -229,8 +229,8 @@ export const BLANK = '_____';
 /**
  * The definition with every name of its own term blanked out.
  *
- * A definition written to be read often uses its own term — "Glycine: an
- * amino acid messenger; glycine receptors are ligand-gated ion channels" —
+ * A definition written to be read often uses its own term — "Xylem: the
+ * water-carrying tissue; xylem vessels run from root to leaf" —
  * and asked as a question it would then print the answer. One in twelve
  * definitions in a real generated course did. Every accepted form is blanked,
  * longest first so "Arginine vasopressin" goes before "vasopressin" can split

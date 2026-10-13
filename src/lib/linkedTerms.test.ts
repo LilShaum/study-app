@@ -6,9 +6,9 @@ const def = (id: string, term: string, definition: string) => ({ id, type: 'defi
 const course = (items: StudyItem[]) => ({ schema_version: '1.0', metadata: { title: 'T' }, sections: [{ id: 's', title: 'S', items }] }) as Course;
 
 describe('one term in two lectures', () => {
-  const a = def('a1', 'Effector', 'The component of a feedback loop that acts on the regulated variable.');
-  const b = def('b1', 'Effectors', 'The component of a regulatory circuit that acts on the regulated variable, receiving feedback.');
-  const c = def('c1', 'Effector', 'In exercise science, the muscle that carries out a movement.');
+  const a = def('a1', 'Stoma', 'A pore in the leaf surface, opened and closed by guard cells, through which gases pass.');
+  const b = def('b1', 'Stomas', 'A pore in the surface of a leaf through which gases pass, opened and closed by its guard cells.');
+  const c = def('c1', 'Stoma', 'In surgery, an opening made in the abdominal wall.');
 
   it('is the same name and much the same meaning', () => {
     expect(sameTerm(a, b)).toBe(true);

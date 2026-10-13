@@ -265,7 +265,7 @@ describe('buildSessionItems — a question answered right comes back typed', () 
         order: 1,
         items: [
           { id: 'pla2', type: 'definition', term: 'Phospholipase A2', definition: 'The lipase that starts eicosanoid synthesis at the membrane.' },
-          { id: 'q1', type: 'mcq', question: 'Which enzyme releases arachidonic acid?', options: ['Phospholipase C', 'Phospholipase A2', 'COX', 'PKC'], correct_index: 1, explanation: 'PLA2 does.' },
+          { id: 'q1', type: 'mcq', question: 'Which tissue moves water from the roots to the leaves?', options: ['Phloem', 'Phospholipase A2', 'Cortex', 'Epidermis'], correct_index: 1, explanation: 'It does.' },
           { id: 'q2', type: 'mcq', question: 'Which of these is an enzyme?', options: ['Phospholipase A2', 'b', 'c', 'd'], correct_index: 0 },
           { id: 'q3', type: 'mcq', question: 'Which enzyme is it?', options: ['Not a term', 'b', 'c', 'd'], correct_index: 0 },
         ],
@@ -276,7 +276,7 @@ describe('buildSessionItems — a question answered right comes back typed', () 
 
   it('asks it without its options once it has been answered right', () => {
     const [q1] = buildSessionItems(qc, 'quiz', { progress: { q1: right } });
-    expect(q1).toMatchObject({ id: 'q1', type: 'recall', question: 'Which enzyme releases arachidonic acid?', answer: 'Phospholipase A2' });
+    expect(q1).toMatchObject({ id: 'q1', type: 'recall', question: 'Which tissue moves water from the roots to the leaves?', answer: 'Phospholipase A2' });
   });
 
   it('keeps it multiple choice until then', () => {
@@ -573,9 +573,9 @@ describe('buildSessionItems — an MCQ asked again typed', () => {
         id: 's',
         title: 'S',
         items: [
-          { id: 'd', type: 'definition', term: 'Autocrine signaling', definition: 'Signaling in which the messenger diffuses back to the cell that released it.' },
+          { id: 'd', type: 'definition', term: 'Transpiration pull', definition: 'The upward pull on water created as it evaporates from the leaves.' },
           { id: 'g', type: 'definition', term: 'Gluconeogenesis', definition: 'Making new glucose in the liver from non-carbohydrate sources.' },
-          { id: 'q1', type: 'mcq', question: 'A messenger diffuses back to the cell that released it. What kind of signaling is this?', options: ['Autocrine signaling', 'b', 'c', 'd'], correct_index: 0 },
+          { id: 'q1', type: 'mcq', question: 'Water evaporating from the leaves creates an upward pull on it. What is this called?', options: ['Transpiration pull', 'b', 'c', 'd'], correct_index: 0 },
           { id: 'q2', type: 'mcq', question: 'A liver cell runs glycolysis in reverse to make new glucose. What is this process?', options: ['Gluconeogenesis', 'b', 'c', 'd'], correct_index: 0 },
           { id: 'q3', type: 'mcq', question: 'Which process does glucagon switch on in the liver during a fast?', options: ['Gluconeogenesis', 'b', 'c', 'd'], correct_index: 0 },
         ],

@@ -179,8 +179,8 @@ describe('analyseCourseHealth — coverage against the declared inventory', () =
 
 describe('analyseCourseHealth — what a sitting would ask', () => {
   it('lists a definition that spells out its own term', () => {
-    const giveaway = { id: 'd1', type: 'definition', term: 'Signaling cell', definition: 'The cell that sends a signal.' } as StudyItem;
-    const fine = { id: 'd2', type: 'definition', term: 'Target cell', definition: 'The one that receives a chemical message and responds.' } as StudyItem;
+    const giveaway = { id: 'd1', type: 'definition', term: 'Guard cell', definition: 'The cell that guards a stoma.' } as StudyItem;
+    const fine = { id: 'd2', type: 'definition', term: 'Stoma', definition: 'A pore in the leaf surface through which gases pass.' } as StudyItem;
     expect(find(analyseCourseHealth(course([giveaway, fine])), 'gives-away')?.items).toEqual(['d1']);
   });
 
@@ -228,9 +228,9 @@ describe('analyseCourseHealth — key terms asked one way', () => {
 describe('analyseCourseHealth — an MCQ that asks a term back from its definition', () => {
   it('is listed; one on what the definition leaves out is not', () => {
     const items = [
-      { id: 'd1', type: 'definition', term: 'Autocrine signaling', definition: 'Short-distance indirect signaling in which the messenger diffuses back to the cell that released it.' },
-      mcq('q1', 'A messenger diffuses back to the cell that released it. What kind of signaling is this?', { options: ['Autocrine', 'Paracrine', 'Endocrine', 'Neural'] }),
-      mcq('q2', 'Why can thyroid hormones cross the membrane when most amines cannot?', { options: ['They are hydrophobic', 'b', 'c', 'd'] }),
+      { id: 'd1', type: 'definition', term: 'Transpiration pull', definition: 'The upward pull on water created as it evaporates from the leaves.' },
+      mcq('q1', 'Water evaporating from the leaves creates an upward pull on it. What is this called?', { options: ['Transpiration pull', 'Root pressure', 'Capillarity', 'Guttation'] }),
+      mcq('q2', 'Why does transpiration pull fail in a plant whose xylem has an air bubble?', { options: ['The water column breaks', 'b', 'c', 'd'] }),
     ] as StudyItem[];
     expect(find(analyseCourseHealth(course(items)), 'mcq-restates-definition')?.items).toEqual(['q1']);
   });

@@ -165,7 +165,7 @@ export function restatement(item: StudyItem): number {
  * ------------------------------------------------------------------ */
 
 /**
- * "According to the notes", "on the Chemical Messengers slide", "listed
+ * "According to the notes", "on the Water Transport slide", "listed
  * together on one line".
  *
  * These are grounded — they are about something really in the source — and

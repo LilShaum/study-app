@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { answeredBy, givesAway, sameFact } from './contentChecks';
 
 describe('a definition that gives its term away', () => {
-  it('catches the owner’s examples', () => {
-    expect(givesAway('Cell signaling', 'The way cells communicate with other cells: a signaling cell sends a signal (usually a chemical) and a target cell receives the signal and responds to it.')).toBe(true);
-    expect(givesAway('Signaling cell', 'The cell that sends a signal (usually a chemical) in cell signaling.')).toBe(true);
+  it('catches a definition that spells out its term', () => {
+    expect(givesAway('Root pressure', 'Pressure from the root that pushes water up the xylem from below.')).toBe(true);
+    expect(givesAway('Guard cell', 'The cell on each side of a stoma that guards it by changing shape.')).toBe(true);
   });
   it('lets a definition that does not name it through', () => {
-    expect(givesAway('Target cell', 'The cell that receives a chemical message and responds to it.')).toBe(false);
+    expect(givesAway('Stoma', 'A pore in the leaf surface through which gases pass.')).toBe(false);
     expect(givesAway('Michaelis constant (Km)', 'The substrate concentration at which the reaction runs at half its maximum rate.')).toBe(false);
   });
 });
@@ -20,7 +20,7 @@ describe('two cards that ask the same fact', () => {
         { question: 'Typical Km values for enzymes fall in which range?', answer: 'Micromolar to millimolar' },
       ),
     ).toBe(true);
-    expect(sameFact({ question: 'Name the cell that sends the signal.', answer: 'Signaling cell' }, { question: 'The cell that sends a signal.', answer: 'signaling cell' })).toBe(true);
+    expect(sameFact({ question: 'Name the cell that opens and closes a stoma.', answer: 'Guard cell' }, { question: 'The cell that opens and closes a stoma.', answer: 'guard cell' })).toBe(true);
   });
   it('keeps different facts apart', () => {
     expect(
@@ -39,12 +39,12 @@ describe('different facts about one topic', () => {
   it('one card printing a later one’s answer answers it, one way round only', () => {
     expect(
       answeredBy(
-        { question: 'The way cells communicate: a signaling cell sends a signal and a target cell responds.', answer: 'Cell signaling' },
-        { question: 'The cell that receives the signal and responds to it.', answer: 'Target cell' },
+        { question: 'How leaves lose water: it evaporates through each stoma, which a guard cell opens and closes.', answer: 'Transpiration' },
+        { question: 'The cell that opens and closes a stoma.', answer: 'Guard cell' },
       ),
     ).toBe(true);
     // Asked for the term, then a question that names it: nothing given away.
-    expect(answeredBy({ question: 'The cell that receives a signal.', answer: 'Target cell' }, { question: 'What does a target cell carry?', answer: 'Receptors' })).toBe(false);
+    expect(answeredBy({ question: 'The cell that opens and closes a stoma.', answer: 'Guard cell' }, { question: 'What does a guard cell do when the plant is short of water?', answer: 'Shuts its pore' })).toBe(false);
   });
 });
 
@@ -56,7 +56,7 @@ describe('answers that only look alike', () => {
     expect(sameFact({ question: 'What happens to Km with a competitive inhibitor?', answer: 'Increases' }, { question: 'What does raising temperature do to the rate below the optimum?', answer: 'Increases' })).toBe(false);
   });
   it('a term asked typed and as a question is one fact', () => {
-    expect(sameFact({ question: 'The cell that receives a signal and responds to it.', answer: 'Target cell' }, { question: 'Which cell carries the receptor that a hormone binds?', answer: 'Target cell' })).toBe(true);
+    expect(sameFact({ question: 'The cell that opens and closes a stoma.', answer: 'Guard cell' }, { question: 'Which cell swells with water to open a pore in the leaf?', answer: 'Guard cell' })).toBe(true);
   });
 });
 
@@ -97,16 +97,16 @@ describe('the term just typed, asked again as a question', () => {
   it('is one fact', () => {
     expect(
       sameFact(
-        { question: 'Short-distance indirect signaling in which the messenger diffuses back to the cell that released it.', answer: 'Autocrine signaling' },
-        { question: 'A chemical released by a cell diffuses a short distance and binds receptors on the same cell. What kind of signaling is this?', answer: 'Autocrine' },
+        { question: 'The upward pull on water created as it evaporates from the leaves.', answer: 'Transpiration pull' },
+        { question: 'Water evaporates from a leaf and draws the column below it upward. What is this called?', answer: 'Transpiration' },
       ),
     ).toBe(true);
   });
   it('a flashcard whose answer rewords the definition before it is answered by it', () => {
     expect(
       answeredBy(
-        { question: 'Regulation of physiological processes so that each stays within a range, held there by feedback loops.', answer: 'Homeostasis' },
-        { question: 'How are physiological processes regulated?', answer: 'Within ranges, by feedback loops.' },
+        { question: 'The upward movement of water in a plant, driven by evaporation from the leaves and held together by cohesion between water molecules.', answer: 'Transpiration stream' },
+        { question: 'What moves water up a plant?', answer: 'Evaporation at the leaves, and cohesion between the water molecules.' },
       ),
     ).toBe(true);
   });

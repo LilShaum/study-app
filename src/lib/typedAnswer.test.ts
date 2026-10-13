@@ -149,8 +149,8 @@ describe('gradeTyped', () => {
 
 describe('maskTerm', () => {
   it('blanks the term where the definition names it, in any case', () => {
-    expect(maskTerm('An amino acid messenger; glycine receptors are ligand-gated.', t('Glycine'))).toBe(
-      `An amino acid messenger; ${BLANK} receptors are ligand-gated.`,
+    expect(maskTerm('The water-carrying tissue; xylem vessels are dead at maturity.', t('Xylem'))).toBe(
+      `The water-carrying tissue; ${BLANK} vessels are dead at maturity.`,
     );
   });
 
@@ -161,8 +161,8 @@ describe('maskTerm', () => {
   });
 
   it('takes a plural with it, and matches a hyphen for an en dash', () => {
-    expect(maskTerm('Half of a gap junction; two hemichannels meet.', t('Hemichannel'))).toBe(
-      `Half of a gap junction; two ${BLANK} meet.`,
+    expect(maskTerm('One of a pair around a pore; two guard cells meet.', t('Guard cell'))).toBe(
+      `One of a pair around a pore; two ${BLANK} meet.`,
     );
     expect(maskTerm('Solved by michaelis-menten kinetics.', t('Michaelis–Menten'))).toBe(
       `Solved by ${BLANK} kinetics.`,

@@ -352,8 +352,8 @@ export function buildSessionItems(
     s.items.filter((i): i is DefinitionItem => i.type === 'definition'),
   );
   const originals = new Map(pool.map((d) => [d.id, d]));
-  // A definition that spells out its own term ("the way cells communicate:
-  // a signaling cell sends a signal" for cell signaling) is still read, but
+  // A definition that spells out its own term ("pressure in the root that
+  // pushes water up" for root pressure) is still read, but
   // never asked as "name the term": the card would answer itself
   // (lib/contentChecks; scored.ts leaves it out of every count the same way).
   const recallFor = (item: SessionItem): SessionItem | null =>

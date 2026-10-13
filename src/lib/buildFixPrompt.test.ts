@@ -61,7 +61,7 @@ describe('planFixes', () => {
   it('asks for a definition that spells out its term to be reworded, and a repeat from a new side', () => {
     const plan = planFixes(
       course([
-        { id: 'd1', type: 'definition', term: 'Signaling cell', definition: 'The cell that sends a signal.' } as StudyItem,
+        { id: 'd1', type: 'definition', term: 'Guard cell', definition: 'The cell that guards a stoma.' } as StudyItem,
         { id: 'f1', type: 'flashcard', front: 'Why does feedback inhibition usually target the committed step?', back: 'It wastes nothing.' } as StudyItem,
         { id: 'f2', type: 'flashcard', front: 'Why is the committed step the usual target of feedback inhibition?', back: 'It wastes no intermediates.' } as StudyItem,
       ]),
@@ -69,7 +69,7 @@ describe('planFixes', () => {
     expect(plan.faultyItems.find((f) => f.item.id === 'd1')?.faults).toEqual(['gives-away']);
     expect(plan.faultyItems.find((f) => f.item.id === 'f2')?.faults).toEqual(['same-fact']);
     expect(plan.faultyItems.find((f) => f.item.id === 'f1')).toBeUndefined();
-    const text = buildFixPrompt(course([{ id: 'd1', type: 'definition', term: 'Signaling cell', definition: 'The cell that sends a signal.' } as StudyItem]));
+    const text = buildFixPrompt(course([{ id: 'd1', type: 'definition', term: 'Guard cell', definition: 'The cell that guards a stoma.' } as StudyItem]));
     expect(text).toMatch(/without the term's words/);
   });
 

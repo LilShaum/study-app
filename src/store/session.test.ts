@@ -444,10 +444,10 @@ describe('session store: one term in two lectures', () => {
     ({
       schema_version: '1.0',
       metadata: { title: id },
-      sections: [{ id: 's', title: 'S', items: [{ id: `${id}-eff`, type: 'definition', term: 'Effector', definition }] }],
+      sections: [{ id: 's', title: 'S', items: [{ id: `${id}-eff`, type: 'definition', term: 'Stoma', definition }] }],
     }) as Course;
-  const a = lecture('a', 'The component of a feedback loop that acts on the regulated variable.');
-  const b = lecture('b', 'The component of a regulatory circuit that acts on the regulated variable.');
+  const a = lecture('a', 'A pore in the leaf surface, opened and closed by guard cells, through which gases pass.');
+  const b = lecture('b', 'A pore in the surface of a leaf through which gases pass, opened by guard cells.');
 
   it('counts a typed term for the same term in the other lecture, and adopts an earlier record', async () => {
     const { useCoursesStore } = await import('./courses');

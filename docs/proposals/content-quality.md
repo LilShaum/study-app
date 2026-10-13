@@ -4,9 +4,9 @@ From the owner's first real study of a biology lecture (2026-10-13). What was
 measured on the test lecture before any change:
 
 - **7 of 54 definitions give their term away.** Every word of the term is in
-  its own definition ("The way cells communicate … a signaling cell sends a
-  signal" for *cell signaling*; "the cell that sends a signal" for
-  *signaling cell*). A typed answer to those tests reading, not memory.
+  its own definition (in the style of "the cell that guards a stoma" for
+  *guard cell*; the lecture's own wording stays out of this public repo). A
+  typed answer to those tests reading, not memory.
 - **The same fact is asked twice in a row.** A flashcard "What range do Km
   values fall in?" is followed straight away by an MCQ "Typical Km values
   fall in which range?". The second is answered from the first.

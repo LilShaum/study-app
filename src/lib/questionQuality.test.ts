@@ -73,10 +73,10 @@ describe('lengthBias', () => {
 describe('restatement', () => {
   it('is high when the question is its own source with a question mark', () => {
     const item = mcq('q1', even, 0, {
-      question: 'Hydrophilic messengers travel to the target cell how?',
-      options: ['dissolved in extracellular fluid', 'x', 'y', 'z'],
+      question: 'Sap travels up the stem to the leaves how?',
+      options: ['pulled up the xylem by evaporation', 'x', 'y', 'z'],
       correct_index: 0,
-      source_excerpt: 'Hydrophilic — travel to target cell dissolved in extracellular fluid',
+      source_excerpt: 'Sap — travels up stem to leaves pulled up the xylem by evaporation',
     });
     expect(restatement(item)).toBeGreaterThan(0.7);
   });
@@ -86,7 +86,7 @@ describe('restatement', () => {
       question: 'Given [L] = 2 uM, [R] = 3 uM and [LR] = 1.5 uM, what is Kd?',
       options: ['4 uM', '1 uM', '9 uM', '0.25 uM'],
       correct_index: 0,
-      source_excerpt: 'Kd = [L][R] / [LR]. A high-affinity receptor reaches half occupancy sooner.',
+      source_excerpt: 'Kd = [L][R] / [LR]. A tighter binder fills half its sites at a lower dose.',
     });
     expect(restatement(item)).toBeLessThan(0.3);
   });
@@ -98,15 +98,15 @@ describe('restatement', () => {
 
 describe('isSourceCued', () => {
   it.each([
-    'According to the notes, where does the disturbance act?',
-    'Give the four example steroids on the Chemical Messengers slide.',
+    'According to the notes, where does water enter the root?',
+    'Give the three example tissues on the Plant Transport slide.',
     'Which two are listed together on one line?',
-    'What does this slide say about gap junctions?',
-    'What do the slides show about Ras activation?',
+    'What does this slide say about guard cells?',
+    'What do the slides show about phloem loading?',
   ])('flags %s', (q) => expect(isSourceCued(q)).toBe(true));
 
   it.each([
-    'Which steroid is the branch point for cortisol and testosterone?',
+    'Which tissue carries sugars both up and down the stem?',
     'What happens to Kd when affinity falls?',
     // "note" inside another word must not trigger it
     'Which receptor is noted for binding noradrenaline?',
@@ -118,12 +118,12 @@ describe('isSourceCued', () => {
 
 describe('asksBeyondRecall', () => {
   it.each([
-    'If the sensor stops working, what happens to the variable?',
+    'If the guard cells stop working, what happens to water loss?',
     'A drug raises the receptor Kd. What does that mean?',
-    'How does paracrine signalling differ from autocrine?',
+    'How does xylem transport differ from phloem transport?',
   ])('accepts %s', (q) => expect(asksBeyondRecall(q)).toBe(true));
 
-  it.each(['To which class does thyroxine belong?', 'Name the seven classes of chemical messenger.'])(
+  it.each(['To which tissue does the xylem belong?', 'Name the three tissue systems of a plant.'])(
     'rejects %s',
     (q) => expect(asksBeyondRecall(q)).toBe(false),
   );

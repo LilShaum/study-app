@@ -51,9 +51,8 @@ export function stems(text: string): Set<string> {
 
 /**
  * A definition gives its term away when every content word of the term (by
- * stem, so "signaling" counts for "signal") is already in the definition:
- * "The way cells communicate … a signaling cell sends a signal" for "cell
- * signaling". Asked as "name the term", it tests reading, not memory. What
+ * stem, so "guarding" counts for "guard") is already in the definition:
+ * "the cell that guards a stoma" for "guard cell". Asked as "name the term", it tests reading, not memory. What
  * is in brackets in the term (an abbreviation) is left out.
  */
 export function givesAway(term: string, definition: string): boolean {
@@ -147,10 +146,9 @@ export function questionOverlap(a: Asked, b: Asked): { shared: number; share: nu
 
 /**
  * A card that answers a later one: the later card's answer printed in what
- * the earlier one showed, its question, answer or explanation. The owner's
- * example: the typed term "cell signaling", whose definition reads "a
- * signaling cell sends a signal", and next "name the cell that sends a
- * signal". Only one way round: an earlier card asked for a term, and a later
+ * the earlier one showed, its question, answer or explanation. For
+ * example: a typed term whose definition reads "water leaves through pores
+ * a guard cell opens", and next "name the cell that opens the pores". Only one way round: an earlier card asked for a term, and a later
  * question naming it, gives nothing away. Answers of one word are left out;
  * too many are everyday words ("increases").
  */
@@ -159,8 +157,8 @@ export function revealsAnswer(earlier: Asked, later: Asked): boolean {
   const want = normaliseTerm(later.answer.replace(/\([^)]*\)/g, ' '));
   if (want.length >= 6 && want.includes(' ') && ` ${normaliseTerm(shownText)} `.includes(` ${want} `)) return true;
   // Or reworded: every word the answer adds to its own question is on the
-  // earlier card ("within ranges, by feedback loops" after a definition of
-  // homeostasis that says so). Three words at least, so a one-word answer
+  // earlier card ("evaporation at the leaves, and cohesion" after a
+  // definition of the transpiration stream that says so). Three words at least, so a one-word answer
   // that happens to be used ("increases") is not a reveal.
   const asked = stems(later.question);
   const adds = [...stems(later.answer)].filter((w) => !asked.has(w) && w.length >= 3);
