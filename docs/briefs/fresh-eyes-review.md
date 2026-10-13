@@ -153,10 +153,21 @@ because it was decided.
 ## 3. Ground rules
 
 - **Never commit course content.** The repo is public. The owner's
-  lectures are theirs. Ask the owner to attach their `.study.json` files,
-  or a backup (Help page, "Back up everything": every lecture, all progress
-  and the study log in one file), and keep them in your scratchpad.
+  lectures are theirs. Keep anything of theirs in your scratchpad.
   Test lectures in `scripts/__fixtures__/` are made up.
+- **The owner's data comes as one backup file** (Help page, "Back up
+  everything"; on a phone it goes through the share sheet). It holds every
+  lecture, all progress and the study log: a JSON object whose `data` maps
+  localStorage keys to strings. `JSON.parse(data['arborous:courses']).state.courses`
+  is the lectures by id; `arborous:progress` the answers;
+  `arborous:study-log` the timed log the calibrator reads. Check the key
+  names in `src/lib/backup.ts` and the stores before relying on them.
+- **The owner's lectures were made with older versions of the generator
+  prompt.** Use them for everything the app does with a lecture (order,
+  scheduling, linked terms, checks on real progress): those are the
+  lectures a student actually has, and nobody regenerates every lecture.
+  Do not use them to judge the current prompt. For that, generate fresh
+  lectures (5.7).
 - Checks: `npm run build` (the CI typecheck, including `sim/`),
   `npx eslint src`, `npx vitest run`, and the simulator for anything that
   changes scheduling, Review, Learn, Today or the memory model.
@@ -452,9 +463,14 @@ verify.
 ### 5.7 Content: what the AI writes and what the app does with it
 
 `prompts/generator.md` (its "Quality bar" goes into all four prompts) was
-rewritten 2026-10-13. Check it by generating a made-up lecture yourself
-from made-up notes (scratchpad only) and running the course check and the
-session audit on it: does the result follow the weight table, the MCQ
+rewritten 2026-10-13, after every lecture the owner has. Judge it only on
+lectures made with it. Generate some yourself, following the prompt as the
+student's AI would, from source material in your scratchpad: made-up notes,
+or an openly licensed textbook chapter close to the owner's courses
+(OpenStax Biology 2e on cell communication or the endocrine system, and
+OpenStax Psychology 2e on the brain, are CC BY, if your network allows the
+download). Never commit the source or the result. Then run the course check
+and the session audit on each: does the result follow the weight table, the MCQ
 difficulty mix, nuance not trivia, parts of one system taught together?
 Where it does not, is the rule unclear? Also check the detectors in
 `lib/contentChecks.ts` on a subject unlike biology (the psychology and
@@ -464,7 +480,8 @@ nutrition lectures; a made-up maths or history lecture).
 
 ## 6. Open items you inherit (HANDOFF task numbers)
 
-- **#63** Calibrate the simulator from a real study log.
+- **#63** Calibrate the simulator from a real study log (in the owner's
+  backup).
 - **#88** iPhone header under the status bar (a measured fallback in
   `lib/statusBarFallback.ts`); unconfirmed on the owner's phone.
 - **G (#102)** `TERM_BUDGET` costs the half-scope scenario about 2 points
