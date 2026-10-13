@@ -433,6 +433,23 @@ export function buildSessionItems(
   };
   const asTyped = (list: SessionItem[]) => list.map((i) => typedFrom(i) ?? i);
 
+  /**
+   * A step's new material only: the cards never answered, and the reading
+   * for terms not yet asked. Anything answered belongs to Review, on its own
+   * schedule. A step was served whole while any card in it was unanswered,
+   * so a sitting's new material repeated the typed terms its review had just
+   * asked (the owner: 12 of 12 on feedback loops, then "new" material that
+   * asked negative feedback again, 2026-10-13). Empty when nothing is new.
+   */
+  const seen = (id: string) => {
+    const r = progress?.[id];
+    return !!r && r.got + r.missed > 0;
+  };
+  const newOnly = (step: SessionItem[]): SessionItem[] => {
+    if (!step.some((i) => isGradable(i) && !seen(i.id))) return [];
+    return step.filter((i) => (isGradable(i) ? !seen(i.id) : i.type === 'definition' ? !seen(recallId(i.id)) : true));
+  };
+
   const pairConfusions = (list: SessionItem[]): SessionItem[] => {
     const byId = new Map(list.map((i) => [i.id, i]));
     const placed = new Set<string>();
@@ -508,7 +525,9 @@ export function buildSessionItems(
         const next = order[k - 1];
         if (asks.length ? asks.every((i) => { const r = progress?.[i.id]; return !!r && r.got + r.missed > 0; }) : !!next && done.has(next[0])) done.add(block);
       });
-      const left = withoutSecondLook(all.filter((i) => !done.has(i._block!)));
+      const byBlock = new Map<string, SessionItem[]>();
+      for (const i of withoutSecondLook(all.filter((x) => !done.has(x._block!)))) byBlock.set(i._block!, [...(byBlock.get(i._block!) ?? []), i]);
+      const left = [...byBlock.values()].flatMap(newOnly);
       items = left.length ? left : all;
       break;
     }
@@ -545,22 +564,19 @@ export function buildSessionItems(
           const step = steps.filter((i) => i._step === s);
           // Carry on where Learn left off: a step whose every question has
           // been answered is done, and Review brings it back when it fades.
-          const answered = (i: SessionItem) => {
-            const r = progress?.[i.id];
-            return !isGradable(i) || (!!r && r.got + r.missed > 0);
-          };
-          if (step.every(answered)) continue;
+          const fresh = newOnly(step);
+          if (!fresh.length) continue;
           // The second look waits for the next sitting when this one has
           // already taught the section (see withoutSecondLook).
-          if (step[0]?._second && learn.some((i) => i._sectionId === section.id && !i._second)) continue;
-          const cost = step.reduce((n, i) => n + cardSeconds(i, pace), 0);
+          if (fresh[0]._second && learn.some((i) => i._sectionId === section.id && !i._second)) continue;
+          const cost = fresh.reduce((n, i) => n + cardSeconds(i, pace), 0);
           // Whole steps only, so the sitting ends where a step does; the
           // first one always fits, or a short sitting would teach nothing.
           if ((learn.length || review.length) && learnSpent + cost > plan.learnMinutes * 60) {
             full = true;
             break;
           }
-          learn.push(...step);
+          learn.push(...fresh);
           learnSpent += cost;
         }
         if (learnSpent >= plan.learnMinutes * 60) break;

@@ -10,6 +10,23 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-13 (late) — New material is only what was never answered: level
+
+**Bug, found by the owner.** Learn counted a step done only when every card
+in it was answered, so a step with answered typed terms and an unanswered
+question was served whole as "new material", right after Review had asked
+those terms (12 of 12 on feedback loops, then negative feedback typed
+again). Reproduced on their Endocrinology lecture: 25 of 62 "new" cards in
+a Today had been answered before. Now Learn and Today's new part serve only
+cards never answered, and reading only for terms not yet asked; anything
+answered is Review's (`newOnly` in buildSessionItems).
+
+**Result** (5 seeds, same as the review-cap check): steady-30 60 / 46,
+steady-45 84 / 70, busy-20 31 / 18, half-scope 85 / 73, 30-harsh 19 / 2,
+45-harsh 24 / 3 (exam score / held). Level with the version before it.
+
+---
+
 ## 2026-10-13 (night) — The review cap is taken out: it undid spaced review
 
 **Checked** because the owner asked whether the day's changes had undone

@@ -89,11 +89,15 @@ describe('Learn in steps', () => {
     expect(asked).toEqual(read);
   });
 
-  it('skips reading a term already answered right, and still asks for it', () => {
+  it('never re-teaches or re-asks a term already answered: that is Review\'s, on its schedule', () => {
+    // The owner, 2026-10-13: 12 of 12 on feedback loops in Review, then
+    // "new" material that asked negative feedback again.
     const progress = { [recallId('d0')]: { got: 1, missed: 0, lastSeen: 0 } };
     const items = learn(defs, progress);
     expect(items.some((i) => i.id === 'd0')).toBe(false);
-    expect(items.some((i) => i.id === recallId('d0'))).toBe(true);
+    expect(items.some((i) => i.id === recallId('d0'))).toBe(false);
+    // The step's other terms are still taught.
+    expect(items.some((i) => i.id === recallId('d1'))).toBe(true);
   });
 
   it('places an item that names no term by the passage it quotes', () => {

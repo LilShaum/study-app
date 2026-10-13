@@ -591,3 +591,33 @@ describe('buildSessionItems — an MCQ asked again typed', () => {
     expect(items.find((i) => i.id === 'q3')?.type).toBe('recall');
   });
 });
+
+describe('buildSessionItems — Today never asks a reviewed card again as new', () => {
+  const DAY = 86_400_000;
+  const terms = ['Homeostasis', 'Feedback loop', 'Effector', 'Sensor', 'Negative feedback', 'Positive feedback'];
+  const c = {
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: [
+      {
+        id: 's',
+        title: 'Regulation',
+        items: [
+          ...terms.map((t, k) => ({ id: `d${k}`, type: 'definition', term: t, definition: `meaning number ${k} of the thing` })),
+          { id: 'q', type: 'mcq', question: 'What does Negative feedback do to a disturbance?', options: ['Opposes it', 'b', 'c', 'd'], correct_index: 0 },
+        ],
+      },
+    ],
+  } as unknown as Course;
+
+  it('leaves answered cards to the review part, and serves only what is new', () => {
+    const now = 40 * DAY;
+    // Every typed term answered days ago (now due); the question never.
+    const progress = Object.fromEntries(terms.map((_, k) => [`d${k}~recall`, { got: 1, missed: 0, lastSeen: now - 5 * DAY, stability: 1 }]));
+    const items = buildSessionItems(c, 'today', { now, minutes: 30, progress });
+    const learn = items.filter((i) => i._block !== 'review');
+    expect(items.filter((i) => i._block === 'review').length).toBeGreaterThan(0);
+    expect(learn.filter((i) => i.type === 'recall' || i.type === 'definition')).toEqual([]);
+    expect(learn.map((i) => i.id)).toContain('q');
+  });
+});

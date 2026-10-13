@@ -717,11 +717,20 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
               {pause.got} of {pause.asked} right first time
             </p>
           )}
-          {pause.reviewDone && (
-            <p className="mx-auto mt-2 max-w-prose text-small text-text-2">
-              Next, new material: {items[index]?._sectionTitle}
-            </p>
-          )}
+          {pause.reviewDone &&
+            (() => {
+              // What is new, by count and section: the section's name alone
+              // read as the one just reviewed when it was half learned.
+              const ahead = items.slice(index).filter((i) => !i._again && i._block !== 'review');
+              const sections = [...new Set(ahead.map((i) => i._sectionTitle))];
+              const inFirst = ahead.filter((i) => i._sectionTitle === sections[0]).length;
+              return sections.length ? (
+                <p className="mx-auto mt-2 max-w-prose text-small text-text-2">
+                  Next, new material you have not met yet: {inFirst} {inFirst === 1 ? 'card' : 'cards'} in {sections[0]}
+                  {sections.length > 1 ? `, then ${sections[1]}${sections.length > 2 ? ' and more' : ''}` : ''}.
+                </p>
+              ) : null;
+            })()}
           {!pause.reviewDone && pause.terms.length > 0 && (
             <p className="mx-auto mt-2 max-w-prose text-small text-text-2">{pause.terms.join(' · ')}</p>
           )}
