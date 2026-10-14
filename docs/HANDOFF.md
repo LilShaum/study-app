@@ -36,6 +36,24 @@ re-asks of misses; the app fits each student's forgetting rate
 real card times (absolute scores dropped; see FINDINGS); the owner's
 lecture wording was taken out of the repo.
 
+**Open, marked for later (owner, 2026-10-14):**
+
+- **Write down what is expected of the app, feature by feature.** §1 and §2
+  give the purpose and principles, but not the goal of each feature and how
+  it is meant to work (Today, Learn, Review, Practice, Add material, More
+  practice, Fix, the course check, exams, the tree, sync). One place, so
+  a new session knows exactly what "working" means before changing
+  anything. Not started; the owner asked for it to wait.
+- **Item counts don't follow importance.** Old lectures (made with the
+  pre-weight-table prompt) give one basics slide 10–20+ items; the owner's
+  first Add material run (parts 3–4 of a lecture) gave about 2 items per
+  slide, put 57 terms the slides teach in sentences (SNARE parts, Mg²⁺
+  block, desensitized state, transporters) into "mentioned", and skipped
+  topics the course had covered only at less depth. Proposed, waiting on the
+  owner's go: "mentioned" only for names never explained; Add skips only
+  facts already tested at the same depth; a course check on items per slide
+  (`source_range`) that flags thin key sections and over-dense basics.
+
 **Done 2026-10-13 (live):** the owner's first real study of a lecture, with
 screenshots: cards on one term all at once, an MCQ straight after the
 definition, fill-in and flashcard for it, typed terms whose definition
