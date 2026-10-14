@@ -54,8 +54,12 @@ material.
 My source may be entirely new (a later lecture), or a longer version of a
 lecture the course already has, with slides added. Either way, write items
 ONLY for content the course does not already cover. Everything it covers is
-listed below; where my source repeats it, skip it. Where it adds to a lecture
-already here, put the new items in that lecture's existing section.
+listed below. Skip a fact only when an item below already tests it at the
+depth my source teaches it. A topic the course has, taught here in more
+depth (steps now explained, a mechanism, exceptions, new parts, a figure
+now walked through), is new content: write the items the spec asks for at
+that depth. Where it adds to a lecture already here, put the new items in
+that lecture's existing section.
 
 Return ONLY JSON in this shape — just the sections I'm adding to or creating,
 each holding ONLY the new items, plus the inventory of what you added. Do not

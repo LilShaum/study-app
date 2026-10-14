@@ -54,6 +54,50 @@ Do not start writing items while you are still reading. Work in four passes.
 Read the entire source before generating anything. You cannot judge what is
 important on slide 4 until you have seen slide 40.
 
+Then map the lecture for yourself (the map is not part of the output): its
+parts, the point each part builds to, and for every slide one line on **why
+the teacher showed it**. Read each slide against the ones just before and
+after it and against the whole lecture. A slide's job decides how much it
+is worth, more than how much text it holds. Clues to that job:
+
+- **The teacher's own list.** Learning objectives, an outline, a summary or
+  review slide, a question the lecture poses and later answers. A topic on
+  that list is key however few slides it fills; a topic with many slides
+  that is on no such list may be detail.
+- **Where a run of slides is heading.** A set of slides usually builds to
+  one point: a principle, a pathway, a comparison. Find that point and give
+  it the weight; the slides on the way are its parts or its evidence. Slide
+  titles, and how the bullets relate (kinds of one thing, steps in order, a
+  claim and its support, a contrast), show the structure.
+- **A study or experiment.** When a slide shows a study (a researcher, a
+  figure from a paper, an experiment and its result), its point is what the
+  study found and what that showed, not who ran it or when. Teach the
+  finding, how the experiment showed it, and what the result rules out.
+  Names and dates are illustration detail unless the slide text asks for
+  them.
+- **What comes back.** A term, structure or name that returns on later
+  slides (in a new figure, a later example, a callback to an earlier
+  topic) is something the lecture builds on: key. A name that appears once
+  in a long list and never again is likely an example of its category.
+- **A list to compare or a list to learn.** A long list of names
+  (transmitters, species, drugs, receptor subtypes) is usually there to
+  show the range or to compare. Its members are content only when the
+  lecture uses them by name later, attaches a property to each, or asks the
+  student to tell them apart; otherwise test the category and what sets
+  its kinds apart, not the roll call.
+- **A figure the lecture builds on.** When the slide title is about the
+  figure (a "cortical lobes" slide), a figure is shown twice, or later
+  slides name a structure first shown only as a label, the labels are
+  content, not illustration.
+- **Bridges.** A slide recapping a previous lecture or common ground is
+  background. A slide previewing a later topic gets its cards where that
+  topic is taught.
+- **Time spent.** Several slides on one point mean the teacher spent time
+  on it. One slide packed with a dozen names is not twelve key ideas.
+
+The map sets the weights in the Quality bar, part 2. When the student's
+notes say what their teacher stressed or dismissed, that outranks the map.
+
 ### Pass 2 — Build an inventory
 
 Go back through and write out an inventory of everything the source contains.
@@ -114,7 +158,9 @@ A term the source only *names* — used in passing, a label on a diagram, a
 caption, never explained — goes in `inventory.mentioned` and gets no
 definition item: writing one would mean supplying a meaning from your own
 knowledge, and obligation 1 wins that conflict. Listing it keeps it visible;
-the app will ask whether it deserved more.
+the app will ask whether it deserved more. No definition is not the same as
+no items: a label the lecture builds on (see Pass 1) is still tested
+through what the figure shows (Quality bar, part 5).
 
 The parts of one mechanism (the parts of a feedback loop, the cells of a
 stoma) are the exception to "no exceptions": see "Parts of one system are taught together"
@@ -463,7 +509,13 @@ A slide's text (its bullets, headings and what it states in words) is what
 it asks students to know. A complex diagram beside it usually illustrates
 that text. Test the diagram through the text: ask about the part of a
 pathway the bullets name, in the bullets' terms. Labels that appear only
-in a figure, and that the text never names, are illustration detail (2).
+in a figure, and that the text never names, are illustration detail (2),
+unless the lecture builds on them (Pass 1): the figure is what the slide
+is about, it is shown again, or later slides use those labels. Then test
+what the figure itself shows: which structure is where, what connects to
+what, the order of numbered steps (which cell the signal reaches next,
+what the circuit does to each muscle). Write no meaning the source does
+not give: ask what the figure shows, not what you know about it.
 A slide that previews a topic taught later gets its cards where the topic
 is taught. When the student says what their
 teacher stressed or dismissed, that outranks your judgement.
