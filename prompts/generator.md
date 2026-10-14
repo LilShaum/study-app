@@ -89,6 +89,11 @@ is worth, more than how much text it holds. Clues to that job:
   figure (a "cortical lobes" slide), a figure is shown twice, or later
   slides name a structure first shown only as a label, the labels are
   content, not illustration.
+- **Building blocks.** A basic term that later slides rely on (afferent
+  and efferent before a reflex arc) must have its definition, because the
+  later content is not understood without it. That definition is usually
+  all such a term needs: being used often makes it required, not worth
+  more cards. Spend the extra cards on the complex ideas built from it.
 - **Bridges.** A slide recapping a previous lecture or common ground is
   background. A slide previewing a later topic gets its cards where that
   topic is taught.
