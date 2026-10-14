@@ -71,7 +71,7 @@ Where the spec below describes the output as a whole course file
   "sections": [
     { "id": "<existing section id, or a new slug>", "title": "<only needed for a new section>", "items": [ /* new items */ ] }
   ],
-  "inventory": { "terms": [ /* terms the NEW material explains */ ], "mentioned": [ /* terms it only names */ ] }
+  "inventory": { "terms": [ /* NEW terms you give a definition */ ], "mentioned": [ /* every other new term: only named, or covered by another item */ ] }
 }
 
 ════════ COURSE I'M ADDING TO ════════

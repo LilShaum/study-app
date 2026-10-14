@@ -18,9 +18,11 @@ until the exam.
 
 **1. Everything you write must be grounded.** Never invent a fact, figure,
 date, mechanism, or definition that is not in the source, even a
-plausible-sounding one. If the notes mention a topic only by name — a preview
-of next week, a "we won't cover this" aside — you may not write items about
-it, because there is nothing there to be right or wrong about.
+plausible-sounding one. If the notes mention a topic only by name, with
+nothing said or shown about it (a preview of next week, a "we won't cover
+this" aside), you may not write items about it, because there is nothing
+there to be right or wrong about. A labelled figure does show something:
+what it shows can be asked (Quality bar, part 5).
 
 **2. Everything in the source must be covered.** Every technical term, every
 stated objective, every mechanism, formula and worked example in the notes
@@ -62,8 +64,7 @@ is worth, more than how much text it holds. Clues to that job:
 
 - **The teacher's own list.** Learning objectives, an outline, a summary or
   review slide, a question the lecture poses and later answers. A topic on
-  that list is key however few slides it fills; a topic with many slides
-  that is on no such list may be detail.
+  that list is key however few slides it fills.
 - **Where a run of slides is heading.** A set of slides usually builds to
   one point: a principle, a pathway, a comparison. Find that point and give
   it the weight; the slides on the way are its parts or its evidence. Slide
@@ -100,8 +101,8 @@ is worth, more than how much text it holds. Clues to that job:
 - **Time spent.** Several slides on one point mean the teacher spent time
   on it. One slide packed with a dozen names is not twelve key ideas.
 
-The map sets the weights in the Quality bar, part 2. When the student's
-notes say what their teacher stressed or dismissed, that outranks the map.
+The map sets each idea's weight (Quality bar, part 2). What the student
+says their teacher stressed or dismissed outranks the map.
 
 ### Pass 2 — Build an inventory
 
@@ -111,25 +112,25 @@ biggest cause of a thin course.
 
 **Part of this inventory goes into the output.** The term list becomes
 `metadata.inventory` (see the output contract below): `terms` for every term
-the source explains, `mentioned` for every term it only names. The app checks
-your finished course against `terms` and tells the student what you missed.
+you give a `definition` item, `mentioned` for every other term: the ones the
+source only names, and the explained ones you cover another way (Pass 3).
+The app checks every entry in `terms` for a definition and tells the student
+what you missed.
 Write that list honestly and completely — a short list does not
 make you look thorough, it makes the gaps invisible, which is the one failure
 a student cannot detect for themselves.
 
 Capture:
 
-- **Stated learning objectives.** Look for "By the end of this lecture you
-  will…", "Learning goals", "You should be able to…", a summary slide, a
-  list of exam topics. If they exist, they are the author telling you exactly
-  what will be assessed — treat them as a required checklist.
+- **Stated learning objectives**, verbatim (Pass 1, the teacher's own
+  list). They are a required checklist.
 - **Explicitly flagged concepts.** Anything bold, boxed, highlighted, starred,
   repeated across slides, or marked "key", "important", "note", "remember",
   "common mistake", "this will be on the exam".
 - **Every technical term.** The test: would a competent student *from another
-  discipline* know this word? If not, it is jargon and it needs a definition.
-  Include terms used in passing and terms inside figure captions — those the
-  source only names go under `mentioned`. A formula's symbols belong with the
+  discipline* know this word? If not, it is jargon and goes in the
+  inventory. Include terms used in passing and terms inside figures and
+  captions. A formula's symbols belong with the
   formula, not in the term list. Be thorough — this is the list people most
   often truncate.
 - **Every mechanism or process** with ordered steps or a causal chain.
@@ -149,7 +150,7 @@ suggestions:
 
 | Inventory entry | Must produce |
 |---|---|
-| Each technical term the source explains | a `definition` item — no exceptions, as long as it is a name a student could be asked to produce (see below) |
+| Each technical term the source explains | a `definition` item, if it is a name a student could be asked to produce (see below) |
 | Each stated learning objective | at least one `mcq` or `flashcard` that would demonstrate it is met |
 | Each flagged key concept | at least one `mcq` or `flashcard` |
 | Each formula | a `definition` (what it computes, what the symbols mean) **and** an `mcq` applying it |
@@ -162,49 +163,43 @@ suggestions:
 A term the source only *names* — used in passing, a label on a diagram, a
 caption, never explained — goes in `inventory.mentioned` and gets no
 definition item: writing one would mean supplying a meaning from your own
-knowledge, and obligation 1 wins that conflict. Listing it keeps it visible;
-the app will ask whether it deserved more. No definition is not the same as
-no items: a label the lecture builds on (see Pass 1) is still tested
+knowledge, and obligation 1 wins that conflict. No definition is not the
+same as no items: a label the lecture builds on (Pass 1) is still tested
 through what the figure shows (Quality bar, part 5).
 
-The parts of one mechanism (the parts of a feedback loop, the cells of a
-stoma) are the exception to "no exceptions": see "Parts of one system are taught together"
-in the Quality bar.
+Some explained terms are covered another way, because the app asks a
+definition by showing the meaning and having the student type the name:
 
-Not every explained term makes a good `definition`, because the app asks for
-it by showing the meaning and having the student type the name. A symbol or
-formula variable (`r_m`, `I_ion`), a descriptive phrase ("resistance of the
-cell membrane") or a slide heading is not a name anyone would be asked to
-produce: cover it inside the parent term's definition, its `related_terms`, or
-a flashcard. When two terms name the same thing at different grain — a
-functional zone and the structure that forms it — write one definition and
-list the other in `related_terms`; two definitions would read identically and
-accept different answers.
+- A symbol or formula variable (`r_m`, `I_ion`), a descriptive phrase
+  ("resistance of the cell membrane"), a slide heading, or a name too awkward
+  to type (Aα, Aβ): cover it in the parent term's definition, its
+  `related_terms`, or a flashcard or MCQ.
+- Two terms for the same thing at different grain (a functional zone and
+  the structure that forms it): one definition, the other in
+  `related_terms`. Two would read identically and accept different answers.
+- The parts of one system: see "Parts of one system are taught together"
+  in the Quality bar.
 
-Test the subject, not the artwork. No item on where a label sits in a
-drawing, how an illustrator grouped things, or a value read to false
-precision off an unannotated graph. An arrow in a figure is a relationship:
-ask about it in an MCQ or flashcard.
+These go in `inventory.mentioned`, not `terms`.
 
-One passage can and should yield several items. A paragraph defining a term,
-giving its formula and working an example is three or four items, not one —
-recall, application and recognition are different skills and need separate
-practice. This is not padding; padding is inventing content that is not there.
+One passage can yield several items: a paragraph defining a key term,
+giving its formula and working an example is three or four items, because
+recall, application and recognition are different skills. How many is set
+by the idea's weight (Quality bar, part 2), not by the passage. Padding is
+inventing content that is not there, or more cards than the weight calls
+for.
 
 ### Pass 4 — Audit your own coverage
 
 Before you output anything, walk the Pass 2 inventory and confirm each entry
-is covered. Pay particular attention to the term list: **every term in
-`terms` must have a definition item.** If something is uncovered, either write the
-item or satisfy yourself that the source genuinely says nothing about it.
+is covered. **Every term in `terms` must have a definition item**; every
+term in `mentioned` that the source explains is covered by another item.
+If something is uncovered, either write the item or satisfy yourself that
+the source genuinely says nothing about it.
 
-As a calibration check, count the distinct ideas in your Pass 2 inventory —
-terms, mechanisms, formulas, comparisons, caveats — and give each the number
-of items its weight calls for (Quality bar, part 2): three to five for a key
-idea, each from a different side; one or two for a supporting one; the
-definition alone, or one card, for background. Anchor
-on that, never on how many pages or words the source
-happens to be. If your draft is far below it, you have skipped content: go
+As a calibration check, add up what each idea's weight calls for (Quality
+bar, part 2) and compare your draft with it, never with how many pages or
+words the source happens to be. Far below it, you have skipped content: go
 back to the inventory. If the inventory itself is genuinely short, a small
 course is the right answer.
 
@@ -255,8 +250,8 @@ file must be valid JSON matching this shape exactly:
       "example": number?, "graphic": number?
     }?,
     "inventory": {                 // your Pass 2 inventory — see below
-      "terms": string[],           // EVERY term the source explains
-      "mentioned": string[]?,      // terms it only names (no definition item)
+      "terms": string[],           // EVERY term you give a definition item
+      "mentioned": string[]?,      // every other term: only named, or covered by another item
       "objectives": string[]?      // stated learning objectives, verbatim
     }?
   },
@@ -407,7 +402,7 @@ Never write "one of every type because it can".
 
 | Weight | How to recognise it | Cards to write |
 |---|---|---|
-| **Key** | A stated objective; flagged, repeated or emphasised; a formula, mechanism or comparison that later content builds on; what the student says their teacher stressed | 3 to 5, **each from a different side** (list below) |
+| **Key** | A stated objective; flagged, repeated or emphasised; what later slides build on or come back to; a formula, mechanism or comparison; what the student says their teacher stressed | 3 to 5, **each from a different side** (list below) |
 | **Supporting** | Explained once and used once | 1 or 2 |
 | **Background** | Taught in passing, or common ground the course repeats in every lecture (what a cell membrane is, what diffusion is) | The definition only, or one card |
 | **Illustration detail** | A value, name or label that only belongs to how one worked example, figure or table was drawn (not a pathway, step or value the lecture teaches; see part 3) | None, unless the source or the teacher notes say it must be known |
@@ -429,8 +424,10 @@ parts of one mechanism (the parts of a feedback loop; the cells around a
 stoma; the steps of a pathway), do not write one definition per part in
 the same sentence pattern ("the part of the loop that…" three times). Students then answer the same question three times.
 Write a definition only for a part that is a real term the course uses on
-its own. Cover the system with one flashcard on how the parts connect and
-one MCQ on what happens when one part fails.
+its own (later slides name it, or it has its own job). Cover the system
+with at least a flashcard on how the parts connect and an MCQ on what
+happens when one part fails; a system the lecture builds on is a key idea
+and gets a key idea's cards, each part reached from a different side.
 
 ### 3. MCQs carry the nuance
 
@@ -462,9 +459,11 @@ it **illustrated** it.
   notes point to it.
 - **Illustration: do not test it.** A detail that only shows how something
   was drawn or demonstrated: where a label sits, the name in brackets in a
-  caption, the colour or layout of a figure, a number used once in a worked
-  problem only to demonstrate a method (test the method instead), or which
-  case the slide happened to pick when any case would have done.
+  caption, the colour or layout of a figure, a value read to false precision
+  off an unannotated graph, a number used once in a worked problem only to
+  demonstrate a method (test the method instead), or which case the slide
+  happened to pick when any case would have done. An arrow in a figure is
+  a relationship, not layout: ask about it.
 
 When unsure, ask: is this detail something a student is expected to
 know, or only the vehicle the lecture used to show something else? Know
@@ -549,10 +548,8 @@ wrong thing. For every MCQ:
 **Do not let the shape of an option give the answer away.** This is the
 failure mode that survives every other rule, because a correct answer wants
 the qualifying clause that a wrong one can do without — so it grows, and a
-student who knows nothing learns to pick the longest. Measured on a real
-generated course: the right answer was the longest of four options 55% of
-the time against 25% by chance, averaging 1.48x the length of its
-distractors. The app now checks this and will report it.
+student who knows nothing learns to pick the longest (55% of the time on
+one real course, against 25% by chance). The app checks this and reports it.
 
 - Keep the four options within roughly the same length. If the correct one
   needs a qualifier to be true, give the distractors one too.
@@ -565,17 +562,11 @@ distractors. The app now checks this and will report it.
   four in no more than one MCQ in four, and the shortest in no more than one
   in four either. The reliable way to hold it is to write the correct option
   first, then write the distractors so that in most questions at least one of
-  them is longer and at least one shorter. Measured again after this
-  section was written: 46% of correct options were still the longest,
-  because "roughly the same length" is easy to believe of your own options.
-  A count is not.
+  them is longer and at least one shorter. "Roughly the same length" is
+  easy to believe of your own options; a count is not.
 
-**Test understanding, not just recall.** If the source explains a mechanism,
-ask what happens when a step is blocked. If it gives a formula, ask the
-student to apply it. If it draws a distinction, ask for the case that
-separates the two. Recall items are necessary but they are the floor.
-
-Concretely: **every section needs at least one gradable item that asks the
+**Test understanding, not just recall** (part 3). Recall items are the
+floor: **every section needs at least one gradable item that asks the
 student to apply, predict or discriminate**, not only to retrieve. A section
 whose questions are all "which class does X belong to" has taught a lookup
 table. The app reports sections where nothing goes beyond recall.
@@ -603,13 +594,11 @@ slide does not say — and now the student has to use it. Reuse the source's
 terms; don't reuse its sentences. The app
 measures this overlap across the whole course and reports the share.
 
-**What is graded.** `mcq` and `flashcard` items are graded, and so is each
-`definition` — but only one way: the app shows the meaning and the student
-types the term. That tests whether they can name a thing, never whether they
-can use it. Examples and diagrams are read, not scored. So every concept the
-student must *apply* needs an MCQ or flashcard, not only a definition. A
-course that is mostly definitions teaches a vocabulary list and measures
-nothing else.
+**What is graded.** `mcq` and `flashcard` items, and each `definition` one
+way only: the student types the term from its meaning. That tests naming,
+never use. Examples and diagrams are read, not scored. A definition is the
+right and whole card for a basic term; every concept the student must
+*apply* also needs an MCQ or flashcard.
 
 **Across the whole file:**
 - Item `id`s must be unique across the whole course, not just within their
@@ -618,17 +607,19 @@ nothing else.
 - No two items testing the same fact the same way. Two items on one fact are
   good when they test *different* skills (recall vs application); they are
   waste when they are rephrasings.
-- Aim for a balance where roughly half of all items are gradable (`mcq` or
-  `flashcard`).
-- Assign `difficulty` by actual cognitive load (recall a fact = easy;
-  apply/compare/calculate = medium or hard), not evenly split for appearance.
+- Roughly half of all items are `mcq` or `flashcard`.
+- Give every item a `difficulty` by what it asks (part 3's table): recalling
+  a fact as stated is easy; using, comparing or calculating is medium or
+  hard. Never split evenly for appearance.
 
 ## Before you output
 
 Check your own draft:
-1. **Coverage.** Walk your Pass 2 inventory. Is every term in `terms` defined? Is every
+1. **Coverage.** Walk your Pass 2 inventory. Is every term in `terms` defined,
+   and every explained term in `mentioned` covered by another item? Is every
    stated objective backed by a gradable item? Is every formula applied
-   somewhere? Anything missing gets written now.
+   somewhere? Do the labels and figures the lecture builds on have items?
+   Anything missing gets written now.
 2. Does every item have a `source_excerpt` that really is in the source?
    Delete or fix any that don't.
 3. Does every MCQ have four options, a 0-based `correct_index` pointing at
@@ -649,9 +640,10 @@ Check your own draft:
    table: does any ask a term back from its own definition, or test a
    detail that only belongs to how an example or figure was drawn (a taught pathway is not that)? Rewrite or delete it.
    Does every key idea have a medium or hard MCQ?
-7. **Count the cards per idea** (part 2). Does any background idea have
-   more than one card beyond its definition? Does any key idea have fewer
-   than three, or two cards that ask the same thing in other words? Are the
+7. **Count the cards per idea** (part 2), against your Pass 1 map. Does any
+   background idea have more than one card beyond its definition? Does any
+   key idea (an objective, what later slides build on) have fewer than
+   three, or two cards that ask the same thing in other words? Are the
    parts of one system written as same-shaped definitions?
 8. **Read each section as the app asks it**: definitions, then typed terms,
    then flashcards, then MCQs. Does any card's answer appear in a card
