@@ -109,3 +109,14 @@ the definition that printed it. Both are now caught (`shortReveal`,
 sim/FINDINGS.md). Today's walk of the test lecture: Learn 165 cards, 38%
 reading; Today 116 → 111 cards, 36% reading; still 0 give-aways, 0 answers
 shown before asked, 0 cards close to one that answers them.
+
+Item 8 rechecked the same day: on the test lecture it found nothing,
+because a term was key only by its full name ("Michaelis constant (Km)" was
+not key in a section titled "… and Km") and any mention, even in a
+distractor or an explanation, counted as asking it. Now any of a term's
+names makes it key, and only a question's own words and its answer count
+(`courseGaps.ts`). Key ideas that are not defined terms (a pathway, a
+mechanism) are outside this check; the prompt's weighting and the items-per-
+slide check cover them. The three-cards-per-term limit (A) holds 22 of the
+test lecture's 151 cards for the second sitting; it counts each card
+toward one term, so a card naming two terms is counted once.
