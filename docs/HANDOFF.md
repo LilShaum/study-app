@@ -60,12 +60,8 @@ concept); measuring how much repetition comes from mix-ups and misses.
 
 **Open, marked for later (owner, 2026-10-14):**
 
-- **Write down what is expected of the app, feature by feature.** §1 and §2
-  give the purpose and principles, but not the goal of each feature and how
-  it is meant to work (Today, Learn, Review, Practice, Add material, More
-  practice, Fix, the course check, exams, the tree, sync). One place, so
-  a new session knows exactly what "working" means before changing
-  anything. Not started; the owner asked for it to wait.
+- **Done 2026-10-15:** what is expected of every feature is in
+  `docs/EXPECTATIONS.md` (linked from CLAUDE.md). Keep it current.
 - **Item counts don't follow importance** (prompt and check shipped
   2026-10-15, see above; waiting on a regenerated lecture to confirm). Old lectures (made with the
   pre-weight-table prompt) give one basics slide 10–20+ items; the owner's
