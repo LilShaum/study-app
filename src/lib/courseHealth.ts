@@ -4,6 +4,7 @@ import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 import { analyseQuestionQuality, type QuestionQuality } from './questionQuality';
 import { givesAway, restatesDefinition, sameFact, sameName, type Asked } from './contentChecks';
 import { acceptedForms, normalise } from './typedAnswer';
+import { sectionDensity } from './sectionDensity';
 
 export type HealthSeverity = 'problem' | 'warning';
 
@@ -230,6 +231,33 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       id: 'unclear-figures',
       severity: 'warning',
       message: `The AI couldn't read ${n === 1 ? 'one figure' : `${n} figures`} clearly, so nothing here tests ${n === 1 ? 'it' : 'them'}. Check ${n === 1 ? 'it' : 'them'} on your slides: ${unclear.slice(0, 4).join('; ')}${n > 4 ? `; +${n - 4} more` : ''}.`,
+    });
+  }
+
+  // Items per slide, section against section (lib/sectionDensity). Only a
+  // pointer: a dense key slide deserves its cards, and only the student,
+  // with the slides, can tell that from basics written up at length.
+  const density = sectionDensity(course);
+  const per = (n: number) => (n < 1.95 ? n.toFixed(1) : String(Math.round(n)));
+  const names = (rows: { title: string; items: number; slides: number }[]) =>
+    rows
+      .slice(0, 4)
+      .map((r) => `${r.title} (${r.items} for ${r.slides} slide${r.slides === 1 ? '' : 's'})`)
+      .join('; ') + (rows.length > 4 ? `; +${rows.length - 4} more` : '');
+  if (density?.sparse.length) {
+    const n = density.sparse.length;
+    findings.push({
+      id: 'sparse-sections',
+      severity: 'warning',
+      message: `${n === 1 ? 'One section has' : `${n} sections have`} few items for the slides ${n === 1 ? 'it covers' : 'they cover'}, against about ${per(density.typical)} a slide elsewhere in this lecture: ${names(density.sparse)}. If those slides matter, More practice writes new questions on them first.`,
+    });
+  }
+  if (density?.dense.length) {
+    const n = density.dense.length;
+    findings.push({
+      id: 'dense-sections',
+      severity: 'warning',
+      message: `${n === 1 ? 'One section has' : `${n} sections have`} many items for few slides, against about ${per(density.typical)} a slide elsewhere: ${names(density.dense)}. Fine for a packed slide the lecture builds on. If it is basics you already know, Not needed on those cards keeps them out of your sittings.`,
     });
   }
 

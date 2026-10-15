@@ -3,6 +3,7 @@ import { sortedSections } from './sortedSections';
 import { freshIdPrefix } from './idPrefix';
 import { analyseCourseGaps } from './courseGaps';
 import { ITEM_TYPES_SPEC, QUALITY_BAR_SPEC } from './generatorSpec';
+import { sectionDensity } from './sectionDensity';
 import { teacherNotesBlock } from './teacherNotes';
 
 /** Keeps a very large course's prompt inside a sane clipboard paste. */
@@ -110,6 +111,14 @@ export function buildPractisePrompt(course: Course, notes = course.metadata.stud
     priorities.push(
       `- These sections have little or nothing that can be scored:\n  ${gaps.thinSections
         .map((s) => `"${s.title}" (${s.gradable} of ${s.total} items are gradable)`)
+        .join('; ')}`,
+    );
+  }
+  const sparse = sectionDensity(course)?.sparse ?? [];
+  if (sparse.length) {
+    priorities.push(
+      `- These sections have few items for the slides they come from, against the rest of the lecture. Read those slides again (from my notes if this chat has them) and write what they teach that no item asks yet, at the weight the spec gives it:\n  ${sparse
+        .map((s) => `"${s.title}" (${s.items} items for ${s.slides} slides)`)
         .join('; ')}`,
     );
   }
