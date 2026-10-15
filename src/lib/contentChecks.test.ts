@@ -111,3 +111,32 @@ describe('the term just typed, asked again as a question', () => {
     ).toBe(true);
   });
 });
+
+describe('a short answer given away by the card before (found reading a Learn walk, 2026-10-15)', () => {
+  it('catches a fact turned round: the traits asked for the name just shown with them', () => {
+    const earlier = { question: 'What does a competitive inhibitor do to apparent Km and apparent Vmax?', answer: 'Apparent Km increases; Vmax is unchanged.' };
+    const later = { question: 'Adding an inhibitor raises the apparent Km but leaves Vmax unchanged. Which mode is it?', answer: 'Competitive' };
+    expect(answeredBy(earlier, later)).toBe(true);
+    const shown = { question: 'On a Lineweaver–Burk plot, what is the signature of an uncompetitive inhibitor?', answer: 'Parallel lines.' };
+    expect(answeredBy(shown, { question: 'A Lineweaver–Burk experiment with and without inhibitor gives two parallel lines. What kind of inhibition?', answer: 'Uncompetitive' })).toBe(true);
+  });
+
+  it('catches a short answer printed with the whole question in a definition just read', () => {
+    const definition = {
+      question: 'Inhibition in which the inhibitor binds the ES complex only. Apparent Km decreases and apparent Vmax decreases.',
+      answer: 'Uncompetitive inhibition',
+    };
+    expect(answeredBy(definition, { question: 'What does an uncompetitive inhibitor do to apparent Km and apparent Vmax?', answer: 'Both decrease.' })).toBe(true);
+  });
+
+  it('leaves a contrast alone: the same question about a different subject', () => {
+    const mixed = { question: 'What does a mixed inhibitor do to apparent Km and apparent Vmax?', answer: 'Apparent Km may increase or decrease; apparent Vmax decreases.' };
+    expect(answeredBy(mixed, { question: 'What does an uncompetitive inhibitor do to apparent Km and apparent Vmax?', answer: 'Both decrease.' })).toBe(false);
+  });
+
+  it('leaves an everyday one-word answer on an unrelated card alone', () => {
+    // "Increases" itself is matched by the older same-answer rule; this is about the new short-answer rule.
+    const earlier = { question: 'What happens to transpiration when the stomata open?', answer: 'It speeds up, because more water vapour escapes.' };
+    expect(answeredBy(earlier, { question: 'What happens to the water potential of the soil after rain?', answer: 'It increases.' })).toBe(false);
+  });
+});

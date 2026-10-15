@@ -99,3 +99,13 @@ Steps 2 to 4 and 6 shipped together (2026-10-13):
 Known: a section whose repeats cannot be spaced ends with a step of one or
 two cards. The content fix (Fix, or the generator below) is what removes
 those.
+
+**Rechecked 2026-10-15 by reading the whole walk card by card** (the
+owner asked for each checked item to be confirmed, not taken from the
+log). The counts above held, but reading found a fact turned round asked
+back to back ("what does a competitive inhibitor do to Km and Vmax?", then
+"raises Km, leaves Vmax: which mode?") and a short answer three cards after
+the definition that printed it. Both are now caught (`shortReveal`,
+sim/FINDINGS.md). Today's walk of the test lecture: Learn 165 cards, 38%
+reading; Today 116 → 111 cards, 36% reading; still 0 give-aways, 0 answers
+shown before asked, 0 cards close to one that answers them.

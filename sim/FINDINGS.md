@@ -10,6 +10,27 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-15 — A short answer given away by the card before is spaced too: level to −2
+
+Reading a whole Learn walk of the test lecture card by card (not the
+counts) found two repeats the checks scored as fine: "what does a
+competitive inhibitor do to Km and Vmax?" followed at once by "raises Km,
+leaves Vmax: which mode?" (a fact turned round), and "what does an
+uncompetitive inhibitor do?" → "both decrease" three cards after the
+definition that says so. `revealsAnswer` skipped answers of one or two
+words. `shortReveal` (lib/contentChecks) now catches both, but only when the
+earlier card is about the same thing: it names the answer and the later
+question carries its traits, or it holds the whole later question. A
+contrast ("what does a mixed inhibitor do…") is left alone. Four more pairs
+on the test lecture, all real repeats.
+
+Equal seeds against the code before: steady-30 48 vs 48, steady-60 85 vs
+86, late-start-harsh 35 vs 36, busy-20 24 vs 26 on 8 seeds (±2–3),
+busy-20-questions-first 25 vs 25. Level within noise; a 20-minute student
+may lose a point or two to the extra short steps. Kept: the owner's rule is
+one fact never back to back, and a card answered from the one before it
+tests nothing. Re-baselined.
+
 ## 2026-10-13 (fresh eyes) — Review spaced like Learn; Keep going in exam week is one part: level
 
 **Found with the new real-lecture harness** (`sim/lecture.sim.ts`, the

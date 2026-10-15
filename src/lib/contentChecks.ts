@@ -162,9 +162,40 @@ export function revealsAnswer(earlier: Asked, later: Asked): boolean {
   // that happens to be used ("increases") is not a reveal.
   const asked = stems(later.question);
   const adds = [...stems(later.answer)].filter((w) => !asked.has(w) && w.length >= 3);
-  if (adds.length < 3) return false;
   const shown = stems(shownText);
-  return adds.filter((w) => shown.has(w)).length / adds.length >= 0.8;
+  if (adds.length >= 3) return adds.filter((w) => shown.has(w)).length / adds.length >= 0.8;
+  return shortReveal(earlier, later, asked, shown, shownText);
+}
+
+/**
+ * The two ways a short answer is given away, found by reading a real Learn
+ * walk (2026-10-15). A one- or two-word answer counts only when the earlier
+ * card is about the same thing, so "increases" on an unrelated card is not
+ * a reveal:
+ *
+ * - Turned round: the earlier card names the answer and gives its traits
+ *   ("What does a competitive inhibitor do to Km and Vmax?" → "Km rises,
+ *   Vmax unchanged"), the later gives those traits and asks for the name
+ *   ("raises Km, leaves Vmax unchanged: which mode?" → "Competitive").
+ * - Printed beside its subject: the earlier card holds all of the later
+ *   question and its answer too (a definition of uncompetitive inhibition
+ *   that says Km and Vmax both decrease, then "what does an uncompetitive
+ *   inhibitor do to Km and Vmax?" → "Both decrease"). All, not most: "what
+ *   does a mixed inhibitor do…" shares every word but its subject with the
+ *   uncompetitive question, and the two are a contrast worth asking side by
+ *   side, not one fact.
+ */
+function shortReveal(earlier: Asked, later: Asked, asked: Set<string>, shown: Set<string>, shownText: string): boolean {
+  const want = [...answerTokens(later.answer)].filter((w) => w.length >= 2 && !asked.has(w));
+  if (!want.length || want.length > 2) return false;
+  const earlierAsked = stems(earlier.question);
+  const traits = [...stems(earlier.answer)].filter((w) => w.length >= 2 && !earlierAsked.has(w));
+  if (traits.length >= 2 && want.every((w) => earlierAsked.has(w)) && traits.filter((w) => asked.has(w)).length / traits.length >= 0.5)
+    return true;
+  if (asked.size < 3) return false;
+  const shownTokens = answerTokens(shownText);
+  const context = [...asked].filter((w) => shown.has(w)).length / asked.size;
+  return context === 1 && want.every((w) => shown.has(w) || shownTokens.has(w));
 }
 
 /**
