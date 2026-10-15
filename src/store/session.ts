@@ -290,23 +290,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
         ? { got: s.score.got + (got ? 1 : 0), missed: s.score.missed + (got ? 0 : 1) }
         : s.score,
     }));
-    const before = useProgressStore.getState().getProgress(courseId)[item.id];
-    const now = Date.now();
-    useStudyLogStore.getState().logAnswer(courseId, {
-      at: now,
-      type: item.type,
-      got,
-      sinceHours: before?.lastSeen != null ? (now - before.lastSeen) / 3_600_000 : null,
-      // The record keeps the memory before its latest answer; stability
-      // that did not rise means that answer was a miss.
-      afterMiss: isMissed(before),
-      predicted: retrievability(before, now),
-      scale: getPersonalScale(),
-    });
-    useProgressStore.getState().recordResult(courseId, item.id, got);
-    // The same term in the student's other lectures (lib/linkedTerms).
-    for (const twin of twinsOf(useCoursesStore.getState().courses, courseId, item.id))
-      useProgressStore.getState().recordResult(twin.courseId, twin.id, got);
+    recordAnswer(courseId, item, got);
     if (!got) get().requeue(index);
   },
 
@@ -451,3 +435,28 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     });
   },
 }));
+
+/**
+ * One answer into the memory model and the study log, with the same term in
+ * the student's other lectures. Every way of answering a card goes through
+ * here: a study session (record, above) and a practice test (TestRoute).
+ */
+export function recordAnswer(courseId: string, item: { id: string; type: string }, got: boolean): void {
+  const before = useProgressStore.getState().getProgress(courseId)[item.id];
+  const now = Date.now();
+  useStudyLogStore.getState().logAnswer(courseId, {
+    at: now,
+    type: item.type,
+    got,
+    sinceHours: before?.lastSeen != null ? (now - before.lastSeen) / 3_600_000 : null,
+    // The record keeps the memory before its latest answer; stability
+    // that did not rise means that answer was a miss.
+    afterMiss: isMissed(before),
+    predicted: retrievability(before, now),
+    scale: getPersonalScale(),
+  });
+  useProgressStore.getState().recordResult(courseId, item.id, got);
+  // The same term in the student's other lectures (lib/linkedTerms).
+  for (const twin of twinsOf(useCoursesStore.getState().courses, courseId, item.id))
+    useProgressStore.getState().recordResult(twin.courseId, twin.id, got);
+}

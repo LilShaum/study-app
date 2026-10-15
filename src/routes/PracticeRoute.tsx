@@ -5,6 +5,7 @@ import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { buildSessionItems, type CardKind, type StudyMode } from '@/lib/buildSessionItems';
 import { examRule } from '@/lib/exam';
 import { sortedSections } from '@/lib/sortedSections';
+import { testPool } from '@/lib/practiceTest';
 
 type Cards = 'due' | 'weakest' | 'missed' | 'everything';
 type Kind = 'all' | CardKind;
@@ -82,6 +83,11 @@ export function PracticeRoute() {
     }
     return out;
   }, [course, id, progress, now, section]);
+
+  const testCount = useMemo(
+    () => (course && id ? testPool([{ courseId: id, course, covers: section ? [section] : 'all' }]).length : 0),
+    [course, id, section],
+  );
 
   if (!id) return <Navigate to="/" replace />;
   if (!course) {
@@ -175,6 +181,20 @@ export function PracticeRoute() {
           <p className="text-small text-text-3">Nothing to practise here yet.</p>
         )}
       </div>
+
+      <section className="mt-10 border-t border-border pt-5">
+        <h2 className="mark text-text-3">Practice test</h2>
+        <p className="mt-2 max-w-prose text-small text-text-2">
+          The medium and hard questions{section ? ' from this section' : ''}, asked as an exam asks them: no answers
+          until the end, then your score and every question you missed.{' '}
+          <span className="tabular-nums text-text-3">{testCount} questions.</span>
+        </p>
+        {testCount > 0 && (
+          <Link to={`/study/${id}/test${section ? `?section=${encodeURIComponent(section)}` : ''}`} className="press tap-safe mt-3">
+            Take a practice test
+          </Link>
+        )}
+      </section>
     </div>
   );
 }

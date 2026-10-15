@@ -39,6 +39,11 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
     scored: true,
   },
   {
+    name: 'Practice test',
+    what: 'On the Practice page, and on a class page for one exam or the whole class. Only the medium and hard questions, the ones that ask you to use what you know. Answers wait until the end, as in an exam; then you see your score, each section weakest first, and every question you missed with the right answer and why yours was wrong. Retake the missed ones as often as you like. Your answers count as practice, so Today knows what the test found.',
+    scored: true,
+  },
+  {
     name: 'Browse',
     what: 'The whole lecture to read through. You can edit, delete or add items here.',
     scored: false,

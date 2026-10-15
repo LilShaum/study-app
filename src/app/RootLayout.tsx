@@ -31,12 +31,13 @@ function useLocationName(): string {
   if (pathname === '/help') return 'Using Arborous';
   if (pathname === '/sync') return 'Sync';
   if (pathname.startsWith('/shared/')) return 'Shared lecture';
-  if (pathname.startsWith('/class/') && params.code) return params.code;
+  if (pathname.startsWith('/class/') && params.code) return pathname.endsWith('/test') ? `${params.code} · Practice test` : params.code;
   if (pathname.startsWith('/session/')) return title ?? 'Session';
   if (pathname.includes('/progress')) return title ? `${title} · Progress` : 'Progress';
   if (pathname.includes('/diagrams')) return title ? `${title} · Plates` : 'Plates';
   if (pathname.endsWith('/glossary')) return title ? `${title} · Glossary` : 'Glossary';
   if (pathname.endsWith('/practice')) return title ? `${title} · Practice` : 'Practice';
+  if (pathname.endsWith('/test')) return title ? `${title} · Practice test` : 'Practice test';
   if (pathname.endsWith('/set-aside')) return title ? `${title} · Set aside` : 'Set aside';
   if (title) return title;
   return 'The library';
@@ -57,6 +58,7 @@ function useTabTitle(here: string): void {
     else if (pathname.includes('/diagrams')) name = `${title} · Plates`;
     else if (pathname.endsWith('/glossary')) name = `${title} · Glossary`;
     else if (pathname.endsWith('/practice')) name = `${title} · Practice`;
+    else if (pathname.endsWith('/test')) name = `${title} · Practice test`;
     else if (pathname.endsWith('/set-aside')) name = `${title} · Set aside`;
     else name = title;
   }

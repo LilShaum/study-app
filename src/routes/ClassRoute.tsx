@@ -167,6 +167,27 @@ export function ClassRoute() {
           <Icon name="plus" size={13} />
           Add an exam
         </button>
+        {/* The test an exam covers, from every lecture on it; past exams are
+            left out, the whole class is always there. */}
+        <p className="mt-4 text-small text-text-2">
+          <span className="mark mr-2 text-text-3">Practice test</span>
+          {exams
+            .filter((e) => (examTime(e.date) ?? 0) > now)
+            .map((e) => (
+              <span key={e.id}>
+                <Link
+                  to={`/class/${encodeURIComponent(code)}/test?exam=${encodeURIComponent(e.id)}`}
+                  className="text-accent underline-offset-4 hover:underline"
+                >
+                  {e.name}
+                </Link>
+                <span className="mx-1.5 text-text-3">·</span>
+              </span>
+            ))}
+          <Link to={`/class/${encodeURIComponent(code)}/test`} className="text-accent underline-offset-4 hover:underline">
+            the whole class
+          </Link>
+        </p>
       </section>
 
       <section className="mt-8">
