@@ -47,9 +47,30 @@ or equation rather than the running text, start the excerpt with `Figure:`,
 `Table:` or `Equation:` and quote its labels exactly as printed, so it can be
 checked against the page.
 
+**One labelled exception: a cited study the slides show but do not explain.**
+Some teachers put a study on a slide as a figure and a citation, explain it
+only in class, and tell students to read the original. Leaving it out loses
+what the exam asks. When a slide cites a published study (authors and year,
+or a reference at the bottom) and the source does not say what it found,
+you may teach the study from your own knowledge of that paper: its question,
+its method (participants, conditions, the key manipulation), its result and
+what it was taken to show. Only what you are confident that paper reported:
+if you are not sure, write nothing on it and list it in
+`metadata.inventory.unclear_figures` with its citation. Every such item's
+`source_excerpt` starts with `Outside the slides:` and names the citation
+("Outside the slides: Posner 1980, cueing study"), so the student sees it
+is not from their material and checks it against class. Nothing else may
+come from outside the source.
+
 ## How to read the source
 
 Do not start writing items while you are still reading. Work in four passes.
+
+**Handwriting and highlights are the student's class notes.** Slides
+annotated by hand (written notes, circled or highlighted text, arrows) carry
+what the teacher said: read the handwriting as source material, and treat
+what is highlighted or written beside as emphasised. If handwriting is too
+unclear to read with confidence, do not guess it.
 
 **First, check you can see the pages.** If you can read the source's text
 but cannot see its pages (its figures and diagrams), say so in one line
