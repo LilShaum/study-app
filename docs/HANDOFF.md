@@ -58,6 +58,15 @@ re-checking the three-cards-per-term first-meeting limit; weighting
 scheduling by importance (the owner's idea: detail and time spent per
 concept); measuring how much repetition comes from mix-ups and misses.
 
+First real log (2026-10-15, about 2 hours of Learn the morning of a
+cognitive neuroscience test, on a lecture of study cards only): flashcards
+73% right, MCQs 97%. The MCQs came straight after a worked example that
+laid out the whole study, so they mostly measured reading a minute ago.
+Worked examples took 29 of 103 minutes; 6 hit the 3-minute card cap. Every
+answer was a first meeting, so nothing here calibrates forgetting yet.
+**Owner: no drastic changes from this**, the class is unusually study-heavy.
+Weigh it against logs from other classes before changing Learn's order.
+
 **Open, marked for later (owner, 2026-10-14):**
 
 - **Done 2026-10-15:** what is expected of every feature is in
