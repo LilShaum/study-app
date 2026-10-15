@@ -36,7 +36,7 @@ export interface AnswerEvent {
   scale?: number;
 }
 
-interface CourseLog {
+export interface CourseLog {
   times: CardTime[];
   answers: AnswerEvent[];
   /** Seconds studied, by local date (YYYY-MM-DD). */
@@ -46,8 +46,8 @@ interface CourseLog {
 // Sized so a course's log stays under about 100 KB: it shares the browser's
 // ~5 MB with the courses and progress, and those matter more (see also
 // lib/safeStorage.ts, which drops the log first when storage is full).
-const MAX_TIMES = 500;
-const MAX_ANSWERS = 800;
+export const MAX_TIMES = 500;
+export const MAX_ANSWERS = 800;
 /** Under a second, the card was skipped past, not studied. */
 const MIN_CARD_SECONDS = 1;
 /** A card left open longer than this was not being studied. */

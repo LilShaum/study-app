@@ -8,6 +8,7 @@ import { buildAddPrompt } from '@/lib/buildAddPrompt';
 import { buildPractisePrompt } from '@/lib/buildPractisePrompt';
 import { buildFixPrompt, planFixes } from '@/lib/buildFixPrompt';
 import { analyseCourseGaps } from '@/lib/courseGaps';
+import { sectionDensity } from '@/lib/sectionDensity';
 import { sortedSections } from '@/lib/sortedSections';
 import { examAfterAdding } from '@/lib/exam';
 import { useCoursesStore } from '@/store/courses';
@@ -83,6 +84,8 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   const canApply = !!plan && plan.totalAdded + plan.totalCorrected > 0;
 
   const gaps = useMemo(() => analyseCourseGaps(course), [course]);
+  // The same list the More practice prompt puts first (buildPractisePrompt).
+  const sparse = useMemo(() => sectionDensity(course)?.sparse ?? [], [course]);
   const fixes = useMemo(() => planFixes(course), [course]);
 
   const copyPrompt = async () => {
@@ -296,12 +299,22 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
             {mode === 'practice' &&
               (gaps.untestedTerms.length > 0 ||
+                sparse.length > 0 ||
                 gaps.thinKeyTerms.length > 0 ||
                 gaps.thinSections.length > 0 ||
                 gaps.gradableRatio < 0.5) && (
                 <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
                   <div className="mb-1 font-medium text-text">The prompt will prioritise:</div>
                   <ul className="list-inside list-disc space-y-0.5">
+                    {sparse.length > 0 && (
+                      <li>
+                        {plural(sparse.length, 'section')} with few items for {sparse.length === 1 ? 'its' : 'their'} slides
+                        <span className="text-text-3">
+                          : {sparse.slice(0, 3).map((x) => `${x.title} (${x.items} for ${x.slides})`).join(', ')}
+                          {sparse.length > 3 ? '…' : ''}
+                        </span>
+                      </li>
+                    )}
                     {gaps.untestedTerms.length > 0 && (
                       <li>
                         {plural(gaps.untestedTerms.length, 'term')} defined but never tested

@@ -266,7 +266,10 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     // the session each time.
     const bookmark = resume ? useResumeStore.getState().getBookmark(courseId) : null;
     const usable =
-      bookmark && bookmark.mode === mode && (bookmark.sectionId ?? undefined) === sectionId
+      bookmark &&
+      bookmark.mode === mode &&
+      (bookmark.sectionId ?? undefined) === sectionId &&
+      (bookmark.kind ?? null) === useSessionStore.getState().pendingKind
         ? bookmark.itemId
         : undefined;
     // The lecture as it is now, read rather than subscribed to: setting a
@@ -284,6 +287,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     useResumeStore.getState().save(courseId, {
       mode,
       sectionId: sectionId ?? null,
+      kind: useSessionStore.getState().pendingKind,
       itemId: current.id,
       index,
       total,

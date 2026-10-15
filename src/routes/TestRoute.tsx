@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { recordAnswer } from '@/store/session';
@@ -52,14 +52,83 @@ export function TestRoute() {
     };
   }, [id, code, courses, sectionId, examId, now]);
 
-  // Drawn once per test: re-reading the store as answers are recorded must
-  // not reshuffle the questions under the student.
   const pool = useMemo(() => testPool(scopes), [scopes]);
-  const [test, setTest] = useState<TestQuestion[] | null>(null);
-  const [answers, setAnswers] = useState<(number | null)[]>([]);
-  const [at, setAt] = useState(0);
-  const [done, setDone] = useState(false);
-  const recorded = useRef(false);
+  const scopeKey = id ? `lecture:${id}:${sectionId ?? ''}` : `class:${code ?? ''}:${examId ?? ''}`;
+
+  const header = (
+    <>
+      <Link to={back} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
+        ← {backLabel}
+      </Link>
+      <h1 className="mt-4 font-display text-display font-semibold text-text">Practice test</h1>
+      <p className="mt-1 text-small text-text-2">{title}</p>
+    </>
+  );
+
+  // Keyed by what the test covers, so a different lecture, section or exam
+  // starts from its own saved test, never from another's.
+  return <TestRun key={scopeKey} storageKey={`arborous:test:${scopeKey}`} pool={pool} header={header} back={back} />;
+}
+
+/**
+ * A test in progress, or its results, kept until the student starts a new
+ * one. A phone reloads the app when it has been in the background a while
+ * (switching to the slides and back is enough), and Leave is one tap; either
+ * used to throw away every answer. Questions are stored by id and looked up
+ * again, so an edited lecture drops only what no longer exists.
+ */
+interface SavedTest {
+  refs: { courseId: string; itemId: string }[];
+  answers: (number | null)[];
+  at: number;
+  done: boolean;
+  recorded: boolean;
+}
+
+function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> & { test: TestQuestion[] }) | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const saved = JSON.parse(raw) as SavedTest;
+    const byRef = new Map(pool.map((q) => [`${q.courseId}/${q.item.id}`, q]));
+    const test: TestQuestion[] = [];
+    const answers: (number | null)[] = [];
+    saved.refs.forEach((r, i) => {
+      const q = byRef.get(`${r.courseId}/${r.itemId}`);
+      if (q) {
+        test.push(q);
+        const a = saved.answers[i];
+        answers.push(typeof a === 'number' && a >= 0 && a < q.item.options.length ? a : null);
+      }
+    });
+    if (!test.length) return null;
+    return { test, answers, at: Math.min(Math.max(0, saved.at | 0), test.length - 1), done: !!saved.done, recorded: !!saved.recorded };
+  } catch {
+    return null;
+  }
+}
+
+function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool: TestQuestion[]; header: ReactNode; back: string }) {
+  // Read once: re-reading the store as answers are recorded must not
+  // reshuffle the questions under the student.
+  const [saved] = useState(() => loadTest(storageKey, pool));
+  const [test, setTest] = useState<TestQuestion[] | null>(saved?.test ?? null);
+  const [answers, setAnswers] = useState<(number | null)[]>(saved?.answers ?? []);
+  const [at, setAt] = useState(saved?.at ?? 0);
+  const [done, setDone] = useState(saved?.done ?? false);
+  const recorded = useRef(saved?.recorded ?? false);
+
+  useEffect(() => {
+    try {
+      if (!test) localStorage.removeItem(storageKey);
+      else {
+        const refs = test.map((q) => ({ courseId: q.courseId, itemId: q.item.id }));
+        localStorage.setItem(storageKey, JSON.stringify({ refs, answers, at, done, recorded: recorded.current } satisfies SavedTest));
+      }
+    } catch {
+      // Storage full or blocked: the test still works, it just won't survive a reload.
+    }
+  }, [storageKey, test, answers, at, done]);
 
   const start = (questions: TestQuestion[]) => {
     setTest(questions);
@@ -83,16 +152,6 @@ export function TestRoute() {
     setDone(true);
     window.scrollTo(0, 0);
   };
-
-  const header = (
-    <>
-      <Link to={back} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
-        ← {backLabel}
-      </Link>
-      <h1 className="mt-4 font-display text-display font-semibold text-text">Practice test</h1>
-      <p className="mt-1 text-small text-text-2">{title}</p>
-    </>
-  );
 
   if (!test) return <Setup header={header} pool={pool} onStart={(n) => start(drawTest(pool, n))} />;
   if (done) {
@@ -120,7 +179,7 @@ export function TestRoute() {
   );
 }
 
-function Setup({ header, pool, onStart }: { header: React.ReactNode; pool: TestQuestion[]; onStart: (n?: number) => void }) {
+function Setup({ header, pool, onStart }: { header: ReactNode; pool: TestQuestion[]; onStart: (n?: number) => void }) {
   const lengths = TEST_LENGTHS.filter((n) => n < pool.length);
   const [length, setLength] = useState<number | undefined>(lengths[0]);
   return (
@@ -257,6 +316,8 @@ function Taking({
   );
 }
 
+const SECTIONS_SHOWN = 5;
+
 function Results({
   header,
   test,
@@ -264,7 +325,7 @@ function Results({
   onRetakeMissed,
   onNew,
 }: {
-  header: React.ReactNode;
+  header: ReactNode;
   test: TestQuestion[];
   answers: (number | null)[];
   onRetakeMissed: (missed: TestQuestion[]) => void;
@@ -273,6 +334,24 @@ function Results({
   const result = useMemo(() => scoreTest(test, answers), [test, answers]);
   const pct = result.total ? Math.round((result.got / result.total) * 100) : 0;
   const lectures = new Set(test.map((q) => q.courseId)).size;
+  // Most missed first, then the lowest share: a section missed four times
+  // says more than one missed once. A short test touches many sections once
+  // each, so only the first few show until asked.
+  const sections = [...result.bySection].sort((a, b) => b.total - b.got - (a.total - a.got) || a.got / a.total - b.got / b.total);
+  const [allSections, setAllSections] = useState(false);
+  const shown = allSections ? sections : sections.slice(0, SECTIONS_SHOWN);
+  const actions = (
+    <div className="flex flex-wrap items-center gap-3">
+      {result.missed.length > 0 && (
+        <button type="button" onClick={() => onRetakeMissed(result.missed.map((m) => m.q))} className="press press-ink tap-safe">
+          Retake the {result.missed.length} missed
+        </button>
+      )}
+      <button type="button" onClick={onNew} className="press tap-safe">
+        New test
+      </button>
+    </div>
+  );
   return (
     <div>
       {header}
@@ -284,13 +363,13 @@ function Results({
           {pct}% right
           {result.missed.length > 0 && `. ${result.missed.length} to go over below.`}
         </div>
+        <div className="mt-4">{actions}</div>
       </div>
 
       <section className="mt-8">
         <h2 className="mark mb-2 text-text-3">By section</h2>
         <ul className="border-t border-border">
-          {/* Weakest first: what to go back to tonight is at the top. */}
-          {[...result.bySection].sort((a, b) => a.got / a.total - b.got / b.total).map((r) => (
+          {shown.map((r) => (
             <li key={r.key} className="flex items-baseline gap-3 border-b border-border py-2.5">
               <span className="min-w-0 flex-1 text-small text-text">
                 {r.section}
@@ -302,6 +381,11 @@ function Results({
             </li>
           ))}
         </ul>
+        {sections.length > SECTIONS_SHOWN && (
+          <button type="button" onClick={() => setAllSections((v) => !v)} className="tap-safe mt-1 text-small text-text-3 hover:text-text">
+            {allSections ? 'Fewer sections' : `All ${sections.length} sections`}
+          </button>
+        )}
       </section>
 
       {result.missed.length > 0 && (
@@ -330,16 +414,7 @@ function Results({
         </section>
       )}
 
-      <div className="mt-6 flex flex-wrap items-center gap-3">
-        {result.missed.length > 0 && (
-          <button type="button" onClick={() => onRetakeMissed(result.missed.map((m) => m.q))} className="press press-ink tap-safe">
-            Retake the {result.missed.length} missed
-          </button>
-        )}
-        <button type="button" onClick={onNew} className="press tap-safe">
-          New test
-        </button>
-      </div>
+      {result.missed.length > 0 && <div className="mt-6">{actions}</div>}
     </div>
   );
 }

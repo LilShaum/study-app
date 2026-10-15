@@ -2,13 +2,15 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { safeJSONStorage } from '@/lib/safeStorage';
 import type { Course } from '@/schema/course';
-import type { StudyMode } from '@/lib/buildSessionItems';
+import type { CardKind, StudyMode } from '@/lib/buildSessionItems';
 import { recallId } from '@/lib/scored';
 
 export interface Bookmark {
   mode: StudyMode;
   /** The section the session was scoped to, or null for the whole course. */
   sectionId: string | null;
+  /** The Practice page's kind filter (questions, flashcards, terms), so Continue keeps it. */
+  kind?: CardKind | null;
   /**
    * Where to pick up, as an item id rather than a position.
    *

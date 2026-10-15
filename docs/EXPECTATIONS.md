@@ -205,7 +205,10 @@ counts as medium), drawn at random from a lecture, a section, everything
 an exam covers, or a whole class; 20, 40 or all. No feedback until the end;
 then the score, each section weakest first, and every miss with the
 answer, why the pick was wrong, and the explanation. Retake the missed ones.
-Answers count as practice, so Today knows what the test found.
+A test in progress, and its results, survive leaving and a reload (a phone
+reloads the app after switching away) until the student starts a new one.
+Answers count as practice once, when the test is marked, so Today knows
+what the test found.
 
 ### The memory model and review
 

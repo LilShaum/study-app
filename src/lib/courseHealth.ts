@@ -230,7 +230,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     findings.push({
       id: 'unclear-figures',
       severity: 'warning',
-      message: `The AI couldn't read ${n === 1 ? 'one figure' : `${n} figures`} clearly, so nothing here tests ${n === 1 ? 'it' : 'them'}. Check ${n === 1 ? 'it' : 'them'} on your slides: ${unclear.slice(0, 4).join('; ')}${n > 4 ? `; +${n - 4} more` : ''}.`,
+      message: `The AI couldn't read ${n === 1 ? 'one figure' : `${n} figures`} clearly, so nothing here tests ${n === 1 ? 'it' : 'them'}. Check ${n === 1 ? 'it' : 'them'} on your slides (${unclear.slice(0, 4).join('; ')}${n > 4 ? `; +${n - 4} more` : ''}).`,
     });
   }
 

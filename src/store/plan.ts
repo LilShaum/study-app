@@ -17,6 +17,8 @@ interface PlanState {
    * soon each exam is (lib/dailyShare.ts). Null: each course has its own.
    */
   total: number | null;
+  /** When `total` was last set, so sync keeps the latest choice across devices. */
+  totalSetAt?: number;
   setTotal: (minutes: number | null) => void;
   minutesFor: (courseId: string) => number;
   /** Whether the student has chosen, rather than getting the default. */
@@ -29,7 +31,7 @@ export const usePlanStore = create<PlanState>()(
     (set, get) => ({
       byCourse: {},
       total: null,
-      setTotal: (total) => set({ total }),
+      setTotal: (total) => set({ total, totalSetAt: Date.now() }),
       minutesFor: (courseId) => get().byCourse[courseId]?.minutes ?? DEFAULT_MINUTES,
       hasChosen: (courseId) => courseId in get().byCourse,
       setMinutes: (courseId, minutes) =>

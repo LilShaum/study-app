@@ -101,6 +101,7 @@ function localSnapshot(): Snapshot {
     perCourse: Object.fromEntries(
       Object.entries(PER_COURSE).map(([key, store]) => [key, (store.getState() as { byCourse: Record<string, unknown> }).byCourse]),
     ),
+    planTotal: { minutes: usePlanStore.getState().total, at: usePlanStore.getState().totalSetAt ?? 0 },
   };
 }
 
@@ -112,6 +113,7 @@ function applySnapshot(s: Snapshot): void {
     for (const [key, store] of Object.entries(PER_COURSE)) {
       (store as unknown as { setState: (p: object) => void }).setState({ byCourse: s.perCourse[key] ?? {} });
     }
+    if (s.planTotal) usePlanStore.setState({ total: s.planTotal.minutes, totalSetAt: s.planTotal.at });
   });
 }
 
