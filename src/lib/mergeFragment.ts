@@ -244,7 +244,13 @@ export function applyMerge(course: Course, plan: MergePlan): Course {
     const mentioned = union(was.mentioned, plan.inventory.mentioned).filter((t) => !explained.has(t.toLowerCase()));
     merged.metadata = {
       ...course.metadata,
-      inventory: { ...was, terms, mentioned, objectives: union(was.objectives, plan.inventory.objectives) },
+      inventory: {
+        ...was,
+        terms,
+        mentioned,
+        objectives: union(was.objectives, plan.inventory.objectives),
+        unclear_figures: union(was.unclear_figures, plan.inventory.unclear_figures),
+      },
     };
   }
 

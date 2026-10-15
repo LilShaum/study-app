@@ -79,8 +79,10 @@ const SECTIONS: HelpSection[] = [
             On the library page, tap <strong>New lecture</strong>.
           </li>
           <li>
-            Copy the prompt and paste it into a chat with an AI such as Claude. Attach your notes in
-            the same message.
+            Copy the prompt and paste it into a chat with an AI such as Claude. Attach your slides
+            or notes to that same message. Files kept only in a project often reach the AI as text,
+            without the diagrams, and the lecture then misses what the diagrams show. If a key
+            diagram is dense, attach a screenshot of that slide too.
           </li>
           <li>
             Copy the reply and paste it into the New lecture box. Or save it as a{' '}

@@ -221,7 +221,8 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             </div>
             {mode === 'material' ? (
               <p className="mb-2 text-sm text-text-2">
-                Copy the prompt, paste it into your AI chat along with your new notes, and it will
+                Copy the prompt, paste it into your AI chat with your new notes attached to the same
+                message (not only as project files, which often lose the diagrams), and it will
                 return JSON. The prompt already tells it which sections, item ids and tags this
                 lecture uses, so it won&apos;t duplicate or collide with what you have.
               </p>

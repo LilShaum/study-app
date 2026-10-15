@@ -51,6 +51,14 @@ checked against the page.
 
 Do not start writing items while you are still reading. Work in four passes.
 
+**First, check you can see the pages.** If you can read the source's text
+but cannot see its pages (its figures and diagrams), say so in one line
+before anything else and ask the student to attach the file to this
+message: a file kept only in a project's knowledge is often read as text
+alone, and a course made without the figures misses everything they show.
+Go ahead from the text only if the student says so or the source has no
+figures.
+
 ### Pass 1 — Read all of it
 
 Read the entire source before generating anything. You cannot judge what is
@@ -225,6 +233,12 @@ where the content hides, so read for these rather than for a format:
 - **Terse does not mean less; verbose does not mean more.** One line stating a
   formula is a definition, a symbol-by-symbol gloss and an applied question.
   Four hundred words circling one idea is still one idea.
+- **A figure you cannot read is not a figure you can test.** If a label is
+  too small to make out, or an arrow too tangled to follow with confidence,
+  write no item from that part and never guess it. List it in
+  `metadata.inventory.unclear_figures` with where it is and what you could
+  not read ("slide 12: the small labels on the vertebra drawing"), so the
+  student can check it against the page.
 - **Expand what is stated; never add what is not.** A fragment may be unpacked
   into everything it implies *within the source's own content*. It may not be
   completed from your own knowledge of the subject.
@@ -252,7 +266,8 @@ file must be valid JSON matching this shape exactly:
     "inventory": {                 // your Pass 2 inventory — see below
       "terms": string[],           // EVERY term you give a definition item
       "mentioned": string[]?,      // every other term: only named, or covered by another item
-      "objectives": string[]?      // stated learning objectives, verbatim
+      "objectives": string[]?,     // stated learning objectives, verbatim
+      "unclear_figures": string[]? // figures you could not read with confidence, and where
     }?
   },
   "sections": [

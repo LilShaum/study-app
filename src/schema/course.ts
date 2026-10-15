@@ -124,6 +124,8 @@ export const InventorySchema = z.looseObject({
   /** Terms the source only names (a label, a caption): listed, never defined. */
   mentioned: z.array(z.string()).optional(),
   objectives: z.array(z.string()).optional(),
+  /** Figures the generator could not read with confidence ("slide 12: the small labels"), so the student checks them. */
+  unclear_figures: z.array(z.string().max(300)).max(200).optional(),
 });
 
 /**

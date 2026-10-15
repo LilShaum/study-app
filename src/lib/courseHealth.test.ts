@@ -119,6 +119,12 @@ describe('analyseCourseHealth — coverage against the declared inventory', () =
     expect(find(h, 'declared-terms-missing')).toBeUndefined();
   });
 
+  it('names the figures the generator could not read, so the student checks them', () => {
+    const h = analyseCourseHealth(course([def('d1', 'Axon')], { inventory: { unclear_figures: ['slide 12: small labels on the vertebra'] } }));
+    expect(find(h, 'unclear-figures')?.message).toMatch(/one figure.*slide 12: small labels on the vertebra/);
+    expect(find(analyseCourseHealth(course([def('d1', 'Axon')])), 'unclear-figures')).toBeUndefined();
+  });
+
   it('matches a declared term against a longer definition title', () => {
     const h = analyseCourseHealth(withInventory([def('d1', 'Km (Michaelis constant)')], ['Km']));
     expect(h.declaredTermCoverage).toMatchObject({ covered: 1, total: 1 });

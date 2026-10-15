@@ -71,7 +71,7 @@ Where the spec below describes the output as a whole course file
   "sections": [
     { "id": "<existing section id, or a new slug>", "title": "<only needed for a new section>", "items": [ /* new items */ ] }
   ],
-  "inventory": { "terms": [ /* NEW terms you give a definition */ ], "mentioned": [ /* every other new term: only named, or covered by another item */ ] }
+  "inventory": { "terms": [ /* NEW terms you give a definition */ ], "mentioned": [ /* every other new term: only named, or covered by another item */ ], "unclear_figures": [ /* figures you could not read with confidence, and where */ ] }
 }
 
 ════════ COURSE I'M ADDING TO ════════
@@ -101,7 +101,7 @@ ${GENERATOR_SPEC}
 
 ${teacherNotesBlock(notes)}════════ MY SOURCE MATERIAL ════════
 
-<<< PASTE YOUR NOTES, SLIDES, OR CHAPTER BELOW THIS LINE >>>
+<<< ATTACH YOUR SLIDES / PDF / NOTES TO THIS MESSAGE (NOT ONLY AS PROJECT FILES), OR PASTE THEM BELOW THIS LINE >>>
 `;
 }
 

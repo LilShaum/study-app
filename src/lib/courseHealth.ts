@@ -220,6 +220,19 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     }
   }
 
+  // Figures the generator said it could not read: nothing in the course
+  // tests them, and only the student, with the slide open, can tell whether
+  // that matters.
+  const unclear = (course.metadata.inventory?.unclear_figures ?? []).filter((f) => f.trim());
+  if (unclear.length) {
+    const n = unclear.length;
+    findings.push({
+      id: 'unclear-figures',
+      severity: 'warning',
+      message: `The AI couldn't read ${n === 1 ? 'one figure' : `${n} figures`} clearly, so nothing here tests ${n === 1 ? 'it' : 'them'}. Check ${n === 1 ? 'it' : 'them'} on your slides: ${unclear.slice(0, 4).join('; ')}${n > 4 ? `; +${n - 4} more` : ''}.`,
+    });
+  }
+
   /* ---- testability ---- */
   if (gaps.untestedTerms.length) {
     findings.push({

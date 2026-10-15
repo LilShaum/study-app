@@ -166,8 +166,9 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
               Step 1: generate
             </div>
             <p className="mb-2 text-sm text-text-2">
-              Copy this prompt into an AI chat, attach your slides, PDF or notes, and it will return
-              a lecture. The prompt is the full generator spec. It tells the model to inventory
+              Copy this prompt into an AI chat, attach your slides, PDF or notes to the same message,
+              and it will return a lecture. Attach them even if they are already in a project: a
+              project&apos;s files often reach the AI as text only, without the diagrams. The prompt is the full generator spec. It tells the model to inventory
               every term, objective and formula in your notes first, so the result covers the
               material rather than skimming it.
             </p>
