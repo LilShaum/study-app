@@ -48,8 +48,15 @@ already tested at the same depth. Practice test (`TestRoute.tsx`,
 lecture, per exam or a whole class. Course check on items per slide
 (`lib/sectionDensity.ts`), with More practice writing for sparse sections
 first. **Open:** compare a regenerated lecture against the old one to
-confirm the prompt changes on real output; the importance, repetition and
-calibration items wait on the owner's study log.
+confirm the prompt changes on real output.
+
+**Back burner (owner, 2026-10-15): anything that needs the owner's real
+study log.** Do not start these until the owner sends a backup (Help →
+Back up everything, key `arborous:study-log`) and asks for them:
+calibrating the simulator and the readiness forecast from real answers;
+re-checking the three-cards-per-term first-meeting limit; weighting
+scheduling by importance (the owner's idea: detail and time spent per
+concept); measuring how much repetition comes from mix-ups and misses.
 
 **Open, marked for later (owner, 2026-10-14):**
 
