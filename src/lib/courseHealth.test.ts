@@ -231,6 +231,30 @@ describe('analyseCourseHealth — key terms asked one way', () => {
   });
 });
 
+describe('analyseCourseHealth — thin key terms, by any of their names and only where asked', () => {
+  const lecture = (items: StudyItem[]) =>
+    ({ schema_version: '1.0', metadata: { title: 'T' }, sections: [{ id: 's1', title: 'The rate equation and Km', items }] }) as Course;
+  const defKm = { id: 'd1', type: 'definition', term: 'Michaelis constant (Km)', definition: 'The substrate concentration at half the maximum rate.' } as StudyItem;
+  const ask = (id: string, question: string, answer: string) =>
+    ({ id, type: 'mcq', question, options: [answer, 'b', 'c', 'd'], correct_index: 0, explanation: 'Km appears here too.', distractor_rationale: ['', 'x', 'y', 'z'] }) as StudyItem;
+
+  it('counts a term named in its section title by its short name', () => {
+    const c = lecture([defKm, ask('q1', 'What does a low Km tell you about an enzyme?', 'It is half saturated at a low concentration')]);
+    expect(find(analyseCourseHealth(c), 'thin-key-terms')?.message).toMatch(/Michaelis constant \(Km\)/);
+  });
+
+  it('does not count a question that only mentions the term in an option or explanation', () => {
+    const c = lecture([
+      defKm,
+      ask('q1', 'What does a low Km tell you about an enzyme?', 'It is half saturated at a low concentration'),
+      { ...ask('q2', 'Which plot gives a straight line?', 'Lineweaver–Burk'), options: ['Lineweaver–Burk', 'Km against Vmax', 'c', 'd'] } as StudyItem,
+    ]);
+    expect(find(analyseCourseHealth(c), 'thin-key-terms')?.message).toMatch(/Michaelis constant/);
+    const twice = lecture([defKm, ask('q1', 'What does a low Km tell you?', 'High affinity'), ask('q2', 'Two enzymes differ only in Km. Which is faster at low substrate?', 'The one with the lower Km')]);
+    expect(find(analyseCourseHealth(twice), 'thin-key-terms')).toBeUndefined();
+  });
+});
+
 describe('analyseCourseHealth — an MCQ that asks a term back from its definition', () => {
   it('is listed; one on what the definition leaves out is not', () => {
     const items = [

@@ -29,6 +29,21 @@ export interface CourseGaps {
 }
 
 /** The text a gradable item puts in front of the student. */
+/** A defined term's names: as written, without its bracket, the bracket alone, and the source's other names. */
+function namesOf(d: Extract<StudyItem, { type: 'definition' }>): string[] {
+  const term = d.term ?? '';
+  const bracket = term.match(/\(([^)]+)\)/)?.[1]?.trim();
+  const bare = term.replace(/\([^)]*\)/g, ' ').trim();
+  return [term, bare, bracket ?? '', ...(d.also_known_as ?? [])].filter((n) => n && n.length >= 2);
+}
+
+/** What a question asks about: its own words and its answer. */
+function askedText(item: StudyItem): string {
+  if (item.type === 'mcq') return [item.question, item.options?.[item.correct_index] ?? ''].join(' ');
+  if (item.type === 'flashcard') return [item.front, item.back].join(' ');
+  return '';
+}
+
 function gradableText(item: StudyItem): string {
   if (item.type === 'mcq') {
     return [item.question, ...(item.options ?? []), item.explanation ?? ''].join(' ');
@@ -73,12 +88,17 @@ export function analyseCourseGaps(course: Course): CourseGaps {
     .map((d) => d.term)
     .filter((term) => !someTextCoversTerm(gradableTexts, term ?? ''));
 
+  // Key: named in a stated objective or a section title, by any of its
+  // names ("Michaelis constant (Km)" is key in a section called "… and Km").
+  // Asked: in a question's own words or its answer, not in a distractor or
+  // an explanation that only mentions it on the way to something else.
   const keyTexts = [...(course.metadata.inventory?.objectives ?? []), ...sections.map((s) => s.title)];
+  const askedTexts = gradable.map(askedText);
   const thinKeyTerms = items
     .filter((i): i is Extract<StudyItem, { type: 'definition' }> => i.type === 'definition' && !i.set_aside)
-    .map((d) => d.term ?? '')
-    .filter((term) => term && someTextCoversTerm(keyTexts, term))
-    .filter((term) => gradableTexts.filter((t) => someTextCoversTerm([t], term)).length === 1);
+    .filter((d) => d.term && namesOf(d).some((name) => someTextCoversTerm(keyTexts, name)))
+    .filter((d) => askedTexts.filter((t) => namesOf(d).some((name) => someTextCoversTerm([t], name))).length === 1)
+    .map((d) => d.term);
 
   const thinSections = sections
     .map((s) => ({
