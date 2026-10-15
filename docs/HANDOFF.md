@@ -36,6 +36,21 @@ re-asks of misses; the app fits each student's forgetting rate
 real card times (absolute scores dropped; see FINDINGS); the owner's
 lecture wording was taken out of the repo.
 
+**Done 2026-10-14/15 (live):** generator prompt: a reading map of why
+each slide is there (objectives, what later slides build on, studies,
+lists to compare vs learn, building blocks), figure labels the lecture
+builds on are content, conflicting rules consolidated, figures it cannot
+read listed in `inventory.unclear_figures` (shown by the course check),
+and "attach the slides to the message, not only as project files" (project
+files often reach the AI as text only). Add material skips only facts
+already tested at the same depth. Practice test (`TestRoute.tsx`,
+`lib/practiceTest.ts`): medium and hard MCQs, answers at the end, per
+lecture, per exam or a whole class. Course check on items per slide
+(`lib/sectionDensity.ts`), with More practice writing for sparse sections
+first. **Open:** compare a regenerated lecture against the old one to
+confirm the prompt changes on real output; the importance, repetition and
+calibration items wait on the owner's study log.
+
 **Open, marked for later (owner, 2026-10-14):**
 
 - **Write down what is expected of the app, feature by feature.** §1 and §2
@@ -44,7 +59,8 @@ lecture wording was taken out of the repo.
   practice, Fix, the course check, exams, the tree, sync). One place, so
   a new session knows exactly what "working" means before changing
   anything. Not started; the owner asked for it to wait.
-- **Item counts don't follow importance.** Old lectures (made with the
+- **Item counts don't follow importance** (prompt and check shipped
+  2026-10-15, see above; waiting on a regenerated lecture to confirm). Old lectures (made with the
   pre-weight-table prompt) give one basics slide 10–20+ items; the owner's
   first Add material run (parts 3–4 of a lecture) gave about 2 items per
   slide, put 57 terms the slides teach in sentences (SNARE parts, Mg²⁺
