@@ -65,6 +65,8 @@ interface ProgressState {
   getProgress: (courseId: string) => CourseProgress;
   missedIds: (courseId: string) => Set<string>;
   recordResult: (courseId: string, itemId: string, got: boolean) => void;
+  /** Several answers in one write (a practice test's whole batch), each as recordResult would. */
+  recordResults: (courseId: string, results: { itemId: string; got: boolean }[]) => void;
   /**
    * Correct an attempt already recorded, rather than record another one.
    *
@@ -80,6 +82,27 @@ interface ProgressState {
 
   /** Bulk-replace, used only by the one-time legacy-data migration. */
   _hydrateFromLegacy: (byCourse: Record<string, CourseProgress>) => void;
+}
+
+/** A card's record after one more answer. */
+function answered(was: ItemResult | undefined, got: boolean, now: number): ItemResult {
+  const prev = was ?? { got: 0, missed: 0, lastSeen: null };
+  const before = memoryBefore(prev);
+  return {
+    got: prev.got + (got ? 1 : 0),
+    missed: prev.missed + (got ? 0 : 1),
+    lastSeen: now,
+    stability: nextStability(before, got, now),
+    before,
+    lastGot: got,
+    ...(got ? (prev.missedAt != null ? { missedAt: prev.missedAt } : {}) : { missedAt: now }),
+    // A mix-up is kept until the term is got right on a later day.
+    // It used to be dropped by the next answer of any kind, so a pair
+    // was put side by side in one session at most.
+    ...(prev.confusedWith?.length && !(got && prev.lastSeen != null && !sameDay(prev.lastSeen, now))
+      ? { confusedWith: prev.confusedWith }
+      : {}),
+  };
 }
 
 export const useProgressStore = create<ProgressState>()(
@@ -99,33 +122,15 @@ export const useProgressStore = create<ProgressState>()(
         );
       },
 
-      recordResult: (courseId, itemId, got) => {
+      recordResult: (courseId, itemId, got) => get().recordResults(courseId, [{ itemId, got }]),
+
+      recordResults: (courseId, results) => {
+        if (!results.length) return;
         set((state) => {
-          const course = state.byCourse[courseId] ?? {};
-          const prev = course[itemId] ?? { got: 0, missed: 0, lastSeen: null };
+          const course = { ...(state.byCourse[courseId] ?? {}) };
           const now = Date.now();
-          const before = memoryBefore(prev);
-          const next: ItemResult = {
-            got: prev.got + (got ? 1 : 0),
-            missed: prev.missed + (got ? 0 : 1),
-            lastSeen: now,
-            stability: nextStability(before, got, now),
-            before,
-            lastGot: got,
-            ...(got ? (prev.missedAt != null ? { missedAt: prev.missedAt } : {}) : { missedAt: now }),
-            // A mix-up is kept until the term is got right on a later day.
-            // It used to be dropped by the next answer of any kind, so a pair
-            // was put side by side in one session at most.
-            ...(prev.confusedWith?.length && !(got && prev.lastSeen != null && !sameDay(prev.lastSeen, now))
-              ? { confusedWith: prev.confusedWith }
-              : {}),
-          };
-          return {
-            byCourse: {
-              ...state.byCourse,
-              [courseId]: { ...course, [itemId]: next },
-            },
-          };
+          for (const { itemId, got } of results) course[itemId] = answered(course[itemId], got, now);
+          return { byCourse: { ...state.byCourse, [courseId]: course } };
         });
       },
 

@@ -47,20 +47,35 @@ function mergeProgress(a: Record<string, ItemResult> = {}, b: Record<string, Ite
 
 const answerKey = (a: AnswerEvent) => `${a.at}:${a.type}:${a.got ? 1 : 0}`;
 
-/** Two devices' logs of one course, merged (see the rules above). */
+/**
+ * Two devices' logs of one course, merged (see the rules above).
+ *
+ * Answers are matched as a multiset: a practice test logs its whole batch in
+ * one millisecond, so two real answers can look identical. Each identical
+ * answer is kept as many times as the device with more of them has it, which
+ * keeps both and still never doubles one that both devices already hold.
+ */
 export function mergeLogs(local: CourseLog | undefined, remote: CourseLog | undefined): CourseLog | undefined {
   if (!local || !remote) return local ?? remote;
-  const seen = new Set<string>();
-  const answers = [...(local.answers ?? []), ...(remote.answers ?? [])]
-    .filter((a) => {
-      const k = answerKey(a);
-      return !seen.has(k) && !!seen.add(k);
-    })
-    .sort((a, b) => a.at - b.at)
-    .slice(-MAX_ANSWERS);
+  const list = (x: CourseLog) => (Array.isArray(x.answers) ? x.answers.filter((a) => a && typeof a.at === 'number') : []);
+  const fromRemote = new Map<string, number>();
+  for (const a of list(remote)) fromRemote.set(answerKey(a), (fromRemote.get(answerKey(a)) ?? 0) + 1);
+  const answers = [...list(local)];
+  const fromLocal = new Map<string, number>();
+  for (const a of answers) fromLocal.set(answerKey(a), (fromLocal.get(answerKey(a)) ?? 0) + 1);
+  for (const a of list(remote)) {
+    const k = answerKey(a);
+    const have = fromLocal.get(k) ?? 0;
+    if (have < (fromRemote.get(k) ?? 0)) {
+      answers.push(a);
+      fromLocal.set(k, have + 1);
+    }
+  }
+  answers.sort((a, b) => a.at - b.at);
+  answers.splice(0, Math.max(0, answers.length - MAX_ANSWERS));
   const days: Record<string, number> = { ...(remote.days ?? {}) };
   for (const [day, s] of Object.entries(local.days ?? {})) days[day] = Math.max(days[day] ?? 0, s);
-  return { times: local.times ?? [], answers, days };
+  return { times: Array.isArray(local.times) ? local.times : [], answers, days };
 }
 
 export function mergeSnapshots(local: Snapshot, remote: Snapshot): Snapshot {

@@ -1,4 +1,4 @@
-import { ClassExamSchema, CourseSchema, SCHEMA_VERSION, type Course } from './course';
+import { ClassExamSchema, CourseSchema, InventorySchema, SCHEMA_VERSION, type Course } from './course';
 import { formatZodError } from './formatZodError';
 import { cutMessage, readReply } from '@/lib/readReply';
 
@@ -50,7 +50,16 @@ export function parseCourse(raw: unknown): ParseCourseResult {
   // The one exception: the exam list (lib/classExams). It is someone else's
   // file, so only well-formed exams are kept, at most twenty, and a bad one
   // costs only itself, never the lecture or the other exams.
-  const course = raw as Course;
+  let course = raw as Course;
+  // So is the inventory: the generator's notes about the lecture, read
+  // forgivingly (InventorySchema), so the cleaned lists are what is kept.
+  if (course.metadata.inventory !== undefined) {
+    const inventory = InventorySchema.safeParse(course.metadata.inventory);
+    const metadata: Course['metadata'] = { ...course.metadata };
+    if (inventory.success) metadata.inventory = inventory.data;
+    else delete metadata.inventory;
+    course = { ...course, metadata };
+  }
   if ('exams' in course.metadata) {
     const list: unknown = course.metadata.exams;
     const exams = (Array.isArray(list) ? list : []).flatMap((e) => {

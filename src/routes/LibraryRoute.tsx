@@ -15,6 +15,7 @@ import { isDueFor } from '@/lib/memory';
 import { sectionStats } from '@/lib/sectionStats';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
 import { examRule } from '@/lib/exam';
+import { clearSavedTests } from '@/lib/practiceTest';
 import { RestoreButton } from '@/components/Backup';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { usePlanStore } from '@/store/plan';
@@ -156,6 +157,7 @@ export function LibraryRoute() {
     useProgressStore.getState().removeCourseProgress(id);
     useResumeStore.getState().clear(id);
     useStudyLogStore.getState().clear(id);
+    clearSavedTests(id);
     toast(`"${title}" removed from library.`, {
       type: 'info',
       actionLabel: 'Undo',

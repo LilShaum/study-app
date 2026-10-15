@@ -119,13 +119,32 @@ export const ItemCountsSchema = z
  *
  * Optional, so every course generated before this existed still loads.
  */
+/**
+ * A list of short strings, read forgivingly: these are the generator's notes
+ * about the lecture, never what is studied, so an entry in the wrong shape
+ * (an object, a long sentence) is dropped or cut rather than rejecting the
+ * whole lecture over it.
+ */
+const noteList = (maxLength: number, maxItems: number) =>
+  z.preprocess(
+    (v) =>
+      Array.isArray(v)
+        ? v
+            .map((x) => (typeof x === 'string' ? x : typeof x === 'number' ? String(x) : null))
+            .filter((x): x is string => !!x && !!x.trim())
+            .map((x) => x.slice(0, maxLength))
+            .slice(0, maxItems)
+        : undefined,
+    z.array(z.string()).optional(),
+  );
+
 export const InventorySchema = z.looseObject({
-  terms: z.array(z.string()).optional(),
+  terms: noteList(300, 2000),
   /** Terms the source only names (a label, a caption): listed, never defined. */
-  mentioned: z.array(z.string()).optional(),
-  objectives: z.array(z.string()).optional(),
+  mentioned: noteList(300, 2000),
+  objectives: noteList(1000, 200),
   /** Figures the generator could not read with confidence ("slide 12: the small labels"), so the student checks them. */
-  unclear_figures: z.array(z.string().max(300)).max(200).optional(),
+  unclear_figures: noteList(300, 200),
 });
 
 /**

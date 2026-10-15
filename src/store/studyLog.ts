@@ -67,12 +67,14 @@ interface StudyLogState {
   byCourse: Record<string, CourseLog>;
   logCard: (courseId: string, type: string, seconds: number, at: number) => void;
   logAnswer: (courseId: string, event: AnswerEvent) => void;
+  /** Several answers in one write (a practice test's whole batch). */
+  logAnswers: (courseId: string, events: AnswerEvent[]) => void;
   clear: (courseId?: string) => void;
 }
 
 export const useStudyLogStore = create<StudyLogState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       byCourse: {},
       logCard: (courseId, type, seconds, at) => {
         if (!(seconds >= MIN_CARD_SECONDS)) return;
@@ -92,11 +94,13 @@ export const useStudyLogStore = create<StudyLogState>()(
           };
         });
       },
-      logAnswer: (courseId, event) =>
+      logAnswer: (courseId, event) => get().logAnswers(courseId, [event]),
+      logAnswers: (courseId, events) =>
         set((state) => {
+          if (!events.length) return state;
           const log = state.byCourse[courseId] ?? EMPTY;
           return {
-            byCourse: { ...state.byCourse, [courseId]: { ...log, answers: [...log.answers, compact(event)].slice(-MAX_ANSWERS) } },
+            byCourse: { ...state.byCourse, [courseId]: { ...log, answers: [...log.answers, ...events.map(compact)].slice(-MAX_ANSWERS) } },
           };
         }),
       clear: (courseId) =>

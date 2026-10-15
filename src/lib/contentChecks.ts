@@ -193,7 +193,9 @@ function shortReveal(earlier: Asked, later: Asked, asked: Set<string>, shown: Se
   if (traits.length >= 2 && want.every((w) => earlierAsked.has(w)) && traits.filter((w) => asked.has(w)).length / traits.length >= 0.5)
     return true;
   if (asked.size < 3) return false;
-  const shownTokens = answerTokens(shownText);
+  // Without a sentence's opening "A", which the name tokens would read as the
+  // letter in "protein kinase A".
+  const shownTokens = answerTokens(shownText.replace(/(^|[.!?:;]\s+)A\s/g, '$1 '));
   const context = [...asked].filter((w) => shown.has(w)).length / asked.size;
   return context === 1 && want.every((w) => shown.has(w) || shownTokens.has(w));
 }

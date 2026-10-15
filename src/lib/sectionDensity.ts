@@ -39,8 +39,10 @@ export function slidesIn(range: string | undefined): number | null {
   if (!range) return null;
   let total = 0;
   let found = false;
-  for (const m of range.matchAll(/(?:slides?|pages?|pp?\.)\s*((?:\d+(?:\s*[–—-]\s*\d+)?(?:\s*(?:,|and|&)\s*)?)+)/gi)) {
-    for (const part of m[1].matchAll(/(\d+)(?:\s*[–—-]\s*(\d+))?/g)) {
+  // "slides 12–18", "slides 12 to 18", "pp. 4-6"; the word must stand on
+  // its own, so the "p." of "Recap." or "Step." is not a page.
+  for (const m of range.matchAll(/\b(?:slides?|pages?|pp?\.)\s*((?:\d+(?:\s*(?:[–—-]|to)\s*\d+)?(?:\s*(?:,|and|&)\s*)?)+)/gi)) {
+    for (const part of m[1].matchAll(/(\d+)(?:\s*(?:[–—-]|to)\s*(\d+))?/g)) {
       const from = Number(part[1]);
       const to = part[2] ? Number(part[2]) : from;
       if (to >= from && to - from < 500) {

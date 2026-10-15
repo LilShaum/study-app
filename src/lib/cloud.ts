@@ -101,7 +101,12 @@ function localSnapshot(): Snapshot {
     perCourse: Object.fromEntries(
       Object.entries(PER_COURSE).map(([key, store]) => [key, (store.getState() as { byCourse: Record<string, unknown> }).byCourse]),
     ),
-    planTotal: { minutes: usePlanStore.getState().total, at: usePlanStore.getState().totalSetAt ?? 0 },
+    // A total set before it was synced has no time: 1, so it still beats a
+    // device that never set one (0) rather than tying and staying put.
+    planTotal: {
+      minutes: usePlanStore.getState().total,
+      at: usePlanStore.getState().totalSetAt ?? (usePlanStore.getState().total != null ? 1 : 0),
+    },
   };
 }
 

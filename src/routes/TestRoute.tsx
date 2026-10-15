@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
-import { recordAnswer } from '@/store/session';
+import { recordAnswers } from '@/store/session';
+import { useProgressStore } from '@/store/progress';
 import { classExams, lecturesOf } from '@/lib/classExams';
 import { drawTest, scoreTest, testPool, TEST_LENGTHS, type TestQuestion, type TestScope } from '@/lib/practiceTest';
 import { normalisedRationale } from '@/lib/mcqRationale';
@@ -80,29 +81,47 @@ export function TestRoute() {
 interface SavedTest {
   refs: { courseId: string; itemId: string }[];
   answers: (number | null)[];
+  /** When each answer was picked: an answer older than the card's latest study is not recorded over it. */
+  answeredAt?: (number | null)[];
   at: number;
   done: boolean;
   recorded: boolean;
+  savedAt?: number;
 }
+
+/** A test left longer than this starts fresh: what it found is out of date. */
+const KEEP_DAYS = 14;
 
 function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> & { test: TestQuestion[] }) | null {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
     const saved = JSON.parse(raw) as SavedTest;
+    if (!saved.savedAt || Date.now() - saved.savedAt > KEEP_DAYS * 86_400_000) return null;
     const byRef = new Map(pool.map((q) => [`${q.courseId}/${q.item.id}`, q]));
     const test: TestQuestion[] = [];
     const answers: (number | null)[] = [];
+    const answeredAt: (number | null)[] = [];
     saved.refs.forEach((r, i) => {
       const q = byRef.get(`${r.courseId}/${r.itemId}`);
       if (q) {
         test.push(q);
         const a = saved.answers[i];
-        answers.push(typeof a === 'number' && a >= 0 && a < q.item.options.length ? a : null);
+        const ok = typeof a === 'number' && a >= 0 && a < q.item.options.length;
+        answers.push(ok ? a : null);
+        answeredAt.push(ok ? (saved.answeredAt?.[i] ?? saved.savedAt ?? null) : null);
       }
     });
     if (!test.length) return null;
-    return { test, answers, at: Math.min(Math.max(0, saved.at | 0), test.length - 1), done: !!saved.done, recorded: !!saved.recorded };
+    return {
+      test,
+      answers,
+      answeredAt,
+      at: Math.min(Math.max(0, saved.at | 0), test.length - 1),
+      done: !!saved.done,
+      recorded: !!saved.recorded,
+      savedAt: saved.savedAt,
+    };
   } catch {
     return null;
   }
@@ -114,6 +133,7 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
   const [saved] = useState(() => loadTest(storageKey, pool));
   const [test, setTest] = useState<TestQuestion[] | null>(saved?.test ?? null);
   const [answers, setAnswers] = useState<(number | null)[]>(saved?.answers ?? []);
+  const [answeredAt, setAnsweredAt] = useState<(number | null)[]>(saved?.answeredAt ?? []);
   const [at, setAt] = useState(saved?.at ?? 0);
   const [done, setDone] = useState(saved?.done ?? false);
   const recorded = useRef(saved?.recorded ?? false);
@@ -123,16 +143,18 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       if (!test) localStorage.removeItem(storageKey);
       else {
         const refs = test.map((q) => ({ courseId: q.courseId, itemId: q.item.id }));
-        localStorage.setItem(storageKey, JSON.stringify({ refs, answers, at, done, recorded: recorded.current } satisfies SavedTest));
+        const record: SavedTest = { refs, answers, answeredAt, at, done, recorded: recorded.current, savedAt: Date.now() };
+        localStorage.setItem(storageKey, JSON.stringify(record));
       }
     } catch {
       // Storage full or blocked: the test still works, it just won't survive a reload.
     }
-  }, [storageKey, test, answers, at, done]);
+  }, [storageKey, test, answers, answeredAt, at, done]);
 
   const start = (questions: TestQuestion[]) => {
     setTest(questions);
     setAnswers(questions.map(() => null));
+    setAnsweredAt(questions.map(() => null));
     setAt(0);
     setDone(false);
     recorded.current = false;
@@ -143,11 +165,18 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
     if (!test) return;
     if (!recorded.current) {
       recorded.current = true;
-      // Only what was answered: a blank says nothing about memory.
-      test.forEach((q, i) => {
-        const chose = answers[i];
-        if (chose != null) recordAnswer(q.courseId, q.item, chose === q.item.correct_index);
-      });
+      // Only what was answered: a blank says nothing about memory. And not
+      // over newer study: a test left on Monday and marked on Wednesday must
+      // not put Monday's miss on top of Tuesday's right answer.
+      const progress = useProgressStore.getState();
+      recordAnswers(
+        test.flatMap((q, i) => {
+          const chose = answers[i];
+          const when = answeredAt[i] ?? 0;
+          const seen = progress.getProgress(q.courseId)[q.item.id]?.lastSeen ?? 0;
+          return chose != null && seen < when ? [{ courseId: q.courseId, item: q.item, got: chose === q.item.correct_index }] : [];
+        }),
+      );
     }
     setDone(true);
     window.scrollTo(0, 0);
@@ -170,7 +199,10 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       test={test}
       at={at}
       answers={answers}
-      onPick={(i) => setAnswers((a) => a.map((x, n) => (n === at ? i : x)))}
+      onPick={(i) => {
+        setAnswers((a) => a.map((x, n) => (n === at ? i : x)));
+        setAnsweredAt((t) => test.map((_, n) => (n === at ? Date.now() : (t[n] ?? null))));
+      }}
       onBack={() => setAt((n) => Math.max(0, n - 1))}
       onNext={() => (at + 1 < test.length ? setAt(at + 1) : finish())}
       onEnd={finish}
@@ -252,6 +284,13 @@ function Taking({
   const answered = answers.filter((a) => a != null).length;
 
   useKeyboardShortcuts((e) => {
+    // Enter on a focused control (Back, Leave, End and mark it) does what
+    // that control says, and arrows inside the options are the options'
+    // own; only an option or the page itself moves the test on.
+    const focus = e.target instanceof HTMLElement ? e.target : null;
+    const inOptions = !!focus?.closest('[role=radiogroup]');
+    if (e.key === 'Enter' && focus?.closest('button, a') && !inOptions) return;
+    if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && inOptions) return;
     const n = Number(e.key);
     if (Number.isInteger(n) && n >= 1 && n <= q.item.options.length) {
       e.preventDefault();

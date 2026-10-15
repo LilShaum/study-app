@@ -347,7 +347,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     findings.push({
       id: 'thin-key-terms',
       severity: 'warning',
-      message: `${n} key term${n === 1 ? ' is' : 's are'} asked by only one question or flashcard (${gaps.thinKeyTerms
+      message: `${n} key term${n === 1 ? ' is' : 's are'} asked by one question or flashcard at most (${gaps.thinKeyTerms
         .slice(0, 3)
         .join(', ')}${n > 3 ? ', …' : ''}), so ${n === 1 ? 'it' : 'each'} can be learned as that card rather than understood. Fix or More practice asks ${n === 1 ? 'it' : 'them'} from other sides.`,
     });

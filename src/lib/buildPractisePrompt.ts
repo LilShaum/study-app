@@ -89,6 +89,16 @@ export function buildPractisePrompt(course: Course, notes = course.metadata.stud
     .join('\n\n');
 
   const priorities: string[] = [];
+  // First, as the course check and the dialog promise: slides that taught
+  // more than the lecture asks about.
+  const sparse = sectionDensity(course)?.sparse ?? [];
+  if (sparse.length) {
+    priorities.push(
+      `- These sections have few items for the slides they come from, against the rest of the lecture. Read those slides again (from my notes if this chat has them) and write what they teach that no item asks yet, at the weight the spec gives it. Do these first:\n  ${sparse
+        .map((s) => `"${s.title}" (${s.items} items for ${s.slides} slides)`)
+        .join('; ')}`,
+    );
+  }
   if (gaps.untestedTerms.length) {
     priorities.push(
       `- These terms are DEFINED in the course, and the app asks for each by name, but no MCQ or flashcard makes the student use one — apply it, predict with it, or tell it apart from a neighbour. Write those items for these first:\n  ${gaps.untestedTerms.join(', ')}`,
@@ -111,14 +121,6 @@ export function buildPractisePrompt(course: Course, notes = course.metadata.stud
     priorities.push(
       `- These sections have little or nothing that can be scored:\n  ${gaps.thinSections
         .map((s) => `"${s.title}" (${s.gradable} of ${s.total} items are gradable)`)
-        .join('; ')}`,
-    );
-  }
-  const sparse = sectionDensity(course)?.sparse ?? [];
-  if (sparse.length) {
-    priorities.push(
-      `- These sections have few items for the slides they come from, against the rest of the lecture. Read those slides again (from my notes if this chat has them) and write what they teach that no item asks yet, at the weight the spec gives it:\n  ${sparse
-        .map((s) => `"${s.title}" (${s.items} items for ${s.slides} slides)`)
         .join('; ')}`,
     );
   }

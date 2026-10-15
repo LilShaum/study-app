@@ -51,6 +51,15 @@ export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false, 
       <div className="mark mb-4 flex items-center gap-2 border-b border-border-light pb-2 text-text-3">
         Flashcard
         <DifficultyBadge difficulty={item.difficulty} />
+        {/* Space flips both ways on a keyboard; a phone had no way back
+            after a mis-tap. In the header, not on the answer face, which
+            takes its height from the question side and has no room to
+            spare. Turning back cannot hide what was seen. */}
+        {flipped && (
+          <button type="button" onClick={() => setFlipped(false)} className="tap-safe ml-auto text-text-3 hover:text-text">
+            Flip back
+          </button>
+        )}
       </div>
 
       <div className="flip-scene">
@@ -111,17 +120,6 @@ export function FlashcardCard({ item, onGot, onMissed, keyboardEnabled = false, 
                 Missed it
               </button>
             </div>
-            {/* Space flips both ways on a keyboard; a phone had no way back
-                after a mis-tap. Turning back cannot hide what was seen, so
-                grade as honestly as before. */}
-            <button
-              type="button"
-              tabIndex={flipped ? 0 : -1}
-              onClick={() => setFlipped(false)}
-              className="tap-safe text-sm text-text-3 underline-offset-4 hover:text-text hover:underline"
-            >
-              Flip back
-            </button>
           </div>
         </div>
       </div>

@@ -67,6 +67,16 @@ describe('mergeSnapshots — study log and shared daily time', () => {
     expect(again).toEqual(log);
   });
 
+  it('keeps real answers that share a millisecond (a practice test logs its batch at once)', () => {
+    const batch = [ans(7), ans(7), ans(7), ans(7, false), ans(7, false)];
+    const local = withLog({ times: [], answers: batch, days: {} });
+    const remote = withLog({ times: [], answers: [ans(7), ans(7), ans(7, false)], days: {} });
+    const once = mergeSnapshots(local, remote).perCourse.studyLog.a as { answers: unknown[] };
+    expect(once.answers).toHaveLength(5);
+    expect((mergeSnapshots(mergeSnapshots(local, remote), local).perCourse.studyLog.a as { answers: unknown[] }).answers).toHaveLength(5);
+    expect((mergeSnapshots(remote, local).perCourse.studyLog.a as { answers: unknown[] }).answers).toHaveLength(5);
+  });
+
   it('keeps the shared daily time set last, and copes with a copy saved before it synced', () => {
     expect(mergeSnapshots(withLog({}, { minutes: 60, at: 5 }), withLog({}, { minutes: 90, at: 9 })).planTotal).toEqual({ minutes: 90, at: 9 });
     expect(mergeSnapshots(withLog({}, { minutes: 60, at: 5 }), withLog({})).planTotal).toEqual({ minutes: 60, at: 5 });

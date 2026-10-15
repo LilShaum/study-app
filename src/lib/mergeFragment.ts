@@ -249,7 +249,7 @@ export function applyMerge(course: Course, plan: MergePlan): Course {
         terms,
         mentioned,
         objectives: union(was.objectives, plan.inventory.objectives),
-        unclear_figures: union(was.unclear_figures, plan.inventory.unclear_figures),
+        unclear_figures: union(was.unclear_figures, plan.inventory.unclear_figures).slice(0, 200),
       },
     };
   }

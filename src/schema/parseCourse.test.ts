@@ -97,3 +97,22 @@ describe('parseCourse', () => {
     expect(parseCourse(twoOption).ok).toBe(true);
   });
 });
+
+describe('parseCourse — the generator’s inventory is read forgivingly', () => {
+  it('keeps the lecture when a note is too long or the wrong shape, and keeps the cleaned lists', () => {
+    const raw = {
+      schema_version: '1.0',
+      metadata: {
+        title: 'T',
+        inventory: { terms: ['Stoma', { term: 'Xylem' }], mentioned: 'not a list', unclear_figures: ['x'.repeat(400), { slide: 12 }, 'slide 3: faint labels'] },
+      },
+      sections: [{ id: 's', title: 'S', items: [{ id: 'f', type: 'flashcard', front: 'Q?', back: 'A.', source_excerpt: 'e' }] }],
+    };
+    const r = parseCourse(raw);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.course.metadata.inventory?.unclear_figures).toEqual(['x'.repeat(300), 'slide 3: faint labels']);
+    expect(r.course.metadata.inventory?.terms).toEqual(['Stoma']);
+    expect(r.course.metadata.inventory?.mentioned).toBeUndefined();
+  });
+});

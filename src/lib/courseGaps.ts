@@ -83,10 +83,12 @@ export function analyseCourseGaps(course: Course): CourseGaps {
   const gradable = items.filter((i) => i.type === 'mcq' || i.type === 'flashcard');
   const gradableTexts = gradable.map(gradableText);
 
-  const untestedTerms = items
+  // Never tested: no question names it by any of its names (so a section's
+  // "Km" counts for "Michaelis constant (Km)", as for the key terms below).
+  const untested = items
     .filter((i): i is Extract<StudyItem, { type: 'definition' }> => i.type === 'definition')
-    .map((d) => d.term)
-    .filter((term) => !someTextCoversTerm(gradableTexts, term ?? ''));
+    .filter((d) => !namesOf(d).some((name) => someTextCoversTerm(gradableTexts, name)));
+  const untestedTerms = untested.map((d) => d.term);
 
   // Key: named in a stated objective or a section title, by any of its
   // names ("Michaelis constant (Km)" is key in a section called "… and Km").
@@ -97,7 +99,11 @@ export function analyseCourseGaps(course: Course): CourseGaps {
   const thinKeyTerms = items
     .filter((i): i is Extract<StudyItem, { type: 'definition' }> => i.type === 'definition' && !i.set_aside)
     .filter((d) => d.term && namesOf(d).some((name) => someTextCoversTerm(keyTexts, name)))
-    .filter((d) => askedTexts.filter((t) => namesOf(d).some((name) => someTextCoversTerm([t], name))).length === 1)
+    // At most one question asks it (none, when it is only mentioned on the
+    // way to something else); one no question even mentions is listed as
+    // untested instead, never in both.
+    .filter((d) => !untested.includes(d))
+    .filter((d) => askedTexts.filter((t) => namesOf(d).some((name) => someTextCoversTerm([t], name))).length <= 1)
     .map((d) => d.term);
 
   const thinSections = sections

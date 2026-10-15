@@ -6,7 +6,7 @@ import { examRule } from '@/lib/exam';
 import { usePlanStore } from './plan';
 import { useLearnStore } from './learn';
 import { todaySitting } from '@/lib/todaySitting';
-import { measuredPace, useStudyLogStore } from './studyLog';
+import { measuredPace, useStudyLogStore, type AnswerEvent } from './studyLog';
 import { getPersonalScale, retrievability } from '@/lib/memory';
 import { applyPersonalScale } from '@/lib/personalScale';
 import { twinsOf } from '@/lib/linkedTerms';
@@ -442,21 +442,38 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
  * here: a study session (record, above) and a practice test (TestRoute).
  */
 export function recordAnswer(courseId: string, item: { id: string; type: string }, got: boolean): void {
-  const before = useProgressStore.getState().getProgress(courseId)[item.id];
+  recordAnswers([{ courseId, item, got }]);
+}
+
+/**
+ * Several answers at once (a practice test's whole batch): one write per
+ * lecture to each store, rather than two for every card, which on a big
+ * library froze a phone for a moment when a 40-question test was marked.
+ */
+export function recordAnswers(answers: { courseId: string; item: { id: string; type: string }; got: boolean }[]): void {
   const now = Date.now();
-  useStudyLogStore.getState().logAnswer(courseId, {
-    at: now,
-    type: item.type,
-    got,
-    sinceHours: before?.lastSeen != null ? (now - before.lastSeen) / 3_600_000 : null,
-    // The record keeps the memory before its latest answer; stability
-    // that did not rise means that answer was a miss.
-    afterMiss: isMissed(before),
-    predicted: retrievability(before, now),
-    scale: getPersonalScale(),
-  });
-  useProgressStore.getState().recordResult(courseId, item.id, got);
-  // The same term in the student's other lectures (lib/linkedTerms).
-  for (const twin of twinsOf(useCoursesStore.getState().courses, courseId, item.id))
-    useProgressStore.getState().recordResult(twin.courseId, twin.id, got);
+  const scale = getPersonalScale();
+  const courses = useCoursesStore.getState().courses;
+  const events = new Map<string, AnswerEvent[]>();
+  const results = new Map<string, { itemId: string; got: boolean }[]>();
+  const add = <T,>(m: Map<string, T[]>, k: string, v: T) => m.set(k, [...(m.get(k) ?? []), v]);
+  for (const { courseId, item, got } of answers) {
+    const before = useProgressStore.getState().getProgress(courseId)[item.id];
+    add(events, courseId, {
+      at: now,
+      type: item.type,
+      got,
+      sinceHours: before?.lastSeen != null ? (now - before.lastSeen) / 3_600_000 : null,
+      // The record keeps the memory before its latest answer; stability
+      // that did not rise means that answer was a miss.
+      afterMiss: isMissed(before),
+      predicted: retrievability(before, now),
+      scale,
+    });
+    add(results, courseId, { itemId: item.id, got });
+    // The same term in the student's other lectures (lib/linkedTerms).
+    for (const twin of twinsOf(courses, courseId, item.id)) add(results, twin.courseId, { itemId: twin.id, got });
+  }
+  for (const [courseId, list] of events) useStudyLogStore.getState().logAnswers(courseId, list);
+  for (const [courseId, list] of results) useProgressStore.getState().recordResults(courseId, list);
 }

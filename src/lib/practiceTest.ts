@@ -95,3 +95,22 @@ export function scoreTest(test: TestQuestion[], answers: (number | null)[]): Tes
   });
   return { got, total: test.length, bySection: [...sections.values()], missed };
 }
+
+/**
+ * Forgets the saved practice tests of a lecture that is removed (TestRoute
+ * keeps them under `arborous:test:lecture:<id>:<section>`), so a lecture
+ * added again under the same id does not reopen an old test.
+ */
+export function clearSavedTests(courseId: string): void {
+  try {
+    const prefix = `arborous:test:lecture:${courseId}:`;
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(prefix)) keys.push(k);
+    }
+    keys.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // Storage blocked: nothing was saved either.
+  }
+}
