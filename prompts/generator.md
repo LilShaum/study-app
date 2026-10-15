@@ -69,8 +69,12 @@ Do not start writing items while you are still reading. Work in four passes.
 **Handwriting and highlights are the student's class notes.** Slides
 annotated by hand (written notes, circled or highlighted text, arrows) carry
 what the teacher said: read the handwriting as source material, and treat
-what is highlighted or written beside as emphasised. If handwriting is too
-unclear to read with confidence, do not guess it.
+what is highlighted or written beside as emphasised. Read note-taking
+shorthand as the words it stands for (w/ with, b/c because, w/o without,
+↑ increases, ↓ decreases, → leads to, ∴ therefore, Δ change). If
+handwriting is too unclear to read with confidence, do not guess it: list
+the slide in `metadata.inventory.unclear_figures` as "slide N: handwritten
+note unreadable", so the student can add it themselves.
 
 **First, check you can see the pages.** If you can read the source's text
 but cannot see its pages (its figures and diagrams), say so in one line
