@@ -111,7 +111,10 @@ mastery. Plan, numbers and results in `docs/proposals/content-quality.md`.
 
 - **iPhone header**: the home-screen app reports no status-bar inset, so
   `lib/statusBarFallback.ts` measures the case and pads the header itself.
-  Waiting on the owner to confirm on the phone.
+  **Not fixed, and dropped (owner, 2026-10-17): "stop wasting time on it".**
+  Three attempts were guesses that passed in emulation and failed on the
+  phone. Do not try again unless the owner asks; if they do, measure on
+  their phone first (a readout of what iOS reports), never guess.
 - **`lib/contentChecks.ts`** decides a give-away (`givesAway`), one fact
   (`sameFact`) and a card answered by an earlier one (`answeredBy`), for
   the session order, the course check and the audit alike.
