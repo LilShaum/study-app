@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
-import { drawTest, scoreTest, testPool } from './practiceTest';
+import { drawTest, lecturesIn, scoreTest, testPool } from './practiceTest';
 
 const mcq = (id: string, extra: Record<string, unknown> = {}): StudyItem =>
   ({
@@ -71,5 +71,33 @@ describe('drawTest and scoreTest', () => {
       ['q2', 0],
       ['q3', null],
     ]);
+  });
+});
+
+describe('a test over several lectures', () => {
+  const big = course([{ id: 's1', items: Array.from({ length: 30 }, (_, i) => mcq(`b${i}`)) }], 'Big');
+  const small = course([{ id: 's1', items: Array.from({ length: 4 }, (_, i) => mcq(`s${i}`)) }], 'Small');
+  const mid = course([{ id: 's1', items: Array.from({ length: 10 }, (_, i) => mcq(`m${i}`)) }], 'Mid');
+  const pool = testPool([
+    { courseId: 'big', course: big, covers: 'all' },
+    { courseId: 'small', course: small, covers: 'all' },
+    { courseId: 'mid', course: mid, covers: 'all' },
+  ]);
+  const share = (test: ReturnType<typeof drawTest>) =>
+    Object.fromEntries(['big', 'small', 'mid'].map((id) => [id, test.filter((q) => q.courseId === id).length]));
+
+  it('shares an even draw equally, and a short lecture gives what it lacks to the others', () => {
+    expect(lecturesIn(pool)).toBe(3);
+    const even = drawTest(pool, 12, true);
+    expect(even).toHaveLength(12);
+    expect(share(even)).toEqual({ big: 4, small: 4, mid: 4 });
+    const more = drawTest(pool, 20, true);
+    expect(share(more)).toEqual({ big: 8, small: 4, mid: 8 });
+    expect(new Set(more.map((q) => q.item.id)).size).toBe(20);
+  });
+
+  it('keeps only the cards a studies choice names', () => {
+    const only = new Set(['b1', 'b2']);
+    expect(testPool([{ courseId: 'big', course: big, covers: 'all', only }]).map((q) => q.item.id)).toEqual(['b1', 'b2']);
   });
 });

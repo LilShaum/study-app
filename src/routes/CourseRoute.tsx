@@ -320,7 +320,9 @@ export function CourseRoute() {
           <Link
             to={`/session/${id}/${resumable.mode}?resume=1${
               resumable.sectionId ? `&section=${encodeURIComponent(resumable.sectionId)}` : ''
-            }${resumable.kind ? `&kind=${resumable.kind}` : ''}`}
+            }${resumable.kind ? `&kind=${resumable.kind}` : ''}${resumable.study ? `&study=${encodeURIComponent(resumable.study)}` : ''}${
+              resumable.classCode ? `&class=${encodeURIComponent(resumable.classCode)}${resumable.single ? '&single=1' : ''}` : ''
+            }`}
             className="press press-ink"
           >
             Continue

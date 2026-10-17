@@ -37,6 +37,7 @@ export const router = createHashRouter([
       { path: 'study/:id/set-aside', element: <SetAsideRoute /> },
       { path: 'class/:code', element: <ClassRoute /> },
       { path: 'class/:code/test', element: <TestRoute /> },
+      { path: 'class/:code/practice', element: <PracticeRoute /> },
       { path: 'help', element: <HelpRoute /> },
       { path: 'sync', element: <SyncRoute /> },
       { path: 'shared/:id', element: <SharedRoute /> },

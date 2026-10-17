@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course } from '@/schema/course';
 import { parseCourse } from '@/schema/parseCourse';
-import { classExams, lectureExam, lecturesOf, withExamSections, writeClassExams, type ClassExamView } from './classExams';
+import { classExams, lectureExam, lectureName, lecturesOf, withExamSections, writeClassExams, type ClassExamView } from './classExams';
 import { examRule } from './exam';
 
 const lecture = (title: string, metadata: Partial<Course['metadata']> = {}): Course =>
@@ -164,5 +164,18 @@ describe('the exam list goes wherever the lecture goes', () => {
   it('travels in a share link, which is checked like an uploaded file', () => {
     const r = parseCourse(JSON.parse(JSON.stringify(withExams)));
     expect(r.ok && r.course.metadata.exams).toEqual(withExams.metadata.exams);
+  });
+});
+
+describe('lectureName', () => {
+  it('drops the class code a title opens with', () => {
+    expect(lectureName('BIOL 365: Cell signalling', 'BIOL 365')).toBe('Cell signalling');
+    expect(lectureName('BIOL 365 – Enzymes', 'biol 365')).toBe('Enzymes');
+  });
+  it('keeps a title that does not open with it, or is only the code', () => {
+    expect(lectureName('Enzymes', 'BIOL 365')).toBe('Enzymes');
+    expect(lectureName('BIOL 365', 'BIOL 365')).toBe('BIOL 365');
+    expect(lectureName('BIOL 3650 notes', 'BIOL 365')).toBe('BIOL 3650 notes');
+    expect(lectureName('Enzymes', null)).toBe('Enzymes');
   });
 });

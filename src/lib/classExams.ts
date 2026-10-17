@@ -85,6 +85,17 @@ export function withExamSections(course: Course, sections: string[], now: number
 /** The class a lecture belongs to: its class code, trimmed. Null without one. */
 export const classOf = (course: Course): string | null => course.metadata.course_code?.trim() || null;
 
+/**
+ * A lecture's title inside its class, without the class code it opens with:
+ * on the PSYC 351C page, "PSYC 351C: Audition" is just "Audition". A title
+ * that is only the code keeps it.
+ */
+export function lectureName(title: string, code: string | null | undefined): string {
+  if (!code || !title.toLowerCase().startsWith(code.toLowerCase())) return title;
+  const rest = title.slice(code.length).replace(/^[\s:·,–—-]+/, '');
+  return rest && rest !== title.slice(code.length) ? rest : title;
+}
+
 /** The lectures of one class, in library order (by title). */
 export function lecturesOf(courses: Record<string, Course>, code: string): [string, Course][] {
   return Object.entries(courses)

@@ -4,7 +4,9 @@ import { useCoursesStore } from '@/store/courses';
 import { recordAnswers } from '@/store/session';
 import { useProgressStore } from '@/store/progress';
 import { classExams, lecturesOf } from '@/lib/classExams';
-import { drawTest, scoreTest, testPool, TEST_LENGTHS, type TestQuestion, type TestScope } from '@/lib/practiceTest';
+import { drawTest, lecturesIn, scoreTest, testPool, TEST_LENGTHS, type TestQuestion, type TestScope } from '@/lib/practiceTest';
+import { onlyStudies, studiesIn } from '@/lib/studies';
+import type { Course } from '@/schema/course';
 import { normalisedRationale } from '@/lib/mcqRationale';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 
@@ -26,17 +28,22 @@ export function TestRoute() {
   const courses = useCoursesStore((s) => s.courses);
   const sectionId = search.get('section');
   const examId = search.get('exam');
+  // "?study=all|<key>": only the questions on studies (lib/studies.ts).
+  const study = search.get('study') || null;
   // Judged as of opening the page; rendering must not read the clock.
   const [now] = useState(Date.now);
 
   const { scopes, title, back, backLabel } = useMemo(() => {
+    // A studies choice keeps only its cards; a lecture with none of them gives none.
+    const onlyOf = (course: Course) => onlyStudies(course, study);
     if (id) {
       const course = courses[id];
       if (!course) return { scopes: [] as TestScope[], title: '', back: '/', backLabel: 'Library' };
       const section = sectionId ? course.sections.find((s) => s.id === sectionId) : undefined;
+      const studyName = study === 'all' ? 'every study' : study ? studiesIn(course).find((s) => s.key === study)?.label : undefined;
       return {
-        scopes: [{ courseId: id, course, covers: section ? [section.id] : ('all' as const) }],
-        title: section ? `${course.metadata.title}: ${section.title}` : course.metadata.title,
+        scopes: [{ courseId: id, course, covers: section ? [section.id] : ('all' as const), only: onlyOf(course) }],
+        title: section ? `${course.metadata.title}: ${section.title}` : studyName ? `${course.metadata.title}: ${studyName}` : course.metadata.title,
         back: `/study/${id}/practice`,
         backLabel: 'Practice',
       };
@@ -46,15 +53,15 @@ export function TestRoute() {
     return {
       scopes: lectures
         .filter(([lid]) => !exam || exam.covers[lid])
-        .map(([lid, course]) => ({ courseId: lid, course, covers: exam ? exam.covers[lid] : ('all' as const) })),
-      title: exam ? `${code} · ${exam.name}` : (code ?? ''),
+        .map(([lid, course]) => ({ courseId: lid, course, covers: exam ? exam.covers[lid] : ('all' as const), only: onlyOf(course) })),
+      title: [code, exam?.name, study ? 'every study' : null].filter(Boolean).join(' · '),
       back: `/class/${encodeURIComponent(code ?? '')}`,
       backLabel: code ?? 'Class',
     };
-  }, [id, code, courses, sectionId, examId, now]);
+  }, [id, code, courses, sectionId, examId, study, now]);
 
   const pool = useMemo(() => testPool(scopes), [scopes]);
-  const scopeKey = id ? `lecture:${id}:${sectionId ?? ''}` : `class:${code ?? ''}:${examId ?? ''}`;
+  const scopeKey = `${id ? `lecture:${id}:${sectionId ?? ''}` : `class:${code ?? ''}:${examId ?? ''}`}${study ? `:study:${study}` : ''}`;
 
   const header = (
     <>
@@ -182,7 +189,7 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
     window.scrollTo(0, 0);
   };
 
-  if (!test) return <Setup header={header} pool={pool} onStart={(n) => start(drawTest(pool, n))} />;
+  if (!test) return <Setup header={header} pool={pool} onStart={(n, even) => start(drawTest(pool, n, even))} />;
   if (done) {
     return (
       <Results
@@ -211,9 +218,11 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
   );
 }
 
-function Setup({ header, pool, onStart }: { header: ReactNode; pool: TestQuestion[]; onStart: (n?: number) => void }) {
+function Setup({ header, pool, onStart }: { header: ReactNode; pool: TestQuestion[]; onStart: (n?: number, even?: boolean) => void }) {
   const lengths = TEST_LENGTHS.filter((n) => n < pool.length);
   const [length, setLength] = useState<number | undefined>(lengths[0]);
+  const [even, setEven] = useState(false);
+  const lectures = lecturesIn(pool);
   return (
     <div>
       {header}
@@ -250,7 +259,33 @@ function Setup({ header, pool, onStart }: { header: ReactNode; pool: TestQuestio
               })}
             </div>
           </div>
-          <button type="button" onClick={() => onStart(length)} className="press press-ink tap-safe mt-6">
+          {/* A drawn test shares itself by how many questions each lecture
+              has; an exam often gives each lecture a similar share instead.
+              Asking for all of them, there is nothing to share. */}
+          {lectures > 1 && length != null && (
+            <div className="flex flex-col gap-y-1 border-b border-border py-5 sm:flex-row sm:items-baseline sm:gap-x-3">
+              <span className="mark shrink-0 text-text-3 sm:w-20">Lectures</span>
+              <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
+                {[
+                  { value: false, label: 'Each by its size' },
+                  { value: true, label: 'Each the same' },
+                ].map((c, i) => (
+                  <span key={c.label} className="flex items-baseline">
+                    <button
+                      type="button"
+                      aria-pressed={even === c.value}
+                      onClick={() => setEven(c.value)}
+                      className={`tap-safe px-0.5 text-small transition-colors ${even === c.value ? 'text-accent' : 'text-text-2 hover:text-text'}`}
+                    >
+                      <span className={even === c.value ? 'underline decoration-accent decoration-2 underline-offset-4' : ''}>{c.label}</span>
+                    </button>
+                    {i === 0 && <span className="ml-1 text-text-3">·</span>}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          <button type="button" onClick={() => onStart(length, even)} className="press press-ink tap-safe mt-6">
             Start the test
           </button>
         </>

@@ -4,7 +4,7 @@ import { useCoursesStore } from '@/store/courses';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { usePlanStore } from '@/store/plan';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
-import { classExams, lecturesOf, type ClassExamView } from '@/lib/classExams';
+import { classExams, lectureName, lecturesOf, type ClassExamView } from '@/lib/classExams';
 import { examLabel } from '@/lib/examLabel';
 import { todayAcrossCourses, todayLine } from '@/lib/libraryToday';
 import { plannedMinutes, studiedToday } from '@/lib/todaySitting';
@@ -119,7 +119,7 @@ export function ClassRoute() {
               <span className="block font-display text-heading font-semibold text-text">Today</span>
               <span className="block text-small text-text-2">
                 {first
-                  ? `${first.title}: ${todayLine(first)}${todays.length > 1 ? `; then ${todays.length - 1} more lecture${todays.length === 2 ? '' : 's'}` : ''}`
+                  ? `${lectureName(first.title, code)}: ${todayLine(first)}${todays.length > 1 ? `; then ${todays.length - 1} more lecture${todays.length === 2 ? '' : 's'}` : ''}`
                   : 'Nothing to do in this class today. What you have studied is still fresh.'}
               </span>
             </div>
@@ -130,6 +130,13 @@ export function ClassRoute() {
             )}
           </li>
         </ul>
+        {/* Today is the plan; Practice is choosing yourself, across the class. */}
+        <p className="mt-3 text-small text-text-2">
+          <Link to={`/class/${encodeURIComponent(code)}/practice`} className="text-accent underline-offset-4 hover:underline">
+            Practice
+          </Link>{' '}
+          the whole class your own way: any cards, any kind, one lecture or every study.
+        </p>
       </section>
 
       <section className="mt-8">
@@ -204,7 +211,7 @@ export function ClassRoute() {
                   <span className="entry-body min-w-0">
                     <span className="flex items-baseline gap-2">
                       <span className="font-display text-body font-semibold leading-snug text-text group-hover:text-accent">
-                        {course.metadata.title}
+                        {lectureName(course.metadata.title, code)}
                       </span>
                       <span className="leaders hidden sm:block" aria-hidden="true" />
                     </span>

@@ -35,12 +35,12 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Practice',
-    what: 'For drilling a lecture outside the plan, before a class quiz or on a section that feels shaky. Choose which cards (due now, weakest first, missed last time, or everything), which kind (questions, flashcards or typed terms) and which part of the lecture, then Start. Today still decides what comes back when, so a card that is not fading yet gains little from more practice. Review on a branch of the tree or on the Progress page is the same as Due now, for that section.',
+    what: 'For drilling a lecture outside the plan, before a class quiz or on a section that feels shaky. Choose which cards (due now, weakest first, missed last time, or everything), which kind (questions, flashcards or typed terms) and which part of the lecture, then Start. Under From you can also pick Studies: every card about an empirical study (its question, method, results and what it shows), or one study. A class page has its own Practice with the same choices across every lecture in the class; it runs one lecture after another, and the end of each offers the next. Your choices are remembered for next time. Today still decides what comes back when, so a card that is not fading yet gains little from more practice. Review on a branch of the tree or on the Progress page is the same as Due now, for that section.',
     scored: true,
   },
   {
     name: 'Practice test',
-    what: 'On the Practice page, and on a class page for one exam or the whole class. Only the medium and hard questions, the ones that ask you to use what you know. Answers wait until the end, as in an exam; then you see your score, each section weakest first, and every question you missed with the right answer and why yours was wrong. Retake the missed ones as often as you like. A test in progress is kept if you leave or the app reloads, until you start a new one. Your answers count as practice, so Today knows what the test found.',
+    what: 'On the Practice page, and on a class page for one exam or the whole class. Only the medium and hard questions, the ones that ask you to use what you know; with Studies picked on the Practice page, only the questions on studies. Across several lectures, a test of 20 or 40 takes from each by its size, or the same from each if you choose Each the same. Answers wait until the end, as in an exam; then you see your score, each section weakest first, and every question you missed with the right answer and why yours was wrong. Retake the missed ones as often as you like. A test in progress is kept if you leave or the app reloads, until you start a new one. Your answers count as practice, so Today knows what the test found.',
     scored: true,
   },
   {

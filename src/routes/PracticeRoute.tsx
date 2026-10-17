@@ -1,99 +1,178 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
-import { buildSessionItems, type CardKind, type StudyMode } from '@/lib/buildSessionItems';
-import { examRule } from '@/lib/exam';
 import { sortedSections } from '@/lib/sortedSections';
 import { testPool } from '@/lib/practiceTest';
+import { classOf, lectureName, lecturesOf } from '@/lib/classExams';
+import { onlyStudies, studiesIn } from '@/lib/studies';
+import { CARDS, KINDS, countBasis, practiceCount, practiceLink, type Cards, type From, type Kind } from '@/lib/practice';
+import { roman } from '@/lib/roman';
+import type { Course } from '@/schema/course';
 
-type Cards = 'due' | 'weakest' | 'missed' | 'everything';
-type Kind = 'all' | CardKind;
-
-const CARDS: { value: Cards; label: string }[] = [
-  { value: 'due', label: 'Due now' },
-  { value: 'weakest', label: 'Weakest first' },
-  { value: 'missed', label: 'Missed last time' },
-  { value: 'everything', label: 'Everything' },
-];
-
-const KINDS: { value: Kind; label: string }[] = [
-  { value: 'all', label: 'All kinds' },
-  { value: 'questions', label: 'Questions' },
-  { value: 'flashcards', label: 'Flashcards' },
-  { value: 'terms', label: 'Terms' },
-];
-
-/**
- * The session a choice opens. Everything is the format-based modes (a
- * whole-lecture shuffle, or just one kind); the others are the memory-based
- * modes, narrowed to a kind with `?kind=`.
- */
-function sessionFor(cards: Cards, kind: Kind): { mode: StudyMode; kind?: CardKind } {
-  if (cards === 'everything') {
-    return { mode: { all: 'mixed', questions: 'quiz', flashcards: 'flashcards', terms: 'definitions' }[kind] as StudyMode };
-  }
-  return { mode: cards === 'due' ? 'review' : cards, kind: kind === 'all' ? undefined : kind };
+/** One lecture a choice reaches, and where in it. */
+interface Target {
+  courseId: string;
+  course: Course;
+  from: From;
 }
 
 /**
- * "/study/:id/practice?section=<id>" — drill a lecture outside the plan.
+ * The choice of "From", as one string a <select> can hold: '' for all of it,
+ * `section:<id>` (a lecture's), `lecture:<id>` (a class's), `study:all`, or
+ * `study:<lecture id>|<study key>`.
+ */
+function targetsOf(from: string, lectures: [string, Course][]): Target[] {
+  const all = (f: From) => lectures.map(([courseId, course]) => ({ courseId, course, from: f }));
+  if (from.startsWith('section:')) return all({ sectionId: from.slice(8) });
+  if (from.startsWith('lecture:')) return all({}).filter((t) => t.courseId === from.slice(8));
+  if (from === 'study:all') return all({ study: 'all' });
+  if (from.startsWith('study:')) {
+    // Split at the first bar only: a study's key is free text from a tag.
+    const bar = from.indexOf('|');
+    const courseId = from.slice(6, bar);
+    return all({ study: from.slice(bar + 1) }).filter((t) => t.courseId === courseId);
+  }
+  return all({});
+}
+
+interface Saved {
+  cards: Cards | null;
+  kind: Kind;
+  from: string;
+}
+
+const savedKey = (scope: string) => `arborous:practice:${scope}`;
+
+/** The choice left here last time, each part kept only if it is still a choice. */
+function loadChoice(scope: string): Saved | null {
+  try {
+    const raw = localStorage.getItem(savedKey(scope));
+    const saved = raw ? (JSON.parse(raw) as Partial<Saved>) : null;
+    if (!saved || typeof saved !== 'object') return null;
+    return {
+      cards: CARDS.some((c) => c.value === saved.cards) ? (saved.cards as Cards) : null,
+      kind: KINDS.some((k) => k.value === saved.kind) ? (saved.kind as Kind) : 'all',
+      from: typeof saved.from === 'string' ? saved.from : '',
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * "/study/:id/practice?section=<id>" and "/class/:code/practice": drill
+ * outside the plan.
  *
  * It replaces six format-named modes on the course page (Quiz, Flashcards,
  * Terms, Mixed, Weakest first, Review missed) and the separate Review row.
  * They were one question asked six ways: which cards, of which kind, from
  * where. Here each is a choice of its own, with how many cards it would give.
+ *
+ * A class's Practice asks the same across every lecture with its code. A
+ * session is one lecture's, so a choice that spans several runs them in
+ * turn: each ends by offering the next lecture with cards for it
+ * (CardSession, `?class=`). The choice is remembered per lecture and per
+ * class, so coming back from a session finds it as it was left.
  */
 export function PracticeRoute() {
-  const { id } = useParams<{ id: string }>();
+  const { id, code } = useParams<{ id?: string; code?: string }>();
+  // A fresh page for each lecture and class: following "the whole class"
+  // from a lecture's Practice must load the class's own choices, not carry
+  // the lecture's over (and then save them as the class's).
+  return <PracticePage key={id ? `lecture:${id}` : `class:${code ?? ''}`} />;
+}
+
+function PracticePage() {
+  const { id, code } = useParams<{ id?: string; code?: string }>();
   const [params] = useSearchParams();
-  const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
-  const progress = useProgressStore((s) => (id ? s.getProgress(id) : EMPTY_PROGRESS));
+  const courses = useCoursesStore((s) => s.courses);
+  const byCourse = useProgressStore((s) => s.byCourse);
   // Judged as of opening the page; rendering must not read the clock.
   const [now] = useState(Date.now);
+
+  const course = id ? courses[id] : undefined;
+  const lectures = useMemo<[string, Course][]>(
+    () => (id ? (course ? [[id, course]] : []) : code ? lecturesOf(courses, code) : []),
+    [id, code, course, courses],
+  );
+  const scope = id ? `lecture:${id}` : `class:${code ?? ''}`;
+
   const sections = useMemo(() => (course ? sortedSections(course) : []), [course]);
-
-  const asked = params.get('section');
-  const [section, setSection] = useState(() => (asked && sections.some((s) => s.id === asked) ? asked : ''));
-  // Null until chosen: the default depends on what is due, so it is worked out below.
-  const [pickedCards, setPickedCards] = useState<Cards | null>(null);
-  const [pickedKind, setPickedKind] = useState<Kind>('all');
-
-  // How many cards each combination would give, by the call the session makes.
-  const counts = useMemo(() => {
-    const out = {} as Record<Cards, Record<Kind, number>>;
-    if (!course || !id) return out;
-    const exam = examRule(course, progress, now);
-    const missedIds = useProgressStore.getState().missedIds(id);
-    for (const { value: cards } of CARDS) {
-      out[cards] = {} as Record<Kind, number>;
-      for (const { value: kind } of KINDS) {
-        const s = sessionFor(cards, kind);
-        out[cards][kind] = buildSessionItems(course, s.mode, {
-          progress,
-          now,
-          exam,
-          // Unlimited minutes is how the app counts everything due.
-          minutes: Infinity,
-          sectionId: section || undefined,
-          kind: s.kind,
-          missedIds,
-        }).filter((i) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall').length;
-      }
-    }
-    return out;
-  }, [course, id, progress, now, section]);
-
-  const testCount = useMemo(
-    () => (course && id ? testPool([{ courseId: id, course, covers: section ? [section] : 'all' }]).length : 0),
-    [course, id, section],
+  const studies = useMemo(
+    () => lectures.flatMap(([courseId, c]) => studiesIn(c).map((s) => ({ ...s, courseId, lecture: lectureName(c.metadata.title, code) }))),
+    [lectures, code],
+  );
+  const fromValues = useMemo(
+    () =>
+      new Set([
+        '',
+        ...sections.map((s) => `section:${s.id}`),
+        ...(id ? [] : lectures.map(([lid]) => `lecture:${lid}`)),
+        ...(studies.length ? ['study:all'] : []),
+        ...(studies.length > 1 || !id ? studies.map((s) => `study:${s.courseId}|${s.key}`) : []),
+      ]),
+    [sections, lectures, studies, id],
   );
 
-  if (!id) return <Navigate to="/" replace />;
-  if (!course) {
+  const [saved] = useState(() => loadChoice(scope));
+  const asked = params.get('section');
+  const [from, setFrom] = useState(() =>
+    asked && fromValues.has(`section:${asked}`) ? `section:${asked}` : saved && fromValues.has(saved.from) ? saved.from : '',
+  );
+  // Null until chosen: the default depends on what is due, so it is worked out below.
+  const [pickedCards, setPickedCards] = useState<Cards | null>(saved?.cards ?? null);
+  const [pickedKind, setPickedKind] = useState<Kind>(saved?.kind ?? 'all');
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(savedKey(scope), JSON.stringify({ cards: pickedCards, kind: pickedKind, from } satisfies Saved));
+    } catch {
+      // Storage blocked: the page still works, it just starts fresh next time.
+    }
+  }, [scope, pickedCards, pickedKind, from]);
+
+  const targets = useMemo(() => targetsOf(fromValues.has(from) ? from : '', lectures), [from, fromValues, lectures]);
+
+  // How many cards each combination would give, per lecture, by the call the session makes.
+  const counts = useMemo(() => {
+    const out = {} as Record<Cards, Record<Kind, number[]>>;
+    const bases = targets.map((t) =>
+      countBasis(t.course, byCourse[t.courseId] ?? EMPTY_PROGRESS, useProgressStore.getState().missedIds(t.courseId), t.from, now),
+    );
+    for (const { value: cards } of CARDS) {
+      out[cards] = {} as Record<Kind, number[]>;
+      for (const { value: kind } of KINDS) out[cards][kind] = bases.map((b) => practiceCount(b, cards, kind));
+    }
+    return out;
+  }, [targets, byCourse, now]);
+  const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
+
+  // The practice test over the same part: a lecture's own test for one
+  // lecture, the class's for more than one.
+  const test = useMemo(() => {
+    const scopes = targets.map((t) => ({
+      courseId: t.courseId,
+      course: t.course,
+      covers: t.from.sectionId ? [t.from.sectionId] : ('all' as const),
+      only: onlyStudies(t.course, t.from.study),
+    }));
+    const one = targets.length === 1 ? targets[0] : null;
+    const q = new URLSearchParams();
+    if (one?.from.sectionId) q.set('section', one.from.sectionId);
+    if (targets[0]?.from.study) q.set('study', targets[0].from.study);
+    const qs = q.toString() ? `?${q}` : '';
+    return {
+      count: testPool(scopes).length,
+      to: one && (id || from !== '') ? `/study/${one.courseId}/test${qs}` : `/class/${encodeURIComponent(code ?? '')}/test${qs}`,
+    };
+  }, [targets, id, code, from]);
+
+  if (!id && !code) return <Navigate to="/" replace />;
+  if (!lectures.length) {
     return (
       <div className="py-6 text-center text-text-2">
-        Lecture not found.{' '}
+        {id ? 'Lecture not found.' : `No lectures in ${code}.`}{' '}
         <Link to="/" className="text-accent hover:underline">
           Back to Library
         </Link>
@@ -105,68 +184,121 @@ export function PracticeRoute() {
   // gives way. Cards first: the one picked, else Due now, else Weakest first,
   // else whatever has cards. Then the kind falls back to All kinds.
   const cards: Cards =
-    (pickedCards ? [pickedCards] : []).concat(['due', 'weakest', 'everything', 'missed']).find((c) => counts[c][pickedKind] > 0) ??
-    'weakest';
-  const kind: Kind = counts[cards][pickedKind] > 0 ? pickedKind : 'all';
-  const n = counts[cards][kind];
+    (pickedCards ? [pickedCards] : [])
+      .concat(['due', 'weakest', 'everything', 'missed'])
+      .find((c) => sum(counts[c][pickedKind]) > 0) ?? 'weakest';
+  const kind: Kind = sum(counts[cards][pickedKind]) > 0 ? pickedKind : 'all';
+  const perLecture = counts[cards][kind];
+  const n = sum(perLecture);
+  const first = perLecture.findIndex((x) => x > 0);
+  const spans = perLecture.filter((x) => x > 0).length > 1;
+  // From a class's Practice the session carries the class, so its ways out
+  // lead back here and, over several lectures, each one's end offers the next.
+  const to = first >= 0 ? practiceLink(targets[first].courseId, cards, kind, targets[first].from, code, !spans) : '';
 
-  const go = sessionFor(cards, kind);
-  const query = new URLSearchParams();
-  if (section) query.set('section', section);
-  if (go.kind) query.set('kind', go.kind);
-  const qs = query.toString();
-  const to = `/session/${id}/${go.mode}${qs ? `?${qs}` : ''}`;
+  const classCode = course ? classOf(course) : code;
+  const classSize = classCode ? lecturesOf(courses, classCode).length : 0;
+  const nothingStudied = lectures.every(([lid]) => Object.keys(byCourse[lid] ?? {}).length === 0);
 
   return (
     <div>
-      <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
-        ← {course.metadata.title}
-      </Link>
+      {id ? (
+        <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
+          ← {course!.metadata.title}
+        </Link>
+      ) : (
+        <Link to={`/class/${encodeURIComponent(code!)}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
+          ← {code}
+        </Link>
+      )}
       <h1 className="mt-4 font-display text-display font-semibold text-text">Practice</h1>
+      {!id && (
+        <p className="mark mt-1 text-text-3">
+          {code} · {lectures.length} lecture{lectures.length === 1 ? '' : 's'}
+        </p>
+      )}
       <p className="mt-2 max-w-prose text-small text-text-2">
-        Drill this lecture outside the plan: before a class quiz, or a section that feels shaky. Today still decides
-        what comes back when; a card that is not fading yet gains little from more practice.
+        {id
+          ? 'Drill this lecture outside the plan: before a class quiz, or a section that feels shaky.'
+          : 'Drill the whole class outside the plan, one lecture after another: when one runs out, the next carries on.'}{' '}
+        Today still decides what comes back when; a card that is not fading yet gains little from more practice.
       </p>
-      {/* Practice drills what has been taught. On a lecture never opened,
-          every choice is the whole lecture cold, so say where to begin. */}
-      {Object.keys(progress).length === 0 && (
+      {/* Practice drills what has been taught. On material never opened,
+          every choice is cold, so say where to begin. */}
+      {nothingStudied && (
         <p className="mt-3 max-w-prose text-small text-text-2">
-          Nothing in this lecture has been studied yet.{' '}
-          <Link to={`/session/${id}/learn`} className="text-accent underline-offset-4 hover:underline">
-            Learn
+          Nothing here has been studied yet.{' '}
+          <Link
+            to={id ? `/session/${id}/learn` : `/class/${encodeURIComponent(code!)}`}
+            className="text-accent underline-offset-4 hover:underline"
+          >
+            {id ? 'Learn' : 'Today'}
           </Link>{' '}
           teaches it a few terms at a time; Practice is for after.
+        </p>
+      )}
+      {id && classCode && classSize > 1 && (
+        <p className="mt-3 text-small text-text-2">
+          Or practise every lecture in {classCode}:{' '}
+          <Link to={`/class/${encodeURIComponent(classCode)}/practice`} className="text-accent underline-offset-4 hover:underline">
+            the whole class
+          </Link>
+          .
         </p>
       )}
 
       <div className="mt-6 space-y-5 border-y border-border py-5">
         <Choices
           label="Cards"
-          choices={CARDS.map((c) => ({ ...c, count: counts[c.value][kind] }))}
+          choices={CARDS.map((c) => ({ ...c, count: sum(counts[c.value][kind]) }))}
           value={cards}
           onPick={(v) => setPickedCards(v)}
         />
         <Choices
           label="Kind"
-          choices={KINDS.map((k) => ({ ...k, count: counts[cards][k.value] }))}
+          choices={KINDS.map((k) => ({ ...k, count: sum(counts[cards][k.value]) }))}
           value={kind}
           onPick={(v) => setPickedKind(v)}
         />
         <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
           <span className="mark shrink-0 text-text-3 sm:w-16">From</span>
           <label className="min-w-0 sm:max-w-sm sm:flex-1">
-            <span className="sr-only">Section</span>
+            <span className="sr-only">{id ? 'Part of the lecture' : 'Part of the class'}</span>
             <select
-              value={section}
-              onChange={(e) => setSection(e.target.value)}
+              value={fromValues.has(from) ? from : ''}
+              onChange={(e) => setFrom(e.target.value)}
               className="field tap-safe w-full truncate text-small text-text-2"
             >
-              <option value="">The whole lecture</option>
-              {sections.map((s, i) => (
-                <option key={s.id} value={s.id}>
-                  {i + 1}. {s.title}
-                </option>
-              ))}
+              <option value="">{id ? 'The whole lecture' : 'The whole class'}</option>
+              {id ? (
+                <optgroup label="Sections">
+                  {sections.map((s, i) => (
+                    <option key={s.id} value={`section:${s.id}`}>
+                      {i + 1}. {s.title}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : (
+                <optgroup label="Lectures">
+                  {lectures.map(([lid, c], i) => (
+                    <option key={lid} value={`lecture:${lid}`}>
+                      {roman(i + 1)}. {lectureName(c.metadata.title, code)}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {studies.length > 0 && (
+                <optgroup label="Studies">
+                  <option value="study:all">{studies.length === 1 ? 'The study' : `All ${studies.length} studies`}</option>
+                  {(studies.length > 1 || !id) &&
+                    studies.map((s) => (
+                      <option key={`${s.courseId}|${s.key}`} value={`study:${s.courseId}|${s.key}`}>
+                        {s.label}
+                        {id ? '' : ` · ${s.lecture}`}
+                      </option>
+                    ))}
+                </optgroup>
+              )}
             </select>
           </label>
         </div>
@@ -174,9 +306,17 @@ export function PracticeRoute() {
 
       <div className="mt-6">
         {n > 0 ? (
-          <Link to={to} className="press press-ink tap-safe">
-            Start
-          </Link>
+          <>
+            <Link to={to} className="press press-ink tap-safe">
+              Start
+            </Link>
+            {spans && (
+              <p className="mt-3 max-w-prose text-small text-text-3">
+                Starts in {lectureName(targets[first].course.metadata.title, code)}, then carries on through{' '}
+                {perLecture.filter((x) => x > 0).length - 1} more lecture{perLecture.filter((x) => x > 0).length === 2 ? '' : 's'}.
+              </p>
+            )}
+          </>
         ) : (
           <p className="text-small text-text-3">Nothing to practise here yet.</p>
         )}
@@ -185,12 +325,14 @@ export function PracticeRoute() {
       <section className="mt-10 border-t border-border pt-5">
         <h2 className="mark text-text-3">Practice test</h2>
         <p className="mt-2 max-w-prose text-small text-text-2">
-          The medium and hard questions{section ? ' from this section' : ''}, asked as an exam asks them: no answers
-          until the end, then your score and every question you missed.{' '}
-          <span className="tabular-nums text-text-3">{testCount} questions.</span>
+          The medium and hard questions{from ? ' from this part' : ''}, asked as an exam asks them: no answers until the
+          end, then your score and every question you missed.{' '}
+          <span className="tabular-nums text-text-3">
+            {test.count} question{test.count === 1 ? '' : 's'}.
+          </span>
         </p>
-        {testCount > 0 && (
-          <Link to={`/study/${id}/test${section ? `?section=${encodeURIComponent(section)}` : ''}`} className="press tap-safe mt-3">
+        {test.count > 0 && (
+          <Link to={test.to} className="press tap-safe mt-3">
             Take a practice test
           </Link>
         )}

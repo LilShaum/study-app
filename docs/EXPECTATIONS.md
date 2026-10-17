@@ -97,6 +97,10 @@ reads the reply even if it is wrapped in text or cut off.
   (only named, or covered another way) and `unclear_figures` (figures it
   could not read, so the student checks them).
 - Each section has a `source_range` when the slides are numbered.
+- Every item about an empirical study carries `study:<author> (<year>)`.
+- Each wrong option is a mistake a student who studied would make (the
+  neighbour, the reversal, the wrong step, another case's answer), from the
+  lecture's own terms; at least one is as long as the right answer.
 - If the AI can see only the text of the slides, it says so and asks for
   the file attached, rather than generating without the figures.
 
@@ -144,7 +148,8 @@ rest of the lecture (`lib/sectionDensity.ts`). Fix turns the findings into
 a prompt for the same chat, which judges each one against the notes.
 
 **Working means.** Findings are plain, each says what to do, and none
-blocks studying. A density finding only points; the student, with the
+blocks studying. A pattern finding (the right answer longest too often)
+hands Fix enough of the questions behind it to undo the pattern. A density finding only points; the student, with the
 slides, decides.
 
 ## Studying
@@ -193,16 +198,27 @@ shaky.
 
 **How it works.** One page: which cards (due now, weakest first, missed
 last time, everything) × which kind (questions, flashcards, typed terms) ×
-which part of the lecture. It says plainly that cards not yet fading gain
-little.
+which part of the lecture: a section, or its studies (every card about an
+empirical study, or one study; `lib/studies.ts`). A class page has the same
+Practice across all its lectures, where the part is a lecture or a study;
+a session is one lecture's, so a choice over several runs them in turn and
+each end offers the next. Choices are remembered per lecture and per class.
+It says plainly that cards not yet fading gain little.
+
+**Working means.** A study is found by the generator's `study:` tag or, in
+older lectures, a citation in the card's question or answer (never the
+slide excerpt, where image credits live). Progress stays on the lecture's
+own cards.
 
 ### Practice test
 
 **Goal.** Check understanding the way an exam does.
 
 **How it works.** Only medium and hard MCQs (a question with no difficulty
-counts as medium), drawn at random from a lecture, a section, everything
-an exam covers, or a whole class; 20, 40 or all. No feedback until the end;
+counts as medium), drawn at random from a lecture, a section, a lecture's
+or a class's studies, everything an exam covers, or a whole class; 20, 40
+or all. Over several lectures, 20 or 40 are shared by each lecture's size,
+or equally if the student picks Each the same. No feedback until the end;
 then the score, each section weakest first, and every miss with the
 answer, why the pick was wrong, and the explanation. Retake the missed ones.
 A test in progress, and its results, survive leaving and a reload (a phone

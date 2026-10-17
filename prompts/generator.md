@@ -329,7 +329,9 @@ Every item, of any type, carries these common fields:
 - `source_excerpt` (string, **required**) — see obligation 1
 - `difficulty` (`"easy" | "medium" | "hard"`, optional but strongly encouraged)
 - `tags` (string[], optional) — consistent keywords for later filtering; reuse
-  the same tag spelling across items instead of inventing near-duplicates
+  the same tag spelling across items instead of inventing near-duplicates.
+  An item about an empirical study also carries `study:<author> (<year>)`
+  (Quality bar, part 6)
 
 ### Item types
 
@@ -569,13 +571,31 @@ teacher stressed or dismissed, that outranks your judgement.
 **MCQs are where quality matters most** — a bad MCQ actively teaches the
 wrong thing. For every MCQ:
 - Exactly one option is unambiguously correct per the source.
-- The three distractors are plausible same-category wrong answers (a
-  classmate who half-read the material could pick one) — never absurd,
-  joke, or "trick" options, and never "All of the above" / "None of the
-  above" as filler.
-- Prefer distractors that encode a *specific* error: the adjacent step in a
-  process, the reciprocal of the right formula, the term it is most often
-  confused with, the value from the previous worked step.
+- **Each distractor is a mistake a real student makes**, never filler. Take
+  them from these, in this order of preference:
+  - the **neighbour**: the term, structure or study the lecture sets beside
+    the right one, the one it is most often confused with (the other
+    pathway, the other half of a pair, the region one step along);
+  - the **reversal**: the right fact turned round (raises for lowers,
+    inside for outside, cause for effect, before for after);
+  - the **wrong step**: the step before or after in a process, or the right
+    steps in the wrong order;
+  - the **right answer to a different case**: what is true of the
+    neighbouring condition, disorder or study, attributed to this one;
+  - the **half-truth**: the right mechanism in the wrong place, or a true
+    statement that does not answer this question;
+  - the **misconception** the source warns about, or the everyday-sense
+    answer someone who skipped the lecture would give.
+- Build distractors from this lecture's own terms and facts, so a student
+  who only recognises words from the slides cannot strike them out. Each
+  must be wrong for a reason the source gives, not wrong by being invented,
+  absurd, a joke or a trick, and never "All of the above" / "None of the
+  above".
+- **Nothing outside the material eliminates an option.** All four are the
+  same kind of thing (four structures, four results, four mechanisms), fit
+  the stem's grammar, and are equally specific. Absolutes ("always",
+  "never", "only") are not only on the wrong ones; the hedge ("usually",
+  "can") is not only on the right one.
 - Fill `distractor_rationale` with one short phrase per wrong option
   explaining *why* a student might pick it and why it's wrong. If you can't
   write a real rationale for an option, replace that option — it's not a
@@ -598,12 +618,13 @@ one real course, against 25% by chance). The app checks this and reports it.
 - Never let one option run past twice the length of the others.
 - Vary which position is correct, and do not make "the longest", "the most
   detailed" or "the most hedged" option a reliable signal.
-- **A rule you can count:** the correct option may be the longest of the
-  four in no more than one MCQ in four, and the shortest in no more than one
-  in four either. The reliable way to hold it is to write the correct option
-  first, then write the distractors so that in most questions at least one of
-  them is longer and at least one shorter. "Roughly the same length" is
-  easy to believe of your own options; a count is not.
+- **A rule you can check on every question:** write the correct option
+  first, then make at least one distractor as long as it or longer, in
+  words. Across the lecture that keeps the correct option the longest of the
+  four in no more than one MCQ in four, and the shortest in no more than
+  one in four either. "Roughly the same length" is easy to believe of your
+  own options; a word count is not. A real lecture made with this prompt
+  still came out at 42% while its self-check said it was fine, so count.
 
 **Test understanding, not just recall** (part 3). Recall items are the
 floor: **every section needs at least one gradable item that asks the
@@ -648,6 +669,12 @@ right and whole card for a basic term; every concept the student must
   good when they test *different* skills (recall vs application); they are
   waste when they are rephrasings.
 - Roughly half of all items are `mcq` or `flashcard`.
+- An item about an empirical study (its question, method, participants,
+  conditions, results or what it supports) carries the tag
+  `study:<first author> (<year>)`, spelled the same on every item about
+  that study, for example `study:Hollis et al. (1998)`; a case study
+  without a citation is `study:Patient KR`. The app gathers these so the student can
+  practise the studies on their own.
 - Give every item a `difficulty` by what it asks (part 3's table): recalling
   a fact as stated is easy; using, comparing or calculating is medium or
   hard. Never split evenly for appearance.
@@ -664,13 +691,16 @@ Check your own draft:
    Delete or fix any that don't.
 3. Does every MCQ have four options, a 0-based `correct_index` pointing at
    the genuinely correct one, and a real `distractor_rationale` per option?
-4. **Scan the correct options alone.** Count the MCQs whose correct option
-   is the longest of the four, and those where it is the shortest: more than
-   one in four either way, and you must rework distractors until it is not. Are the correct options the most qualified,
-   the only ones with a parenthetical? If a stranger could score above 25%
-   seeing only the options and never the questions, fix the distractors —
-   this is the one fault that makes a course flatter a student rather than
-   prepare them.
+4. **Scan the options alone.** For each MCQ, count the words of each
+   option: is one distractor at least as long as the correct one? Then
+   count the MCQs whose correct option is the longest of the four, and those
+   where it is the shortest: more than one in four either way, and rework
+   distractors until it is not. Are the correct options the most qualified,
+   the only ones with a parenthetical? Could a student who skipped the
+   lecture strike out any option (wrong category, invented, does not fit
+   the stem)? If a stranger could score above 25% seeing only the options
+   and never the questions, fix the distractors: this is the one fault that
+   makes a course flatter a student rather than prepare them.
 5. **Scan the stems alone.** Does any mention the notes, the slides or a
    figure? Is any one just its `source_excerpt` reworded into a question?
    Does every section have at least one that asks for more than retrieval?

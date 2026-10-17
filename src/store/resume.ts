@@ -11,6 +11,11 @@ export interface Bookmark {
   sectionId: string | null;
   /** The Practice page's kind filter (questions, flashcards, terms), so Continue keeps it. */
   kind?: CardKind | null;
+  /** The Practice page's studies choice, so Continue keeps it. */
+  study?: string | null;
+  /** A class's Practice, so Continue still runs through the class (and `single` keeps it to this lecture). */
+  classCode?: string | null;
+  single?: boolean;
   /**
    * Where to pick up, as an item id rather than a position.
    *

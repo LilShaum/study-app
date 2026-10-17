@@ -50,6 +50,27 @@ lecture, per exam or a whole class. Course check on items per slide
 first. **Open:** compare a regenerated lecture against the old one to
 confirm the prompt changes on real output.
 
+**Done 2026-10-17 (owner's asks after the PSYC 351C test):**
+- **Class Practice** (`/class/:code/practice`, `PracticeRoute`): the
+  lecture Practice's choices across a class. Sessions stay one lecture's;
+  `?class=` makes each end offer the class's next lecture with cards for
+  the same choice (`CardSession` nextPracticeFor). Choices remembered per
+  lecture and class (`arborous:practice:*`).
+- **Studies** (`lib/studies.ts`): cards grouped by study, from the
+  generator's new `study:` tag or a citation in the question or answer.
+  A "From" choice in both Practices and the practice test (`?study=`).
+  The owner asked for it for their study-heavy class; it costs other
+  classes nothing (the group only appears when a lecture cites studies).
+- **Practice test, Each the same**: an even share per lecture
+  (`drawTest(…, even)`), so a short lecture is not under-asked.
+- **Better wrong answers** (prompt, Quality bar §6): distractors from real
+  mistakes (neighbour, reversal, wrong step, another case's answer,
+  half-truth, misconception), from the lecture's own terms; a per-question
+  length rule. The length-tell check now hands Fix enough questions to undo
+  the pattern (`lengthBias.toFix`); before, a real lecture at 42% with no
+  blatant case gave Fix none.
+- Inside a class, lecture names drop the class code (`lectureName`).
+
 **Back burner (owner, 2026-10-15): anything that needs the owner's real
 study log.** Do not start these until the owner sends a backup (Help →
 Back up everything, key `arborous:study-log`) and asks for them:

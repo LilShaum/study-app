@@ -41,7 +41,7 @@ const FAULT_LABELS: Record<string, string> = {
   'filler-options': 'it uses "all/none of the above" as an option',
   'option-count': "it doesn't have the four options the contract asks for",
   'length-tell':
-    'the right answer is noticeably longer than every wrong one, so a student can pick it without knowing the material — bring the options to similar length, usually by giving the distractors the qualifier the right answer has, not by stripping the right answer',
+    'the right answer is longer than every wrong one, so a student can pick it without knowing the material. Keep the question and the right answer; rewrite the wrong options so at least one is as long or longer, usually by giving them the qualifier the right answer has. Make each a mistake a student who studied would really make (the neighbouring term or study, the fact turned round, the step before or after, what is true of a different case), using this lecture\'s own terms, and update distractor_rationale to match',
   'lopsided-options': 'one option is more than twice the length of the others, which draws the eye whether or not it is right',
   'cued-to-source':
     'the question refers to "the notes", "the slide" or a figure — ask the same thing about the subject itself, since that cue will not exist in the exam',

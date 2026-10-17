@@ -60,6 +60,14 @@ export interface LengthBias {
    * questions behind the course-wide tell, which can be repaired one by one.
    */
   giveaway: string[];
+  /**
+   * The questions to rework so the right answer is the longest no more than
+   * one time in four: those where it is strictly the longest, the most
+   * lopsided first, as many as are over that share. Without it a course
+   * with many slightly-long answers and no blatant one was reported and
+   * handed Fix nothing to change (a real lecture: 42%, none past 1.5x).
+   */
+  toFix: string[];
 }
 
 /**
@@ -95,6 +103,7 @@ export function lengthBias(course: Course): LengthBias {
   let distractorCount = 0;
   const lopsided: string[] = [];
   const giveaway: string[] = [];
+  const longer: { id: string; ratio: number }[] = [];
 
   for (const m of mcqs) {
     const lens = m.options.map((o) => String(o).length);
@@ -110,8 +119,9 @@ export function lengthBias(course: Course): LengthBias {
     if (mean > 0 && Math.max(...lens) > mean * 2) lopsided.push(m.id);
     const others = lens.filter((_, i) => i !== m.correct_index);
     const othersMean = others.reduce((a, b) => a + b, 0) / Math.max(1, others.length);
-    if (others.length && correct > Math.max(...others) && correct >= othersMean * GIVEAWAY_RATIO) {
-      giveaway.push(m.id);
+    if (others.length && correct > Math.max(...others)) {
+      if (correct >= othersMean * GIVEAWAY_RATIO) giveaway.push(m.id);
+      longer.push({ id: m.id, ratio: correct / Math.max(1, othersMean) });
     }
   }
 
@@ -124,6 +134,10 @@ export function lengthBias(course: Course): LengthBias {
     z: sd > 0 ? (longestIsCorrect - expected) / sd : 0,
     lopsided,
     giveaway,
+    toFix: longer
+      .sort((a, b) => b.ratio - a.ratio)
+      .slice(0, Math.max(0, longestIsCorrect - Math.round(expected)))
+      .map((x) => x.id),
   };
 }
 

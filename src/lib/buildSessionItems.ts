@@ -172,6 +172,8 @@ export interface SessionOptions {
   missedIds?: ReadonlySet<string>;
   /** Restrict the session to one section. Undefined studies the whole course. */
   sectionId?: string;
+  /** Restrict the session to these cards (the Practice page's studies, lib/studies.ts). */
+  onlyIds?: ReadonlySet<string>;
   /** Per-item history. 'weakest' and 'review' rank by it; 'definitions' and 'review' pair confused terms from it. */
   progress?: Record<string, ItemResult>;
   /** The time to judge "due" at. 'review' only; defaults to the clock. */
@@ -321,7 +323,7 @@ function withoutSecondLook(list: SessionItem[], recent: (sectionId: string) => b
 export function buildSessionItems(
   course: Course,
   mode: StudyMode,
-  { missedIds, sectionId, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES, pace, kind, questionsFirst }: SessionOptions = {},
+  { missedIds, sectionId, onlyIds, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES, pace, kind, questionsFirst }: SessionOptions = {},
 ): SessionItem[] {
   const sections = sectionId
     ? sortedSections(course).filter((s) => s.id === sectionId)
@@ -330,7 +332,7 @@ export function buildSessionItems(
   let items: SessionItem[] = sections.flatMap((section) =>
     // Set aside by the student (schema: set_aside): out of every session.
     // Browse renders from the file and shows them with Put back.
-    section.items.filter((item) => mode === 'browse' || !item.set_aside).map((item) => ({
+    section.items.filter((item) => (mode === 'browse' || !item.set_aside) && (!onlyIds || onlyIds.has(item.id))).map((item) => ({
       ...item,
       _sectionTitle: section.title,
       _sectionId: section.id,

@@ -31,7 +31,11 @@ function useLocationName(): string {
   if (pathname === '/help') return 'Using Arborous';
   if (pathname === '/sync') return 'Sync';
   if (pathname.startsWith('/shared/')) return 'Shared lecture';
-  if (pathname.startsWith('/class/') && params.code) return /^\/class\/[^/]+\/test$/.test(pathname) ? `${params.code} · Practice test` : params.code;
+  if (pathname.startsWith('/class/') && params.code) {
+    if (/^\/class\/[^/]+\/test$/.test(pathname)) return `${params.code} · Practice test`;
+    if (/^\/class\/[^/]+\/practice$/.test(pathname)) return `${params.code} · Practice`;
+    return params.code;
+  }
   if (pathname.startsWith('/session/')) return title ?? 'Session';
   if (pathname.includes('/progress')) return title ? `${title} · Progress` : 'Progress';
   if (pathname.includes('/diagrams')) return title ? `${title} · Plates` : 'Plates';

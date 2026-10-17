@@ -11,6 +11,7 @@ import { getPersonalScale, retrievability } from '@/lib/memory';
 import { applyPersonalScale } from '@/lib/personalScale';
 import { twinsOf } from '@/lib/linkedTerms';
 import { useCoursesStore } from './courses';
+import { onlyStudies } from '@/lib/studies';
 
 /**
  * When the current card was put in front of the student. Kept outside the
@@ -63,6 +64,12 @@ interface SessionState {
    */
   pendingKind: CardKind | null;
   setPendingKind: (kind: CardKind | null) => void;
+  /**
+   * The Practice page's studies choice: 'all', one study's key
+   * (lib/studies.ts), or null for every card. Set and kept like pendingKind.
+   */
+  pendingStudy: string | null;
+  setPendingStudy: (study: string | null) => void;
   /** `fullDay`: Today planned at the full daily time, ignoring what was studied today ("Keep going"). */
   init: (courseId: string, course: Course, mode: StudyMode, sectionId?: string, resumeItemId?: string, fullDay?: boolean) => void;
   /** The section this session is scoped to, or null for the whole course. */
@@ -188,6 +195,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   sectionId: null,
   pendingKind: null,
   setPendingKind: (kind) => set({ pendingKind: kind }),
+  pendingStudy: null,
+  setPendingStudy: (study) => set({ pendingStudy: study }),
 
   init: (courseId, course, mode, sectionId, resumeItemId, fullDay = false) => {
     adoptLinkedTerms(courseId);
@@ -215,6 +224,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
           : usePlanStore.getState().minutesFor(courseId),
       pace: measuredPace(useStudyLogStore.getState().byCourse),
       kind: get().pendingKind ?? undefined,
+      onlyIds: onlyStudies(course, get().pendingStudy),
       questionsFirst: useLearnStore.getState().questionsFirst,
     });
     shownAt = Date.now();

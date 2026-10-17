@@ -5,6 +5,7 @@ import type { Course } from '@/schema/course';
 import { buildSessionItems, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { phaseOf, type LearnPhase } from '@/lib/learnSteps';
 import { useSessionStore, restartCardTimer, fileItemOf } from '@/store/session';
+import { onlyStudies } from '@/lib/studies';
 import { toast } from '@/store/toast';
 import { useResumeStore } from '@/store/resume';
 import { CourseTree } from '@/components/CourseTree';
@@ -21,6 +22,8 @@ import { plannedMinutes, studiedToday, todaySitting } from '@/lib/todaySitting';
 import { CATCH_UP_MINUTES, PART_GAP_HOURS } from '@/lib/today';
 import { sectionsToLearn } from '@/lib/nextToLearn';
 import { useLearnStore } from '@/store/learn';
+import { lectureName, lecturesOf } from '@/lib/classExams';
+import { choiceOf, countBasis, practiceCount, practiceLink } from '@/lib/practice';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
 
@@ -34,6 +37,8 @@ interface CardSessionProps {
   resume?: boolean;
   /** Today from a class page: the next lecture offered is the class's. */
   classCode?: string;
+  /** With classCode: the class Practice's choice was this lecture only, so the end offers no next lecture. */
+  single?: boolean;
 }
 
 const MODE_LABELS: Record<CardMode, string> = {
@@ -228,8 +233,13 @@ function shortName(item: SessionItem): string {
 }
 
 /** Every mode except Browse — one item at a time. */
-export function CardSession({ courseId, course, mode, sectionId, resume = false, classCode }: CardSessionProps) {
+export function CardSession({ courseId, course, mode, sectionId, resume = false, classCode, single = false }: CardSessionProps) {
   const navigate = useNavigate();
+  // A practice session opened from a class's Practice runs through the class:
+  // its ways out lead back there, and its end offers the next lecture.
+  const practiceClass = classCode && mode !== 'today' && mode !== 'learn' ? classCode : undefined;
+  const home = practiceClass ? `/class/${encodeURIComponent(practiceClass)}/practice` : `/study/${courseId}`;
+  const homeLabel = practiceClass ? 'Back to Practice' : 'Back to lecture';
   // Read after the session has recorded its results, so the tree on the
   // finish screen is the tree this session just grew.
   const progress = useProgressStore((s) => s.getProgress(courseId) ?? EMPTY_PROGRESS);
@@ -269,7 +279,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       bookmark &&
       bookmark.mode === mode &&
       (bookmark.sectionId ?? undefined) === sectionId &&
-      (bookmark.kind ?? null) === useSessionStore.getState().pendingKind
+      (bookmark.kind ?? null) === useSessionStore.getState().pendingKind &&
+      (bookmark.study ?? null) === useSessionStore.getState().pendingStudy
         ? bookmark.itemId
         : undefined;
     // The lecture as it is now, read rather than subscribed to: setting a
@@ -288,12 +299,15 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       mode,
       sectionId: sectionId ?? null,
       kind: useSessionStore.getState().pendingKind,
+      study: useSessionStore.getState().pendingStudy,
+      classCode: practiceClass ?? null,
+      single,
       itemId: current.id,
       index,
       total,
       updatedAt: Date.now(),
     });
-  }, [courseId, mode, sectionId, index, current, total, finished]);
+  }, [courseId, mode, sectionId, index, current, total, finished, practiceClass, single]);
 
   /** `fullDay`: "Keep going" carries on past the day's plan, so Today is planned afresh at the full time. */
   const restart = (fullDay = false) => {
@@ -316,8 +330,25 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   const [moreDue, setMoreDue] = useState(0);
   /** Today only: the next course with something to do, worked out as the sitting ends. */
   const [nextCourse, setNextCourse] = useState<CourseToday | null>(null);
+  /** A class's Practice: the class's next lecture with cards for the same choice, worked out as the session ends. */
+  const [nextPractice, setNextPractice] = useState<{ title: string; to: string; count: number } | null>(null);
   /** Learn only: the next section with something to learn, worked out as the session ends. */
   const [nextSection, setNextSection] = useState<{ id: string; title: string } | null>(null);
+  const nextPracticeFor = (): { title: string; to: string; count: number } | null => {
+    if (!practiceClass || single) return null;
+    const { pendingKind, pendingStudy } = useSessionStore.getState();
+    const choice = choiceOf(mode, pendingKind);
+    if (!choice) return null;
+    const lectures = lecturesOf(useCoursesStore.getState().courses, practiceClass);
+    const from = pendingStudy ? { study: pendingStudy } : {};
+    const now = Date.now();
+    for (const [id, c] of lectures.slice(lectures.findIndex(([lid]) => lid === courseId) + 1)) {
+      const progress = useProgressStore.getState().getProgress(id);
+      const count = practiceCount(countBasis(c, progress, useProgressStore.getState().missedIds(id), from, now), choice.cards, choice.kind);
+      if (count > 0) return { title: lectureName(c.metadata.title, practiceClass), count, to: practiceLink(id, choice.cards, choice.kind, from, practiceClass) };
+    }
+    return null;
+  };
   const nextCourseFor = (): CourseToday | null => {
     const now = Date.now();
     const others = todayAcrossCourses(
@@ -443,8 +474,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         exam: examRule(course, useProgressStore.getState().getProgress(courseId), Date.now()),
         // Every card still due, not one more sitting's worth.
         minutes: Infinity,
-        // The Practice page's kind, which "Keep reviewing" keeps too.
+        // The Practice page's kind and studies, which "Keep reviewing" keeps too.
         kind: useSessionStore.getState().pendingKind ?? undefined,
+        onlyIds: onlyStudies(course, useSessionStore.getState().pendingStudy),
       }).length;
       setMoreDue(still);
       // While more is due now, "these come back tomorrow" is not the news.
@@ -454,6 +486,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       setAppointment(appointmentFor());
     }
     setNextCourse(mode === 'today' ? nextCourseFor() : null);
+    setNextPractice(nextPracticeFor());
     // Learn's "Keep going": the section Learn would teach next, not this one again.
     const after = mode === 'learn' ? sectionsToLearn(course, useProgressStore.getState().getProgress(courseId)).find(({ section }) => section.id !== sectionId) : undefined;
     setNextSection(after ? { id: after.section.id, title: after.section.title } : null);
@@ -467,7 +500,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        navigate(`/study/${courseId}`);
+        navigate(home);
         return;
       }
       if (pause) {
@@ -502,16 +535,16 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     const copy = EMPTY_COPY[mode];
     return (
       <div className="mx-auto max-w-2xl py-10 text-center sm:px-10">
-        <Link to={`/study/${courseId}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
+        <Link to={home} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
           ← Back
         </Link>
         <h1 className="mt-4 text-xl font-semibold text-text">{copy.title}</h1>
         <p className="mt-2 text-text-2">{copy.text}</p>
         <Link
-          to={`/study/${courseId}`}
+          to={home}
           className="press press-ink mt-4"
         >
-          Back to lecture
+          {homeLabel}
         </Link>
       </div>
     );
@@ -573,6 +606,12 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
               Keep going
             </button>
           )}
+          {/* A class's Practice carries on in the next lecture with cards for it. */}
+          {nextPractice && (
+            <Link to={nextPractice.to} className={`press tap-safe max-w-full ${moreDue > 0 ? '' : 'press-ink'}`}>
+              Next: {nextPractice.title}, {nextPractice.count} card{nextPractice.count === 1 ? '' : 's'}
+            </Link>
+          )}
           {nextSection && (
             <Link
               to={`/session/${courseId}/learn?section=${encodeURIComponent(nextSection.id)}`}
@@ -603,18 +642,18 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
             <button
               type="button"
               onClick={() => restart()}
-              className={`press tap-safe ${missedNow > 0 || nextSection ? '' : 'press-ink'}`}
+              className={`press tap-safe ${missedNow > 0 || nextSection || nextPractice ? '' : 'press-ink'}`}
             >
               Study again
             </button>
           )}
           <Link
-            to={`/study/${courseId}`}
+            to={home}
             // The lead when nothing else is: with misses waiting for later,
             // stopping here is the advice.
-            className={`press tap-safe ${missedNow > 0 && !(moreDue > 0 || mode === 'today' || nextSection) ? 'press-ink' : ''}`}
+            className={`press tap-safe ${missedNow > 0 && !(moreDue > 0 || mode === 'today' || nextSection || nextPractice) ? 'press-ink' : ''}`}
           >
-            Back to lecture
+            {homeLabel}
           </Link>
         </div>
         {mode === 'today' && nextCourse && (
@@ -622,7 +661,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
             to={`/session/${nextCourse.id}/today${classCode ? `?class=${encodeURIComponent(classCode)}` : ''}`}
             className="press tap-safe mt-3 max-w-full"
           >
-            Next: Today in {nextCourse.title}
+            Next: Today in {classCode ? lectureName(nextCourse.title, classCode) : nextCourse.title}
           </Link>
         )}
       </div>
@@ -633,7 +672,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     <div className="mx-auto max-w-2xl py-6 sm:px-6 lg:grid lg:max-w-5xl lg:grid-cols-[minmax(0,1fr)_13rem] lg:gap-12">
       <div className="min-w-0">
       <div className="mb-4 flex items-center justify-between">
-        <Link to={`/study/${courseId}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
+        <Link to={home} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
           ← Back
         </Link>
         <span className="flex items-baseline gap-2">

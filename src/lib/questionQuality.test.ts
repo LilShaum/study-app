@@ -32,6 +32,17 @@ const course = (items: StudyItem[], sections?: { id: string; title: string; item
 const even = ['aaaa', 'bbbb', 'cccc', 'dddd'];
 
 describe('lengthBias', () => {
+  it('names enough slightly-long answers to bring the share back to one in four, most lopsided first', () => {
+    // 20 questions, the right answer a little the longest in 12 (none past
+    // the blatant ratio): 12 - 5 expected = 7 to rework.
+    const items = Array.from({ length: 20 }, (_, n) =>
+      n < 12 ? mcq(`q${n}`, ['a'.repeat(31 + n), 'b'.repeat(30), 'c'.repeat(29), 'd'.repeat(28)], 0) : mcq(`q${n}`, ['aaa', 'bbbb', 'cccc', 'dddd'], 0),
+    );
+    const b = lengthBias(course(items));
+    expect(b.giveaway).toEqual([]);
+    expect(b.toFix).toEqual(['q11', 'q10', 'q9', 'q8', 'q7', 'q6', 'q5']);
+    expect(lengthBias(course([mcq('q', even, 0)])).toFix).toEqual([]);
+  });
   it('reports no bias when the correct option is never the longest', () => {
     const items = Array.from({ length: 40 }, (_, n) => mcq(`q${n}`, ['aaaaaaaaaaaa', 'bb', 'cc', 'dd'], 1));
     const b = lengthBias(course(items));

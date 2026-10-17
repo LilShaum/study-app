@@ -27,6 +27,8 @@ export interface TestScope {
   courseId: string;
   course: Course;
   covers: Coverage;
+  /** Only these cards (a studies choice, lib/studies.ts). */
+  only?: ReadonlySet<string>;
 }
 
 export const TEST_LENGTHS = [20, 40] as const;
@@ -45,11 +47,11 @@ const usable = (item: McqItem): boolean => {
 /** Every question a test over these lectures can ask, in course order. */
 export function testPool(scopes: TestScope[]): TestQuestion[] {
   const out: TestQuestion[] = [];
-  for (const { courseId, course, covers } of scopes) {
+  for (const { courseId, course, covers, only } of scopes) {
     for (const section of sortedSections(course)) {
       if (covers !== 'all' && !covers.includes(section.id)) continue;
       for (const item of section.items) {
-        if (item.type !== 'mcq' || item.set_aside || !usable(item)) continue;
+        if (item.type !== 'mcq' || item.set_aside || !usable(item) || (only && !only.has(item.id))) continue;
         out.push({ courseId, lecture: course.metadata.title, sectionId: section.id, section: section.title, item });
       }
     }
@@ -62,10 +64,34 @@ export function testPool(scopes: TestScope[]): TestQuestion[] {
  * `length` is undefined or larger). A random draw keeps each section's share
  * of the test to its share of the questions, and the lecture spends its
  * questions on what it weighs most.
+ *
+ * `even` shares the test equally between the lectures instead, so a short
+ * lecture is asked as much as a long one (an exam often gives each lecture
+ * a similar share whatever its length). A lecture with too few questions for
+ * its share gives the rest to the others.
  */
-export function drawTest(pool: TestQuestion[], length?: number): TestQuestion[] {
+export function drawTest(pool: TestQuestion[], length?: number, even = false): TestQuestion[] {
   const all = shuffle(pool);
-  return length && length < all.length ? all.slice(0, length) : all;
+  if (!length || length >= all.length) return all;
+  if (!even) return all.slice(0, length);
+  const byLecture = new Map<string, TestQuestion[]>();
+  for (const q of all) {
+    const pile = byLecture.get(q.courseId);
+    if (pile) pile.push(q);
+    else byLecture.set(q.courseId, [q]);
+  }
+  // Take one from each lecture in turn until the test is full.
+  const piles = shuffle([...byLecture.values()]);
+  const out: TestQuestion[] = [];
+  for (let round = 0; out.length < length; round++) {
+    for (const pile of piles) if (round < pile.length && out.length < length) out.push(pile[round]);
+  }
+  return shuffle(out);
+}
+
+/** How many lectures a pool draws from: the even draw is only a choice with two or more. */
+export function lecturesIn(pool: TestQuestion[]): number {
+  return new Set(pool.map((q) => q.courseId)).size;
 }
 
 export interface TestResult {
