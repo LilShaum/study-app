@@ -12,24 +12,29 @@ in scheduling changed since its last baseline).
 
 ## Ranked, most harm first
 
-### 1. Storage fills up within weeks
+### 1. Storage fills up (done 2026-10-18)
 
-Lectures live in the browser's localStorage, about 5 MB on most browsers
-and on iOS. The owner's backup holds **3.4 MB** (11 lectures, about
-300 KB each). At the owner's pace (several lectures a week) that is about
-five more lectures, so mid-semester. When it is full:
+Lectures live in the browser's localStorage, about 5 MB. The owner's
+backup holds 1.78M characters (11 lectures, about 160k characters each).
+**Correction, 2026-10-18:** this audit first said 3.4 MB of 5 MB, counting
+two bytes a character. Measured, Chromium allows 5,242,880 characters of
+any kind, so it was 34% full there; WebKit (the iPhone) is thought to count
+plain text at one byte a character, which also gives about 35%. So about
+20 more lectures, not 5: still within the semester, not within weeks. When
+it is full:
 
 - a new lecture cannot be saved (a toast says so; the advice is to export
   and remove a lecture);
 - before that, to make room, `safeStorage` **silently deletes the study
   log**: the data the back-burner calibration is waiting for.
 
-Fix options: keep lectures compressed in storage (text JSON shrinks about
-4–5×, no change to how the app works), or move them to IndexedDB (hundreds
-of MB, but loading becomes asynchronous). Either way, say how full storage
-is before it is full, and never drop the study log without saying so.
+Done: lectures are stored compressed, a key each (`lib/packedStorage.ts`):
+1.78M characters became 0.26M, about 7× the room in Chromium and about 4×
+by WebKit's count. The library warns from 75% full, counted the strict
+way; the study log is trimmed (and put back if that does not help), never
+deleted.
 
-### 2. Everything exists only on one phone
+### 2. Everything exists only on one phone (done 2026-10-18)
 
 No sync account in the backup, and nothing ever suggests a backup (Help has
 the button; nothing points to it). A lost phone, a reset, or deleting the

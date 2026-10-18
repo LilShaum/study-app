@@ -15,6 +15,7 @@ import { createJSONStorage } from 'zustand/middleware';
  */
 
 let quotaWarned = false;
+let trimWarned = false;
 
 /** Set by the app at startup so this module doesn't import UI code directly. */
 let onWriteFailure: ((message: string) => void) | null = null;
@@ -64,18 +65,30 @@ export function writesLanded(): boolean {
   return ok;
 }
 
-/** Bytes currently held in localStorage, and the usual browser ceiling. */
+/**
+ * Bytes held in localStorage, counted the strict way, and the ceiling.
+ *
+ * Browsers count differently. Chromium allows 5,242,880 characters of any
+ * kind (measured 2026-10-18). WebKit, the iPhone's engine, is thought to
+ * count bytes: one per character for text that is all Latin-1 (plain
+ * JSON), two for any other (the packed lectures, lib/packedStorage.ts).
+ * The figure here takes the stricter of the two, so a warning built on it
+ * comes early rather than late.
+ */
+/** Any character past Latin-1, which takes two bytes where it is counted in bytes. */
+const WIDE = /[\u0100-\uffff]/;
+
 export function storageUsage(): { used: number; limit: number } | null {
   try {
     let used = 0;
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key === null) continue;
-      used += key.length + (localStorage.getItem(key)?.length ?? 0);
+      const value = localStorage.getItem(key) ?? '';
+      const wide = WIDE.test(value) || WIDE.test(key);
+      used += (key.length + value.length) * (wide ? 2 : 1);
     }
-    // Browsers don't expose the localStorage cap; 5MB is the near-universal
-    // value and is only ever used here to give the number a scale.
-    return { used: used * 2, limit: 5 * 1024 * 1024 };
+    return { used, limit: 5 * 1024 * 1024 };
   } catch {
     return null;
   }
@@ -83,7 +96,107 @@ export function storageUsage(): { used: number; limit: number } | null {
 
 const STUDY_LOG_KEY = 'arborous:study-log';
 
-const safeLocalStorage: Storage = {
+/**
+ * The study log with only the newer part of each lecture's history kept
+ * (`keep` of its answers and card times), or null if it cannot be read.
+ */
+export function trimStudyLog(raw: string, keep: number): string | null {
+  try {
+    const log = JSON.parse(raw) as { state?: { byCourse?: Record<string, { answers?: unknown[]; times?: unknown[] }> } };
+    for (const c of Object.values(log.state?.byCourse ?? {})) {
+      if (Array.isArray(c.answers)) c.answers = c.answers.slice(Math.floor(c.answers.length * (1 - keep)));
+      if (Array.isArray(c.times)) c.times = c.times.slice(Math.floor(c.times.length * (1 - keep)));
+    }
+    return JSON.stringify(log);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Writes one value; false if the browser would not take it.
+ *
+ * When storage is full, room is made from the study log, the one thing here
+ * that only tunes timing: first its older half, then its older three
+ * quarters. It is never deleted outright any more. It used to be, silently,
+ * and it is the record the forgetting-rate fit and the owner's calibration
+ * depend on (docs/audits/2026-10-17-weak-points.md). Trimming is said out
+ * loud, once.
+ */
+export function trySetItem(name: string, value: string): boolean {
+  try {
+    localStorage.setItem(name, value);
+    return true;
+  } catch {
+    if (name === STUDY_LOG_KEY) {
+      // The log itself does not fit: save its newer part, so what is stored
+      // stays in step with what is kept (the full log is still in memory and
+      // in any backup until the app reloads).
+      for (const keep of [0.5, 0.25]) {
+        const trimmed = trimStudyLog(value, keep);
+        if (trimmed == null) break;
+        try {
+          localStorage.setItem(name, trimmed);
+          if (!trimWarned) {
+            trimWarned = true;
+            onWriteFailure?.(
+              'Storage is almost full, so the oldest part of your study history was trimmed to make room. Back up (Help), then remove a lecture you no longer need.',
+            );
+          }
+          return true;
+        } catch {
+          /* still full */
+        }
+      }
+    } else {
+      let original: string | null = null;
+      try {
+        original = localStorage.getItem(STUDY_LOG_KEY);
+      } catch {
+        /* unreadable: nothing to trim */
+      }
+      let trimmedAny = false;
+      for (const keep of original == null ? [] : [0.5, 0.25]) {
+        const trimmed = trimStudyLog(original!, keep);
+        if (trimmed == null || trimmed.length >= original!.length) break;
+        try {
+          localStorage.setItem(STUDY_LOG_KEY, trimmed);
+          trimmedAny = true;
+          localStorage.setItem(name, value);
+          if (!trimWarned) {
+            trimWarned = true;
+            onWriteFailure?.(
+              'Storage is almost full, so the oldest part of your study history was trimmed to make room. Back up (Help), then remove a lecture you no longer need.',
+            );
+          }
+          return true;
+        } catch {
+          /* still full: trim further, or give up */
+        }
+      }
+      // Trimming did not make room: put the history back as it was, rather
+      // than lose it for a save that failed anyway.
+      if (trimmedAny) {
+        try {
+          localStorage.setItem(STUDY_LOG_KEY, original!);
+        } catch {
+          /* it no longer fits either; the trimmed copy stays */
+        }
+      }
+    }
+    writeFailedSinceCheck = true;
+    // The ambient warning stays once-per-session — a failing write usually
+    // keeps failing and a toast per keystroke would be worse than the
+    // problem. Callers that need to know about THEIR write use persisted().
+    if (!quotaWarned) {
+      quotaWarned = true;
+      onWriteFailure?.("Couldn't save because browser storage is full. Back up (Help), then remove a lecture you no longer need.");
+    }
+    return false;
+  }
+}
+
+export const safeLocalStorage: Storage = {
   get length() {
     try {
       return localStorage.length;
@@ -106,34 +219,7 @@ const safeLocalStorage: Storage = {
     }
   },
   setItem(name, value) {
-    try {
-      localStorage.setItem(name, value);
-    } catch {
-      // The study log is the one thing here that can be lost without loss to
-      // the student (it only tunes timing). When storage is full, it goes
-      // first, so a course or an answer is never what fails to save.
-      if (name !== STUDY_LOG_KEY) {
-        try {
-          if (localStorage.getItem(STUDY_LOG_KEY) != null) {
-            localStorage.removeItem(STUDY_LOG_KEY);
-            localStorage.setItem(name, value);
-            return;
-          }
-        } catch {
-          /* still full: fall through and report it */
-        }
-      }
-      writeFailedSinceCheck = true;
-      // The ambient warning stays once-per-session — a failing write usually
-      // keeps failing and a toast per keystroke would be worse than the
-      // problem. Callers that need to know about THEIR write use persisted().
-      if (!quotaWarned) {
-        quotaWarned = true;
-        onWriteFailure?.(
-          "Couldn't save because browser storage is full. Export a lecture and remove it to free up space.",
-        );
-      }
-    }
+    trySetItem(name, value);
   },
   removeItem(name) {
     try {

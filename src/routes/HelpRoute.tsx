@@ -317,7 +317,8 @@ const SECTIONS: HelpSection[] = [
           settings as one file. Keep it somewhere safe, or restore it on another device or in the
           installed app to carry on exactly where you left off. Restoring replaces what is on the
           device you restore it on. To give one lecture to a classmate, use <strong>Export</strong>{' '}
-          on its lecture page instead.
+          on its lecture page instead. Without sync, the library reminds you when your work has never
+          been backed up, or not for a week with new answers since, and warns you before storage is full.
         </p>
         <div className="mt-3 flex flex-wrap gap-3">
           <BackupButton />

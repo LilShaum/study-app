@@ -117,21 +117,55 @@ describe('storageUsage', () => {
 });
 
 describe('safeStorage — the study log gives way', () => {
-  it('drops the study log to make room for anything else', async () => {
+  it('trims the oldest of the study log to make room, and never deletes it', async () => {
     const { safeJSONStorage, persisted } = await freshModule();
-    localStorage.setItem('arborous:study-log', 'x'.repeat(100));
-    // Full until the log is gone.
+    const answers = Array.from({ length: 40 }, (_, i) => ({ at: i, got: true }));
+    localStorage.setItem('arborous:study-log', JSON.stringify({ state: { byCourse: { c: { answers, times: [], days: {} } } }, version: 0 }));
+    // Full until the log is at most half its size.
+    const full = realGet.call(localStorage, 'arborous:study-log')!.length;
     Storage.prototype.setItem = function (this: Storage, k: string, v: string) {
-      if (realGet.call(this, 'arborous:study-log') != null) throw new DOMException('full', 'QuotaExceededError');
+      const log = k === 'arborous:study-log' ? v : realGet.call(this, 'arborous:study-log');
+      if (k !== 'arborous:study-log' && (log?.length ?? 0) > full * 0.6) throw new DOMException('full', 'QuotaExceededError');
       realSetItem.call(this, k, v);
     };
     const { ok } = persisted(() => safeJSONStorage!.setItem('arborous:progress', { state: { a: 1 }, version: 0 }));
     expect(ok).toBe(true);
-    expect(localStorage.getItem('arborous:study-log')).toBeNull();
+    const kept = JSON.parse(localStorage.getItem('arborous:study-log')!).state.byCourse.c.answers;
+    expect(kept.map((a: { at: number }) => a.at)).toEqual(answers.slice(20).map((a) => a.at));
     expect(localStorage.getItem('arborous:progress')).toContain('"a":1');
   });
 
-  it('still reports the failure when dropping the log is not enough', async () => {
+  it('saves the newer half of the study log when the whole of it does not fit', async () => {
+    const { safeJSONStorage } = await freshModule();
+    const answers = Array.from({ length: 40 }, (_, i) => ({ at: i }));
+    Storage.prototype.setItem = function (this: Storage, k: string, v: string) {
+      if (k === 'arborous:study-log' && JSON.parse(v).state.byCourse.c.answers.length > 25) throw new DOMException('full', 'QuotaExceededError');
+      realSetItem.call(this, k, v);
+    };
+    safeJSONStorage!.setItem('arborous:study-log', { state: { byCourse: { c: { answers, times: [] } } }, version: 0 });
+    expect(JSON.parse(localStorage.getItem('arborous:study-log')!).state.byCourse.c.answers.map((a: { at: number }) => a.at)).toEqual(answers.slice(20).map((a) => a.at));
+  });
+
+  it('puts the history back when trimming does not make room', async () => {
+    const { safeJSONStorage, persisted } = await freshModule();
+    const log = JSON.stringify({ state: { byCourse: { c: { answers: Array.from({ length: 40 }, (_, i) => ({ at: i })), times: [] } } }, version: 0 });
+    localStorage.setItem('arborous:study-log', log);
+    const seen: number[] = [];
+    Storage.prototype.setItem = function (this: Storage, k: string, v: string) {
+      if (k === 'arborous:study-log') {
+        seen.push(JSON.parse(v).state.byCourse.c.answers.length);
+        return realSetItem.call(this, k, v);
+      }
+      throw new DOMException('full', 'QuotaExceededError');
+    };
+    const { ok } = persisted(() => safeJSONStorage!.setItem('arborous:progress', { state: {}, version: 0 }));
+    expect(ok).toBe(false);
+    // A half, then a quarter of the original, then the original put back.
+    expect(seen).toEqual([20, 10, 40]);
+    expect(localStorage.getItem('arborous:study-log')).toBe(log);
+  });
+
+  it('still reports the failure when trimming the log is not enough', async () => {
     const { safeJSONStorage, persisted } = await freshModule();
     localStorage.setItem('arborous:study-log', 'x');
     breakWrites();

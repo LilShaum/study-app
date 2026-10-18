@@ -20,6 +20,8 @@ import { useResumeStore } from '@/store/resume';
 import { useStudyLogStore } from '@/store/studyLog';
 import { usePlanStore } from '@/store/plan';
 import { useFallenStore } from '@/store/fallen';
+import { writePackedCourses } from './packedStorage';
+import { countAnswers, writeBackedUp } from './keepSafe';
 
 const PREFIX = 'arborous:';
 /** Set by a restore, so any other open tab reloads instead of writing its old state back. */
@@ -54,6 +56,17 @@ function storeSnapshots(): { name: string; value: string; version: number }[] {
 }
 const KIND = 'arborous-backup';
 
+/** The courses store's state as plain JSON, `{ state, version }`, as every backup holds it. */
+function isStoreSnapshot(v: string): boolean {
+  try {
+    const parsed = JSON.parse(v);
+    return !!parsed && typeof parsed === 'object' && !!parsed.state && typeof parsed.state === 'object';
+  } catch {
+    return false;
+  }
+}
+const COURSES_KEY = 'arborous:courses';
+
 export interface Backup {
   kind: typeof KIND;
   version: 1;
@@ -75,7 +88,11 @@ export function makeBackup(now = new Date()): Backup {
   // Sync's own bookkeeping stays behind: it describes this device's last
   // sync, and carried to another device it would make that one skip a
   // download it needs. A restored device starts sync afresh.
-  for (const k of ownKeys()) if (k !== RESTORED_KEY && k !== SYNC_META_KEY) data[k] = localStorage.getItem(k) ?? '';
+  // Each lecture's own compressed key is left out too: the courses store's
+  // snapshot below carries every lecture, as plain JSON any version reads.
+  for (const k of ownKeys()) {
+    if (k !== RESTORED_KEY && k !== SYNC_META_KEY && !k.startsWith(`${COURSES_KEY}/`)) data[k] = localStorage.getItem(k) ?? '';
+  }
   // The stores' state in memory, not what last reached storage: when storage
   // is full, recent changes live only in memory, and a backup is exactly when
   // they must not be lost.
@@ -153,7 +170,12 @@ export function restoreBackup(backup: Backup): boolean {
   const before = makeBackup().data;
   const replace = (data: Record<string, string>) => {
     for (const k of ownKeys()) localStorage.removeItem(k);
-    for (const [k, v] of Object.entries(data)) localStorage.setItem(k, v);
+    for (const [k, v] of Object.entries(data)) {
+      // Lectures go in compressed, so a backup that fits stored that way is
+      // never refused for its plain size.
+      if (k === COURSES_KEY && isStoreSnapshot(v)) writePackedCourses(k, v);
+      else localStorage.setItem(k, v);
+    }
   };
   try {
     replace(backup.data);
@@ -177,16 +199,16 @@ export function restoreBackup(backup: Backup): boolean {
  * a file somewhere (Save to Files, AirDrop, Messages); a download there lands
  * in a preview. On a computer, a plain download.
  */
-export async function saveFile(name: string, text: string): Promise<void> {
+export async function saveFile(name: string, text: string): Promise<boolean> {
   const file = new File([text], name, { type: 'application/json' });
   const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
   if (coarse && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({ files: [file] });
-      return;
+      return true;
     } catch (e) {
-      // Dismissing the share sheet is a choice, not a failure.
-      if ((e as Error)?.name === 'AbortError') return;
+      // Dismissing the share sheet is a choice, not a failure: nothing was saved.
+      if ((e as Error)?.name === 'AbortError') return false;
     }
   }
   const url = URL.createObjectURL(file);
@@ -197,6 +219,7 @@ export async function saveFile(name: string, text: string): Promise<void> {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+  return true;
 }
 
 /**
@@ -208,4 +231,19 @@ export function watchForRestore(): void {
   window.addEventListener('storage', (e) => {
     if (e.key === RESTORED_KEY) window.location.reload();
   });
+}
+
+/**
+ * Saves every lecture, all progress and settings as one file, and notes what
+ * it held, so the library's reminder knows when there is something new to
+ * lose. Resolves true when a file went somewhere.
+ */
+export async function backUpNow(): Promise<boolean> {
+  const now = new Date();
+  const saved = await saveFile(backupFileName(now), JSON.stringify(makeBackup(now)));
+  if (saved) {
+    const ids = Object.keys(useCoursesStore.getState().courses);
+    writeBackedUp({ at: now.getTime(), lectures: ids.length, lectureIds: ids, answers: countAnswers(useProgressStore.getState().byCourse) });
+  }
+  return saved;
 }

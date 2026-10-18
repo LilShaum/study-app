@@ -71,6 +71,17 @@ confirm the prompt changes on real output.
   blatant case gave Fix none.
 - Inside a class, lecture names drop the class code (`lectureName`).
 
+**Done 2026-10-18 (audit findings 1 and 2, `docs/audits/2026-10-17-weak-points.md`):**
+- Lectures stored compressed, a key per lecture (`lib/packedStorage.ts`,
+  fflate): the owner's 11 went from 1.78M to 0.26M characters: about 7×
+  the room in Chromium (limit measured: 5,242,880 characters) and about 4×
+  by WebKit's stricter count. Old plain storage converts on first load
+  (about 4 s on a 4× slowed phone, once); a change rewrites only that
+  lecture; library load time unchanged.
+- The study log is trimmed, never silently deleted, when storage is full.
+- Library line (`components/KeepSafe.tsx`): storage from 75% full, else a
+  backup reminder when nothing is synced and there is something to lose.
+
 **Back burner (owner, 2026-10-15): anything that needs the owner's real
 study log.** Do not start these until the owner sends a backup (Help →
 Back up everything, key `arborous:study-log`) and asks for them:

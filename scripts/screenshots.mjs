@@ -59,8 +59,9 @@ const VIEWPORTS = {
  * falling accuracy, the later ones untouched — so the tree carries leafed and
  * bare limbs at once and the progress page has a spread to rank.
  */
-const SEED_PROGRESS = (id) => {
-  const course = JSON.parse(localStorage.getItem('arborous:courses')).state.courses[id];
+// The app keeps lectures compressed (lib/packedStorage.ts), so the course is
+// passed in from the fixture file rather than read back out of storage.
+const SEED_PROGRESS = ({ id, course }) => {
   const plan = [[1, 0.9], [0.9, 0.8], [0.75, 0.65], [0.5, 0.55], [0.3, 0.45], [0.15, 0.35]];
   const byCourse = { [id]: {} };
   course.sections.forEach((section, i) => {
@@ -147,13 +148,12 @@ for (const size of ['desktop', 'phone']) {
   await p.goto(B);
   await p.locator('input[type=file]').first().setInputFiles(FIXTURE);
   await p.waitForTimeout(1200);
-  const id = await p.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('arborous:courses')).state.courses)[0]);
-  await p.evaluate(SEED_PROGRESS, id);
+  // The courses key holds the index of lectures (lib/packedStorage.ts).
+  const id = await p.evaluate(() => JSON.parse(localStorage.getItem('arborous:courses')).ids[0]);
+  const course = JSON.parse(fs.readFileSync(FIXTURE, 'utf8'));
+  await p.evaluate(SEED_PROGRESS, { id, course });
   await p.reload();
-  const sectionId = await p.evaluate(
-    (id) => JSON.parse(localStorage.getItem('arborous:courses')).state.courses[id].sections[3].id,
-    id,
-  );
+  const sectionId = course.sections[3].id;
 
   const theme = (mode) => p.evaluate((m) => document.documentElement.setAttribute('data-theme', m), mode);
 

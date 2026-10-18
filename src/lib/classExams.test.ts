@@ -147,7 +147,9 @@ describe('the exam list goes wherever the lecture goes', () => {
     if (!read.ok) throw new Error(read.error);
     localStorage.clear();
     restoreBackup(read.backup);
-    const stored = JSON.parse(localStorage.getItem('arborous:courses')!).state.courses.x;
+    const { packedCourseStorage } = await import('./packedStorage');
+    const value = packedCourseStorage<{ courses: Record<string, Course> }>().getItem('arborous:courses') as { state: { courses: Record<string, Course> } };
+    const stored = value.state.courses.x;
     expect(stored.metadata.exams).toEqual(withExams.metadata.exams);
   });
 

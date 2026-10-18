@@ -16,6 +16,7 @@ import { sectionStats } from '@/lib/sectionStats';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
 import { examRule } from '@/lib/exam';
 import { clearSavedTests } from '@/lib/practiceTest';
+import { KeepSafe } from '@/components/KeepSafe';
 import { RestoreButton } from '@/components/Backup';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { usePlanStore } from '@/store/plan';
@@ -226,6 +227,7 @@ export function LibraryRoute() {
         </div>
       ) : (
         <>
+          <KeepSafe />
           {todays.length > 0 && (
             <div className="mb-7">
               <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">

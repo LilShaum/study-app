@@ -1,6 +1,8 @@
 import { useRef, type ChangeEvent } from 'react';
-import { backupFileName, coursesIn, makeBackup, readBackup, restoreBackup, saveFile } from '@/lib/backup';
+import { backUpNow, coursesIn, readBackup, restoreBackup } from '@/lib/backup';
+import { countAnswers, writeBackedUp } from '@/lib/keepSafe';
 import { toast } from '@/store/toast';
+
 
 /** Saves every course, all progress and settings as one file. */
 export function BackupButton({ className = 'press tap-safe' }: { className?: string }) {
@@ -8,10 +10,7 @@ export function BackupButton({ className = 'press tap-safe' }: { className?: str
     <button
       type="button"
       className={className}
-      onClick={() => {
-        const now = new Date();
-        void saveFile(backupFileName(now), JSON.stringify(makeBackup(now)));
-      }}
+      onClick={() => void backUpNow()}
     >
       Back up everything
     </button>
@@ -44,6 +43,16 @@ export function RestoreButton({ className = 'press tap-safe', label = 'Restore f
       toast("This browser's storage is full or blocked, so the backup couldn't be restored. Nothing was changed.", { type: 'error' });
       return;
     }
+    // A restore is a backup as of when that file was made: the student holds it.
+    let answers = 0;
+    let lectureIds: string[] | undefined;
+    try {
+      answers = countAnswers(JSON.parse(read.backup.data['arborous:progress'] ?? '{}')?.state?.byCourse ?? {});
+      lectureIds = Object.keys(JSON.parse(read.backup.data['arborous:courses'] ?? '{}')?.state?.courses ?? {});
+    } catch {
+      /* counted as none */
+    }
+    writeBackedUp({ at: Date.parse(read.backup.createdAt) || Date.now(), lectures: n, lectureIds, answers });
     window.location.reload();
   };
 

@@ -271,7 +271,16 @@ wrong ones to the AI to rewrite.
 ## Data
 
 - **Backup** (Help → Back up everything) saves everything, including the
-  study log; restore refuses a newer app's format.
+  study log; restore refuses a newer app's format. Without sync, the
+  library says when work has never been backed up, or not for a week with
+  new answers since (`lib/keepSafe.ts`; Not now quiets it for 3 days), and
+  a restore counts as a backup.
+- **Storage**: lectures are kept compressed, one key each
+  (`lib/packedStorage.ts`), about an eighth of their plain size; the old
+  plain form is still read and converted on load, and backups stay plain
+  JSON. From 75% full the library warns. When a save does not fit, the
+  oldest part of the study log is trimmed (half, then three quarters) and
+  the student is told; it is never deleted outright.
 - **Sync** is optional (email and password). Per lecture the latest edit
   wins, a deletion counts as an edit; per card the latest answer wins.
 - **Share links** hand a lecture to someone else; anything from someone
