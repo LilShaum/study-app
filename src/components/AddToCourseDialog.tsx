@@ -7,7 +7,7 @@ import { planMerge, type MergePlan } from '@/lib/mergeFragment';
 import { buildAddPrompt } from '@/lib/buildAddPrompt';
 import { buildPractisePrompt } from '@/lib/buildPractisePrompt';
 import { buildFixPrompt, planFixes } from '@/lib/buildFixPrompt';
-import { buildEvenOptionsPrompt, longestShare, optionsToRework, readEvenOptions, withCorrections } from '@/lib/evenOptions';
+import { buildEvenOptionsPrompt, longestShare, optionsToRework, readEvenOptions, readEvenReply, withCorrections } from '@/lib/evenOptions';
 import { analyseCourseGaps } from '@/lib/courseGaps';
 import { sectionDensity } from '@/lib/sectionDensity';
 import { sortedSections } from '@/lib/sortedSections';
@@ -70,15 +70,13 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   const result = useMemo((): { plan: MergePlan; cut: string | null; share?: [number, number]; skipped?: string[] } | { error: string } | null => {
     if (!pasted.trim()) return null;
 
-    // Finds the JSON in a whole copied reply (the fix prompt asks for a
-    // verdict list before it), and keeps what came before a cut-off.
-    const read = readReply(pasted);
-    if (!read.ok) return { error: read.error };
-
     // Even out the answers: new wrong options only, merged as corrections
     // under the same ids, with the right answer kept as it is.
     if (mode === 'options') {
-      const even = readEvenOptions(course, read.json);
+      // Read line by line if the reply was cut off (lib/evenOptions readEvenReply).
+      const lines = readEvenReply(pasted);
+      if (!lines.ok) return { error: lines.error };
+      const even = readEvenOptions(course, lines.json);
       if ('error' in even) return { error: even.error };
       const skipped = even.skipped.map((x) => `${x.id}: ${x.why}`);
       if (!even.corrections.length) return { error: `Nothing in the reply could be used:\n${skipped.join('\n')}` };
@@ -86,11 +84,16 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
       if (!parsed.ok) return { error: parsed.error };
       return {
         plan: planMerge(course, parsed.fragment, { skipDuplicates }),
-        cut: read.cut ? cutMessage(read.cut) : null,
+        cut: lines.cut != null ? `The reply was cut off. The ${lines.cut} question${lines.cut === 1 ? '' : 's'} before the cut can be used; copy the prompt again after applying them and the rest will be asked for.` : null,
         share: [longestShare(course), longestShare(withCorrections(course, even.corrections))],
         skipped,
       };
     }
+
+    // Finds the JSON in a whole copied reply (the fix prompt asks for a
+    // verdict list before it), and keeps what came before a cut-off.
+    const read = readReply(pasted);
+    if (!read.ok) return { error: read.error };
 
     const parsed = parseFragment(read.json, firstSectionId);
     if (!parsed.ok) return { error: parsed.error };

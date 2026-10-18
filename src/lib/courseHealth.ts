@@ -289,8 +289,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
   // it is the one that lets a student who knows nothing beat chance.
   // Also from a share of 35% on 16 questions or more: on the owner's eleven
   // lectures, three sigma missed two at 41 and 50% (docs/audits/2026-10-17).
-  const longestShare = quality.length.mcqs ? quality.length.longestIsCorrect / quality.length.mcqs : 0;
-  if ((quality.length.mcqs >= 20 && quality.length.z >= 3) || (quality.length.mcqs >= 16 && longestShare >= 0.35)) {
+  if (lengthTellFires(quality.length)) {
     const pct = Math.round((quality.length.longestIsCorrect / quality.length.mcqs) * 100);
     findings.push({
       id: 'length-tell',
@@ -469,4 +468,15 @@ const GROUPS: Record<string, FindingGroup> = {
 export function findingGroup(f: Pick<HealthFinding, 'id' | 'severity'>): FindingGroup {
   if (f.severity === 'problem') return 'fix';
   return GROUPS[f.id] ?? 'minor';
+}
+
+/**
+ * When the right answer is the longest option often enough to report:
+ * three sigma on 20 or more questions, or a share of 35% on 16 or more (on
+ * the owner's eleven lectures three sigma alone missed two at 41 and 50%).
+ * The lecture check and the class page's Even out line both use this.
+ */
+export function lengthTellFires(length: { mcqs: number; longestIsCorrect: number; z: number }): boolean {
+  const share = length.mcqs ? length.longestIsCorrect / length.mcqs : 0;
+  return (length.mcqs >= 20 && length.z >= 3) || (length.mcqs >= 16 && share >= 0.35);
 }

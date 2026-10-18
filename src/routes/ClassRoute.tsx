@@ -16,6 +16,8 @@ import type { ItemResult } from '@/store/progress';
 import { LazyTree } from '@/components/LazyTree';
 import { ClassExamDialog } from '@/components/ClassExamDialog';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
+import { ClassEvenOutDialog } from '@/components/ClassEvenOutDialog';
+import { classToRework } from '@/lib/evenOptions';
 import { Icon } from '@/components/Icon';
 
 /** How far into a lecture the student is: never opened, partway, every item answered once. */
@@ -83,6 +85,9 @@ export function ClassRoute() {
   );
   const [editing, setEditing] = useState<ClassExamView | 'new' | null>(null);
   const [adding, setAdding] = useState(false);
+  const [evening, setEvening] = useState(false);
+  const rework = useMemo(() => classToRework(lectures), [lectures]);
+  const reworkCount = rework.reduce((n, l) => n + l.count, 0);
 
   if (!lectures.length) {
     return (
@@ -227,6 +232,16 @@ export function ClassRoute() {
             );
           })}
         </ul>
+        {/* One cheap round for the whole class (lib/evenOptions.ts). */}
+        {reworkCount > 0 && (
+          <p className="mt-3 text-small text-text-2">
+            In {rework.length === 1 ? 'one lecture' : `${rework.length} lectures`} here the right answer is too often the
+            longest option.{' '}
+            <button type="button" onClick={() => setEvening(true)} className="tap-safe text-accent underline-offset-4 hover:underline">
+              Even out the answers ({reworkCount} question{reworkCount === 1 ? '' : 's'})
+            </button>
+          </p>
+        )}
         <button type="button" onClick={() => setAdding(true)} className="press tap-safe mt-3">
           <Icon name="plus" size={13} />
           Add a lecture
@@ -243,6 +258,7 @@ export function ClassRoute() {
         />
       )}
       {adding && <NewCourseDialog classCode={code} onClose={() => setAdding(false)} />}
+      {evening && <ClassEvenOutDialog code={code} lectures={lectures} onClose={() => setEvening(false)} />}
     </div>
   );
 }

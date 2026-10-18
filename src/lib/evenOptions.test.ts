@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Course, McqItem } from '@/schema/course';
-import { buildEvenOptionsPrompt, longestShare, optionsToRework, readEvenOptions, withCorrections } from './evenOptions';
+import { buildClassEvenOptionsPrompt, buildEvenOptionsPrompt, classToRework, longestShare, optionsToRework, readClassEvenOptions, readEvenOptions, readEvenReply, withCorrections } from './evenOptions';
 
 // Made-up questions: no course content in the repo.
 const mcq = (id: string, options: string[], correct_index = 0): McqItem =>
@@ -78,3 +78,66 @@ describe('evenOptions', () => {
     expect(readEvenOptions(c, [])).toHaveProperty('error');
   });
 });
+
+describe('evenOptions for a whole class', () => {
+  const lecture = (prefix: string, long = 10, ok = 8) =>
+    course([...Array.from({ length: long }, (_, i) => ({ ...longRight(`${prefix}${i}`), source_excerpt: `notes on ${prefix}${i}` })), ...Array.from({ length: ok }, (_, i) => fair(`${prefix}f${i}`))]);
+  const a = lecture('a');
+  const b = lecture('b');
+  const fine = course(Array.from({ length: 8 }, (_, i) => fair(`ok${i}`)));
+  // 6 of 20 longest (30%): over a quarter, but not what the lecture check reports.
+  const borderline = lecture('m', 6, 14);
+  const lectures: [string, Course][] = [['A', a], ['B', b], ['C', fine], ['D', borderline]];
+
+  it('lists only the lectures their own check flags, each with the passage behind every question', () => {
+    expect(optionsToRework(borderline).length).toBeGreaterThan(0);
+    expect(classToRework(lectures).map((l) => l.id)).toEqual(['A', 'B']);
+    const p = buildClassEvenOptionsPrompt('BIO 1', lectures);
+    expect(p).toContain('(id: A)');
+    expect(p).toContain('(id: B)');
+    expect(p).not.toContain('(id: C)');
+    expect(p).not.toContain('(id: D)');
+    expect(p).toContain('From my notes: notes on a0');
+  });
+
+  it('reads the part for each lecture, and names lectures it does not know', () => {
+    const wrong = ['the leaves take water in through their open stomata', 'the stem draws it up by capillary action alone', 'the bark soaks it in from rain'];
+    const why = ['p', 'q', 'r'];
+    const r = readClassEvenOptions(lectures, { A: { a0: { wrong, why } }, B: { b1: { wrong, why }, nope: { wrong, why } }, Z: {} });
+    if ('error' in r) throw new Error(r.error);
+    expect(r.unknown).toEqual(['Z']);
+    expect(r.lectures.map((l) => [l.id, l.corrections.map((c) => c.id), l.skipped.map((x) => x.id)])).toEqual([
+      ['A', ['a0'], []],
+      ['B', ['b1'], ['nope']],
+    ]);
+    expect(r.lectures[0].after).toBeLessThan(r.lectures[0].before);
+    expect(readClassEvenOptions(lectures, { Z: {} })).toHaveProperty('error');
+  });
+});
+
+describe('readEvenReply', () => {
+  const entry = (n: number) => `{"wrong": ["w${n}a", "w${n}b", "w${n}c"], "why": ["a", "b", "c"]}`;
+  it('reads a whole reply as JSON', () => {
+    const r = readEvenReply(`{\n"q1": ${entry(1)}\n}`);
+    expect(r.ok && r.cut).toBe(null);
+  });
+  it('keeps every whole line of a reply that was cut off', () => {
+    const r = readEvenReply(`Here:\n{\n"q1": ${entry(1)},\n"q2": ${entry(2)},\n"q3": {"wrong": ["w3a", "w3`);
+    expect(r).toMatchObject({ ok: true, cut: 2 });
+    if (r.ok) expect(Object.keys(r.json as object)).toEqual(['q1', 'q2']);
+  });
+  it('keeps the lecture each line belongs to in a cut class reply', () => {
+    const r = readEvenReply(`{\n"A": {\n"q1": ${entry(1)},\n"q2": ${entry(2)}\n},\n"B": {\n"q9": ${entry(9)},\n"q10": {"wro`);
+    expect(r).toMatchObject({ ok: true, cut: 3 });
+    if (r.ok) expect(r.json).toEqual({ A: { q1: JSON.parse(entry(1)), q2: JSON.parse(entry(2)) }, B: { q9: JSON.parse(entry(9)) } });
+  });
+  it('reads a lecture opened on the same line as its first question', () => {
+    const r = readEvenReply(`{"A": {"q1": ${entry(1)},\n"q2": ${entry(2)},\n"q3": {"wr`);
+    expect(r).toMatchObject({ ok: true, cut: 2 });
+    if (r.ok) expect(Object.keys((r.json as Record<string, object>).A)).toEqual(['q1', 'q2']);
+  });
+  it('says so when nothing can be read', () => {
+    expect(readEvenReply('{ "q1": {"wro').ok).toBe(false);
+  });
+});
+

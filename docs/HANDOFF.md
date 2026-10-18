@@ -88,6 +88,10 @@ confirm the prompt changes on real output.
   Fix's 67k, a reply of new wrong options only. Round-tripped on the owner's
   Neuroanatomy lecture: 14 questions, right answer longest 42% → 27%. The
   length finding now fires from 35% of 16+ questions.
+- **Even out the answers for a class** (`ClassEvenOutDialog`, a line on the
+  class page): one prompt and one reply for every lecture with questions to
+  rework; each question carries its notes passage so any chat can answer.
+  On the owner's PSYC 351C: 36 questions in 4 lectures, a 29k prompt.
 - **Lecture check grouped** (`findingGroup`): to fix / check on your slides /
   smaller notes (folded). The developer footer (`npm run audit`) is gone.
 - **Library speed**: per-card text work cached in `contentChecks` (Today

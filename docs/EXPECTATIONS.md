@@ -158,7 +158,10 @@ often, from 35% of 16+ questions) hands Fix enough of the questions behind
 it to undo the pattern, and has its own small repair, **Even out the
 answers** (`lib/evenOptions.ts`): only new wrong options come back, placed
 round the untouched right answer, merged as corrections under the same
-ids. A density finding only points; the student, with the
+ids. A class page does the same for all its lectures in one prompt and one
+reply (`buildClassEvenOptionsPrompt`); each question carries its passage
+from the notes, so the prompt works in any chat, not only the one that made
+the lecture. A density finding only points; the student, with the
 slides, decides.
 
 ## Studying

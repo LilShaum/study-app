@@ -215,7 +215,9 @@ const SECTIONS: HelpSection[] = [
           <li>
             <strong>Even out the answers</strong>, in the lecture check when the right answer is
             too often the longest option, asks only for new wrong answers to those questions: a
-            short prompt and a short reply.
+            short prompt and a short reply. A class page offers the same for all its lectures at
+            once. Each question carries the passage from your notes it came from, so any chat can
+            answer it.
           </li>
         </ul>
         <p className="mt-2">
