@@ -24,3 +24,4 @@ sim/results/
 # test courses live in scripts/__fixtures__.
 *.study.json
 !scripts/__fixtures__/*.study.json
+.claude/worktrees/
