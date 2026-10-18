@@ -105,7 +105,8 @@ to weigh against logs from other classes.
 - Restore asks with a browser `confirm()`, which the design rules forbid
   (the app's own sheet, with the verb on the button, is the rule).
 - Class Practice runs one lecture after another; cards from different
-  lectures are never mixed in one sitting.
+  lectures are never mixed in one sitting. (Done 2026-10-18: Mixed
+  together, a choice on the class Practice page.)
 
 ## What held up
 

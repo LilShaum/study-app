@@ -43,4 +43,12 @@ describe('practice choices', () => {
     expect(practiceLink('c1', 'everything', 'all', {})).toBe('/session/c1/mixed');
     expect(practiceLink('c1', 'everything', 'all', {}, 'BIOL 1', true)).toBe('/session/c1/mixed?class=BIOL+1&single=1');
   });
+
+  it("marks a class's lectures mixed in one sitting, only from a class and only over several lectures", () => {
+    expect(practiceLink('c1', 'due', 'all', {}, 'BIOL 1', false, true)).toBe('/session/c1/review?class=BIOL+1&mix=1');
+    expect(practiceLink('c1', 'due', 'all', { study: 'all' }, 'BIOL 1', false, true)).toBe('/session/c1/review?study=all&class=BIOL+1&mix=1');
+    // One lecture has the cards: nothing to mix.
+    expect(practiceLink('c1', 'due', 'all', {}, 'BIOL 1', true, true)).toBe('/session/c1/review?class=BIOL+1&single=1');
+    expect(practiceLink('c1', 'due', 'all', {}, undefined, false, true)).toBe('/session/c1/review');
+  });
 });
