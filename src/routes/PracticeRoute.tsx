@@ -6,7 +6,7 @@ import { sortedSections } from '@/lib/sortedSections';
 import { testPool } from '@/lib/practiceTest';
 import { classOf, lectureName, lecturesOf } from '@/lib/classExams';
 import { onlyStudies, studiesIn } from '@/lib/studies';
-import { CARDS, KINDS, countBasis, practiceCount, practiceLink, type Cards, type From, type Kind } from '@/lib/practice';
+import { CARDS, KINDS, LECTURES, countBasis, practiceCount, practiceLink, type Cards, type From, type Kind, type Lectures } from '@/lib/practice';
 import { roman } from '@/lib/roman';
 import type { Course } from '@/schema/course';
 
@@ -40,6 +40,8 @@ interface Saved {
   cards: Cards | null;
   kind: Kind;
   from: string;
+  /** A class's: its lectures one at a time, or mixed together. */
+  lectures?: Lectures;
 }
 
 const savedKey = (scope: string) => `arborous:practice:${scope}`;
@@ -54,6 +56,7 @@ function loadChoice(scope: string): Saved | null {
       cards: CARDS.some((c) => c.value === saved.cards) ? (saved.cards as Cards) : null,
       kind: KINDS.some((k) => k.value === saved.kind) ? (saved.kind as Kind) : 'all',
       from: typeof saved.from === 'string' ? saved.from : '',
+      lectures: LECTURES.some((l) => l.value === saved.lectures) ? (saved.lectures as Lectures) : 'in-turn',
     };
   } catch {
     return null;
@@ -70,10 +73,13 @@ function loadChoice(scope: string): Saved | null {
  * where. Here each is a choice of its own, with how many cards it would give.
  *
  * A class's Practice asks the same across every lecture with its code. A
- * session is one lecture's, so a choice that spans several runs them in
- * turn: each ends by offering the next lecture with cards for it
- * (CardSession, `?class=`). The choice is remembered per lecture and per
- * class, so coming back from a session finds it as it was left.
+ * choice that spans several runs them in turn by default: each lecture's
+ * session ends by offering the next lecture with cards for it (CardSession,
+ * `?class=`). Or, chosen under Lectures, all of them in one sitting with the
+ * lectures mixed (`?mix=1`, lib/mixLectures; sim/FINDINGS.md 2026-10-18 for
+ * why it is a choice and not the default). The choice is remembered per
+ * lecture and per class, so coming back from a session finds it as it was
+ * left.
  */
 export function PracticeRoute() {
   const { id, code } = useParams<{ id?: string; code?: string }>();
@@ -123,14 +129,20 @@ function PracticePage() {
   // Null until chosen: the default depends on what is due, so it is worked out below.
   const [pickedCards, setPickedCards] = useState<Cards | null>(saved?.cards ?? null);
   const [pickedKind, setPickedKind] = useState<Kind>(saved?.kind ?? 'all');
+  // One lecture at a time unless chosen: mixing helps tell apart lectures
+  // that are alike, and does no better for ones that are not (lib/mixLectures).
+  const [pickedLectures, setPickedLectures] = useState<Lectures>(saved?.lectures ?? 'in-turn');
 
   useEffect(() => {
     try {
-      localStorage.setItem(savedKey(scope), JSON.stringify({ cards: pickedCards, kind: pickedKind, from } satisfies Saved));
+      localStorage.setItem(
+        savedKey(scope),
+        JSON.stringify({ cards: pickedCards, kind: pickedKind, from, ...(id ? {} : { lectures: pickedLectures }) } satisfies Saved),
+      );
     } catch {
       // Storage blocked: the page still works, it just starts fresh next time.
     }
-  }, [scope, pickedCards, pickedKind, from]);
+  }, [scope, pickedCards, pickedKind, from, pickedLectures, id]);
 
   const targets = useMemo(() => targetsOf(fromValues.has(from) ? from : '', lectures), [from, fromValues, lectures]);
 
@@ -191,10 +203,14 @@ function PracticePage() {
   const perLecture = counts[cards][kind];
   const n = sum(perLecture);
   const first = perLecture.findIndex((x) => x > 0);
-  const spans = perLecture.filter((x) => x > 0).length > 1;
+  const reached = perLecture.filter((x) => x > 0).length;
+  const spans = reached > 1;
+  // Mixing is a choice only when this choice has cards in more than one lecture.
+  const mixing = !id && spans && pickedLectures === 'mixed';
   // From a class's Practice the session carries the class, so its ways out
-  // lead back here and, over several lectures, each one's end offers the next.
-  const to = first >= 0 ? practiceLink(targets[first].courseId, cards, kind, targets[first].from, code, !spans) : '';
+  // lead back here and, over several lectures, each one's end offers the
+  // next, or they are all in one sitting, mixed.
+  const to = first >= 0 ? practiceLink(targets[first].courseId, cards, kind, targets[first].from, code, !spans, mixing) : '';
 
   const classCode = course ? classOf(course) : code;
   const classSize = classCode ? lecturesOf(courses, classCode).length : 0;
@@ -220,7 +236,7 @@ function PracticePage() {
       <p className="mt-2 max-w-prose text-small text-text-2">
         {id
           ? 'Drill this lecture outside the plan: before a class quiz, or a section that feels shaky.'
-          : 'Drill the whole class outside the plan, one lecture after another: when one runs out, the next carries on.'}{' '}
+          : 'Drill the whole class outside the plan: its lectures one at a time, or mixed together in one sitting.'}{' '}
         Today still decides what comes back when; a card that is not fading yet gains little from more practice.
       </p>
       {/* Practice drills what has been taught. On material never opened,
@@ -302,6 +318,8 @@ function PracticePage() {
             </select>
           </label>
         </div>
+        {/* Only when the choice has cards in more than one lecture: with one, there is nothing to mix. */}
+        {!id && spans && <Choices label="Lectures" choices={LECTURES} value={pickedLectures} onPick={(v) => setPickedLectures(v)} />}
       </div>
 
       <div className="mt-6">
@@ -310,10 +328,16 @@ function PracticePage() {
             <Link to={to} className="press press-ink tap-safe">
               Start
             </Link>
-            {spans && (
+            {spans && !mixing && (
               <p className="mt-3 max-w-prose text-small text-text-3">
-                Starts in {lectureName(targets[first].course.metadata.title, code)}, then carries on through{' '}
-                {perLecture.filter((x) => x > 0).length - 1} more lecture{perLecture.filter((x) => x > 0).length === 2 ? '' : 's'}.
+                Starts in {lectureName(targets[first].course.metadata.title, code)}, then carries on through {reached - 1} more lecture
+                {reached === 2 ? '' : 's'}.
+              </p>
+            )}
+            {spans && mixing && (
+              <p className="mt-3 max-w-prose text-small text-text-3">
+                Cards from {reached} lectures in one sitting, mixed together, so you have to tell their ideas apart, as an exam
+                does.
               </p>
             )}
           </>
@@ -354,7 +378,8 @@ function Choices<T extends string>({
   onPick,
 }: {
   label: string;
-  choices: { value: T; label: string; count: number }[];
+  /** Without a count, a choice is a way of doing it rather than a set of cards: never empty. */
+  choices: { value: T; label: string; count?: number }[];
   value: T;
   onPick: (value: T) => void;
 }) {
@@ -388,7 +413,7 @@ function Choices<T extends string>({
                 >
                   {c.label}
                 </span>
-                <span className="ml-1.5 text-xs tabular-nums text-text-3">{c.count}</span>
+                {c.count != null && <span className="ml-1.5 text-xs tabular-nums text-text-3">{c.count}</span>}
               </button>
               {i < choices.length - 1 && <span className="ml-1 text-text-3">·</span>}
             </span>

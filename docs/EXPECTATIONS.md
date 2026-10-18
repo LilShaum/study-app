@@ -209,15 +209,25 @@ shaky.
 last time, everything) × which kind (questions, flashcards, typed terms) ×
 which part of the lecture: a section, or its studies (every card about an
 empirical study, or one study; `lib/studies.ts`). A class page has the same
-Practice across all its lectures, where the part is a lecture or a study;
-a session is one lecture's, so a choice over several runs them in turn and
-each end offers the next. Choices are remembered per lecture and per class.
-It says plainly that cards not yet fading gain little.
+Practice across all its lectures, where the part is a lecture or a study.
+Over several lectures, Lectures chooses how: One at a time (the default)
+runs them in turn, each end offering the next; Mixed together puts them in
+one sitting, each lecture's cards in its own order spread through it
+(`lib/mixLectures.ts`), for telling apart ideas from different lectures.
+Mixing is a choice, not the default: the evidence favours it for alike
+material and not for unrelated material or words (`docs/evidence.md`); the
+simulator, whose student cannot confuse two ideas, finds it level over a
+finished sitting (`sim/FINDINGS.md`, 2026-10-18).
+Choices are remembered per lecture and per class. It says plainly that
+cards not yet fading gain little.
 
 **Working means.** A study is found by the generator's `study:` tag or, in
 older lectures, a citation in the card's question or answer (never the
 slide excerpt, where image credits live). Progress stays on the lecture's
-own cards.
+own cards: in a mixed sitting every card carries its lecture, and its
+answer, time, set-aside, mix-up and bookmark go to that lecture; the end
+shows each lecture's tree and score. A sitting cut short has reached every
+lecture.
 
 ### Practice test
 

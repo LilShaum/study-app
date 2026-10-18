@@ -17,6 +17,14 @@ export interface Bookmark {
   classCode?: string | null;
   single?: boolean;
   /**
+   * The class's lectures mixed in one sitting. Kept, like any bookmark, in
+   * the lecture the sitting was opened in; Continue there opens the mixed
+   * sitting again.
+   */
+  mixed?: boolean;
+  /** A mixed sitting's: the lecture of the card `itemId` names, when it is not this one. */
+  itemCourseId?: string;
+  /**
    * Where to pick up, as an item id rather than a position.
    *
    * Position would be wrong for half the modes: Mixed and Review Missed

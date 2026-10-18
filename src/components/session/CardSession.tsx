@@ -4,7 +4,7 @@ import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
 import { buildSessionItems, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { phaseOf, type LearnPhase } from '@/lib/learnSteps';
-import { useSessionStore, restartCardTimer, fileItemOf } from '@/store/session';
+import { useSessionStore, restartCardTimer, fileItemOf, lectureOf, cardKey } from '@/store/session';
 import { onlyStudies } from '@/lib/studies';
 import { toast } from '@/store/toast';
 import { useResumeStore } from '@/store/resume';
@@ -13,6 +13,7 @@ import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { SectionJump } from './SectionJump';
 import { SessionRail } from './SessionRail';
+import { MixedLectures } from './MixedLectures';
 import { CATCH_UP_HOURS, missedThisSitting, nextDueAt, whenLabel } from '@/lib/memory';
 import { examRule } from '@/lib/exam';
 import { useCoursesStore } from '@/store/courses';
@@ -39,6 +40,11 @@ interface CardSessionProps {
   classCode?: string;
   /** With classCode: the class Practice's choice was this lecture only, so the end offers no next lecture. */
   single?: boolean;
+  /**
+   * With classCode: the class's lectures mixed in one sitting
+   * (store/session initMixed), rather than this lecture and then the next.
+   */
+  mixed?: boolean;
 }
 
 const MODE_LABELS: Record<CardMode, string> = {
@@ -233,16 +239,27 @@ function shortName(item: SessionItem): string {
 }
 
 /** Every mode except Browse — one item at a time. */
-export function CardSession({ courseId, course, mode, sectionId, resume = false, classCode, single = false }: CardSessionProps) {
+export function CardSession({ courseId, course, mode, sectionId, resume = false, classCode, single = false, mixed = false }: CardSessionProps) {
   const navigate = useNavigate();
   // A practice session opened from a class's Practice runs through the class:
   // its ways out lead back there, and its end offers the next lecture.
   const practiceClass = classCode && mode !== 'today' && mode !== 'learn' ? classCode : undefined;
+  // The class's lectures mixed in one sitting: every card carries its own
+  // lecture, and everything done to a card is done in that lecture.
+  const mixedClass = practiceClass && mixed && !single ? practiceClass : undefined;
   const home = practiceClass ? `/class/${encodeURIComponent(practiceClass)}/practice` : `/study/${courseId}`;
   const homeLabel = practiceClass ? 'Back to Practice' : 'Back to lecture';
   // Read after the session has recorded its results, so the tree on the
   // finish screen is the tree this session just grew.
   const progress = useProgressStore((s) => s.getProgress(courseId) ?? EMPTY_PROGRESS);
+  /** A card's lecture, and that lecture's file: its own in a mixed sitting, else this one. */
+  const lectureFor = (item: SessionItem): { id: string; course: Course } | null => {
+    const id = lectureOf(item, courseId);
+    const c = id === courseId ? course : useCoursesStore.getState().courses[id];
+    return c ? { id, course: c } : null;
+  };
+  /** The class's lectures as they are now, read rather than subscribed to (as the lecture is, below). */
+  const classLectures = () => (mixedClass ? lecturesOf(useCoursesStore.getState().courses, mixedClass) : []);
   const init = useSessionStore((s) => s.init);
   const questionsFirst = useLearnStore((s) => s.questionsFirst);
   const items = useSessionStore((s) => s.items);
@@ -280,21 +297,32 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       bookmark.mode === mode &&
       (bookmark.sectionId ?? undefined) === sectionId &&
       (bookmark.kind ?? null) === useSessionStore.getState().pendingKind &&
-      (bookmark.study ?? null) === useSessionStore.getState().pendingStudy
+      (bookmark.study ?? null) === useSessionStore.getState().pendingStudy &&
+      !!bookmark.mixed === !!mixedClass
         ? bookmark.itemId
         : undefined;
     // The lecture as it is now, read rather than subscribed to: setting a
     // card aside mid-sitting (or a sync landing) changes the lecture, and a
     // subscription restarted the sitting from its first card.
-    const atStart = useCoursesStore.getState().courses[courseId];
+    const courses = useCoursesStore.getState().courses;
+    if (mixedClass) {
+      // Every lecture of the class; the bookmark's card may be in any of them.
+      const resumeAt = usable ? { courseId: bookmark?.itemCourseId ?? courseId, itemId: usable } : undefined;
+      useSessionStore.getState().initMixed(courseId, lecturesOf(courses, mixedClass), mode, resumeAt);
+      return;
+    }
+    const atStart = courses[courseId];
     if (atStart) init(courseId, atStart, mode, sectionId, usable);
-  }, [courseId, mode, sectionId, resume, init]);
+  }, [courseId, mode, sectionId, resume, init, mixedClass]);
 
   // Remember where you are, so closing the tab 60 cards into a 151-card
   // session doesn't mean starting again. Item 1 is not worth remembering —
   // that is just "you opened it" — so the bookmark starts once you've moved.
   useEffect(() => {
     if (finished || !current || index === 0) return;
+    // A mixed sitting keeps its bookmark in the lecture it was opened in, as
+    // any sitting does (so it never takes the place of another lecture's own
+    // bookmark), and notes which lecture the card is from.
     useResumeStore.getState().save(courseId, {
       mode,
       sectionId: sectionId ?? null,
@@ -302,17 +330,19 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       study: useSessionStore.getState().pendingStudy,
       classCode: practiceClass ?? null,
       single,
+      ...(mixedClass ? { mixed: true, itemCourseId: lectureOf(current, courseId) } : {}),
       itemId: current.id,
       index,
       total,
       updatedAt: Date.now(),
     });
-  }, [courseId, mode, sectionId, index, current, total, finished, practiceClass, single]);
+  }, [courseId, mode, sectionId, index, current, total, finished, practiceClass, single, mixedClass]);
 
   /** `fullDay`: "Keep going" carries on past the day's plan, so Today is planned afresh at the full time. */
   const restart = (fullDay = false) => {
     useResumeStore.getState().clear(courseId);
-    init(courseId, course, mode, sectionId, undefined, fullDay);
+    if (mixedClass) useSessionStore.getState().initMixed(courseId, classLectures(), mode);
+    else init(courseId, course, mode, sectionId, undefined, fullDay);
   };
 
   /**
@@ -335,7 +365,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   /** Learn only: the next section with something to learn, worked out as the session ends. */
   const [nextSection, setNextSection] = useState<{ id: string; title: string } | null>(null);
   const nextPracticeFor = (): { title: string; to: string; count: number } | null => {
-    if (!practiceClass || single) return null;
+    // A mixed sitting already had every lecture in it.
+    if (!practiceClass || single || mixedClass) return null;
     const { pendingKind, pendingStudy } = useSessionStore.getState();
     const choice = choiceOf(mode, pendingKind);
     if (!choice) return null;
@@ -376,21 +407,35 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         return `Next sitting after ${new Date(back).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}${missedAny ? ', and what you missed comes back in it' : ''}. This close to the exam, a few shorter sittings spread over the day do more than one long one.`;
       }
     }
+    // Each card answered, once, with its record in its own lecture (a mixed
+    // sitting's cards are in several).
+    const answered = new Map<string, SessionItem>();
+    for (const i of results.keys()) if (done[i]) answered.set(cardKey(done[i]), done[i]);
+    const recordOf = (item: SessionItem) => useProgressStore.getState().getProgress(lectureOf(item, courseId))[item.id];
     // Misses first: one more look a few hours on is the cheapest gain there is
     // (lib/memory.ts, catchUpDue), but only if the student knows to come back.
     // Put right by a retry still counts: the later look is what lasts.
-    const missed = [...new Set([...results.keys()].map((i) => done[i]?.id).filter((id): id is string => !!id && missedThisSitting(prog[id])))];
+    const missed = [...answered.values()].filter((item) => missedThisSitting(recordOf(item)));
     if (missed.length) {
-      const back = Math.max(...missed.map((id) => prog[id].lastSeen ?? now)) + CATCH_UP_HOURS * 3_600_000;
+      const back = Math.max(...missed.map((item) => recordOf(item)!.lastSeen ?? now)) + CATCH_UP_HOURS * 3_600_000;
       const sameDay = new Date(back).toDateString() === new Date(now).toDateString();
       const n = missed.length === 1 ? 'The one you missed is' : `The ${missed.length} you missed are`;
       return sameDay
         ? `${n} worth one more look after ${new Date(back).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}. Open Today then: five minutes makes them stick.`
         : `${n} back first thing tomorrow.`;
     }
-    const exam = examRule(course, prog, now);
-    const ids = new Set([...results.keys()].map((i) => done[i]?.id).filter(Boolean) as string[]);
-    const dues = [...ids].map((itemId) => nextDueAt(prog[itemId], now, exam.covering(itemId))).filter((t): t is number => t != null);
+    const exams = new Map<string, ReturnType<typeof examRule> | null>();
+    const examOf = (item: SessionItem) => {
+      const id = lectureOf(item, courseId);
+      if (!exams.has(id)) {
+        const lecture = lectureFor(item);
+        exams.set(id, lecture ? examRule(lecture.course, useProgressStore.getState().getProgress(id), now) : null);
+      }
+      return exams.get(id);
+    };
+    const dues = [...answered.values()]
+      .map((item) => nextDueAt(recordOf(item), now, examOf(item)?.covering(item.id) ?? null))
+      .filter((t): t is number => t != null);
     if (!dues.length) return null;
     const first = Math.min(...dues);
     const endOfThatDay = new Date(first);
@@ -446,15 +491,19 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     setAsking(false);
     const card = useSessionStore.getState().current();
     if (!card) return;
+    // In the card's own lecture: in a mixed sitting, not necessarily this one.
+    const lecture = lectureFor(card);
+    if (!lecture) return;
     const fileId = fileItemOf(card);
-    const sectionOf = course.sections.find((sec) => sec.items.some((i) => i.id === fileId));
+    const sectionOf = lecture.course.sections.find((sec) => sec.items.some((i) => i.id === fileId));
     if (!sectionOf) return;
-    useCoursesStore.getState().setAside(courseId, sectionOf.id, fileId, reason);
-    useSessionStore.getState().dropAhead(fileId);
-    toast(reason === 'wrong' ? 'Set aside as wrong. It is under Set aside on the lecture page, and in Fix.' : 'Set aside. It is under Set aside on the lecture page, to put back any time.', {
+    useCoursesStore.getState().setAside(lecture.id, sectionOf.id, fileId, reason);
+    useSessionStore.getState().dropAhead(fileId, lecture.id);
+    const where = mixedClass ? `in ${lectureName(lecture.course.metadata.title, mixedClass)}` : 'on the lecture page';
+    toast(reason === 'wrong' ? `Set aside as wrong. It is under Set aside ${where}, and in Fix.` : `Set aside. It is under Set aside ${where}, to put back any time.`, {
       type: 'success',
       actionLabel: 'Undo',
-      onAction: () => useCoursesStore.getState().setAside(courseId, sectionOf.id, fileId, null),
+      onAction: () => useCoursesStore.getState().setAside(lecture.id, sectionOf.id, fileId, null),
     });
     handleNext();
   };
@@ -468,16 +517,22 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     // Finishing is the one clean end: there is nothing left to come back to.
     useResumeStore.getState().clear(courseId);
     if (mode === 'review') {
-      const still = buildSessionItems(course, 'review', {
-        sectionId,
-        progress: useProgressStore.getState().getProgress(courseId),
-        exam: examRule(course, useProgressStore.getState().getProgress(courseId), Date.now()),
-        // Every card still due, not one more sitting's worth.
-        minutes: Infinity,
-        // The Practice page's kind and studies, which "Keep reviewing" keeps too.
-        kind: useSessionStore.getState().pendingKind ?? undefined,
-        onlyIds: onlyStudies(course, useSessionStore.getState().pendingStudy),
-      }).length;
+      // In every lecture of a mixed sitting.
+      const still = (mixedClass ? classLectures() : [[courseId, course] as [string, Course]]).reduce(
+        (n, [id, c]) =>
+          n +
+          buildSessionItems(c, 'review', {
+            sectionId,
+            progress: useProgressStore.getState().getProgress(id),
+            exam: examRule(c, useProgressStore.getState().getProgress(id), Date.now()),
+            // Every card still due, not one more sitting's worth.
+            minutes: Infinity,
+            // The Practice page's kind and studies, which "Keep reviewing" keeps too.
+            kind: useSessionStore.getState().pendingKind ?? undefined,
+            onlyIds: onlyStudies(c, useSessionStore.getState().pendingStudy),
+          }).length,
+        0,
+      );
       setMoreDue(still);
       // While more is due now, "these come back tomorrow" is not the news.
       setAppointment(still > 0 ? null : appointmentFor());
@@ -568,17 +623,20 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
        * leaf.
        */
       <div className="mx-auto flex max-w-2xl flex-col items-center py-10 text-center sm:px-10">
-        <CourseTree
-          courseId={courseId}
-          course={course}
-          progress={progress}
-          className="h-44 sm:h-56"
-          // What this session changed, shown on the tree: leaves won back
-          // rise from the ground, new ones grow. It replaced a draw-on of the
-          // whole tree, which looked the same whatever the session had done.
-          grewFrom={startProgress}
-        />
-        <h1 className="mt-5 font-display text-title font-semibold text-text">
+        {/* A mixed sitting grew several trees: they are in the list below. */}
+        {!mixedClass && (
+          <CourseTree
+            courseId={courseId}
+            course={course}
+            progress={progress}
+            className="h-44 sm:h-56"
+            // What this session changed, shown on the tree: leaves won back
+            // rise from the ground, new ones grow. It replaced a draw-on of the
+            // whole tree, which looked the same whatever the session had done.
+            grewFrom={startProgress}
+          />
+        )}
+        <h1 className={`${mixedClass ? '' : 'mt-5 '}font-display text-title font-semibold text-text`}>
           {MODE_LABELS[mode]} finished
         </h1>
         <div className="mt-3 flex justify-center gap-5 text-small tabular-nums">
@@ -586,6 +644,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           <span className="text-error">{score.missed} missed</span>
           {attempted > 0 && <span className="text-text-2">{pct}%</span>}
         </div>
+        {mixedClass && <MixedLectures classCode={mixedClass} />}
         {appointment && <p className="mt-3 max-w-prose text-small text-text-2">{appointment}</p>}
         {moreDue > 0 && (
           <p className="mt-3 max-w-prose text-small text-text-2">
@@ -703,7 +762,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         />
       </div>
 
-      <SectionJump items={items} mode={mode} activeSectionId={activeSectionId} onJump={jumpToSection} />
+      {/* Sections are a lecture's; a mixed sitting has no runs of one to jump to. */}
+      {!mixedClass && <SectionJump items={items} mode={mode} activeSectionId={activeSectionId} onJump={jumpToSection} />}
 
       {resumed && (
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-surface px-4 py-2 text-sm">
@@ -729,15 +789,28 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           }}
         />
       )}
-      {mode === 'review' && (
+      {mixedClass ? (
+        // No lecture is named on a card: which one it is from is part of the question.
         <p className="mb-4 text-xs text-text-3">
-          What you have studied and are starting to lose, faintest first.
+          {mode === 'review'
+            ? 'What you have studied and are starting to lose, every lecture mixed together, each one’s faintest early.'
+            : mode === 'weakest'
+              ? 'Every lecture mixed together, each one’s likeliest to be forgotten early.'
+              : 'Every lecture mixed together.'}
         </p>
-      )}
-      {mode === 'weakest' && (
-        <p className="mb-4 text-xs text-text-3">
-          Ordered by how likely you are to have forgotten each one, faintest first. Anything you haven&rsquo;t seen yet comes in the middle.
-        </p>
+      ) : (
+        <>
+          {mode === 'review' && (
+            <p className="mb-4 text-xs text-text-3">
+              What you have studied and are starting to lose, faintest first.
+            </p>
+          )}
+          {mode === 'weakest' && (
+            <p className="mb-4 text-xs text-text-3">
+              Ordered by how likely you are to have forgotten each one, faintest first. Anything you haven&rsquo;t seen yet comes in the middle.
+            </p>
+          )}
+        </>
       )}
 
       {pause && (
@@ -828,7 +901,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           }}
           onReadThem={() => useSessionStore.getState().askFirst(current._sectionId)}
           onOverride={setResult}
-          onConfused={(otherId) => useProgressStore.getState().noteConfusion(courseId, current.id, otherId)}
+          onConfused={(otherId) => useProgressStore.getState().noteConfusion(lectureOf(current, courseId), current.id, otherId)}
           onNext={handleNext}
           learning={current._step !== undefined}
           keyboardEnabled
@@ -901,11 +974,16 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         course={course}
         score={score}
         hints={pause ? [] : KEY_HINTS[mode]}
+        // A mixed sitting shows neither which lecture the card is from (that
+        // is part of the question) nor its parts (a run is a card or two).
+        parts={!mixedClass}
         figure={
           /* The course's tree with the section you are in lit: the one
              screen you spend the most time on otherwise has nothing of the
              course on it but its text. */
-          <CourseTree courseId={courseId} course={course} progress={progress} className="h-40" highlight={activeSectionId} />
+          mixedClass ? undefined : (
+            <CourseTree courseId={courseId} course={course} progress={progress} className="h-40" highlight={activeSectionId} />
+          )
         }
       />
     </div>

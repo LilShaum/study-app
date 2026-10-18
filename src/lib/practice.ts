@@ -96,13 +96,22 @@ export function practiceCount(basis: CountBasis, cards: Cards, kind: Kind): numb
   }).filter((i) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall').length;
 }
 
+/** How a class's Practice takes its lectures: one after another, or mixed in one sitting. */
+export type Lectures = 'in-turn' | 'mixed';
+
+export const LECTURES: { value: Lectures; label: string }[] = [
+  { value: 'in-turn', label: 'One at a time' },
+  { value: 'mixed', label: 'Mixed together' },
+];
+
 /**
  * The link that starts a choice in one lecture. `classCode` marks a session
  * opened from a class's Practice, so its ways out lead back there; it carries
  * on through the class unless `single` (the choice was one lecture, or one
- * study in it).
+ * study in it). `mixed`: the class's lectures in one sitting instead
+ * (lib/mixLectures), opened in this one.
  */
-export function practiceLink(courseId: string, cards: Cards, kind: Kind, from: From, classCode?: string, single = false): string {
+export function practiceLink(courseId: string, cards: Cards, kind: Kind, from: From, classCode?: string, single = false, mixed = false): string {
   const go = sessionFor(cards, kind);
   const query = new URLSearchParams();
   if (from.sectionId) query.set('section', from.sectionId);
@@ -110,6 +119,7 @@ export function practiceLink(courseId: string, cards: Cards, kind: Kind, from: F
   if (go.kind) query.set('kind', go.kind);
   if (classCode) query.set('class', classCode);
   if (classCode && single) query.set('single', '1');
+  else if (classCode && mixed) query.set('mix', '1');
   const qs = query.toString();
   return `/session/${courseId}/${go.mode}${qs ? `?${qs}` : ''}`;
 }

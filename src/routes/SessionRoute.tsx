@@ -22,6 +22,8 @@ function isStudyMode(mode: string | undefined): mode is StudyMode {
  * exactly what it did before. `?kind=questions|flashcards|terms` is the
  * Practice page's filter for Review, Weakest first and Review missed, and
  * `?study=all|<key>` keeps only the cards on studies (lib/studies.ts).
+ * `?class=CODE&mix=1` is a class's Practice with its lectures mixed in one
+ * sitting (store/session initMixed); `:id` is then the lecture it opened in.
  */
 export function SessionRoute() {
   const { id, mode } = useParams<{ id: string; mode: string }>();
@@ -34,6 +36,8 @@ export function SessionRoute() {
   const classCode = search.get('class') ?? undefined;
   // "?single=1": from a class's Practice, but one lecture only (no next lecture at the end).
   const single = search.get('single') === '1';
+  // "?mix=1": from a class's Practice, the class's lectures mixed in one sitting.
+  const mixed = search.get('mix') === '1';
   const rawKind = search.get('kind');
   const kind = KINDS.find((k) => k === rawKind);
   // "?study=all|<key>": the Practice page's studies choice (lib/studies.ts).
@@ -66,7 +70,17 @@ export function SessionRoute() {
   return mode === 'browse' ? (
     <BrowseSession courseId={id} course={course} />
   ) : (
-    // Keyed by kind and study, so a link that changes only those starts the session again.
-    <CardSession key={`${kind ?? 'all'}|${study ?? ''}`} courseId={id} course={course} mode={mode} sectionId={scoped} resume={resume} classCode={classCode} single={single} />
+    // Keyed by kind, study and mixing, so a link that changes only those starts the session again.
+    <CardSession
+      key={`${kind ?? 'all'}|${study ?? ''}|${mixed ? 'mix' : ''}`}
+      courseId={id}
+      course={course}
+      mode={mode}
+      sectionId={scoped}
+      resume={resume}
+      classCode={classCode}
+      single={single}
+      mixed={mixed}
+    />
   );
 }

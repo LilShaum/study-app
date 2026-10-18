@@ -37,6 +37,8 @@ interface SessionRailProps {
   hints: { keys: string[]; label: string }[];
   /** Drawn at the top of the rail: the course's tree. */
   figure?: ReactNode;
+  /** List the parts of the sitting (off for a class's mixed Practice). */
+  parts?: boolean;
 }
 
 /**
@@ -44,8 +46,8 @@ interface SessionRailProps {
  * of and where you are in it, the score, and the keys. A phone shows the card
  * alone; a desktop had the same narrow column with empty width either side.
  */
-export function SessionRail({ items, index, course, score, hints, figure }: SessionRailProps) {
-  const parts = partsOf(items, course);
+export function SessionRail({ items, index, course, score, hints, figure, parts: showParts = true }: SessionRailProps) {
+  const parts = showParts ? partsOf(items, course) : [];
   const answered = score.got + score.missed;
   return (
     <aside className="hidden text-small lg:block" aria-label="This sitting">

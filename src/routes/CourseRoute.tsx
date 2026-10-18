@@ -191,8 +191,10 @@ export function CourseRoute() {
   }, [course, id, progress, now, minutes, pace, logs]);
 
   // A bookmark outlives the item it points at — the item can be edited away,
-  // the section deleted — so it is only offered when it still resolves.
-  const resumable = bookmark && course && bookmarkResolves(course, bookmark) ? bookmark : null;
+  // the section deleted — so it is only offered when it still resolves. A
+  // mixed class sitting's card can be in another lecture of the class.
+  const bookmarkCourse = useCoursesStore((s) => (bookmark?.itemCourseId ? s.courses[bookmark.itemCourseId] : course));
+  const resumable = bookmark && course && bookmarkCourse && bookmarkResolves(bookmarkCourse, bookmark) ? bookmark : null;
 
   if (!id) return <Navigate to="/" replace />;
   if (!course) {
@@ -312,6 +314,9 @@ export function CourseRoute() {
                   {course.sections.find((s) => s.id === resumable.sectionId)?.title}
                 </span>
               )}
+              {resumable.mixed && resumable.classCode && (
+                <span className="font-normal text-text-2">: every lecture in {resumable.classCode}, mixed</span>
+              )}
             </span>
             <span className="block text-small text-text-2">
               Item {resumable.index + 1} of {resumable.total}, {ago(resumable.updatedAt)}.
@@ -321,7 +326,9 @@ export function CourseRoute() {
             to={`/session/${id}/${resumable.mode}?resume=1${
               resumable.sectionId ? `&section=${encodeURIComponent(resumable.sectionId)}` : ''
             }${resumable.kind ? `&kind=${resumable.kind}` : ''}${resumable.study ? `&study=${encodeURIComponent(resumable.study)}` : ''}${
-              resumable.classCode ? `&class=${encodeURIComponent(resumable.classCode)}${resumable.single ? '&single=1' : ''}` : ''
+              resumable.classCode
+                ? `&class=${encodeURIComponent(resumable.classCode)}${resumable.single ? '&single=1' : resumable.mixed ? '&mix=1' : ''}`
+                : ''
             }`}
             className="press press-ink"
           >

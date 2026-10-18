@@ -98,6 +98,22 @@ confirm the prompt changes on real output.
 - **Generation**: compact replies, no counts (about 15% less to write,
   measured on three real lectures). Not yet confirmed on a real generation.
 
+**Done 2026-10-18 (class Practice with the lectures mixed; on a branch,
+not yet merged or live):**
+- Modelled first (`sim/class-practice.sim.ts`, FINDINGS 2026-10-18): level
+  over a finished sitting; a sitting cut short reaches every lecture
+  instead of the first one or two. The simulated student cannot confuse two
+  ideas, so the gain mixing is for (telling them apart) is not measured.
+  Evidence in `docs/evidence.md` (Sana & Yan 2022 and others).
+- Built as a choice on the class Practice page, *Lectures: One at a time ·
+  Mixed together*, default one at a time. `lib/mixLectures.ts` spreads
+  each lecture's own list through one sitting; `initMixed` in the session
+  store; every card carries `_courseId`, and answers, card times, set-aside,
+  mix-ups and the bookmark (`itemCourseId`) go to the card's lecture. The
+  end lists each lecture with its tree and score.
+- **Open, the owner's call:** make Mixed together the default for Due now
+  near an exam (the coverage result argues for it).
+
 **Back burner (owner, 2026-10-15): anything that needs the owner's real
 study log.** Do not start these until the owner sends a backup (Help →
 Back up everything, key `arborous:study-log`) and asks for them:
