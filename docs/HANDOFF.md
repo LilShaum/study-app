@@ -82,6 +82,22 @@ confirm the prompt changes on real output.
 - Library line (`components/KeepSafe.tsx`): storage from 75% full, else a
   backup reminder when nothing is synced and there is something to lose.
 
+**Done 2026-10-18 (audit findings 3 to 6):**
+- **Even out the answers** (`lib/evenOptions.ts`, a tab in the Add/Fix
+  dialog, a button on the length finding): an 8k-character prompt instead of
+  Fix's 67k, a reply of new wrong options only. Round-tripped on the owner's
+  Neuroanatomy lecture: 14 questions, right answer longest 42% → 27%. The
+  length finding now fires from 35% of 16+ questions.
+- **Lecture check grouped** (`findingGroup`): to fix / check on your slides /
+  smaller notes (folded). The developer footer (`npm run audit`) is gone.
+- **Library speed**: per-card text work cached in `contentChecks` (Today
+  and Learn twice as fast warm, same output card for card), each lecture's
+  Today remembered until it or its progress changes, trees cached and drawn
+  only near the screen (`LazyTree`). First open on the owner's data 0.63 s
+  → 0.38 s at full speed.
+- **Generation**: compact replies, no counts (about 15% less to write,
+  measured on three real lectures). Not yet confirmed on a real generation.
+
 **Back burner (owner, 2026-10-15): anything that needs the owner's real
 study log.** Do not start these until the owner sends a backup (Help →
 Back up everything, key `arborous:study-log`) and asks for them:

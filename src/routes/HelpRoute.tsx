@@ -212,6 +212,11 @@ const SECTIONS: HelpSection[] = [
             <strong>Send these to your AI to fix</strong>, in the lecture check, asks the AI to fix
             what the check found.
           </li>
+          <li>
+            <strong>Even out the answers</strong>, in the lecture check when the right answer is
+            too often the longest option, asks only for new wrong answers to those questions: a
+            short prompt and a short reply.
+          </li>
         </ul>
         <p className="mt-2">
           Each time, you paste the AI&rsquo;s reply back in and see what will change before
@@ -260,9 +265,9 @@ const SECTIONS: HelpSection[] = [
       <>
         <p>
           The line under a lecture&rsquo;s title checks the lecture the AI made. It shows how many of
-          the terms from your notes got a definition, and lists things worth checking, such as
-          questions where the right answer is easy to guess, or terms that no question makes you
-          use.
+          the terms from your notes got a definition, then what is worth fixing (questions you could
+          answer without knowing the material), what only your slides can settle (a figure the AI
+          could not read), and, folded away, smaller notes the app already works round.
         </p>
         <p className="mt-2">
           A red cross means something is broken, such as a question that cannot be marked. Tap the

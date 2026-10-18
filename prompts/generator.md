@@ -272,7 +272,13 @@ where the content hides, so read for these rather than for a format:
 
 Output **only** the raw JSON for the `.study.json` file — no commentary before
 or after, no markdown code fence unless the surrounding tool requires one. The
-file must be valid JSON matching this shape exactly:
+file must be valid JSON matching this shape exactly.
+
+**Write it compact: no indentation, and each item on one line of its own**
+(the metadata, and each section's opening, on their own lines too).
+Indentation is about a sixth of a pretty-printed lecture, it costs the
+student's usage like any other text, and the app does not need it. Leave
+out item counts and totals as well; the app counts.
 
 ```
 {
@@ -283,11 +289,6 @@ file must be valid JSON matching this shape exactly:
     "subject": string?,            // e.g. "Biochemistry"
     "description": string?,
     "tags": string[]?,
-    "total_items": number?,        // sum of all items across all sections
-    "item_counts": {               // counts per type, all optional
-      "mcq": number?, "flashcard": number?, "definition": number?,
-      "example": number?, "graphic": number?
-    }?,
     "inventory": {                 // your Pass 2 inventory — see below
       "terms": string[],           // EVERY term you give a definition item
       "mentioned": string[]?,      // every other term: only named, or covered by another item
@@ -719,8 +720,8 @@ Check your own draft:
    then flashcards, then MCQs. Does any card's answer appear in a card
    before it? Does any definition contain its own term or a word of its
    family? Could a stranger answer any card from plain English? Fix each.
-9. Is `total_items` / `item_counts` in metadata accurate if you included them?
-10. Is it valid JSON — no trailing commas, no comments, matching quotes?
+9. Is it valid JSON — no trailing commas, no comments, matching quotes —
+   with each item on one line and no indentation?
 
 If the student's source material is missing, empty, or too vague to ground
 anything in, say so in plain text instead of generating a file — don't

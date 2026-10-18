@@ -287,7 +287,10 @@ export function analyseCourseHealth(course: Course): CourseHealth {
   // Reported as a z-score, not a percentage: at small n a percentage is
   // noise. Three sigma on at least twenty questions is a real pattern, and
   // it is the one that lets a student who knows nothing beat chance.
-  if (quality.length.mcqs >= 20 && quality.length.z >= 3) {
+  // Also from a share of 35% on 16 questions or more: on the owner's eleven
+  // lectures, three sigma missed two at 41 and 50% (docs/audits/2026-10-17).
+  const longestShare = quality.length.mcqs ? quality.length.longestIsCorrect / quality.length.mcqs : 0;
+  if ((quality.length.mcqs >= 20 && quality.length.z >= 3) || (quality.length.mcqs >= 16 && longestShare >= 0.35)) {
     const pct = Math.round((quality.length.longestIsCorrect / quality.length.mcqs) * 100);
     findings.push({
       id: 'length-tell',
@@ -432,4 +435,38 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     declaredTermCoverage,
     quality,
   };
+}
+
+/**
+ * What a finding asks of the student, so the check can lead with the few
+ * that change their score or what they learn, and fold the rest. On the
+ * owner's lectures every one had 2 to 10 findings, mostly of the third kind,
+ * and a flat list of them all read as noise (docs/audits/2026-10-17).
+ *
+ * - `fix`: a question is broken or can be answered without knowing the
+ *   material. Worth an AI round.
+ * - `slides`: only the student, with the slides, can say (a figure the AI
+ *   could not read, a section with far fewer or more cards than its slides).
+ * - `minor`: the app already works round it (never asks a term that spells
+ *   itself out, keeps repeats apart), or it would only make a good lecture
+ *   a little better.
+ */
+export type FindingGroup = 'fix' | 'slides' | 'minor';
+
+const GROUPS: Record<string, FindingGroup> = {
+  'length-tell': 'fix',
+  'lopsided-options': 'fix',
+  'cued-to-source': 'fix',
+  'filler-options': 'fix',
+  'option-count': 'fix',
+  'unsafe-svg': 'fix',
+  'unclear-figures': 'slides',
+  'sparse-sections': 'slides',
+  'dense-sections': 'slides',
+  'declared-terms-missing': 'slides',
+};
+
+export function findingGroup(f: Pick<HealthFinding, 'id' | 'severity'>): FindingGroup {
+  if (f.severity === 'problem') return 'fix';
+  return GROUPS[f.id] ?? 'minor';
 }

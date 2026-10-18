@@ -23,6 +23,60 @@ const STOP = new Set(
  */
 const stemCache = new Map<string, Set<string>>();
 const answerCache = new Map<string, Set<string>>();
+const normCache = new Map<string, string>();
+
+/** normaliseTerm, remembered: the same answers are normalised once per pair otherwise. */
+function norm(text: string): string {
+  let hit = normCache.get(text);
+  if (hit === undefined) {
+    if (normCache.size > 20_000) normCache.clear();
+    hit = normaliseTerm(text);
+    normCache.set(text, hit);
+  }
+  return hit;
+}
+
+/**
+ * What an earlier card shows, worked out once per card rather than once per
+ * pair: it was joined, normalised and cut into words afresh for every later
+ * card compared with it, most of the time Today took to plan (2026-10-18).
+ * Keyed by the card's own strings, which stay the same objects between calls.
+ */
+interface ShownText {
+  text: string;
+  padded: string;
+  stems: Set<string>;
+  tokens: Set<string>;
+}
+const shownCache = new Map<string, Map<string, Map<string, ShownText>>>();
+function shownText(earlier: Asked): ShownText {
+  const after = earlier.after ?? '';
+  let byAnswer = shownCache.get(earlier.question);
+  if (!byAnswer) {
+    if (shownCache.size > 20_000) shownCache.clear();
+    byAnswer = new Map();
+    shownCache.set(earlier.question, byAnswer);
+  }
+  let byAfter = byAnswer.get(earlier.answer);
+  if (!byAfter) {
+    byAfter = new Map();
+    byAnswer.set(earlier.answer, byAfter);
+  }
+  let hit = byAfter.get(after);
+  if (!hit) {
+    const text = [earlier.question, earlier.answer, after].join(' ');
+    hit = {
+      text,
+      padded: ` ${normaliseTerm(text)} `,
+      stems: stems(text),
+      // Without a sentence's opening "A", which the name tokens would read as
+      // the letter in "protein kinase A".
+      tokens: answerTokens(text.replace(/(^|[.!?:;]\s+)A\s/g, '$1 ')),
+    };
+    byAfter.set(after, hit);
+  }
+  return hit;
+}
 function cached(cache: Map<string, Set<string>>, text: string, make: () => Set<string>): Set<string> {
   let hit = cache.get(text);
   if (!hit) {
@@ -110,8 +164,8 @@ function share(a: Set<string>, b: Set<string>): { shared: number; share: number 
  * words without saying the same thing.
  */
 export function sameAnswer(a: Asked, b: Asked): boolean {
-  const x = normaliseTerm(a.answer);
-  if (x.length >= 3 && x === normaliseTerm(b.answer)) return true;
+  const x = norm(a.answer);
+  if (x.length >= 3 && x === norm(b.answer)) return true;
   if (sameName(a.answer, b.answer)) return true;
   const ax = answerTokens(a.answer);
   const ay = answerTokens(b.answer);
@@ -153,18 +207,17 @@ export function questionOverlap(a: Asked, b: Asked): { shared: number; share: nu
  * too many are everyday words ("increases").
  */
 export function revealsAnswer(earlier: Asked, later: Asked): boolean {
-  const shownText = [earlier.question, earlier.answer, earlier.after ?? ''].join(' ');
-  const want = normaliseTerm(later.answer.replace(/\([^)]*\)/g, ' '));
-  if (want.length >= 6 && want.includes(' ') && ` ${normaliseTerm(shownText)} `.includes(` ${want} `)) return true;
+  const shown = shownText(earlier);
+  const want = norm(later.answer.replace(/\([^)]*\)/g, ' '));
+  if (want.length >= 6 && want.includes(' ') && shown.padded.includes(` ${want} `)) return true;
   // Or reworded: every word the answer adds to its own question is on the
   // earlier card ("evaporation at the leaves, and cohesion" after a
   // definition of the transpiration stream that says so). Three words at least, so a one-word answer
   // that happens to be used ("increases") is not a reveal.
   const asked = stems(later.question);
   const adds = [...stems(later.answer)].filter((w) => !asked.has(w) && w.length >= 3);
-  const shown = stems(shownText);
-  if (adds.length >= 3) return adds.filter((w) => shown.has(w)).length / adds.length >= 0.8;
-  return shortReveal(earlier, later, asked, shown, shownText);
+  if (adds.length >= 3) return adds.filter((w) => shown.stems.has(w)).length / adds.length >= 0.8;
+  return shortReveal(earlier, later, asked, shown);
 }
 
 /**
@@ -185,7 +238,8 @@ export function revealsAnswer(earlier: Asked, later: Asked): boolean {
  *   uncompetitive question, and the two are a contrast worth asking side by
  *   side, not one fact.
  */
-function shortReveal(earlier: Asked, later: Asked, asked: Set<string>, shown: Set<string>, shownText: string): boolean {
+function shortReveal(earlier: Asked, later: Asked, asked: Set<string>, shownCard: ShownText): boolean {
+  const shown = shownCard.stems;
   const want = [...answerTokens(later.answer)].filter((w) => w.length >= 2 && !asked.has(w));
   if (!want.length || want.length > 2) return false;
   const earlierAsked = stems(earlier.question);
@@ -193,9 +247,7 @@ function shortReveal(earlier: Asked, later: Asked, asked: Set<string>, shown: Se
   if (traits.length >= 2 && want.every((w) => earlierAsked.has(w)) && traits.filter((w) => asked.has(w)).length / traits.length >= 0.5)
     return true;
   if (asked.size < 3) return false;
-  // Without a sentence's opening "A", which the name tokens would read as the
-  // letter in "protein kinase A".
-  const shownTokens = answerTokens(shownText.replace(/(^|[.!?:;]\s+)A\s/g, '$1 '));
+  const shownTokens = shownCard.tokens;
   const context = [...asked].filter((w) => shown.has(w)).length / asked.size;
   return context === 1 && want.every((w) => shown.has(w) || shownTokens.has(w));
 }
@@ -218,7 +270,7 @@ function shortReveal(earlier: Asked, later: Asked, asked: Set<string>, shown: Se
  */
 export function sameFact(a: Asked, b: Asked): boolean {
   const q = questionOverlap(a, b);
-  const exact = normaliseTerm(a.answer).length >= 3 && normaliseTerm(a.answer) === normaliseTerm(b.answer);
+  const exact = norm(a.answer).length >= 3 && norm(a.answer) === norm(b.answer);
   if (exact) return answerTokens(a.answer).size >= 2 || q.shared >= 2;
   // Two parallel questions, each with a subject the other lacks ("what does a
   // competitive inhibitor do…" and "what does a mixed inhibitor do…"): a

@@ -43,7 +43,7 @@ and all progress. Fix: a quiet line on the library when there is something
 to lose and no recent backup ("Last backup: never. Back up now"), as the
 app-making rules describe; or a nudge to turn on sync.
 
-### 3. The right answer is often the longest option
+### 3. The right answer is often the longest option (done 2026-10-18)
 
 Share of MCQs where the right answer is the longest of the four (fair is
 about 25%):
@@ -65,7 +65,7 @@ lectures only; old ones need Fix, which costs a full AI session each. Fix
 options: report from about 35%, and a small Fix that only rewrites the
 wrong options (much cheaper than the full Fix).
 
-### 4. The library gets slower with every lecture
+### 4. The library gets slower with every lecture (done 2026-10-18)
 
 Opening the library works out Today for every lecture in full, including
 the pairwise "is this card answered by an earlier one" checks. Measured:
@@ -75,7 +75,7 @@ grows with each lecture, and per section with the square of its cards.
 Fix: remember each lecture's result until it or its progress changes, and
 compute only the one-line summary the library shows.
 
-### 5. Every lecture carries warnings no one will fix
+### 5. Every lecture carries warnings no one will fix (done 2026-10-18)
 
 All 11 lectures have 2 to 10 findings (most often: same fact asked twice
 10, worded like the source 9, sections that only ask recall 9, terms never
@@ -85,7 +85,7 @@ the night before the test). So the warnings become wallpaper. Fix: rank
 them by what changes studying (wrong-answer length, answers given away)
 and quieten the rest.
 
-### 6. Generating a lecture is expensive
+### 6. Generating a lecture is expensive (done 2026-10-18)
 
 A lecture reply is 90–340 KB of JSON (roughly 25k–85k output tokens); slide
 excerpts, explanations and wrong-answer reasons are about 40% of it. The

@@ -65,7 +65,8 @@ Return ONLY JSON in this shape — just the sections I'm adding to or creating,
 each holding ONLY the new items, plus the inventory of what you added. Do not
 repeat items the course already has, and do not return the whole course.
 Where the spec below describes the output as a whole course file
-(schema_version, metadata), this shape replaces it:
+(schema_version, metadata), this shape replaces it. Compact, as the spec
+says: no indentation, each item on one line of its own.
 
 {
   "sections": [

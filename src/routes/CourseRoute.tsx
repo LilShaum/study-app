@@ -299,7 +299,7 @@ export function CourseRoute() {
 
   const main = (
     <>
-      <CourseHealthPanel course={course} onFix={() => setAdding('fix')} />
+      <CourseHealthPanel course={course} onFix={() => setAdding('fix')} onEvenOut={() => setAdding('options')} />
 
       {resumable && (
         <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded border border-border-strong bg-surface-raised p-4 shadow">

@@ -9,7 +9,7 @@ import { beginWriteCheck, writesLanded } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
 import { Sprig } from '@/components/Sprig';
-import { CourseTree } from '@/components/CourseTree';
+import { LazyTree } from '@/components/LazyTree';
 import { scoredEntries } from '@/lib/scored';
 import { isDueFor } from '@/lib/memory';
 import { sectionStats } from '@/lib/sectionStats';
@@ -346,7 +346,7 @@ export function LibraryRoute() {
                       <span className="entry-num mark text-right text-text-3">
                         {roman(index + 1)}
                       </span>
-                      <CourseTree
+                      <LazyTree
                         courseId={id}
                         course={course}
                         progress={allProgress[id] ?? EMPTY_PROGRESS}

@@ -156,7 +156,8 @@ What I want back:
 
 ${priorities.length ? `Priorities for this round — the app worked these out from the course itself:\n\n${priorities.join('\n')}\n` : ''}
 Return ONLY JSON in this shape — just the sections you are adding to, each
-holding ONLY the new items. Do not return the whole course:
+holding ONLY the new items, compact (no indentation, each item on one line
+of its own). Do not return the whole course:
 
 {
   "sections": [

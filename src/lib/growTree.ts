@@ -463,7 +463,40 @@ function trunkOutline(spine: Pt[], foot: number, top: number, flareL: number, fl
   return { d: `${smooth(ring)}Z`, weight: foot, kind: 'trunk', ink: true };
 }
 
+/**
+ * Trees already grown, by everything that shapes them. Growing is pure (the
+ * same seed and sections always give the same tree, see the contract above),
+ * and the library grows one per lecture on every visit: about 90 ms for the
+ * owner's eleven at full speed, several times that on a phone. A tree is
+ * only read, never changed, so the same one can be handed out again.
+ */
+const grown = new Map<string, Tree>();
+const GROWN_MAX = 64;
+
 export function growTree(seed: string, sections: TreeSection[]): Tree {
+  // Memory drifts by the minute, so the fractions are taken to two places,
+  // for the key and for the drawing alike: a visit later the same hour finds
+  // the same tree, and no leaf turns on a difference that small.
+  const steady = sections.map((s) => {
+    const out: Record<string, unknown> = { ...s };
+    for (const [k, v] of Object.entries(out)) if (typeof v === 'number' && !Number.isInteger(v)) out[k] = Math.round(v * 100) / 100;
+    return out as unknown as TreeSection;
+  });
+  const key = `${seed}\u0000${JSON.stringify(steady)}`;
+  const hit = grown.get(key);
+  if (hit) {
+    // Most recently used last, so the trees in use are the ones kept.
+    grown.delete(key);
+    grown.set(key, hit);
+    return hit;
+  }
+  const tree = growTreeFresh(seed, steady);
+  if (grown.size >= GROWN_MAX) grown.delete(grown.keys().next().value!);
+  grown.set(key, tree);
+  return tree;
+}
+
+function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
   const traits = habitFor(seed);
   const rand = rng(hashSeed(seed));
   const width = 200;

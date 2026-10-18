@@ -7,6 +7,7 @@ import { planMerge, type MergePlan } from '@/lib/mergeFragment';
 import { buildAddPrompt } from '@/lib/buildAddPrompt';
 import { buildPractisePrompt } from '@/lib/buildPractisePrompt';
 import { buildFixPrompt, planFixes } from '@/lib/buildFixPrompt';
+import { buildEvenOptionsPrompt, longestShare, optionsToRework, readEvenOptions, withCorrections } from '@/lib/evenOptions';
 import { analyseCourseGaps } from '@/lib/courseGaps';
 import { sectionDensity } from '@/lib/sectionDensity';
 import { sortedSections } from '@/lib/sortedSections';
@@ -21,7 +22,7 @@ import { cutMessage, readReply } from '@/lib/readReply';
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
 
-export type AddMode = 'material' | 'practice' | 'fix';
+export type AddMode = 'material' | 'practice' | 'fix' | 'options';
 
 interface AddToCourseDialogProps {
   courseId: string;
@@ -66,7 +67,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
   // Re-planned on every keystroke: parsing a paste is cheap and pure, and it
   // means the preview and the error both track what's actually in the box.
-  const result = useMemo((): { plan: MergePlan; cut: string | null } | { error: string } | null => {
+  const result = useMemo((): { plan: MergePlan; cut: string | null; share?: [number, number]; skipped?: string[] } | { error: string } | null => {
     if (!pasted.trim()) return null;
 
     // Finds the JSON in a whole copied reply (the fix prompt asks for a
@@ -74,11 +75,28 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
     const read = readReply(pasted);
     if (!read.ok) return { error: read.error };
 
+    // Even out the answers: new wrong options only, merged as corrections
+    // under the same ids, with the right answer kept as it is.
+    if (mode === 'options') {
+      const even = readEvenOptions(course, read.json);
+      if ('error' in even) return { error: even.error };
+      const skipped = even.skipped.map((x) => `${x.id}: ${x.why}`);
+      if (!even.corrections.length) return { error: `Nothing in the reply could be used:\n${skipped.join('\n')}` };
+      const parsed = parseFragment({ corrections: even.corrections }, firstSectionId);
+      if (!parsed.ok) return { error: parsed.error };
+      return {
+        plan: planMerge(course, parsed.fragment, { skipDuplicates }),
+        cut: read.cut ? cutMessage(read.cut) : null,
+        share: [longestShare(course), longestShare(withCorrections(course, even.corrections))],
+        skipped,
+      };
+    }
+
     const parsed = parseFragment(read.json, firstSectionId);
     if (!parsed.ok) return { error: parsed.error };
 
     return { plan: planMerge(course, parsed.fragment, { skipDuplicates }), cut: read.cut ? cutMessage(read.cut) : null };
-  }, [pasted, course, firstSectionId, skipDuplicates]);
+  }, [pasted, course, firstSectionId, skipDuplicates, mode]);
 
   const plan = result && 'plan' in result ? result.plan : null;
   const canApply = !!plan && plan.totalAdded + plan.totalCorrected > 0;
@@ -87,6 +105,8 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   // The same list the More practice prompt puts first (buildPractisePrompt).
   const sparse = useMemo(() => sectionDensity(course)?.sparse ?? [], [course]);
   const fixes = useMemo(() => planFixes(course), [course]);
+  const rework = useMemo(() => optionsToRework(course), [course]);
+  const shareNow = useMemo(() => longestShare(course), [course]);
 
   const copyPrompt = async () => {
     // Kept on the lecture, so the next prompt for it carries them too.
@@ -95,7 +115,9 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
       updateCourse(courseId, { ...course, metadata: { ...course.metadata, student_notes: kept || undefined } });
     }
     const prompt =
-      mode === 'fix'
+      mode === 'options'
+        ? buildEvenOptionsPrompt(course, kept)
+        : mode === 'fix'
         ? buildFixPrompt(course, kept)
         : mode === 'practice'
           ? buildPractisePrompt(course, kept)
@@ -166,6 +188,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
     material: 'Add material to this lecture',
     practice: 'More practice on this lecture',
     fix: 'Fix what the check found',
+    options: 'Even out the answers',
   };
 
   return (
@@ -194,8 +217,11 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
               ['material', 'New material'],
               ['practice', 'More practice'],
               ['fix', 'Fix gaps'],
+              ['options', 'Even out answers'],
             ] as const
-          ).map(([value, label]) => (
+          )
+            .filter(([value]) => value !== 'options' || rework.length > 0 || mode === 'options')
+            .map(([value, label]) => (
             <button
               key={value}
               type="button"
@@ -228,6 +254,14 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 message (not only as project files, which often lose the diagrams), and it will
                 return JSON. The prompt already tells it which sections, item ids and tags this
                 lecture uses, so it won&apos;t duplicate or collide with what you have.
+              </p>
+            ) : mode === 'options' ? (
+              <p className="mb-2 text-sm text-text-2">
+                In {plural(rework.length, 'question')} the right answer is the longest option, so you could pick it
+                without knowing the material ({shareNow}% of this lecture&apos;s questions; fair is about
+                25%). This prompt asks only for new wrong answers to those, a short reply.{' '}
+                <strong>Paste it into the chat that wrote this lecture</strong>, which still has your notes. The
+                questions, their right answers and your scores stay exactly as they are.
               </p>
             ) : mode === 'fix' ? (
               <p className="mb-2 text-sm text-text-2">
@@ -472,6 +506,14 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                   <div className="mt-1 text-xs text-text-3">
                     Each keeps its id, so your progress on it is kept too.
                   </div>
+                  {result && 'share' in result && result.share && (
+                    <div className="mt-1.5 text-text-2">
+                      Right answer the longest option: {result.share[0]}% of questions now, {result.share[1]}% after.
+                    </div>
+                  )}
+                  {result && 'skipped' in result && result.skipped && result.skipped.length > 0 && (
+                    <div className="mt-1 text-text-3">Not used: {result.skipped.join('; ')}.</div>
+                  )}
                 </div>
               )}
 
@@ -531,6 +573,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 ]
                   .filter(Boolean)
                   .join(' & ')
+                  .replace(/^./, (c) => c.toUpperCase())
               : 'Apply'}
           </button>
         </div>

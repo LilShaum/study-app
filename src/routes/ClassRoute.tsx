@@ -13,7 +13,7 @@ import { roman } from '@/lib/roman';
 import { examTime } from '@/lib/memory';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
-import { CourseTree } from '@/components/CourseTree';
+import { LazyTree } from '@/components/LazyTree';
 import { ClassExamDialog } from '@/components/ClassExamDialog';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
 import { Icon } from '@/components/Icon';
@@ -207,7 +207,7 @@ export function ClassRoute() {
               <li key={id} className="group border-b border-border">
                 <Link to={`/study/${id}`} className="entry py-3 pr-2">
                   <span className="entry-num mark text-right text-text-3">{roman(i + 1)}</span>
-                  <CourseTree courseId={id} course={course} progress={progress} className="entry-art h-10 w-10 sm:h-12 sm:w-12" />
+                  <LazyTree courseId={id} course={course} progress={progress} className="entry-art h-10 w-10 sm:h-12 sm:w-12" />
                   <span className="entry-body min-w-0">
                     <span className="flex items-baseline gap-2">
                       <span className="font-display text-body font-semibold leading-snug text-text group-hover:text-accent">

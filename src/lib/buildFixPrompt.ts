@@ -292,6 +292,7 @@ Two things, in this order:
 
 Both keys are optional — send only the ones you have something for.
 
+- Compact: no indentation, each item on one line of its own.
 - Do NOT return the whole course. New items go under \`sections\`; fixes go
   under \`corrections\` and must keep the id they already have.
 - Do not re-send items that are already fine.

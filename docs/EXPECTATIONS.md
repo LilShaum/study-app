@@ -97,6 +97,9 @@ reads the reply even if it is wrapped in text or cut off.
   (only named, or covered another way) and `unclear_figures` (figures it
   could not read, so the student checks them).
 - Each section has a `source_range` when the slides are numbered.
+- The reply is compact (no indentation, an item a line) and leaves counts
+  to the app: about a sixth less to write. A cut reply still keeps every
+  whole item.
 - Every item about an empirical study carries `study:<author> (<year>)`.
 - Each wrong option is a mistake a student who studied would make (the
   neighbour, the reversal, the wrong step, another case's answer), from the
@@ -148,8 +151,14 @@ rest of the lecture (`lib/sectionDensity.ts`). Fix turns the findings into
 a prompt for the same chat, which judges each one against the notes.
 
 **Working means.** Findings are plain, each says what to do, and none
-blocks studying. A pattern finding (the right answer longest too often)
-hands Fix enough of the questions behind it to undo the pattern. A density finding only points; the student, with the
+blocks studying. They are grouped by what they ask (`findingGroup`): to
+fix (a question answerable without the material), to check on the slides,
+and smaller notes, folded. A pattern finding (the right answer longest too
+often, from 35% of 16+ questions) hands Fix enough of the questions behind
+it to undo the pattern, and has its own small repair, **Even out the
+answers** (`lib/evenOptions.ts`): only new wrong options come back, placed
+round the untouched right answer, merged as corrections under the same
+ids. A density finding only points; the student, with the
 slides, decides.
 
 ## Studying

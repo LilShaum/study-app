@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readReply } from './readReply';
+import fs from 'node:fs';
 
 const item = (n: number) => `{"id":"q${n}","type":"flashcard","front":"F${n} {braces} \\"quoted\\"","back":"B","source_excerpt":"s"}`;
 const course = (items: string) =>
@@ -48,5 +49,37 @@ describe('readReply', () => {
   it('gives up plainly when there is no complete item to keep', () => {
     const r = readReply('{"schema_version":"1.0","metadata":{"title":"T"');
     expect(r.ok).toBe(false);
+  });
+});
+
+describe('a compact reply, one item per line (prompts/generator.md asks for it)', () => {
+  const course = JSON.parse(fs.readFileSync('scripts/__fixtures__/biochem.study.json', 'utf8'));
+  const line = (o: unknown) => JSON.stringify(o);
+  const compact =
+    '{\n"schema_version":"1.0",\n"metadata":' +
+    line(course.metadata) +
+    ',\n"sections":[\n' +
+    course.sections
+      .map((s: { items: unknown[] }) => {
+        const { items, ...rest } = s;
+        return line(rest).slice(0, -1) + ',"items":[\n' + items.map(line).join(',\n') + '\n]}';
+      })
+      .join(',\n') +
+    '\n]}';
+  const count = (json: unknown) => (json as { sections: { items: unknown[] }[] }).sections.reduce((n, s) => n + s.items.length, 0);
+
+  it('reads whole', () => {
+    const r = readReply(compact);
+    expect(r.ok && count(r.json)).toBe(count(course));
+  });
+
+  it('keeps every whole item before a cut', () => {
+    const r = readReply(compact.slice(0, Math.floor(compact.length * 0.6)));
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(count(r.json)).toBeGreaterThan(0);
+      expect(count(r.json)).toBeLessThan(count(course));
+      expect(r.cut).not.toBeNull();
+    }
   });
 });

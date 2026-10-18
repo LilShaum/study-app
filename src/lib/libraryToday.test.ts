@@ -95,3 +95,19 @@ describe('todayAcrossCourses', () => {
     expect(rows.map((r) => r.id)).toEqual(['b', 'a', 'c']);
   });
 });
+
+describe('todayAcrossCourses remembers each lecture', () => {
+  it('gives the same answer again without rebuilding, and a fresh one when progress changes', () => {
+    const a = build('A', 10, 4);
+    const first = across({ a })[0];
+    expect(across({ a })[0]).toBe(first);
+    // A card answered: a new progress object, a new answer.
+    const answered = { ...a.progress, A0: { got: 2, missed: 0, lastSeen: now, stability: 30 } };
+    const after = todayAcrossCourses({ a: a.course }, { a: answered }, now, () => 30)[0];
+    expect(after).not.toBe(first);
+    expect(after.review).toBe(first.review - 1);
+    // More time to spend, or a later minute: worked out again.
+    expect(todayAcrossCourses({ a: a.course }, { a: a.progress }, now, () => 45)[0]).not.toBe(first);
+    expect(todayAcrossCourses({ a: a.course }, { a: a.progress }, now + 61_000, () => 30)[0]).not.toBe(first);
+  });
+});
