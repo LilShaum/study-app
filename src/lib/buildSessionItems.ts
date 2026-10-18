@@ -150,6 +150,12 @@ export type SessionItem = AnyItem & {
    * sitting that teaches the rest of the section.
    */
   _second?: boolean;
+  /**
+   * A class's Practice with the lectures mixed (lib/mixLectures): the
+   * lecture this card is from, where its answer, its time and anything done
+   * to it are recorded. Absent everywhere else: the session's own lecture.
+   */
+  _courseId?: string;
 };
 
 function toRecall(item: SessionItem & DefinitionItem, pool: readonly DefinitionItem[], original: DefinitionItem): SessionItem {

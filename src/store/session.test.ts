@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
 import { useSessionStore } from './session';
 import { useProgressStore } from './progress';
@@ -461,5 +461,122 @@ describe('session store: one term in two lectures', () => {
     useProgressStore.setState({ byCourse: { a: { 'a-eff~recall': { got: 2, missed: 0, lastSeen: 5 } } } });
     useSessionStore.getState().init('b', b, 'definitions');
     expect(useProgressStore.getState().byCourse.b?.['b-eff~recall']?.got).toBe(2);
+  });
+});
+
+describe('session store: a class practised with its lectures mixed', () => {
+  // Two made-up lectures that share an item id, as two generated lectures can.
+  const lecture = (title: string, ids: string[]) =>
+    ({
+      schema_version: '1.0',
+      metadata: { title, course_code: 'MIX 1' },
+      sections: [{ id: 's1', title: 'One', items: ids.map((id) => mcq(id, `${title} ${id}?`)) }],
+    }) as Course;
+  const A = lecture('MIX 1: Alpha', ['q1', 'a2', 'a3']);
+  const B = lecture('MIX 1: Beta', ['q1', 'b2']);
+  const s = () => useSessionStore.getState();
+  const start = async () => {
+    const { useCoursesStore } = await import('./courses');
+    useCoursesStore.setState({ courses: { A, B } });
+    useProgressStore.setState({ byCourse: {} });
+    const { useStudyLogStore } = await import('./studyLog');
+    useStudyLogStore.setState({ byCourse: {} });
+    s().setPendingKind(null);
+    s().setPendingStudy(null);
+    s().initMixed('A', [['A', A], ['B', B]], 'quiz');
+  };
+  /** Move to a card by its lecture and id. */
+  const goTo = (courseId: string, id: string) => {
+    const at = s().items.findIndex((i) => i._courseId === courseId && i.id === id);
+    useSessionStore.setState({ index: at });
+  };
+
+  afterEach(() => vi.restoreAllMocks());
+
+  it('holds every card of both lectures, each with its own lecture', async () => {
+    await start();
+    expect(s().items).toHaveLength(5);
+    expect(s().items.filter((i) => i.id === 'q1').map((i) => i._courseId).sort()).toEqual(['A', 'B']);
+    expect(s().lectures).toEqual(['A', 'B']);
+    expect(Object.keys(s().startByCourse).sort()).toEqual(['A', 'B']);
+  });
+
+  it("records each answer, and the card's time, in the card's own lecture", async () => {
+    const { useStudyLogStore } = await import('./studyLog');
+    let now = 1_000_000;
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+    await start();
+    goTo('B', 'q1');
+    s().record(true);
+    expect(useProgressStore.getState().byCourse.B?.q1?.got).toBe(1);
+    expect(useProgressStore.getState().byCourse.A?.q1).toBeUndefined();
+    expect(useStudyLogStore.getState().byCourse.B?.answers).toHaveLength(1);
+    expect(useStudyLogStore.getState().byCourse.A?.answers ?? []).toHaveLength(0);
+    // Leaving the card after 8 seconds logs them in its lecture.
+    now += 8000;
+    if (s().hasNext()) s().next();
+    else s().prev();
+    expect(useStudyLogStore.getState().byCourse.B?.times).toEqual([{ type: 'mcq', seconds: 8 }]);
+    expect(useStudyLogStore.getState().byCourse.A?.times ?? []).toHaveLength(0);
+  });
+
+  it("corrects an overruled verdict in the card's own lecture", async () => {
+    await start();
+    goTo('B', 'q1');
+    s().record(false);
+    s().setResult(true);
+    expect(useProgressStore.getState().byCourse.B?.q1).toMatchObject({ got: 1, missed: 0 });
+    expect(useProgressStore.getState().byCourse.A?.q1).toBeUndefined();
+  });
+
+  it('tells apart two missed cards that share an id, and retries both', async () => {
+    await start();
+    goTo('A', 'q1');
+    s().record(false);
+    goTo('B', 'q1');
+    s().record(false);
+    expect(s().stillMissed()).toHaveLength(2);
+    s().retryMissed();
+    expect(s().items.map((i) => `${i._courseId}:${i.id}`).sort()).toEqual(['A:q1', 'B:q1']);
+  });
+
+  it("sets aside only that lecture's copy of a shared id", async () => {
+    await start();
+    // On a card before both copies of q1, so both are still ahead.
+    const firstQ1 = s().items.findIndex((i) => i.id === 'q1');
+    useSessionStore.setState({ index: firstQ1 - 1 });
+    if (firstQ1 === 0) {
+      // Mixed so that a q1 comes first: put it on screen and drop the other lecture's.
+      const onScreen = s().items[0]._courseId!;
+      const other = onScreen === 'A' ? 'B' : 'A';
+      useSessionStore.setState({ index: 0 });
+      s().dropAhead('q1', other);
+      expect(s().items.filter((i) => i.id === 'q1').map((i) => i._courseId)).toEqual([onScreen]);
+      return;
+    }
+    s().dropAhead('q1', 'B');
+    expect(s().items.filter((i) => i.id === 'q1').map((i) => i._courseId)).toEqual(['A']);
+  });
+
+  it('picks a bookmark up at its card, found by lecture and id', async () => {
+    await start();
+    s().initMixed('B', [['A', A], ['B', B]], 'quiz', { courseId: 'B', itemId: 'q1' });
+    expect(s().resumed).toBe(true);
+    expect(s().current()).toMatchObject({ id: 'q1', _courseId: 'B' });
+  });
+
+  it('leaves a session of one lecture as it was: no lectures, no marks on its cards', async () => {
+    await start();
+    s().init('A', A, 'quiz');
+    expect(s().lectures).toBeNull();
+    expect(s().items.every((i) => i._courseId === undefined)).toBe(true);
+    expect(Object.keys(s().startByCourse)).toEqual(['A']);
+  });
+
+  it('runs Learn and Today as one lecture, whatever it is asked', async () => {
+    await start();
+    s().initMixed('A', [['A', A], ['B', B]], 'today');
+    expect(s().lectures).toBeNull();
+    expect(s().items.every((i) => i._courseId === undefined)).toBe(true);
   });
 });

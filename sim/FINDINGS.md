@@ -10,6 +10,119 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-18 — A class's Practice with the lectures mixed: level over a finished sitting, every lecture reached in a short one; built as a choice
+
+**Question.** The owner (a cognitive neuroscience test: vision, audition,
+attention, movement, neuroanatomy) asked whether mixing lectures in one
+sitting would help, above all with telling apart similar ideas from
+different lectures (Parkinson's and Huntington's, the dorsal and ventral
+streams). Until now a class's Practice ran one lecture after another.
+
+**What the simulator can see, and what it cannot.** Its student's memory
+of each card is independent of every other card and depends only on when
+the card was last answered. There is no interference and no confusing two
+ideas, so the gain mixing is proposed for **does not exist in this
+student**. Order can only matter through (a) which cards a sitting cut
+short reaches, and (b) minutes of difference in when each card is
+answered. Every number below is about coverage and timing; none is about
+telling ideas apart.
+
+**Set-up** (`sim/class-practice.sim.ts`, new). Five synthetic lectures with
+the counts of the owner's class (35 to 230 cards each; counts only), one
+every three days, each learned through Learn on its day and reviewed for
+20 minutes a day after. On the three evenings before the test, the class's
+Practice for 15, 30 or 60 minutes, or to the end, instead. **One by one**:
+each lecture's session in library order, then the next, as the app has
+done. **Mixed**: the same lists through the store's `initMixed`
+(`lib/mixLectures.ts`). Both arms build the same lists from the same
+shuffles, and each answer is drawn per card, so a card answered at the same
+recall gets the same outcome in both (common random numbers). 5 seeds; ± is
+the spread of the paired difference. Everything before the practice days
+is run once per student and seed and shared.
+
+**Exam score, mixed − one by one (points):**
+
+| Student | Cards | 15 min | 30 min | 60 min | to the end |
+|---|---|---|---|---|---|
+| fsrs | Due now | −0.3 ± 0.2 | −0.3 ± 0.4 | −0.8 ± 0.9 | −0.1 ± 0.1 |
+| fsrs | Weakest first | −0.4 ± 0.7 | −0.6 ± 0.7 | +2.9 ± 0.9 | −1.1 ± 0.3 |
+| fsrs | Everything | +0.4 ± 0.5 | +1.5 ± 0.6 | +3.6 ± 1.3 | +0.2 ± 0.3 |
+| fsrs | Everything, questions | 0.0 ± 0.2 | +0.1 ± 0.2 | +0.5 ± 0.4 | 0.0 ± 0.1 |
+| harsh | Due now | +0.1 ± 0.2 | +0.1 ± 0.5 | +0.1 ± 0.2 | −0.1 ± 0.0 |
+| harsh | Weakest first | +0.1 ± 0.4 | +0.2 ± 0.6 | +0.7 ± 0.4 | −1.1 ± 0.1 |
+| harsh | Everything | 0.0 ± 0.3 | +0.6 ± 0.3 | +1.4 ± 0.6 | −0.3 ± 0.2 |
+| harsh | Everything, questions | +0.1 ± 0.3 | +0.2 ± 0.3 | −0.1 ± 0.4 | 0.0 ± 0.1 |
+| slow | Due now | 0.0 ± 0.4 | +2.8 ± 0.5 | +4.6 ± 0.6 | 0.0 ± 0.0 |
+| slow | Weakest first | +0.4 ± 0.3 | +5.3 ± 0.5 | +13.1 ± 0.6 | −0.1 ± 0.0 |
+| slow | Everything | +0.7 ± 0.4 | +2.6 ± 0.4 | +8.1 ± 0.4 | 0.0 ± 0.0 |
+| slow | Everything, questions | −0.1 ± 0.1 | −0.1 ± 0.2 | +0.2 ± 0.2 | 0.0 ± 0.0 |
+
+"To the end" took 132 minutes an evening for Due now, about 300 for
+Weakest first and Everything (every card of five lectures), 187 for
+questions only: far longer than anyone sits.
+
+**The weakest lecture's score, mixed − one by one (points), at 15 / 30 / 60
+minutes:** fsrs Due now +2.1 / +4.4 / +8.2, Weakest first +3.1 / +6.9 /
++14.0, Everything +3.6 / +6.8 / +12.5; harsh +0.8 / +1.6 / +3.3,
++1.3 / +2.7 / +5.1, +1.5 / +2.7 / +5.1; slow +4.4 / +9.2 / +4.1,
++7.1 / +14.0 / +27.5, +5.9 / +11.0 / +19.3. **Lectures the three evenings
+reached:** one by one 1 to 3 (4.2 once), mixed all 5 every time.
+
+**Reading it.**
+
+- **A finished sitting: level**, within 0.3 points, under all three
+  students, except Weakest first, about 1 point lower under both fsrs and
+  harsh (not slow). That one is timing, not mixing: both arms end with the
+  same number of cards on a miss (fsrs 260 and 258, harsh 483 and 486), but
+  mixing asks every lecture's faintest early in a five-hour evening, so
+  those misses had 1.0 h (fsrs) and 0.5 h (harsh) longer to fade before the
+  test (measured: 11.8 → 12.8 h, 11.6 → 12.1 h). One lecture's own Weakest
+  first does the same. Reported, not acted on.
+- **A sitting cut short: every lecture reached.** One by one starts each
+  evening in the same first lecture of the library, so 15 to 30 minutes
+  never get past it; mixed asks each lecture's most pressing cards first.
+  The weakest lecture gains under all three students in every row. The
+  total is level for Due now and questions only under fsrs and harsh (up
+  for the slow student), and up for Everything (+0.4 to +3.6 fsrs, 0 to +1.4
+  harsh) and for Weakest first at 60 minutes, because one by one spent the
+  time on the lecture that sorts first, here one learned recently; that
+  part depends on which lecture that is. Never lower beyond the noise.
+- **Telling ideas apart: not measured, by construction.**
+
+**Evidence** (`docs/evidence.md`, new entry, PubMed abstracts). Mixing
+retrieval questions across concepts beat blocking them a month later in
+real science classes (Sana & Yan 2022, 63% against 54%); mixing helps
+alike categories and blocking helps unlike ones (Carvalho & Goldstone
+2014); the gain comes from setting the two side by side (Birnbaum et al.
+2013), and in one maths study entirely from the spacing (Foster et al.
+2019); students judge mixing worse than it is (Samani & Pan 2021); for
+words, blocks did better (Brunmair & Richter 2019, already in the file).
+
+**Decision: built, as a choice; one at a time stays the default.** Neutral
+in the simulator over a finished sitting, better spread over a short one
+under both students, and supported by the evidence for alike material: the
+bar for building it. Not the default, because the evidence is for alike
+material, not every class, and against it for words. On the class
+Practice page, when the cards chosen are in more than one lecture:
+*Lectures: One at a time · Mixed together*. A mixed sitting holds exactly
+the cards of the one-at-a-time sessions together (checked on the owner's
+real class: 12, 637 and 670 cards for Due now, Weakest first and
+Everything, both ways), so a mixed Review is as long as every lecture's
+daily Review together; it can be left at any card and picked up with
+Continue.
+
+**For the owner.** The coverage result is an argument for making Mixed
+together the default for Due now near an exam, when a sitting is likely to
+be cut short. It rests on the simulated student, so it is left as your
+call.
+
+**Unchanged.** The standard suite at 3 seeds: every one of its 42 scenarios
+equal to the baseline (the session store now records each card in its own
+lecture, which for a session of one lecture is the same lecture). Not
+re-baselined.
+
+---
+
 ## 2026-10-15 — A short answer given away by the card before is spaced too: level to −2
 
 Reading a whole Learn walk of the test lecture card by card (not the

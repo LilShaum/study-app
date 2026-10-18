@@ -12,6 +12,7 @@ import { applyPersonalScale } from '@/lib/personalScale';
 import { twinsOf } from '@/lib/linkedTerms';
 import { useCoursesStore } from './courses';
 import { onlyStudies } from '@/lib/studies';
+import { mixLectures } from '@/lib/mixLectures';
 
 /**
  * When the current card was put in front of the student. Kept outside the
@@ -19,12 +20,28 @@ import { onlyStudies } from '@/lib/studies';
  */
 let shownAt = Date.now();
 
+/**
+ * The lecture a card belongs to: its own in a class's mixed Practice
+ * (lib/mixLectures), else the session's.
+ */
+export function lectureOf(item: SessionItem, sessionCourseId: string): string {
+  return item._courseId ?? sessionCourseId;
+}
+
+/**
+ * A card's identity within a sitting. Two lectures can use the same item id,
+ * so a mixed sitting tells them apart by lecture; anywhere else it is the id.
+ */
+export function cardKey(item: SessionItem): string {
+  return item._courseId ? `${item._courseId}\u0000${item.id}` : item.id;
+}
+
 /** Log how long the card now showing was up, as the student leaves it. */
 function logCurrentCard(state: { courseId: string | null; items: SessionItem[]; index: number }) {
   const item = state.items[state.index];
   if (!item || !state.courseId) return;
   const now = Date.now();
-  useStudyLogStore.getState().logCard(state.courseId, item.type, (now - shownAt) / 1000, now);
+  useStudyLogStore.getState().logCard(lectureOf(item, state.courseId), item.type, (now - shownAt) / 1000, now);
   shownAt = now;
 }
 
@@ -52,6 +69,13 @@ interface SessionState {
    * mutated, so holding the object is a true snapshot.
    */
   startProgress: Record<string, ItemResult>;
+  /** The same for every lecture in the sitting (a mixed sitting has several). */
+  startByCourse: Record<string, Record<string, ItemResult>>;
+  /**
+   * A class's Practice with the lectures mixed (initMixed): the lectures in
+   * it, in class order. Null for a session of one lecture.
+   */
+  lectures: string[] | null;
   /** True once the student has advanced past the last item. */
   finished: boolean;
   /** True when this session started from a saved bookmark rather than item 1. */
@@ -72,6 +96,16 @@ interface SessionState {
   setPendingStudy: (study: string | null) => void;
   /** `fullDay`: Today planned at the full daily time, ignoring what was studied today ("Keep going"). */
   init: (courseId: string, course: Course, mode: StudyMode, sectionId?: string, resumeItemId?: string, fullDay?: boolean) => void;
+  /**
+   * A class's Practice with the lectures mixed in one sitting
+   * (lib/mixLectures): each lecture's list as its own session of `mode`
+   * builds it (with the pending kind and studies), spread through the
+   * sitting. Each card carries its lecture, and its answer is recorded there.
+   * `courseId` is the lecture the session was opened from; `resume` a
+   * bookmark's card, by lecture and id. Practice modes only: not Learn or
+   * Today, whose steps and plan are one lecture's.
+   */
+  initMixed: (courseId: string, lectures: [string, Course][], mode: StudyMode, resume?: { courseId: string; itemId: string }) => void;
   /** The section this session is scoped to, or null for the whole course. */
   sectionId: string | null;
   current: () => SessionItem | null;
@@ -103,9 +137,10 @@ interface SessionState {
   /**
    * The card on screen was set aside: it and every copy of it still ahead
    * leave the sitting (their file item, so a definition takes its typed term
-   * with it). The caller moves the session on.
+   * with it). The caller moves the session on. `lecture`: the card's own
+   * lecture, so a mixed sitting drops only that lecture's copies.
    */
-  dropAhead: (fileItemId: string) => void;
+  dropAhead: (fileItemId: string, lecture?: string) => void;
   /** Marks the session complete; cleared by init(). */
   finish: () => void;
   /**
@@ -180,6 +215,53 @@ function adoptLinkedTerms(courseId: string): void {
     useProgressStore.setState((st) => ({ byCourse: { ...st.byCourse, [courseId]: { ...(st.byCourse[courseId] ?? {}), ...adopted } } }));
 }
 
+/** What every new sitting starts from, whichever way it is built. */
+const freshSitting = () => ({
+  score: { got: 0, missed: 0 },
+  answeredIndices: new Set<number>(),
+  results: new Map<number, boolean>(),
+  finished: false,
+});
+
+/**
+ * One lecture's list for a mode, as a session of it asks it: init's, and
+ * each lecture's part of a mixed sitting. `resuming`: Today's sitting is
+ * already under way, or carries on past the plan.
+ */
+function listFor(
+  courseId: string,
+  course: Course,
+  mode: StudyMode,
+  { sectionId, resuming, kind, study }: { sectionId?: string; resuming: boolean; kind: CardKind | null; study: string | null },
+): { items: SessionItem[]; progress: Record<string, ItemResult> } {
+  const progressStore = useProgressStore.getState();
+  const missedIds = mode === 'missed' ? progressStore.missedIds(courseId) : undefined;
+  // Weakest-first ranks by the student's own history, so it is the one mode
+  // that needs the full per-item record rather than a set of ids.
+  // Weakest and Review rank by history, Terms pairs mixed-up terms from it,
+  // and a question already answered right comes back typed — so every mode
+  // that builds from it gets it.
+  const progress = progressStore.getProgress(courseId);
+  const items = buildSessionItems(course, mode, {
+    missedIds,
+    sectionId,
+    progress,
+    exam: examRule(course, progress, Date.now()),
+    minutes:
+      mode === 'today'
+        ? // A resumed sitting is the one already under way: the time spent in it
+          // is already in the day's total, so re-planning from what is left
+          // would shrink it, or empty it, under the bookmark.
+          todaySitting(courseId, course, progress, Date.now(), resuming).minutes
+        : usePlanStore.getState().minutesFor(courseId),
+    pace: measuredPace(useStudyLogStore.getState().byCourse),
+    kind: kind ?? undefined,
+    onlyIds: onlyStudies(course, study),
+    questionsFirst: useLearnStore.getState().questionsFirst,
+  });
+  return { items, progress };
+}
+
 export const useSessionStore = create<SessionState>()((set, get) => ({
   courseId: null,
   mode: null,
@@ -190,6 +272,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   answeredIndices: new Set(),
   results: new Map(),
   startProgress: {},
+  startByCourse: {},
+  lectures: null,
   finished: false,
   resumed: false,
   sectionId: null,
@@ -202,30 +286,11 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     adoptLinkedTerms(courseId);
     // The student's own forgetting rate, refitted from their answers so far.
     applyPersonalScale();
-    const progressStore = useProgressStore.getState();
-    const missedIds = mode === 'missed' ? progressStore.missedIds(courseId) : undefined;
-    // Weakest-first ranks by the student's own history, so it is the one mode
-    // that needs the full per-item record rather than a set of ids.
-    // Weakest and Review rank by history, Terms pairs mixed-up terms from it,
-    // and a question already answered right comes back typed — so every mode
-    // that builds from it gets it.
-    const progress = progressStore.getProgress(courseId);
-    const items = buildSessionItems(course, mode, {
-      missedIds,
+    const { items, progress } = listFor(courseId, course, mode, {
       sectionId,
-      progress,
-      exam: examRule(course, progress, Date.now()),
-      minutes:
-        mode === 'today'
-          ? // A resumed sitting is the one already under way: the time spent in it
-            // is already in the day's total, so re-planning from what is left
-            // would shrink it, or empty it, under the bookmark.
-            todaySitting(courseId, course, progress, Date.now(), fullDay || !!resumeItemId).minutes
-          : usePlanStore.getState().minutesFor(courseId),
-      pace: measuredPace(useStudyLogStore.getState().byCourse),
-      kind: get().pendingKind ?? undefined,
-      onlyIds: onlyStudies(course, get().pendingStudy),
-      questionsFirst: useLearnStore.getState().questionsFirst,
+      resuming: fullDay || !!resumeItemId,
+      kind: get().pendingKind,
+      study: get().pendingStudy,
     });
     shownAt = Date.now();
     // Resume by id, not position: Mixed and Review Missed reshuffle each start
@@ -244,18 +309,54 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       : -1;
     const index = resumeIndex >= 0 ? resumeIndex : 0;
     set({
+      ...freshSitting(),
       courseId,
       mode,
       sectionId: sectionId ?? null,
       items,
       index,
       resumed: resumeIndex >= 0,
-      score: { got: 0, missed: 0 },
       activeSectionId: items[index]?._sectionId ?? null,
-      answeredIndices: new Set(),
-      results: new Map(),
       startProgress: progress,
-      finished: false,
+      startByCourse: { [courseId]: progress },
+      lectures: null,
+    });
+  },
+
+  initMixed: (courseId, lectures, mode, resume) => {
+    if (mode === 'learn' || mode === 'today' || mode === 'browse') {
+      // Not a practice mode: one lecture's session, as before.
+      const own = lectures.find(([id]) => id === courseId);
+      if (own) get().init(courseId, own[1], mode, undefined, resume?.courseId === courseId ? resume.itemId : undefined);
+      return;
+    }
+    for (const [id] of lectures) adoptLinkedTerms(id);
+    applyPersonalScale();
+    const lists = lectures.map(([id, course]) => ({
+      courseId: id,
+      ...listFor(id, course, mode, { resuming: false, kind: get().pendingKind, study: get().pendingStudy }),
+    }));
+    const items = mixLectures(lists);
+    shownAt = Date.now();
+    // As init: by id, and a definition's bookmark finds its typed term. Here
+    // the id is only unique with its lecture.
+    const find = (id: string) => items.findIndex((i) => i._courseId === resume?.courseId && i.id === id);
+    const found = resume ? find(resume.itemId) : -1;
+    const resumeIndex = resume && found < 0 ? find(recallId(resume.itemId)) : found;
+    const index = resumeIndex >= 0 ? resumeIndex : 0;
+    const startByCourse = Object.fromEntries(lists.map((l) => [l.courseId, l.progress]));
+    set({
+      ...freshSitting(),
+      courseId,
+      mode,
+      sectionId: null,
+      items,
+      index,
+      resumed: resumeIndex >= 0,
+      activeSectionId: items[index]?._sectionId ?? null,
+      startProgress: startByCourse[courseId] ?? useProgressStore.getState().getProgress(courseId),
+      startByCourse,
+      lectures: lectures.map(([id]) => id),
     });
   },
 
@@ -300,7 +401,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
         ? { got: s.score.got + (got ? 1 : 0), missed: s.score.missed + (got ? 0 : 1) }
         : s.score,
     }));
-    recordAnswer(courseId, item, got);
+    recordAnswer(lectureOf(item, courseId), item, got);
     if (!got) get().requeue(index);
   },
 
@@ -360,8 +461,9 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
         ? { got: s.score.got + (got ? 1 : -1), missed: s.score.missed + (got ? -1 : 1) }
         : s.score,
     }));
-    useProgressStore.getState().reviseResult(courseId, item.id, got);
-    for (const twin of twinsOf(useCoursesStore.getState().courses, courseId, item.id))
+    const lecture = lectureOf(item, courseId);
+    useProgressStore.getState().reviseResult(lecture, item.id, got);
+    for (const twin of twinsOf(useCoursesStore.getState().courses, lecture, item.id))
       useProgressStore.getState().reviseResult(twin.courseId, twin.id, got);
     if (got) get().unqueue(index);
     else get().requeue(index);
@@ -374,9 +476,12 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     set({ index: idx, activeSectionId: sectionId });
   },
 
-  dropAhead: (fileItemId) => {
-    const { items, index } = get();
-    const keep = items.map((item, n) => n <= index || fileItemOf(item) !== fileItemId || get().answeredIndices.has(n));
+  dropAhead: (fileItemId, lecture) => {
+    const { items, index, courseId } = get();
+    // In a mixed sitting two lectures can share an item id: only this lecture's goes.
+    const same = (item: SessionItem) =>
+      fileItemOf(item) === fileItemId && (!lecture || !courseId || lectureOf(item, courseId) === lecture);
+    const keep = items.map((item, n) => n <= index || !same(item) || get().answeredIndices.has(n));
     const moved = new Map<number, number>();
     let to = 0;
     keep.forEach((k, n) => {
@@ -416,7 +521,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     const last = new Map<string, boolean>();
     for (const [i, got] of [...results].sort((a, b) => a[0] - b[0])) {
       const item = items[i];
-      if (item) last.set(item.id, got);
+      if (item) last.set(cardKey(item), got);
     }
     return [...last].filter(([, got]) => !got).map(([id]) => id);
   },
@@ -427,8 +532,9 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     const seen = new Set<string>();
     const missed = items
       .filter((item) => {
-        if (!ids.has(item.id) || seen.has(item.id)) return false;
-        seen.add(item.id);
+        const key = cardKey(item);
+        if (!ids.has(key) || seen.has(key)) return false;
+        seen.add(key);
         return true;
       })
       .map((item) => ({ ...item, _again: undefined }));

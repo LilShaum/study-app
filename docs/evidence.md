@@ -102,6 +102,78 @@ confusion pairs proposal does.
 
 **What it does not license.** "Interleave everything", in either direction.
 
+### Mixing topics in retrieval practice: helps when they are alike, and students think it does not
+
+Read 2026-10-18 for the class Practice's "Mixed together" (sim/FINDINGS.md,
+same date). All from the PubMed abstracts.
+
+Sana, F., & Yan, V. X. (2022). *Interleaving retrieval practice promotes
+science learning.* Psychological Science.
+[10.1177/09567976211057507](https://doi.org/10.1177/09567976211057507)
+
+> "Questions on each quiz were either blocked by concept or interleaved
+> with different concepts. A month after the final quiz, students were
+> tested on the concepts covered in the 4-week period. … Interleaved
+> quizzes led to even greater benefits: Participants performed better on
+> concepts that had been on interleaved quizzes … than on concepts that had
+> been on blocked quizzes"
+
+155 students in grades 9 to 12; means of 63% against 54%, an effect size of
+0.35, as the abstract gives them. The closest study to the app's Practice found: retrieval questions in a
+real course, mixed across concepts or not, tested a month later. Concepts
+from one week, not lectures from several, and school, not university.
+
+Carvalho, P. F., & Goldstone, R. L. (2014). *Putting category learning in
+order: category structure and temporal arrangement affect the benefit of
+interleaved over blocked study.* Memory & Cognition.
+[10.3758/s13421-013-0371-0](https://doi.org/10.3758/s13421-013-0371-0)
+
+> "interleaved study results in better generalization for categories with
+> high within- and between-category similarity, whereas blocked
+> presentation results in better generalization for categories with low
+> within- and between-category similarity."
+
+Birnbaum, M. S., Kornell, N., Bjork, E. L., & Bjork, R. A. (2013). *Why
+interleaving enhances inductive learning: the roles of discrimination and
+retrieval.* Memory & Cognition.
+[10.3758/s13421-012-0272-7](https://doi.org/10.3758/s13421-012-0272-7)
+
+> "temporal spacing was harmful when it interrupted the juxtaposition of
+> interleaved categories, even when total spacing was held constant,
+> supporting the discriminative-contrast hypothesis."
+
+Foster, N. L., Mueller, M. L., Was, C., Rawson, K. A., & Dunlosky, J.
+(2019). *Why does interleaving improve math learning? The contributions of
+discriminative contrast and distributed practice.* Memory & Cognition.
+[10.3758/s13421-019-00918-4](https://doi.org/10.3758/s13421-019-00918-4)
+
+> "Standard interleaving enhanced performance compared to blocked practice
+> but did not produce enhanced performance compared to remote
+> interleaving … a finding that supports the distributed-practice
+> hypothesis."
+
+Samani, J., & Pan, S. C. (2021). *Interleaved practice enhances memory and
+problem-solving ability in undergraduate physics.* npj Science of
+Learning. [10.1038/s41539-021-00110-x](https://doi.org/10.1038/s41539-021-00110-x)
+
+> "Despite benefiting more from interleaved practice, students tended to
+> rate the technique as more difficult and incorrectly believed that they
+> learned less from it."
+
+**What it licenses in the app.** Offering a class's Practice with its
+lectures mixed in one sitting, for lectures whose ideas are alike (two
+disorders, two pathways, two methods taught in different lectures), with
+the cards from different lectures side by side rather than in runs
+(`lib/mixLectures.ts`). Saying on the page why: students judge mixing
+worse than it is.
+
+**What it does not license.** Making it the default for every class. For
+material that is not alike (Carvalho & Goldstone) and for words (Brunmair
+& Richter, above), blocks did as well or better; in one maths study the
+whole gain was the spacing that mixing brings (Foster et al.), which the
+app's scheduler already gives across days. No size for a university
+student mixing lectures: none of these measured that.
+
 ### Quizzing in real classes works, with feedback and repeats
 
 Yang, C., Luo, L., Vadillo, M. A., Yu, R., & Shanks, D. R. (2021).
