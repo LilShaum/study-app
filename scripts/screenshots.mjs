@@ -77,6 +77,9 @@ const SEED_PROGRESS = ({ id, course }) => {
   localStorage.setItem('arborous:progress', JSON.stringify({ state: { byCourse }, version: 0 }));
 };
 
+/** Each phone page's way to put its touch media back (see `shot`). */
+const TOUCH = new WeakMap();
+
 async function page(browser, size, { onboarded = true } = {}) {
   const ctx = await browser.newContext({
     viewport: VIEWPORTS[size],
@@ -92,6 +95,7 @@ async function page(browser, size, { onboarded = true } = {}) {
         features: [{ name: 'hover', value: 'none' }, { name: 'pointer', value: 'coarse' }],
       });
     await touchMedia();
+    TOUCH.set(p, touchMedia);
     // Playwright re-sends its own emulation bundle on every navigation and
     // that clears ours, so the override goes back on after each one. The
     // first version set it once and every phone shot quietly rendered with
@@ -122,14 +126,28 @@ async function shot(p, name) {
   await p.waitForTimeout(500);
   const tall = await p.evaluate(() => document.documentElement.scrollHeight);
   const file = path.join(OUT, `${name}.png`);
-  if (tall > MAX_SHOT_PX) {
+  const clipped = tall > MAX_SHOT_PX;
+  const touch = TOUCH.get(p);
+  if (touch) {
+    // A full-page capture drops the touch media for the capture itself
+    // (measured 2026-10-19: hover and pointer read as a desktop's during and
+    // after it), so every phone shot showed the keyboard hints and missed the
+    // 44px targets. Instead the viewport grows to the page, the touch media
+    // goes back on, and an ordinary capture takes it all.
+    const vp = p.viewportSize();
+    await p.setViewportSize({ width: vp.width, height: Math.min(tall, MAX_SHOT_PX) });
+    await touch();
+    await p.waitForTimeout(200);
+    await p.screenshot({ path: file });
+    await p.setViewportSize(vp);
+    await touch();
+  } else if (clipped) {
     const w = p.viewportSize().width;
     await p.screenshot({ path: file, clip: { x: 0, y: 0, width: w, height: MAX_SHOT_PX } });
-    process.stdout.write(`  ${name}  (clipped: page is ${tall}px)\n`);
-    return;
+  } else {
+    await p.screenshot({ path: file, fullPage: true });
   }
-  await p.screenshot({ path: file, fullPage: true });
-  process.stdout.write(`  ${name}\n`);
+  process.stdout.write(`  ${name}${clipped ? `  (clipped: page is ${tall}px)` : ''}\n`);
 }
 
 const dist = path.join(ROOT, 'dist');
