@@ -22,9 +22,12 @@ Done 2026-10-11: Learn places a question that names no term by the passage it qu
 
 Done 2026-10-11 (second session), the owner's decisions in docs/proposals/decisions.md: Learn A–F (a new flashcard read open before it is asked; steps of at most 12 cards; misses stay in their step, never straight after themselves; the notes open after a miss; the next section at the end; finished steps skipped; simulated, sim/FINDINGS.md). "Lecture" in everything a student reads. Classes: a class page (lectures, exams, Today for the class, Add a lecture) and several exams per class, kept on the lectures they cover so they sync, back up and share with them; each lecture follows the next exam it is on.
 
+Done 2026-10-17 to 10-19 (HANDOFF has each): class Practice, one lecture at a time or mixed; studies grouped and practised on their own; lectures stored compressed, a backup reminder and a storage warning; Even out the answers, for a lecture or a whole class; the lecture check ranked; a faster library; leaner generation replies; restore in the app's own sheet with Undo; toasts above the page on a phone; Practice saying what the sitting holds; the length check sharing ties.
+
 Next:
 - The owner and the friend try Learn and a class on a phone.
-- Sync gaps: share plan.total, merge study logs by union (HANDOFF §6 item 2).
+- The owner uploads the Even out replies (HANDOFF, 2026-10-19).
+- Confirm the compact generation replies on the owner's next real lecture.
 - Share links and sync are live (`src/lib/cloud.ts`, `docs/supabase.sql`) and
   confirmed working by the owner on real devices, 2026-09-27. Cloud sessions
   cannot reach supabase.co unless the environment's network settings allow it.

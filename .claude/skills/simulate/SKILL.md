@@ -81,6 +81,10 @@ keep `src/lib/sessionAudit.test.ts` passing.
 | `sim/course.ts` | Synthetic course generator and measured/estimated `SHAPES` |
 | `sim/report.ts` | Summary across seeds and the markdown table |
 | `sim/run.sim.ts`, `sim/shape.sim.ts` | Entry points (`vitest.sim.config.ts`) |
+| `sim/lecture.sim.ts` | Days of study on a REAL lecture, sitting by sitting (`SIM_LECTURE=<file>`, `npm run sim:lecture`); the lecture stays outside the repo |
+| `sim/class-practice.sim.ts` | A class's Practice before a test, lectures one at a time vs mixed (`SIM_SEEDS`, default 5) |
+| `sim/several.sim.ts` | Several courses sharing one daily budget: how to split the minutes |
+| `sim/calibrate.sim.ts` | Checks `scripts/calibrate-log.mjs` on a simulated student whose forgetting is known (`SIM_KEEP_LOG=1`) |
 | `sim/FINDINGS.md` | Dated log of results, assumption changes, open questions |
 | `sim/baseline.json` | The committed reference run |
 

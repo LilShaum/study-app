@@ -117,6 +117,35 @@ confirm the prompt changes on real output.
 - **Open, the owner's call:** make Mixed together the default for Due now
   near an exam (the coverage result argues for it).
 
+**Done 2026-10-19 (live):**
+- **Restore** asks in the app's own sheet (`components/Backup.tsx`): the
+  backup beside this device, what the device has that the file lacks, "Back
+  up this device first"; a new device restores without asking. After the
+  reload a toast says what was restored, with Undo (20 s, gone once anything
+  is studied; the copy for it packed in sessionStorage). No Undo with sync
+  on, or where the browser won't keep the copy, said in the sheet first.
+- **Toasts were under the page on a phone** (the page's layer, z-2, sat over
+  the shell's, so the page took the tap meant for Undo, on every toast).
+  They now have a layer above it (`RootLayout`).
+- **Practice says what the sitting holds** when it differs from the count:
+  cards to read along the way, and Due now fitted to the daily time
+  (`lib/practice.ts` sittingSize). The page said 637, the sitting 670.
+- **The length check shares ties** (`longestCredit`, `givesAwayByLength`,
+  `toBringDown` in `lib/questionQuality.ts`): a tie for longest is a half
+  of a giveaway, not a whole. It had flagged Neuroanatomy (true 27%),
+  Endocrinology (30%) and Studies (25%), and left Vision flagged with
+  nothing left to repair. Ties are repaired too; a reply that leaves one is
+  refused; the repair never overshoots a quarter.
+- **Phone screenshots were lying** (`scripts/screenshots.mjs`): a full-page
+  capture drops the touch media, so phone shots showed keyboard hints and no
+  44px targets. Fixed; the pale strip at the bottom of phone shots was the
+  same capture.
+- **Even out replies handed to the owner as files** (not in the repo):
+  PSYC 351C (Vision 8, Motor 4) and EPHE 155 Nutrition (23), checked through
+  the app's own reader and uploaded end to end on the 10-15 backup: Vision
+  36% → 25%, Motor 45% → 25%, Nutrition 35% → 25%. **Open, the owner:**
+  upload them on each class page (Even out the answers → upload a file).
+
 **Back burner (owner, 2026-10-15): anything that needs the owner's real
 study log.** Do not start these until the owner sends a backup (Help →
 Back up everything, key `arborous:study-log`) and asks for them:
