@@ -21,11 +21,11 @@ export const useToastStore = create<ToastState>((set) => ({
   dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 }));
 
-/** Fire-and-forget toast, callable from anywhere (stores, event handlers). */
+/** Fire-and-forget toast, callable from anywhere (stores, event handlers). Returns its id, to dismiss it early. */
 export function toast(
   message: string,
   opts: Partial<Omit<ToastItem, 'id' | 'message'>> = {},
-): void {
+): number {
   const item: ToastItem = {
     id: nextId++,
     message,
@@ -35,4 +35,5 @@ export function toast(
     onAction: opts.onAction,
   };
   useToastStore.setState((s) => ({ toasts: [...s.toasts, item] }));
+  return item.id;
 }

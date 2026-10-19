@@ -104,6 +104,9 @@ to weigh against logs from other classes.
 
 - Restore asks with a browser `confirm()`, which the design rules forbid
   (the app's own sheet, with the verb on the button, is the rule).
+  (Done 2026-10-19: the app's own sheet, the backup beside the device,
+  and Undo after. Found on the way: on a phone every toast was drawn under
+  the page, which took the tap meant for Undo; fixed.)
 - Class Practice runs one lecture after another; cards from different
   lectures are never mixed in one sitting. (Done 2026-10-18: Mixed
   together, a choice on the class Practice page.)

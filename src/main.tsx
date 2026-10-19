@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import { runLegacyMigration } from '@/store/migrateLegacy';
-import { watchForRestore } from '@/lib/backup';
+import { announceRestore, watchForRestore } from '@/lib/backup';
 import '@/store/syncMeta';
 import { startAutoSync } from '@/lib/autoSync';
 import { setStorageFailureHandler } from '@/lib/safeStorage';
@@ -24,6 +24,8 @@ runLegacyMigration();
 // forgetting rate (lib/personalScale), so it is set before anything renders.
 applyPersonalScale();
 watchForRestore();
+// After a restore in this tab: says so, with Undo.
+announceRestore();
 startAutoSync();
 watchStatusBar();
 

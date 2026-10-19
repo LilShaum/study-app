@@ -20,8 +20,10 @@ import { useResumeStore } from '@/store/resume';
 import { useStudyLogStore } from '@/store/studyLog';
 import { usePlanStore } from '@/store/plan';
 import { useFallenStore } from '@/store/fallen';
-import { writePackedCourses } from './packedStorage';
+import { pack, unpack, writePackedCourses } from './packedStorage';
 import { countAnswers, writeBackedUp } from './keepSafe';
+import { hasSavedSignIn } from './cloud';
+import { toast, useToastStore } from '@/store/toast';
 
 const PREFIX = 'arborous:';
 /** Set by a restore, so any other open tab reloads instead of writing its old state back. */
@@ -150,14 +152,50 @@ export function readBackup(text: string): { ok: true; backup: Backup } | { ok: f
   return { ok: true, backup };
 }
 
-/** Courses in a backup, for the confirmation message. */
-export function coursesIn(backup: Backup): number {
+/** What a backup, or this device, holds: the restore sheet's comparison. */
+export interface Holdings {
+  /** Lecture id → title. */
+  lectures: Record<string, string>;
+  /** Cards answered, every time counted. */
+  answers: number;
+}
+
+const titles = (courses: unknown): Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(courses && typeof courses === 'object' ? (courses as Record<string, { metadata?: { title?: unknown } }>) : {}).map(
+      ([id, c]) => [id, typeof c?.metadata?.title === 'string' ? c.metadata.title : id],
+    ),
+  );
+
+/** Answers on the lectures there are: progress left by a removed lecture is not anything a student would miss. */
+function holdings(courses: unknown, byCourse: unknown): Holdings {
+  const lectures = titles(courses);
+  const progress = byCourse && typeof byCourse === 'object' ? (byCourse as Parameters<typeof countAnswers>[0]) : {};
+  return { lectures, answers: countAnswers(Object.fromEntries(Object.entries(progress).filter(([id]) => id in lectures))) };
+}
+
+export function holdingsOf(backup: Backup): Holdings {
   try {
-    const courses = JSON.parse(backup.data[`${PREFIX}courses`] ?? '{}')?.state?.courses;
-    return courses && typeof courses === 'object' ? Object.keys(courses).length : 0;
+    return holdings(
+      JSON.parse(backup.data[COURSES_KEY] ?? '{}')?.state?.courses,
+      JSON.parse(backup.data[`${PREFIX}progress`] ?? '{}')?.state?.byCourse,
+    );
   } catch {
-    return 0;
+    return { lectures: {}, answers: 0 };
   }
+}
+
+export function holdingsHere(): Holdings {
+  return holdings(useCoursesStore.getState().courses, useProgressStore.getState().byCourse);
+}
+
+/** Nothing here to lose (no lecture, no answer, no study time): a new device restores without asking. */
+export function nothingHere(): boolean {
+  return (
+    !Object.keys(useCoursesStore.getState().courses).length &&
+    !countAnswers(useProgressStore.getState().byCourse) &&
+    !Object.keys(useStudyLogStore.getState().byCourse ?? {}).length
+  );
 }
 
 /**
@@ -192,6 +230,127 @@ export function restoreBackup(backup: Backup): boolean {
     }
     return false;
   }
+}
+
+/** sessionStorage: a restore in this tab, to be said once the page has reloaded. */
+const RESTORE_NOTE_KEY = `${PREFIX}restore-note`;
+/** sessionStorage: what this device held before that restore, packed, for Undo. */
+const RESTORE_UNDO_KEY = `${PREFIX}restore-undo`;
+/** sessionStorage: that restore was undone. */
+const RESTORE_UNDONE_KEY = `${PREFIX}restore-undone`;
+
+const session = {
+  get: (k: string) => {
+    try {
+      return sessionStorage.getItem(k);
+    } catch {
+      return null;
+    }
+  },
+  remove: (...keys: string[]) => {
+    try {
+      for (const k of keys) sessionStorage.removeItem(k);
+    } catch {
+      /* blocked: nothing was kept */
+    }
+  },
+};
+
+/**
+ * Whether a restore here can be undone. Not with sync on: the sync that runs
+ * as the app opens carries the restore to the saved copy, and the next one
+ * would bring it back over an Undo.
+ */
+export function restoreUndoable(): boolean {
+  return !hasSavedSignIn();
+}
+
+/**
+ * Keeps what this device holds for the Undo after a restore, packed, in this
+ * tab's sessionStorage: it outlives the reload, takes no room from the
+ * storage the restore is about to fill, and goes with the tab. False when
+ * the browser will not keep it, so no Undo is promised that cannot be given.
+ */
+export function keepForUndo(): boolean {
+  try {
+    const before = makeBackup();
+    // Put back exactly: sync's bookkeeping too, which a backup file leaves out.
+    const meta = localStorage.getItem(SYNC_META_KEY);
+    if (meta != null) before.data[SYNC_META_KEY] = meta;
+    sessionStorage.setItem(RESTORE_UNDO_KEY, pack(JSON.stringify(before)));
+    return true;
+  } catch {
+    session.remove(RESTORE_UNDO_KEY);
+    return false;
+  }
+}
+
+/**
+ * Restores, and leaves word for the page after the reload (announceRestore)
+ * to say so, with Undo when `keepForUndo` has just kept what was here.
+ */
+export function restoreAndTell(backup: Backup, said: string, undo: boolean): boolean {
+  if (!undo) session.remove(RESTORE_UNDO_KEY);
+  if (!restoreBackup(backup)) {
+    session.remove(RESTORE_UNDO_KEY);
+    return false;
+  }
+  try {
+    sessionStorage.setItem(RESTORE_NOTE_KEY, said);
+  } catch {
+    // Blocked: the restore stands, unannounced.
+  }
+  return true;
+}
+
+/**
+ * At start: a restore (or its undo) in this tab, said once; a restore's with
+ * Undo. The Undo goes as soon as anything is studied or changed, since
+ * putting back what was here would throw that away.
+ */
+export function announceRestore(): void {
+  const said = session.get(RESTORE_NOTE_KEY);
+  const packed = session.get(RESTORE_UNDO_KEY);
+  const undone = session.get(RESTORE_UNDONE_KEY) === '1';
+  session.remove(RESTORE_NOTE_KEY, RESTORE_UNDO_KEY, RESTORE_UNDONE_KEY);
+  if (undone) toast('Put back what this device had before the restore.', { type: 'success' });
+  if (said == null) return;
+  if (!packed) {
+    toast(said, { type: 'success' });
+    return;
+  }
+  let watching: (() => void)[] = [];
+  const stop = () => watching.forEach((unsubscribe) => unsubscribe());
+  const id = toast(said, {
+    type: 'success',
+    duration: 20000,
+    actionLabel: 'Undo',
+    onAction: () => {
+      stop();
+      let before: Backup | null = null;
+      try {
+        before = JSON.parse(unpack(packed)) as Backup;
+      } catch {
+        /* unreadable: said below */
+      }
+      if (!before?.data || !restoreBackup(before)) {
+        toast("Couldn't put back what was here before: this browser's storage is full or blocked.", { type: 'error' });
+        return;
+      }
+      try {
+        sessionStorage.setItem(RESTORE_UNDONE_KEY, '1');
+      } catch {
+        /* reloads unannounced */
+      }
+      window.location.reload();
+    },
+  });
+  watching = [useProgressStore.subscribe, useCoursesStore.subscribe, useStudyLogStore.subscribe].map((subscribe) =>
+    subscribe(() => {
+      stop();
+      useToastStore.getState().dismiss(id);
+    }),
+  );
 }
 
 /**

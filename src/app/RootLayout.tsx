@@ -148,7 +148,13 @@ export function RootLayout() {
         </footer>
       )}
 
-      <Toaster />
+      {/* Over the page's layer (z-2, index.css .paper-grain > main): left in
+          the shell's own (z-1), a toast on a phone, where the page is the
+          full width, was drawn under the page's text, and the page took the
+          tap meant for its Undo. */}
+      <div className="z-30">
+        <Toaster />
+      </div>
       <Onboarding />
     </div>
   );

@@ -323,7 +323,8 @@ const SECTIONS: HelpSection[] = [
           <strong>Back up everything</strong> saves every lecture, all your progress and your
           settings as one file. Keep it somewhere safe, or restore it on another device or in the
           installed app to carry on exactly where you left off. Restoring replaces what is on the
-          device you restore it on. To give one lecture to a classmate, use <strong>Export</strong>{' '}
+          device you restore it on: it shows the backup beside what the device has first, and can be
+          undone straight after. To give one lecture to a classmate, use <strong>Export</strong>{' '}
           on its lecture page instead. Without sync, the library reminds you when your work has never
           been backed up, or not for a week with new answers since, and warns you before storage is full.
         </p>

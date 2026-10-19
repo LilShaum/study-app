@@ -297,6 +297,15 @@ wrong ones to the AI to rewrite.
   library says when work has never been backed up, or not for a week with
   new answers since (`lib/keepSafe.ts`; Not now quiets it for 3 days), and
   a restore counts as a backup.
+- **Restore** (Help, or the empty library) asks in the app's own sheet,
+  never a browser box: the backup beside this device (date, lectures,
+  answers, last backed up), naming what the device has that the file lacks,
+  with "Back up this device first". A device with nothing on it restores
+  without asking. After the reload a toast says what was restored, with
+  Undo for 20 seconds, gone as soon as anything is studied; the copy for
+  it is kept packed in the tab's sessionStorage. No Undo with sync on, or
+  where the browser won't keep that copy, and the sheet says so first.
+- **Toasts** sit above the page (and its dialogs) on every screen width.
 - **Storage**: lectures are kept compressed, one key each
   (`lib/packedStorage.ts`), about an eighth of their plain size; the old
   plain form is still read and converted on load, and backups stay plain

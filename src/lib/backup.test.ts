@@ -1,8 +1,11 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
 import { usePlanStore } from '@/store/plan';
-import { coursesIn, makeBackup, readBackup, restoreBackup, RESTORED_KEY } from './backup';
+import { useProgressStore } from '@/store/progress';
+import { useToastStore } from '@/store/toast';
+import { useStudyLogStore } from '@/store/studyLog';
+import { announceRestore, holdingsHere, holdingsOf, keepForUndo, makeBackup, nothingHere, readBackup, restoreAndTell, restoreBackup, restoreUndoable, RESTORED_KEY } from './backup';
 
 const course = { schema_version: '1.0', metadata: { title: 'T' }, sections: [] } as unknown as Course;
 
@@ -21,14 +24,14 @@ describe('backup', () => {
     expect(b.data['arborous:migrated']).toBe('1');
     expect(b.data['someone-else']).toBeUndefined();
     expect(Object.keys(b.data).every((k) => k.startsWith('arborous:'))).toBe(true);
-    expect(coursesIn(b)).toBe(2);
+    expect(Object.keys(holdingsOf(b).lectures)).toEqual(['a', 'b']);
   });
 
   it('takes the state in memory, even when storage has fallen behind it', () => {
     useCoursesStore.setState({ courses: { a: course } });
     // As if the latest write had failed with storage full.
     localStorage.setItem('arborous:courses', JSON.stringify({ state: { courses: {} }, version: 0 }));
-    expect(coursesIn(makeBackup())).toBe(1);
+    expect(Object.keys(holdingsOf(makeBackup()).lectures)).toEqual(['a']);
   });
 
   it('restores exactly, replacing what was there, and tells other tabs', () => {
@@ -82,5 +85,101 @@ describe('backup and sync', () => {
     localStorage.setItem('arborous:sync-meta', '{"state":{"remoteSeenAt":"x"},"version":0}');
     const { makeBackup } = await import('./backup');
     expect(makeBackup().data['arborous:sync-meta']).toBeUndefined();
+  });
+});
+
+describe('restore sheet and Undo', () => {
+  const reload = vi.fn();
+  const original = window.location;
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    useCoursesStore.setState({ courses: {} });
+    useProgressStore.setState({ byCourse: {} });
+    useToastStore.setState({ toasts: [] });
+    useStudyLogStore.setState({ byCourse: {} });
+    reload.mockReset();
+    Object.defineProperty(window, 'location', { configurable: true, value: { ...original, reload } });
+  });
+  afterEach(() => {
+    Object.defineProperty(window, 'location', { configurable: true, value: original });
+  });
+
+  const titled = (title: string) => ({ ...course, metadata: { title } }) as unknown as Course;
+  const file = (courses: Record<string, Course>, byCourse: object) =>
+    ({
+      kind: 'arborous-backup',
+      version: 1,
+      createdAt: '2026-10-15T23:00:00Z',
+      data: {
+        'arborous:courses': JSON.stringify({ state: { courses }, version: 0 }),
+        'arborous:progress': JSON.stringify({ state: { byCourse }, version: 0 }),
+      },
+    }) as const;
+
+  it('counts lectures and answers, and only answers on lectures that are there', () => {
+    const b = file({ a: titled('Vision') }, { a: { q1: { got: 2, missed: 1 } }, gone: { q2: { got: 5 } } });
+    expect(holdingsOf(b)).toEqual({ lectures: { a: 'Vision' }, answers: 3 });
+    useCoursesStore.setState({ courses: { a: titled('Vision'), b: titled('Motor') } });
+    useProgressStore.setState({ byCourse: { b: { q: { got: 4, missed: 0 } } } as never });
+    expect(holdingsHere()).toEqual({ lectures: { a: 'Vision', b: 'Motor' }, answers: 4 });
+  });
+
+  it('says what was restored after the reload, and Undo puts back exactly what was here', () => {
+    useCoursesStore.setState({ courses: { mine: titled('Mine') } });
+    localStorage.setItem('arborous:practice:x', 'my choice');
+    localStorage.setItem('arborous:sync-meta', 'my sync');
+    expect(keepForUndo()).toBe(true);
+    expect(restoreAndTell(file({ theirs: titled('Theirs') }, {}), 'Restored the backup.', true)).toBe(true);
+    expect(localStorage.getItem('arborous:practice:x')).toBeNull();
+
+    announceRestore();
+    const [t] = useToastStore.getState().toasts;
+    expect(t.message).toBe('Restored the backup.');
+    expect(t.actionLabel).toBe('Undo');
+    // Said once: a later reload of the tab does not say it again.
+    expect(sessionStorage.length).toBe(0);
+
+    t.onAction!();
+    expect(reload).toHaveBeenCalled();
+    expect(localStorage.getItem('arborous:practice:x')).toBe('my choice');
+    expect(localStorage.getItem('arborous:sync-meta')).toBe('my sync');
+    expect(JSON.parse(localStorage.getItem('arborous:courses')!).ids).toEqual(['mine']);
+
+    useToastStore.setState({ toasts: [] });
+    announceRestore();
+    expect(useToastStore.getState().toasts.map((x) => x.message)).toEqual(['Put back what this device had before the restore.']);
+  });
+
+  it('a restore onto an empty device is said without Undo', () => {
+    restoreAndTell(file({ theirs: titled('Theirs') }, {}), 'Restored.', false);
+    announceRestore();
+    const [t] = useToastStore.getState().toasts;
+    expect(t.message).toBe('Restored.');
+    expect(t.onAction).toBeUndefined();
+  });
+
+  it('withdraws Undo once anything is studied, which Undo would throw away', () => {
+    useCoursesStore.setState({ courses: { mine: titled('Mine') } });
+    keepForUndo();
+    restoreAndTell(file({ theirs: titled('Theirs') }, {}), 'Restored.', true);
+    announceRestore();
+    expect(useToastStore.getState().toasts).toHaveLength(1);
+    useProgressStore.setState({ byCourse: { theirs: { q: { got: 1, missed: 0 } } } as never });
+    expect(useToastStore.getState().toasts).toHaveLength(0);
+  });
+
+  it('no Undo with sync on, and no question on a new device', () => {
+    expect(restoreUndoable()).toBe(true);
+    localStorage.setItem('sb-arborous-auth', '{}');
+    expect(restoreUndoable()).toBe(false);
+    expect(nothingHere()).toBe(true);
+    useStudyLogStore.setState({ byCourse: { gone: [] } } as never);
+    expect(nothingHere()).toBe(false);
+  });
+
+  it('nothing to say when no restore happened', () => {
+    announceRestore();
+    expect(useToastStore.getState().toasts).toEqual([]);
   });
 });
