@@ -1,7 +1,9 @@
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { buildSessionItems, type CardKind, type StudyMode } from './buildSessionItems';
-import { examRule, type ExamRule } from './exam';
+import { examRule, PROTECT_FROM_DAYS, type ExamRule } from './exam';
+import { classExams } from './classExams';
+import { daysToExam } from './libraryToday';
 import { onlyStudies } from './studies';
 
 /**
@@ -113,6 +115,38 @@ export const LECTURES: { value: Lectures; label: string }[] = [
   { value: 'in-turn', label: 'One at a time' },
   { value: 'mixed', label: 'Mixed together' },
 ];
+
+/**
+ * The class's next exam when it is in the last week (`PROTECT_FROM_DAYS`,
+ * when the exam starts steering Review), else null. `days` as daysToExam:
+ * 0 on the day.
+ */
+export function examSoon(lectures: [string, Course][], now: number): { name: string; days: number } | null {
+  const next = classExams(lectures, now)[0];
+  const days = next ? daysToExam(next.date, now) : null;
+  return next && days != null && days <= PROTECT_FROM_DAYS ? { name: next.name, days } : null;
+}
+
+/** A student's pick of how to take a class's lectures, and whether an exam was close when it was made. */
+export interface LecturesPick {
+  value: Lectures;
+  nearExam: boolean;
+}
+
+/**
+ * How a class's Practice takes its lectures: mixed together in the last
+ * week before an exam, one at a time otherwise (the owner, 2026-10-19). An
+ * exam mixes the lectures, and practice that mixes related topics did
+ * better than one topic at a time (docs/evidence.md); the simulator found
+ * mixing level over a finished sitting and reaching every lecture when one
+ * is cut short (sim/FINDINGS.md, 2026-10-18). A pick holds in the situation
+ * it was made in: one made in September does not keep exam week one at a
+ * time, and one made in exam week does not outlast the exam.
+ */
+export function lecturesFor(pick: LecturesPick | null, nearExam: boolean): Lectures {
+  if (pick && pick.nearExam === nearExam) return pick.value;
+  return nearExam ? 'mixed' : 'in-turn';
+}
 
 /**
  * The link that starts a choice in one lecture. `classCode` marks a session

@@ -57,6 +57,29 @@ describe("a class's Practice: one lecture at a time, or mixed", () => {
     expect(screen.getByRole('button', { name: 'Mixed together' }).getAttribute('aria-pressed')).toBe('true');
   });
 
+  it('mixes by default in the last week before an exam, says why, and keeps a pick made then', () => {
+    const inDays = (n: number) => {
+      const d = new Date();
+      d.setDate(d.getDate() + n);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+    const exams = [{ id: 'm2', name: 'Midterm 2', date: inDays(3) }];
+    const withExam = (c: Course) => ({ ...c, metadata: { ...c.metadata, exams } }) as Course;
+    useCoursesStore.setState({ courses: { a: withExam(lecture('MIX 1: Alpha', 'a')), b: withExam(lecture('MIX 1: Beta', 'b')) } });
+    // What the page saved before picks were kept apart: the old default, not a pick.
+    localStorage.setItem('arborous:practice:class:MIX 1', JSON.stringify({ cards: null, kind: 'all', from: '', lectures: 'in-turn' }));
+    renderAt('/class/MIX%201/practice');
+    expect(screen.getByRole('button', { name: 'Mixed together' }).getAttribute('aria-pressed')).toBe('true');
+    expect(start()).toContain('mix=1');
+    expect(screen.getByText(/Mixed because Midterm 2 is in 3 days\./)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'One at a time' }));
+    expect(start()).not.toContain('mix=1');
+    cleanup();
+    renderAt('/class/MIX%201/practice');
+    expect(screen.getByRole('button', { name: 'One at a time' }).getAttribute('aria-pressed')).toBe('true');
+  });
+
   it('offers no mixing for one lecture of the class, or on a lecture\'s own Practice', () => {
     useCoursesStore.setState({ courses: { a: lecture('MIX 1: Alpha', 'a'), b: lecture('MIX 1: Beta', 'b') } });
     renderAt('/study/a/practice');

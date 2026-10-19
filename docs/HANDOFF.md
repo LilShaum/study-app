@@ -114,8 +114,12 @@ confirm the prompt changes on real output.
   store; every card carries `_courseId`, and answers, card times, set-aside,
   mix-ups and the bookmark (`itemCourseId`) go to the card's lecture. The
   end lists each lecture with its tree and score.
-- **Open, the owner's call:** make Mixed together the default for Due now
-  near an exam (the coverage result argues for it).
+- **The owner's call, 2026-10-19:** "mixed should be closer to an exam".
+  Mixed together is now the default in the last week before one of the
+  class's exams (`PROTECT_FROM_DAYS`, the week the exam steers Review), for
+  every choice of cards; one at a time otherwise. A pick holds only in the
+  situation it was made in (`lecturesFor`). The simulator modelled the last
+  three evenings, not the whole week.
 
 **Done 2026-10-19 (live):**
 - **Restore** asks in the app's own sheet (`components/Backup.tsx`): the

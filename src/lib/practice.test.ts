@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course } from '@/schema/course';
 import fixture from '../../scripts/__fixtures__/biochem.study.json';
-import { CARDS, KINDS, choiceOf, countBasis, practiceCount, practiceLink, sessionFor, sittingSize } from './practice';
+import { CARDS, KINDS, choiceOf, countBasis, examSoon, lecturesFor, practiceCount, practiceLink, sessionFor, sittingSize } from './practice';
 
 // Made-up content: no course material in the repo.
 const course = {
@@ -67,6 +67,28 @@ describe('practice choices', () => {
     expect(due).toBeGreaterThan(5);
     expect(sittingSize(basis, 'due', 'all', 2).answer).toBeLessThan(due);
     expect(sittingSize(basis, 'due', 'all', Infinity).answer).toBe(due);
+  });
+
+  it("mixes a class's lectures by default in the last week before an exam; a pick holds only in the situation it was made in", () => {
+    expect(lecturesFor(null, false)).toBe('in-turn');
+    expect(lecturesFor(null, true)).toBe('mixed');
+    // One at a time, picked weeks ago, does not keep exam week unmixed...
+    expect(lecturesFor({ value: 'in-turn', nearExam: false }, true)).toBe('mixed');
+    // ...but picked in exam week, it holds there.
+    expect(lecturesFor({ value: 'in-turn', nearExam: true }, true)).toBe('in-turn');
+    expect(lecturesFor({ value: 'mixed', nearExam: false }, false)).toBe('mixed');
+    // Mixed by choice in exam week does not outlast the exam.
+    expect(lecturesFor({ value: 'mixed', nearExam: true }, false)).toBe('in-turn');
+  });
+
+  it("finds the class's next exam only in its last week", () => {
+    const now = new Date(2026, 9, 19, 12).getTime();
+    const withExam = (date: string) => ({ ...course, metadata: { title: 'T', course_code: 'C', exams: [{ id: 'm', name: 'Midterm 2', date }] } }) as unknown as Course;
+    expect(examSoon([['a', withExam('2026-10-22')]], now)).toEqual({ name: 'Midterm 2', days: 3 });
+    expect(examSoon([['a', withExam('2026-10-26')]], now)).toEqual({ name: 'Midterm 2', days: 7 });
+    expect(examSoon([['a', withExam('2026-10-27')]], now)).toBeNull();
+    expect(examSoon([['a', withExam('2026-10-10')]], now)).toBeNull();
+    expect(examSoon([['a', course]], now)).toBeNull();
   });
 });
 

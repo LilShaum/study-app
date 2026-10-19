@@ -6,7 +6,7 @@ import { sortedSections } from '@/lib/sortedSections';
 import { testPool } from '@/lib/practiceTest';
 import { classOf, lectureName, lecturesOf } from '@/lib/classExams';
 import { onlyStudies, studiesIn } from '@/lib/studies';
-import { CARDS, KINDS, LECTURES, countBasis, practiceCount, practiceLink, sittingSize, type Cards, type From, type Kind, type Lectures } from '@/lib/practice';
+import { CARDS, KINDS, LECTURES, countBasis, examSoon, lecturesFor, practiceCount, practiceLink, sittingSize, type Cards, type From, type Kind, type Lectures, type LecturesPick } from '@/lib/practice';
 import { usePlanStore } from '@/store/plan';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { roman } from '@/lib/roman';
@@ -42,11 +42,23 @@ interface Saved {
   cards: Cards | null;
   kind: Kind;
   from: string;
-  /** A class's: its lectures one at a time, or mixed together. */
-  lectures?: Lectures;
+  /** A class's: how the student chose to take its lectures, and whether an exam was close then (lib/practice lecturesFor). */
+  lecturesPick?: LecturesPick;
 }
 
 const savedKey = (scope: string) => `arborous:practice:${scope}`;
+
+/**
+ * The Lectures pick saved here. Before 2026-10-19 the page saved
+ * `lectures` whether or not it was picked, so a saved "in-turn" is most
+ * likely the old default and is not kept; a saved "mixed" was a pick, made
+ * with no exam close (mixing was never the default then).
+ */
+function readPick(saved: Partial<Saved> & { lectures?: unknown }): LecturesPick | undefined {
+  const p = saved.lecturesPick;
+  if (p && typeof p === 'object' && LECTURES.some((l) => l.value === p.value)) return { value: p.value, nearExam: !!p.nearExam };
+  return saved.lectures === 'mixed' ? { value: 'mixed', nearExam: false } : undefined;
+}
 
 /** The choice left here last time, each part kept only if it is still a choice. */
 function loadChoice(scope: string): Saved | null {
@@ -58,7 +70,7 @@ function loadChoice(scope: string): Saved | null {
       cards: CARDS.some((c) => c.value === saved.cards) ? (saved.cards as Cards) : null,
       kind: KINDS.some((k) => k.value === saved.kind) ? (saved.kind as Kind) : 'all',
       from: typeof saved.from === 'string' ? saved.from : '',
-      lectures: LECTURES.some((l) => l.value === saved.lectures) ? (saved.lectures as Lectures) : 'in-turn',
+      lecturesPick: readPick(saved),
     };
   } catch {
     return null;
@@ -131,20 +143,24 @@ function PracticePage() {
   // Null until chosen: the default depends on what is due, so it is worked out below.
   const [pickedCards, setPickedCards] = useState<Cards | null>(saved?.cards ?? null);
   const [pickedKind, setPickedKind] = useState<Kind>(saved?.kind ?? 'all');
-  // One lecture at a time unless chosen: mixing helps tell apart lectures
-  // that are alike, and does no better for ones that are not (lib/mixLectures).
-  const [pickedLectures, setPickedLectures] = useState<Lectures>(saved?.lectures ?? 'in-turn');
+  // Mixed together in the last week before an exam, one at a time otherwise,
+  // unless picked in the same situation (lib/practice lecturesFor).
+  const [lecturesPick, setLecturesPick] = useState<LecturesPick | null>(saved?.lecturesPick ?? null);
+  const soon = useMemo(() => (id ? null : examSoon(lectures, now)), [id, lectures, now]);
+  const pickedLectures: Lectures = lecturesFor(lecturesPick, !!soon);
+  // Mixed because the exam is close, not because the student picked it: said under Start.
+  const mixedForExam = !!soon && pickedLectures === 'mixed' && lecturesPick?.nearExam !== true;
 
   useEffect(() => {
     try {
       localStorage.setItem(
         savedKey(scope),
-        JSON.stringify({ cards: pickedCards, kind: pickedKind, from, ...(id ? {} : { lectures: pickedLectures }) } satisfies Saved),
+        JSON.stringify({ cards: pickedCards, kind: pickedKind, from, ...(!id && lecturesPick ? { lecturesPick } : {}) } satisfies Saved),
       );
     } catch {
       // Storage blocked: the page still works, it just starts fresh next time.
     }
-  }, [scope, pickedCards, pickedKind, from, pickedLectures, id]);
+  }, [scope, pickedCards, pickedKind, from, lecturesPick, id]);
 
   const targets = useMemo(() => targetsOf(fromValues.has(from) ? from : '', lectures), [from, fromValues, lectures]);
 
@@ -338,7 +354,9 @@ function PracticePage() {
           </label>
         </div>
         {/* Only when the choice has cards in more than one lecture: with one, there is nothing to mix. */}
-        {!id && spans && <Choices label="Lectures" choices={LECTURES} value={pickedLectures} onPick={(v) => setPickedLectures(v)} />}
+        {!id && spans && (
+          <Choices label="Lectures" choices={LECTURES} value={pickedLectures} onPick={(v) => setLecturesPick({ value: v, nearExam: !!soon })} />
+        )}
       </div>
 
       <div className="mt-6">
@@ -357,7 +375,8 @@ function PracticePage() {
             {spans && mixing && (
               <p className="mt-3 max-w-prose text-small text-text-3">
                 Cards from {reached} lectures in one sitting, mixed together, so you have to tell their ideas apart, as an exam
-                does.{note && ` ${sentence(note)}`}
+                does.{mixedForExam && soon && ` Mixed because ${soon.name} is ${soon.days === 0 ? 'today' : soon.days === 1 ? 'tomorrow' : `in ${soon.days} days`}.`}
+                {note && ` ${sentence(note)}`}
               </p>
             )}
           </>

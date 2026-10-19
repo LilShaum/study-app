@@ -217,14 +217,20 @@ last time, everything) × which kind (questions, flashcards, typed terms) ×
 which part of the lecture: a section, or its studies (every card about an
 empirical study, or one study; `lib/studies.ts`). A class page has the same
 Practice across all its lectures, where the part is a lecture or a study.
-Over several lectures, Lectures chooses how: One at a time (the default)
-runs them in turn, each end offering the next; Mixed together puts them in
-one sitting, each lecture's cards in its own order spread through it
+Over several lectures, Lectures chooses how: One at a time runs them in
+turn, each end offering the next; Mixed together puts them in one sitting,
+each lecture's cards in its own order spread through it
 (`lib/mixLectures.ts`), for telling apart ideas from different lectures.
-Mixing is a choice, not the default: the evidence favours it for alike
-material and not for unrelated material or words (`docs/evidence.md`); the
-simulator, whose student cannot confuse two ideas, finds it level over a
-finished sitting (`sim/FINDINGS.md`, 2026-10-18).
+Mixed together is the default in the last week before one of the class's
+exams (the owner, 2026-10-19; `lecturesFor`, `examSoon`), and the line
+under Start says so ("Mixed because Midterm 2 is in 3 days"); One at a
+time otherwise, since the evidence favours mixing for alike material and
+not for unrelated material or words (`docs/evidence.md`). The simulator,
+whose student cannot confuse two ideas, finds mixing level over a finished
+sitting and reaching every lecture in a short one (`sim/FINDINGS.md`,
+2026-10-18). A pick holds in the situation it was made in: one made weeks
+before does not keep exam week one at a time, and one made in exam week
+does not outlast the exam.
 Choices are remembered per lecture and per class. It says plainly that
 cards not yet fading gain little. The count beside each choice is cards to
 answer; under Start, a line says what the sitting holds when that differs

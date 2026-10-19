@@ -10,6 +10,16 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-19 — Mixed the default in an exam's last week (a decision, not a run)
+
+The owner chose to make Mixed together the default close to an exam. It
+applies over the last week (`PROTECT_FROM_DAYS`), the window the app
+already uses for "close"; the 2026-10-18 run below modelled only the last
+three evenings. In that model the order of a sitting matters only through
+coverage and when each card is answered, so a longer window should not
+turn level into worse; a run over the whole week (practice days 9 to 15,
+with the last lecture released inside them) is open if it is ever in doubt.
+
 ## 2026-10-18 — A class's Practice with the lectures mixed: level over a finished sitting, every lecture reached in a short one; built as a choice
 
 **Question.** The owner (a cognitive neuroscience test: vision, audition,
