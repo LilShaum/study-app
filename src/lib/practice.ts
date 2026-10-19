@@ -78,22 +78,32 @@ export function countBasis(
   return { course, progress, missedIds, exam: examRule(course, progress, now), sectionId: from.sectionId, onlyIds: onlyStudies(course, from.study), now };
 }
 
-/** The cards a choice would give in one lecture, counted by the call the session makes. */
-export function practiceCount(basis: CountBasis, cards: Cards, kind: Kind): number {
+/** The list a choice gives in one lecture, by the call the session makes. */
+function listOf(basis: CountBasis, cards: Cards, kind: Kind, minutes: number, pace?: Record<string, number>) {
   const { course, progress, missedIds, exam, sectionId, onlyIds, now } = basis;
   const s = sessionFor(cards, kind);
-  if (onlyIds?.size === 0) return 0;
-  return buildSessionItems(course, s.mode, {
-    progress,
-    now,
-    exam,
-    // Unlimited minutes is how the app counts everything due.
-    minutes: Infinity,
-    sectionId,
-    onlyIds,
-    kind: s.kind,
-    missedIds,
-  }).filter((i) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall').length;
+  if (onlyIds?.size === 0) return [];
+  return buildSessionItems(course, s.mode, { progress, now, exam, minutes, pace, sectionId, onlyIds, kind: s.kind, missedIds });
+}
+
+const answered = (i: { type: string }) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall';
+
+/** The cards a choice would give in one lecture to answer, all of them (unlimited minutes is how the app counts everything due). */
+export function practiceCount(basis: CountBasis, cards: Cards, kind: Kind): number {
+  return listOf(basis, cards, kind, Infinity).filter(answered).length;
+}
+
+/**
+ * The sitting Start opens in one lecture, as it will be: the cards to
+ * answer, which Due now fits to the student's daily time (the end of the
+ * sitting offers the rest), and the cards to read along the way (worked
+ * examples, figures, definitions), which the count beside each choice
+ * leaves out. The page counted 637 and the sitting then said 670.
+ */
+export function sittingSize(basis: CountBasis, cards: Cards, kind: Kind, minutes: number, pace?: Record<string, number>): { answer: number; read: number } {
+  const list = listOf(basis, cards, kind, minutes, pace);
+  const answer = list.filter(answered).length;
+  return { answer, read: list.length - answer };
 }
 
 /** How a class's Practice takes its lectures: one after another, or mixed in one sitting. */

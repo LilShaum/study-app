@@ -6,7 +6,9 @@ import { sortedSections } from '@/lib/sortedSections';
 import { testPool } from '@/lib/practiceTest';
 import { classOf, lectureName, lecturesOf } from '@/lib/classExams';
 import { onlyStudies, studiesIn } from '@/lib/studies';
-import { CARDS, KINDS, LECTURES, countBasis, practiceCount, practiceLink, type Cards, type From, type Kind, type Lectures } from '@/lib/practice';
+import { CARDS, KINDS, LECTURES, countBasis, practiceCount, practiceLink, sittingSize, type Cards, type From, type Kind, type Lectures } from '@/lib/practice';
+import { usePlanStore } from '@/store/plan';
+import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { roman } from '@/lib/roman';
 import type { Course } from '@/schema/course';
 
@@ -146,18 +148,28 @@ function PracticePage() {
 
   const targets = useMemo(() => targetsOf(fromValues.has(from) ? from : '', lectures), [from, fromValues, lectures]);
 
+  const bases = useMemo(
+    () =>
+      targets.map((t) =>
+        countBasis(t.course, byCourse[t.courseId] ?? EMPTY_PROGRESS, useProgressStore.getState().missedIds(t.courseId), t.from, now),
+      ),
+    [targets, byCourse, now],
+  );
+  // The sitting under Start is fitted to the daily time at the measured
+  // pace: read again when either changes.
+  const logs = useStudyLogStore((st) => st.byCourse);
+  const pace = useMemo(() => measuredPace(logs), [logs]);
+  const minutesFor = usePlanStore((st) => st.minutesFor);
+  usePlanStore((st) => st.byCourse);
   // How many cards each combination would give, per lecture, by the call the session makes.
   const counts = useMemo(() => {
     const out = {} as Record<Cards, Record<Kind, number[]>>;
-    const bases = targets.map((t) =>
-      countBasis(t.course, byCourse[t.courseId] ?? EMPTY_PROGRESS, useProgressStore.getState().missedIds(t.courseId), t.from, now),
-    );
     for (const { value: cards } of CARDS) {
       out[cards] = {} as Record<Kind, number[]>;
       for (const { value: kind } of KINDS) out[cards][kind] = bases.map((b) => practiceCount(b, cards, kind));
     }
     return out;
-  }, [targets, byCourse, now]);
+  }, [bases]);
   const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 
   // The practice test over the same part: a lecture's own test for one
@@ -211,6 +223,13 @@ function PracticePage() {
   // lead back here and, over several lectures, each one's end offers the
   // next, or they are all in one sitting, mixed.
   const to = first >= 0 ? practiceLink(targets[first].courseId, cards, kind, targets[first].from, code, !spans, mixing) : '';
+  // The sitting Start opens, as it will be: the first lecture's, or every
+  // lecture's when mixed. The counts above are cards to answer, all of them.
+  const opens = first < 0 ? [] : mixing ? perLecture.flatMap((x, i) => (x > 0 ? [i] : [])) : [first];
+  const sitting = opens
+    .map((i) => sittingSize(bases[i], cards, kind, minutesFor(targets[i].courseId), pace))
+    .reduce((a, b) => ({ answer: a.answer + b.answer, read: a.read + b.read }), { answer: 0, read: 0 });
+  const note = sittingNote(sitting, opens.reduce((a, i) => a + perLecture[i], 0), mixing);
 
   const classCode = course ? classOf(course) : code;
   const classSize = classCode ? lecturesOf(courses, classCode).length : 0;
@@ -328,16 +347,17 @@ function PracticePage() {
             <Link to={to} className="press press-ink tap-safe">
               Start
             </Link>
+            {!spans && note && <p className="mt-3 max-w-prose text-small text-text-3">{sentence(note)}</p>}
             {spans && !mixing && (
               <p className="mt-3 max-w-prose text-small text-text-3">
                 Starts in {lectureName(targets[first].course.metadata.title, code)}, then carries on through {reached - 1} more lecture
-                {reached === 2 ? '' : 's'}.
+                {reached === 2 ? '' : 's'}.{note && ` In ${lectureName(targets[first].course.metadata.title, code)}: ${note}.`}
               </p>
             )}
             {spans && mixing && (
               <p className="mt-3 max-w-prose text-small text-text-3">
                 Cards from {reached} lectures in one sitting, mixed together, so you have to tell their ideas apart, as an exam
-                does.
+                does.{note && ` ${sentence(note)}`}
               </p>
             )}
           </>
@@ -364,6 +384,21 @@ function PracticePage() {
     </div>
   );
 }
+
+/**
+ * What the sitting holds beyond the count beside the choice, if anything:
+ * Due now fits the daily time (the end of the sitting offers the rest), and
+ * a sitting can have cards to read along the way that the count leaves out.
+ * `each`: several lectures mixed, each fitted to its own daily time.
+ */
+function sittingNote({ answer, read }: { answer: number; read: number }, of: number, each: boolean): string | null {
+  if (answer < of)
+    return `${each ? 'each lecture’s' : 'your'} daily time fits ${answer} of the ${of}${read ? `, with ${read} to read` : ''}, and the end offers the rest`;
+  if (read) return `${answer + read} cards, ${read} of them to read rather than answer`;
+  return null;
+}
+
+const sentence = (text: string) => `${text[0].toUpperCase()}${text.slice(1)}.`;
 
 /**
  * A row of choices set like the library's Classes and Tags: the label in small

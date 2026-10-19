@@ -255,9 +255,10 @@ owner's go-ahead. New evidence entries in `docs/evidence.md`.
   answer shown like reading it (Kornell 2009), which raised every scenario;
   see FINDINGS.
 
-Open from it: the Continue card resumes a kind-filtered Practice session
-without its filter; the Practice "Due now" count is everything due while
-the session is sized to the daily minutes (it offers more at the end).
+Open from it, both since done: the Continue card resumes a kind-filtered
+Practice session with its filter (the bookmark keeps it); the Practice
+"Due now" count is everything due while the session is sized to the daily
+minutes, which the line under Start now says (2026-10-19).
 
 **Done 2026-10-11, second session (live):** the owner's decisions in
 `docs/proposals/decisions.md`, all built.

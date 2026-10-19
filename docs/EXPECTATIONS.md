@@ -222,7 +222,11 @@ material and not for unrelated material or words (`docs/evidence.md`); the
 simulator, whose student cannot confuse two ideas, finds it level over a
 finished sitting (`sim/FINDINGS.md`, 2026-10-18).
 Choices are remembered per lecture and per class. It says plainly that
-cards not yet fading gain little.
+cards not yet fading gain little. The count beside each choice is cards to
+answer; under Start, a line says what the sitting holds when that differs
+(cards to read along the way, such as worked examples, and Due now fitted
+to the daily time, the end offering the rest), worked out by the same call
+the session makes (`lib/practice.ts` sittingSize).
 
 **Working means.** A study is found by the generator's `study:` tag or, in
 older lectures, a citation in the card's question or answer (never the
