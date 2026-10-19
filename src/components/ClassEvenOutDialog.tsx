@@ -105,8 +105,8 @@ export function ClassEvenOutDialog({ code, lectures, onClose }: { code: string; 
           <section>
             <h3 className="mark mb-1.5 text-text-3">Step 1: copy the prompt</h3>
             <p className="mb-2 text-text-2">
-              In {plural(total, 'question')} across {plural(todo.length, 'lecture')} the right answer is the longest option, so
-              you could pick it without knowing the material. One prompt asks for new wrong answers to all of them. Each
+              In {plural(total, 'question')} across {plural(todo.length, 'lecture')} the right answer is the longest option, or
+              tied for it, so you could pick it without knowing the material. One prompt asks for new wrong answers to all of them. Each
               question carries the passage from your notes it came from, so any chat can answer it. The questions, their right
               answers and your scores stay as they are.
             </p>
@@ -115,7 +115,7 @@ export function ClassEvenOutDialog({ code, lectures, onClose }: { code: string; 
                 <li key={l.id} className="flex items-baseline justify-between gap-3 border-b border-border py-1.5 last:border-b-0">
                   <span className="text-text">{lectureName(l.course.metadata.title, code)}</span>
                   <span className="shrink-0 tabular-nums text-text-3">
-                    {plural(l.count, 'question')} · {longestShare(l.course)}% longest
+                    {plural(l.count, 'question')} · guessing the longest {longestShare(l.course)}%
                   </span>
                 </li>
               ))}
@@ -178,7 +178,7 @@ export function ClassEvenOutDialog({ code, lectures, onClose }: { code: string; 
                 <div key={l.id} className="mb-1.5">
                   <span className="text-text">{lectureName(l.title, code)}</span>
                   <span className="text-text-2">
-                    : {l.error ?? (l.corrections.length ? `${plural(l.corrections.length, 'question')} evened out, right answer longest ${l.before}% → ${l.after}%` : 'nothing usable')}
+                    : {l.error ?? (l.corrections.length ? `${plural(l.corrections.length, 'question')} evened out, guessing the longest ${l.before}% → ${l.after}%` : 'nothing usable')}
                   </span>
                   {l.skipped.length > 0 && (
                     <div className="text-text-3">Not used: {l.skipped.map((x) => `${x.id} (${x.why})`).join('; ')}.</div>

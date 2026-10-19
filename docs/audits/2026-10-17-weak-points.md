@@ -58,6 +58,11 @@ about 25%):
 | Endocrinology | 40% |
 | the other five | 23–31% |
 
+**Correction, 2026-10-19:** these counted a right answer tied for longest
+as a whole giveaway; a guess at the longest scores a share of a tie. Counted
+that way: Vision 36%, Motor 45%, Nutrition 35%, Endocrinology 30%,
+Neuroanatomy 27%, Studies 25%. Only the first three are a real tell.
+
 A student who guesses the longest scores well, so practice scores flatter.
 The lecture check reports it on only 4 of these (it waits for 3 standard
 deviations on 20+ questions). The generator rule shipped today helps new

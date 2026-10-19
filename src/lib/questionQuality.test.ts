@@ -5,6 +5,7 @@ import {
   asksBeyondRecall,
   isSourceCued,
   lengthBias,
+  longestCredit,
   restatement,
 } from './questionQuality';
 
@@ -50,14 +51,30 @@ describe('lengthBias', () => {
     expect(b.z).toBeLessThan(0);
   });
 
-  it('stays near chance on evenly matched options', () => {
-    // With four equal lengths every option ties for longest, so the correct
-    // one always counts — the honest reading is that shape says nothing,
-    // which is what the ratio is for.
+  it('stays at chance on evenly matched options', () => {
+    // With four equal lengths every option ties for longest, so a guess at
+    // the longest is a guess among four: a quarter of each question.
     const items = Array.from({ length: 40 }, (_, n) => mcq(`q${n}`, even, n % 4));
     const b = lengthBias(course(items));
+    expect(b.longestIsCorrect).toBeCloseTo(10, 5);
+    expect(b.z).toBeCloseTo(0, 5);
     expect(b.ratio).toBeCloseTo(1, 5);
     expect(b.lopsided).toEqual([]);
+  });
+
+  it('shares a tie between the options in it, as a guess at the longest would', () => {
+    expect(longestCredit(['aaaa', 'bbbb', 'cc', 'dd'], 0)).toBe(0.5);
+    expect(longestCredit(['aaaaa', 'bbbb', 'cc', 'dd'], 0)).toBe(1);
+    expect(longestCredit(['aaaa', 'bbbbb', 'cc', 'dd'], 0)).toBe(0);
+    // 20 questions whose right answer ties a wrong one for longest: a guess
+    // scores half of each, 10 of 20. Counted whole, it read 100%, and the
+    // check fired on a lecture where length gives little away.
+    const tied = Array.from({ length: 20 }, (_, n) => mcq(`q${n}`, ['aaaa', 'bbbb', 'cc', 'dd'], 0));
+    const b = lengthBias(course(tied));
+    expect(b.longestIsCorrect).toBe(10);
+    // Still a tell (a guess between two is right half the time): 10 of 20
+    // against the 5 of chance, so ten ties, half a question's worth each.
+    expect(b.toFix).toHaveLength(10);
   });
 
   it('catches the correct answer always being the longest', () => {

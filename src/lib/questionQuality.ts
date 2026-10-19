@@ -47,6 +47,11 @@ function answerOf(item: StudyItem): string {
 
 export interface LengthBias {
   mcqs: number;
+  /**
+   * How many of the MCQs a guess at the longest option would get right, a
+   * tie shared between the options in it (`longestCredit`). Not a whole
+   * number when there are ties.
+   */
   longestIsCorrect: number;
   /** Mean correct-option length divided by mean distractor length. */
   ratio: number;
@@ -80,6 +85,51 @@ export interface LengthBias {
 export const GIVEAWAY_RATIO = 1.5;
 
 /**
+ * What guessing the longest option scores on one question: 1 when the right
+ * answer is strictly the longest, a share when it ties (a half between two),
+ * 0 otherwise. Ties used to count as a whole, which is not what a guess
+ * scores and put the floor above one in four: on the owner's Vision lecture
+ * 24 of 75 right answers tie a wrong one for length (an AI evening the
+ * lengths out), and the check read 55% where guessing the longest scores
+ * 36%. Neuroanatomy read 42% for a true 27%.
+ */
+export function longestCredit(options: readonly unknown[], correctIndex: number): number {
+  const lens = options.map((o) => String(o).length);
+  const longest = Math.max(...lens);
+  if (!lens.length || lens[correctIndex] !== longest) return 0;
+  return 1 / lens.filter((l) => l === longest).length;
+}
+
+/**
+ * Whether a guess at the longest beats chance on a question: the right
+ * answer strictly the longest, or tied with fewer than all the options. Four
+ * options all the same length score exactly chance and give nothing away.
+ */
+export function givesAwayByLength(credit: number, options: number): boolean {
+  return credit > 1 / Math.max(1, options);
+}
+
+/**
+ * Enough of the questions that give something away to bring a guess at the
+ * longest back to about one in four: `excess` is how many questions' worth
+ * it is over (fractional with ties). Strictly the longest first (a whole one
+ * each), then ties, the most lopsided first within each; each only when it
+ * brings the share closer to the mark, so it never overshoots by a whole one.
+ */
+export function toBringDown<T extends { credit: number; ratio: number }>(candidates: readonly T[], excess: number): T[] {
+  const out: T[] = [];
+  let removed = 0;
+  for (const x of [...candidates].sort((a, b) => b.credit - a.credit || b.ratio - a.ratio)) {
+    if (excess - removed <= 0) break;
+    // Only when it brings the share closer to the mark than it is.
+    if (excess - removed <= x.credit / 2) continue;
+    out.push(x);
+    removed += x.credit;
+  }
+  return out;
+}
+
+/**
  * Whether a student who knows nothing can beat chance by picking the longest
  * option.
  *
@@ -95,7 +145,8 @@ export const GIVEAWAY_RATIO = 1.5;
  * seventy of a hundred and twenty-eight is not.
  */
 export function lengthBias(course: Course): LengthBias {
-  const mcqs = course.sections.flatMap((s) => s.items).filter(isMcq);
+  // Set aside, a question is not asked, so its length gives nothing away.
+  const mcqs = course.sections.flatMap((s) => s.items).filter(isMcq).filter((m) => !m.set_aside);
   const n = mcqs.length;
   let longestIsCorrect = 0;
   let correctTotal = 0;
@@ -103,12 +154,13 @@ export function lengthBias(course: Course): LengthBias {
   let distractorCount = 0;
   const lopsided: string[] = [];
   const giveaway: string[] = [];
-  const longer: { id: string; ratio: number }[] = [];
+  const longer: { id: string; ratio: number; credit: number }[] = [];
 
   for (const m of mcqs) {
     const lens = m.options.map((o) => String(o).length);
     const correct = lens[m.correct_index] ?? 0;
-    if (lens.length && correct === Math.max(...lens)) longestIsCorrect += 1;
+    const credit = longestCredit(m.options, m.correct_index);
+    longestIsCorrect += credit;
     correctTotal += correct;
     lens.forEach((l, i) => {
       if (i === m.correct_index) return;
@@ -119,10 +171,8 @@ export function lengthBias(course: Course): LengthBias {
     if (mean > 0 && Math.max(...lens) > mean * 2) lopsided.push(m.id);
     const others = lens.filter((_, i) => i !== m.correct_index);
     const othersMean = others.reduce((a, b) => a + b, 0) / Math.max(1, others.length);
-    if (others.length && correct > Math.max(...others)) {
-      if (correct >= othersMean * GIVEAWAY_RATIO) giveaway.push(m.id);
-      longer.push({ id: m.id, ratio: correct / Math.max(1, othersMean) });
-    }
+    if (others.length && correct > Math.max(...others) && correct >= othersMean * GIVEAWAY_RATIO) giveaway.push(m.id);
+    if (givesAwayByLength(credit, lens.length)) longer.push({ id: m.id, ratio: correct / Math.max(1, othersMean), credit });
   }
 
   const expected = n * 0.25;
@@ -134,10 +184,7 @@ export function lengthBias(course: Course): LengthBias {
     z: sd > 0 ? (longestIsCorrect - expected) / sd : 0,
     lopsided,
     giveaway,
-    toFix: longer
-      .sort((a, b) => b.ratio - a.ratio)
-      .slice(0, Math.max(0, longestIsCorrect - Math.round(expected)))
-      .map((x) => x.id),
+    toFix: toBringDown(longer, longestIsCorrect - expected).map((x) => x.id),
   };
 }
 

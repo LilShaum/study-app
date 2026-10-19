@@ -260,9 +260,9 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
               </p>
             ) : mode === 'options' ? (
               <p className="mb-2 text-sm text-text-2">
-                In {plural(rework.length, 'question')} the right answer is the longest option, so you could pick it
-                without knowing the material ({shareNow}% of this lecture&apos;s questions; fair is about
-                25%). This prompt asks only for new wrong answers to those, a short reply.{' '}
+                In {plural(rework.length, 'question')} the right answer is the longest option, or tied for it, so you
+                could pick it without knowing the material (guessing the longest gets {shareNow}% of this
+                lecture&apos;s questions right; fair is about 25%). This prompt asks only for new wrong answers to those, a short reply.{' '}
                 <strong>Paste it into the chat that wrote this lecture</strong>, which still has your notes. The
                 questions, their right answers and your scores stay exactly as they are.
               </p>
@@ -511,7 +511,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                   </div>
                   {result && 'share' in result && result.share && (
                     <div className="mt-1.5 text-text-2">
-                      Right answer the longest option: {result.share[0]}% of questions now, {result.share[1]}% after.
+                      Guessing the longest option: {result.share[0]}% right now, {result.share[1]}% after.
                     </div>
                   )}
                   {result && 'skipped' in result && result.skipped && result.skipped.length > 0 && (

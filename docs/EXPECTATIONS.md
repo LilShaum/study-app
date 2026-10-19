@@ -155,9 +155,13 @@ blocks studying. They are grouped by what they ask (`findingGroup`): to
 fix (a question answerable without the material), to check on the slides,
 and smaller notes, folded. A pattern finding (the right answer longest too
 often, from 35% of 16+ questions) hands Fix enough of the questions behind
-it to undo the pattern, and has its own small repair, **Even out the
+it to undo the pattern. "Too often" is what a guess at the longest option
+would score, a tie shared between the options in it (`longestCredit`): a
+tie gives away a half, not a whole, and counting it whole flagged lectures
+where length gave little away. The finding also has its own small repair, **Even out the
 answers** (`lib/evenOptions.ts`): only new wrong options come back, placed
-round the untouched right answer, merged as corrections under the same
+round the untouched right answer (one that leaves it longest, or tied for
+it, is refused), merged as corrections under the same
 ids. A class page does the same for all its lectures in one prompt and one
 reply (`buildClassEvenOptionsPrompt`); each question carries its passage
 from the notes, so the prompt works in any chat, not only the one that made

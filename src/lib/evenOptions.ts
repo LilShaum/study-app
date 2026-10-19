@@ -1,5 +1,5 @@
 import type { Course, McqItem } from '@/schema/course';
-import { lengthBias } from './questionQuality';
+import { givesAwayByLength, lengthBias, longestCredit, toBringDown } from './questionQuality';
 import { lengthTellFires } from './courseHealth';
 import { readReply } from './readReply';
 import { sortedSections } from './sortedSections';
@@ -32,13 +32,19 @@ const SHORT_OPTION_WORDS = 3;
 
 const isLive = (i: { type: string; set_aside?: unknown }): boolean => i.type === 'mcq' && !i.set_aside;
 
-/** The right answer is strictly the longest option, by how much against the others' average. */
-function lopsided(q: McqItem): number | null {
+/**
+ * How lopsided a question is, when its length gives something away
+ * (`givesAwayByLength`: the right answer the longest, or tied for it with
+ * fewer than all four): the right answer's length against the others'
+ * average. Null otherwise. A tie gives something away too (a guess between
+ * the two longest is right half the time), so the fix for both is a wrong
+ * option longer than the right one, as the prompt asks.
+ */
+function lopsided(q: McqItem, credit = longestCredit(q.options, q.correct_index)): number | null {
+  if (!givesAwayByLength(credit, q.options.length)) return null;
   const lens = q.options.map((o) => String(o).length);
-  const right = lens[q.correct_index] ?? 0;
   const others = lens.filter((_, i) => i !== q.correct_index);
-  if (!others.length || right <= Math.max(...others)) return null;
-  return right / Math.max(1, others.reduce((a, b) => a + b, 0) / others.length);
+  return (lens[q.correct_index] ?? 0) / Math.max(1, others.reduce((a, b) => a + b, 0) / Math.max(1, others.length));
 }
 
 /**
@@ -48,21 +54,19 @@ function lopsided(q: McqItem): number | null {
  */
 export function optionsToRework(course: Course): McqItem[] {
   const mcqs = course.sections.flatMap((s) => s.items).filter(isLive) as McqItem[];
-  const longest = mcqs.filter((q) => {
-    const lens = q.options.map((o) => String(o).length);
-    return lens.length > 0 && lens[q.correct_index] === Math.max(...lens);
-  }).length;
-  const over = longest - Math.round(mcqs.length / 4);
-  if (over <= 0) return [];
-  return mcqs
-    .map((q) => ({ q, r: lopsided(q) }))
-    .filter((x): x is { q: McqItem; r: number } => x.r != null && Math.max(...x.q.options.map(words)) > SHORT_OPTION_WORDS)
-    .sort((a, b) => b.r - a.r)
-    .slice(0, over)
-    .map((x) => x.q);
+  // What guessing the longest scores, ties shared, as the lecture check counts it.
+  const scored = mcqs.map((q) => ({ q, credit: longestCredit(q.options, q.correct_index) }));
+  const longest = scored.reduce((n, x) => n + x.credit, 0);
+  const candidates = scored
+    .map((x) => ({ ...x, ratio: lopsided(x.q, x.credit) }))
+    .filter((x): x is { q: McqItem; credit: number; ratio: number } => x.ratio != null && Math.max(...x.q.options.map(words)) > SHORT_OPTION_WORDS);
+  return toBringDown(candidates, longest - mcqs.length / 4).map((x) => x.q);
 }
 
-/** Share of questions whose right answer is the longest option (ties count), as a whole percent. */
+/**
+ * What a guess at the longest option would score, as a whole percent: the
+ * lecture check's measure, a tie shared between the options in it.
+ */
 export function longestShare(course: Course): number {
   const b = lengthBias(course);
   return b.mcqs ? Math.round((b.longestIsCorrect / b.mcqs) * 100) : 0;
@@ -101,7 +105,7 @@ const ENTRY = `{"wrong": ["<wrong 1>", "<wrong 2>", "<wrong 3>"], "why": ["<why 
 
 export function buildEvenOptionsPrompt(course: Course, notes = course.metadata.student_notes): string {
   const { count, text } = questionList(course);
-  return `The Arborous app checked the lecture "${course.metadata.title}" made from my notes. In ${count} of its multiple-choice questions the right answer is the longest option, so I could pick it without knowing the material. Please rewrite only the three WRONG options of each question below.
+  return `The Arborous app checked the lecture "${course.metadata.title}" made from my notes. In ${count} of its multiple-choice questions the right answer is the longest option, or tied for it, so I could pick it without knowing the material. Please rewrite only the three WRONG options of each question below.
 
 ${RULES}
 
@@ -143,7 +147,7 @@ export function buildClassEvenOptionsPrompt(code: string, lectures: [string, Cou
         `════════ LECTURE "${course.metadata.title}" (id: ${id}) ════════\n\n${teacherNotesBlock(course.metadata.student_notes)}${questionList(course).text}`,
     )
     .join('\n\n');
-  return `The Arborous app checked the lectures of my class ${code}, made from my notes. In ${total} multiple-choice questions across ${todo.length} lecture${todo.length === 1 ? '' : 's'} the right answer is the longest option, so I could pick it without knowing the material. Please rewrite only the three WRONG options of each question below.
+  return `The Arborous app checked the lectures of my class ${code}, made from my notes. In ${total} multiple-choice questions across ${todo.length} lecture${todo.length === 1 ? '' : 's'} the right answer is the longest option, or tied for it, so I could pick it without knowing the material. Please rewrite only the three WRONG options of each question below.
 
 ${RULES}
 

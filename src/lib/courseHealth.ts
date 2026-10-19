@@ -299,7 +299,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       // explanations under the wrong option. Flagging a clean, fully covered
       // course red for an answer-length pattern alarmed more than it told.
       severity: 'warning',
-      message: `The right answer is the longest of the four options ${pct}% of the time. It should be about 25%. Guessing the longest beats guessing at random here, so some of these are scoring length rather than knowledge.`,
+      message: `Guessing the longest option would get ${pct}% of these questions right; it should be about 25%. Guessing the longest beats guessing at random here, so some of these are scoring length rather than knowledge.`,
       // Enough of the questions behind it, most lopsided first, that
       // reworking them brings the share back to about one in four.
       items: quality.length.toFix,

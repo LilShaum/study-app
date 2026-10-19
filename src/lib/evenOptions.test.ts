@@ -12,6 +12,19 @@ const course = (items: McqItem[]): Course => ({ schema_version: '1.0', metadata:
 describe('evenOptions', () => {
   const c = course([...Array.from({ length: 12 }, (_, i) => longRight(`l${i}`)), ...Array.from({ length: 8 }, (_, i) => fair(`f${i}`)), mcq('short', ['Contralateral', 'Ipsilateral', 'Bilateral', 'Medial'])]);
 
+  it('repairs ties too: a lecture whose right answers tie a wrong one for length is offered the fix, and a reply that leaves a tie is refused', () => {
+    // 20 questions, the right answer tied with one wrong option for longest:
+    // a guess at the longest scores 10, against 5 by chance.
+    const tie = (id: string) => mcq(id, ['the root hairs take water up', 'the stem pulls water upwards', 'the bark soaks', 'leaves do it']);
+    const tied = course(Array.from({ length: 20 }, (_, i) => tie(`t${i}`)));
+    expect(longestShare(tied)).toBe(50);
+    expect(classToRework([['p', tied]]).map((l) => l.count)).toEqual([10]);
+    const still = readEvenOptions(tied, { t0: { wrong: ['the stem pulls water upwards', 'the bark soaks', 'leaves do it'], why: ['a', 'b', 'c'] } });
+    expect('error' in still ? still.error : still.skipped.map((x) => x.why)).toEqual(['the right answer would still be the longest']);
+    const fixed = readEvenOptions(tied, { t0: { wrong: ['the stem pulls the water up from the roots', 'the bark soaks it', 'the leaves do it'], why: ['a', 'b', 'c'] } });
+    expect('error' in fixed ? fixed.error : fixed.corrections.map((x) => x.id)).toEqual(['t0']);
+  });
+
   it('picks enough long-answer questions to bring the share to about a quarter, never one-word ones', () => {
     expect(longestShare(c)).toBe(Math.round((13 / 21) * 100));
     const ids = optionsToRework(c).map((q) => q.id);
