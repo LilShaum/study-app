@@ -549,6 +549,13 @@ Every key idea gets at least one medium or hard MCQ.
    happens when it fails.
 4. **A definition never contains its own term** or a word of its family
    (see Item types). The app shows such a definition but never asks it.
+5. **Plain text, formulas included.** The app shows every field as plain
+   text: no LaTeX, no `$…$`, no Markdown, or the student sees the code.
+   Write formulas with Unicode: superscripts and subscripts (R², T⁴, λₘₐₓ),
+   Greek letters (σ, π, λ, Δ), ×, ÷, √, ∝, ≈, ≤, °, and a slash for
+   division: "L = 4πR²σT⁴", "λₘₐₓ = b / T", "d = 1 / p". Give the units
+   with every quantity. A text field keeps no line breaks: in a worked
+   calculation, each step is its own entry in the example's `steps`.
 
 ### 5. What the slide asks students to know
 
