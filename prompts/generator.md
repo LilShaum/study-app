@@ -591,6 +591,13 @@ wrong thing. For every MCQ:
     pathway, the other half of a pair, the region one step along);
   - the **reversal**: the right fact turned round (raises for lowers,
     inside for outside, cause for effect, before for after);
+  - the **qualifier swap**: the right statement with the one word that
+    limits it changed (never for rarely, only for mostly, all for some,
+    always for often, one for several). Where the source turns on such a
+    word ("some channels never open", "only one ion passes"), this is the
+    option a student picks who learned the shape of the idea but not its
+    limits. The swapped word must make it false by the source, not merely
+    less hedged;
   - the **wrong step**: the step before or after in a process, or the right
     steps in the wrong order;
   - the **right answer to a different case**: what is true of the
@@ -629,8 +636,9 @@ one real course, against 25% by chance). The app checks this and reports it.
 - No option carries a parenthetical gloss the others lack — "Guard cells
   (the paired cells around each pore)" hands over the answer.
 - Never let one option run past twice the length of the others.
-- Vary which position is correct, and do not make "the longest", "the most
-  detailed" or "the most hedged" option a reliable signal.
+- Do not make "the longest", "the most detailed" or "the most hedged"
+  option a reliable signal. (The app shuffles the options, so their
+  position does not matter.)
 - **A rule you can check on every question:** write the correct option
   first, then make at least one distractor as long as it or longer, in
   words. Across the lecture that keeps the correct option the longest of the

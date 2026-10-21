@@ -10,6 +10,21 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-21 — A wrong pick that names another term is a mix-up: not modelled
+
+**Change.** An MCQ answered with an option that is another term of the
+lecture now records that term (`confusedWith`, as a typed answer naming the
+wrong term already did), and Review asks it straight after the question
+until the question is right on a later day (`lib/mixUps.ts`). Options are
+also shuffled at every showing (`lib/optionOrder.ts`).
+
+**Not simulated.** The simulated student cannot confuse two ideas (items
+are independent), and its answers are not picks, so the suite cannot see
+either change and is unchanged by them. The pairing rests on the same
+evidence as the typed mix-ups (docs/evidence.md, interleaving of
+confusable items). Revisit once real logs show how often a pick names
+another term.
+
 ## 2026-10-19 — Mixed the default in an exam's last week (a decision, not a run)
 
 The owner chose to make Mixed together the default close to an exam. It

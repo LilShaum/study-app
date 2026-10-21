@@ -21,6 +21,7 @@ const CORRECTABLE = [
   'correct-index-out-of-range',
   'option-count',
   'rationale-misaligned',
+  'rationale-missing',
   'no-explanation',
   'filler-options',
   'length-tell',
@@ -37,6 +38,8 @@ const FAULT_LABELS: Record<string, string> = {
     'I marked it as wrong or badly written while studying: check it against my notes and rewrite it, or tell me it should go',
   'correct-index-out-of-range': 'the answer key points outside the options, so no option can be marked correct',
   'rationale-misaligned': "the distractor_rationale array isn't index-aligned with the options",
+  'rationale-missing':
+    'a wrong option has no reason in distractor_rationale. For each, write in one short phrase why a student might pick it and why it is wrong, from my notes. If there is no real reason, the option is filler: replace it with a mistake a student who studied would really make (the neighbouring term, the fact turned round, the one word that limits it swapped) and give its reason',
   'no-explanation': 'there is no explanation shown after answering',
   'filler-options': 'it uses "all/none of the above" as an option',
   'option-count': "it doesn't have the four options the contract asks for",

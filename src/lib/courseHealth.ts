@@ -2,6 +2,7 @@ import type { Course, StudyItem } from '@/schema/course';
 import { analyseCourseGaps, type CourseGaps } from './courseGaps';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 import { analyseQuestionQuality, type QuestionQuality } from './questionQuality';
+import { normalisedRationale } from './mcqRationale';
 import { givesAway, restatesDefinition, sameFact, sameName, type Asked } from './contentChecks';
 import { acceptedForms, normalise } from './typedAnswer';
 import { sectionDensity } from './sectionDensity';
@@ -94,6 +95,23 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       severity: 'problem',
       message: `${badRationale.length} question${badRationale.length === 1 ? ' has' : 's have'} explanations that don't line up with their options, so the wrong reason shows under the wrong answer.`,
       items: badRationale.map((m) => m.id),
+    });
+  }
+
+  // A wrong option with no reason gives a student who picked it nothing to
+  // learn from, which is what a wrong option is for (the owner, 2026-10-17
+  // and 10-20). A rationale that does not line up is reported above instead.
+  const reasonless = mcqs.filter((m) => {
+    if (Array.isArray(m.distractor_rationale) && m.distractor_rationale.length !== (m.options?.length ?? 0) && m.distractor_rationale.length !== (m.options?.length ?? 0) - 1) return false;
+    const notes = normalisedRationale(m);
+    return (m.options ?? []).some((_, i) => i !== m.correct_index && !notes?.[i]);
+  });
+  if (reasonless.length) {
+    findings.push({
+      id: 'rationale-missing',
+      severity: 'warning',
+      message: `${reasonless.length} question${reasonless.length === 1 ? ' has' : 's have'} wrong options with no reason, so picking one teaches nothing about why it is wrong.`,
+      items: reasonless.map((m) => m.id),
     });
   }
 
@@ -458,6 +476,7 @@ const GROUPS: Record<string, FindingGroup> = {
   'cued-to-source': 'fix',
   'filler-options': 'fix',
   'option-count': 'fix',
+  'rationale-missing': 'fix',
   'unsafe-svg': 'fix',
   'unclear-figures': 'slides',
   'sparse-sections': 'slides',

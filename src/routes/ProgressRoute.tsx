@@ -7,6 +7,10 @@ import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { computeCourseStats, type StatRow } from '@/lib/computeCourseStats';
 import { CourseTree } from '@/components/CourseTree';
 import { examRule } from '@/lib/exam';
+import { mixUps } from '@/lib/mixUps';
+
+/** The latest mix-ups shown; the rest are counted. */
+const MIXUPS_SHOWN = 8;
 
 /** Below this, a section is not solid yet. The one number the page is about. */
 const SOLID = 80;
@@ -134,6 +138,7 @@ export function ProgressRoute() {
     );
   }
 
+  const mixed = mixUps(course, progress);
   const lastSeenText = stats.lastSeen ? `Last studied ${ago(stats.lastSeen)}.` : 'Not studied yet.';
 
   // What the tree draws, as figures: for each section studied, how much of
@@ -200,6 +205,25 @@ export function ProgressRoute() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {mixed.length > 0 && (
+        <div className="mt-8">
+          <h2 className="mark mb-1 text-text-3">Mixed up</h2>
+          <p className="mb-2 text-small text-text-2">
+            Answers that named another term of this lecture. Review asks the two side by side until you get it right on a
+            later day.
+          </p>
+          <ul className="border-t border-border">
+            {mixed.slice(0, MIXUPS_SHOWN).map((m) => (
+              <li key={m.id} className="border-b border-border py-2.5 text-small">
+                <span className="text-text">{m.asked}</span>
+                <span className="text-text-2"> · you answered {m.with.join(', ')}</span>
+              </li>
+            ))}
+          </ul>
+          {mixed.length > MIXUPS_SHOWN && <p className="mt-1 text-xs text-text-3">and {mixed.length - MIXUPS_SHOWN} more</p>}
         </div>
       )}
 

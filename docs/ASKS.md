@@ -18,15 +18,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
-- **Wrong options that teach** (2026-10-17: "making good fake answers. like
-  mistakes a student would actually make or terms that are very similar";
-  2026-10-20: "well reasoned distractor answers that actually helps a
-  student learn gaps in their knowledge"; go 2026-10-21). Still to do:
-  remember which wrong option was picked and, when it is another card's
-  answer, pair the two in Review, with a mix-ups list on Progress; a
-  qualifier-swap distractor type in the generator ("never", "only",
-  "often" are what test nuance, 2026-10-20); a lecture check and cheap
-  repair for wrong options with no reason.
 - **Item counts follow importance** (2026-10-14). Prompt and check
   shipped 2026-10-15; waits on a lecture generated with the current prompt
   to confirm. Proposed and waiting on the owner's go: "mentioned" only for
@@ -48,6 +39,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-21 Wrong options that teach (2026-10-17, 10-20): a wrong pick that
+  is another term of the lecture is kept as a mix-up and asked beside the
+  question in Review, listed on Progress (lib/mixUps); the generator has a
+  qualifier-swap wrong option (never for rarely, only for mostly); the
+  lecture check flags wrong options with no reason, and Fix repairs them.
 
 - 2026-10-21 Multiple-choice options shuffled at every showing, in
   sessions and the Practice test (asked before 2026-10-14, again

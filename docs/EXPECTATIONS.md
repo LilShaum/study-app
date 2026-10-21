@@ -149,8 +149,9 @@ and get it corrected by the AI that wrote it.
 
 **How it works.** `lib/courseHealth.ts` checks structure (ids, answer
 keys), answer-shape give-aways, definitions that name their own term, the
-same fact asked twice, MCQs that restate a definition, terms never
-defined, sections that only test recall, figures the AI could not read,
+same fact asked twice, MCQs that restate a definition, wrong options with
+no reason (`rationale-missing`: Fix writes the reason, or replaces an
+option that has none), terms never defined, sections that only test recall, figures the AI could not read,
 and sections with far fewer or far more items for their slides than the
 rest of the lecture (`lib/sectionDensity.ts`). Fix turns the findings into
 a prompt for the same chat, which judges each one against the notes.
@@ -339,7 +340,10 @@ wrong ones to the AI to rewrite.
   is a bare branch, what is learned is in leaf, what has faded falls. The
   same lecture always grows the same tree (`lib/growTree.ts` holds the
   drawing rules).
-- **Progress** shows what is fading and per-section figures.
+- **Progress** shows what is fading and per-section figures, and the
+  mix-ups on record: answers that named another term of the lecture
+  (`lib/mixUps.ts`), typed or picked from the options. Each brings that term
+  straight after the card in Review until the card is right on a later day.
 - **Browse** is the whole lecture to read and edit; **Glossary** every term
   A to Z; **Plates** the diagrams.
 

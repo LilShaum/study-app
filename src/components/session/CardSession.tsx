@@ -26,6 +26,7 @@ import { useLearnStore } from '@/store/learn';
 import { lectureName, lecturesOf } from '@/lib/classExams';
 import { choiceOf, countBasis, practiceCount, practiceLink } from '@/lib/practice';
 import { answerPoints } from '@/lib/answerPoints';
+import { termPicked } from '@/lib/mixUps';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
 
@@ -905,7 +906,16 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           key={`${current.id}@${index}`}
           item={current}
           frame="sheet"
-          onAnswered={record}
+          onAnswered={(got, picked) => {
+            record(got);
+            // A wrong pick that is another term of the lecture is a mix-up,
+            // kept so Review asks that term beside this question (lib/mixUps).
+            if (got || picked == null || current.type !== 'mcq') return;
+            const lecture = lectureOf(current, courseId);
+            const lectureCourse = useCoursesStore.getState().courses[lecture];
+            const other = lectureCourse && termPicked(lectureCourse, current, picked);
+            if (other) useProgressStore.getState().noteConfusion(lecture, current.id, other);
+          }}
           // Grading a flashcard also advances it, as the vanilla app did —
           // otherwise the card just flips back and looks like nothing happened.
           onGot={() => {

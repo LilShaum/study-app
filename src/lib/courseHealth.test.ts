@@ -265,3 +265,17 @@ describe('analyseCourseHealth — an MCQ that asks a term back from its definiti
     expect(find(analyseCourseHealth(course(items)), 'mcq-restates-definition')?.items).toEqual(['q1']);
   });
 });
+
+describe('analyseCourseHealth: wrong options with no reason', () => {
+  it('lists questions with a wrong option that has no reason, or no reasons at all', () => {
+    const h = analyseCourseHealth(
+      course([mcq('ok', 'A?'), mcq('gap', 'B?', { distractor_rationale: ['', 'x', ' ', 'z'] }), mcq('none', 'C?', { distractor_rationale: undefined })]),
+    );
+    expect(find(h, 'rationale-missing')).toMatchObject({ severity: 'warning', items: ['gap', 'none'] });
+  });
+
+  it('leaves a misaligned array to its own finding', () => {
+    const h = analyseCourseHealth(course([mcq('q', 'A?', { distractor_rationale: ['', 'x'] })]));
+    expect(find(h, 'rationale-missing')).toBeUndefined();
+  });
+});

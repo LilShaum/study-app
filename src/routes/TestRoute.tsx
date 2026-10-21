@@ -7,6 +7,7 @@ import { classExams, lecturesOf } from '@/lib/classExams';
 import { answeredRight, drawTest, isWritten, lecturesIn, scoreTest, testPool, TEST_LENGTHS, type TestAnswer, type TestQuestion, type TestScope } from '@/lib/practiceTest';
 import { answerPoints } from '@/lib/answerPoints';
 import { optionOrder } from '@/lib/optionOrder';
+import { termPicked } from '@/lib/mixUps';
 import { onlyStudies, studiesIn } from '@/lib/studies';
 import type { Course } from '@/schema/course';
 import { normalisedRationale } from '@/lib/mcqRationale';
@@ -207,6 +208,8 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       // over newer study: a test left on Monday and marked on Wednesday must
       // not put Monday's miss on top of Tuesday's right answer.
       const progress = useProgressStore.getState();
+      // When each card was last studied before this test is recorded.
+      const studied = test.map((q) => progress.getProgress(q.courseId)[q.item.id]?.lastSeen ?? 0);
       // A written question answered in the head and ticked at the end was
       // answered while the test was being taken: its last answer's time, so
       // newer study elsewhere still wins.
@@ -219,10 +222,21 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
           // ticked (answered in the head); left blank, it says nothing either.
           const answered = isWritten(q.item) ? !!(typeof chose === 'string' && chose.trim()) || !!ticks?.some(Boolean) : chose != null;
           const when = answeredAt[i] ?? (answered ? lastAnswer : 0);
-          const seen = progress.getProgress(q.courseId)[q.item.id]?.lastSeen ?? 0;
+          const seen = studied[i];
           return answered && seen < when ? [{ courseId: q.courseId, item: q.item, got: answeredRight(q.item, chose ?? '', ticks) }] : [];
         }),
       );
+      // A wrong pick that is another term of the lecture (lib/mixUps), under
+      // the same rule: not over newer study of that card.
+      const { courses } = useCoursesStore.getState();
+      test.forEach((q, i) => {
+        const chose = answers[i];
+        const course = courses[q.courseId];
+        if (isWritten(q.item) || typeof chose !== 'number' || !course) return;
+        if (studied[i] >= (answeredAt[i] ?? 0)) return;
+        const other = termPicked(course, q.item, chose);
+        if (other) progress.noteConfusion(q.courseId, q.item.id, other);
+      });
     }
     setMarking(false);
     setDone(true);
