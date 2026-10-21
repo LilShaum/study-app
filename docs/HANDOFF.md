@@ -19,6 +19,22 @@ Start here. Make each step a task, keep one in progress, and only mark it
 done when it is tested and live (see §7). Load `working-method`,
 `arborous-design` and `app-making` at the start; `simulate` before Learn.
 
+**Done 2026-10-21, every way to study has one use (live):** a review of
+each mode against the owner's picture (now in CLAUDE.md, "How the owner
+wants it to work"). Written answers: a short- or long-answer flashcard is
+written, then ticked point by point (`lib/answerPoints`), in sessions and
+in the Practice test, which marks them at the end. Practice's "Missed last
+time" is Mistakes: a miss stays until right on a later day (`isMistake`);
+re-asking it within the sitting was not built (sim/FINDINGS.md 2026-10-12:
+a retry minutes later holds nothing). Each Cards choice says what it is
+for. Kept as they are: Everything (the owner reads slides, then answers;
+a first miss counts like reading) and Weakest first (extra time).
+**Open, waiting on the owner's go:** remember which wrong option was picked
+and pair the two cards in Review, with a mix-ups list; a qualifier-swap
+distractor type in the generator; a check and cheap repair for wrong
+options with no reason. **Noted:** a card in Learn does not say which slide
+it comes from, only its section's range; would need a per-item slide field.
+
 **Done 2026-10-13, fresh-eyes review (live, partial):** see
 `docs/audits/2026-10-13-fresh-eyes.md`. Review is spaced like Learn (no card
 within five of one that gives its answer; 2–11 a sitting → 0–2 on the
