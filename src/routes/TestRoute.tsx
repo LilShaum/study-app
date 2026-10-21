@@ -4,7 +4,8 @@ import { useCoursesStore } from '@/store/courses';
 import { recordAnswers } from '@/store/session';
 import { useProgressStore } from '@/store/progress';
 import { classExams, lecturesOf } from '@/lib/classExams';
-import { drawTest, lecturesIn, scoreTest, testPool, TEST_LENGTHS, type TestQuestion, type TestScope } from '@/lib/practiceTest';
+import { answeredRight, drawTest, isWritten, lecturesIn, scoreTest, testPool, TEST_LENGTHS, type TestAnswer, type TestQuestion, type TestScope } from '@/lib/practiceTest';
+import { answerPoints } from '@/lib/answerPoints';
 import { onlyStudies, studiesIn } from '@/lib/studies';
 import type { Course } from '@/schema/course';
 import { normalisedRationale } from '@/lib/mcqRationale';
@@ -87,9 +88,13 @@ export function TestRoute() {
  */
 interface SavedTest {
   refs: { courseId: string; itemId: string }[];
-  answers: (number | null)[];
+  answers: TestAnswer[];
   /** When each answer was picked: an answer older than the card's latest study is not recorded over it. */
   answeredAt?: (number | null)[];
+  /** Each written question's ticked points, once marked. */
+  marks?: (boolean[] | null)[];
+  /** Ended, and the written answers being ticked. */
+  marking?: boolean;
   at: number;
   done: boolean;
   recorded: boolean;
@@ -107,16 +112,21 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
     if (!saved.savedAt || Date.now() - saved.savedAt > KEEP_DAYS * 86_400_000) return null;
     const byRef = new Map(pool.map((q) => [`${q.courseId}/${q.item.id}`, q]));
     const test: TestQuestion[] = [];
-    const answers: (number | null)[] = [];
+    const answers: TestAnswer[] = [];
     const answeredAt: (number | null)[] = [];
+    const marks: (boolean[] | null)[] = [];
     saved.refs.forEach((r, i) => {
       const q = byRef.get(`${r.courseId}/${r.itemId}`);
       if (q) {
         test.push(q);
         const a = saved.answers[i];
-        const ok = typeof a === 'number' && a >= 0 && a < q.item.options.length;
+        const ok = isWritten(q.item) ? typeof a === 'string' : typeof a === 'number' && a >= 0 && a < q.item.options.length;
         answers.push(ok ? a : null);
         answeredAt.push(ok ? (saved.answeredAt?.[i] ?? saved.savedAt ?? null) : null);
+        // Ticks only while the card still has that many points.
+        const m = saved.marks?.[i];
+        const points = isWritten(q.item) ? answerPoints(q.item)?.points.length : undefined;
+        marks.push(Array.isArray(m) && m.length === points ? m.map(Boolean) : null);
       }
     });
     if (!test.length) return null;
@@ -124,6 +134,8 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
       test,
       answers,
       answeredAt,
+      marks,
+      marking: !!saved.marking,
       at: Math.min(Math.max(0, saved.at | 0), test.length - 1),
       done: !!saved.done,
       recorded: !!saved.recorded,
@@ -139,8 +151,10 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
   // reshuffle the questions under the student.
   const [saved] = useState(() => loadTest(storageKey, pool));
   const [test, setTest] = useState<TestQuestion[] | null>(saved?.test ?? null);
-  const [answers, setAnswers] = useState<(number | null)[]>(saved?.answers ?? []);
+  const [answers, setAnswers] = useState<TestAnswer[]>(saved?.answers ?? []);
   const [answeredAt, setAnsweredAt] = useState<(number | null)[]>(saved?.answeredAt ?? []);
+  const [marks, setMarks] = useState<(boolean[] | null)[]>(saved?.marks ?? []);
+  const [marking, setMarking] = useState(saved?.marking ?? false);
   const [at, setAt] = useState(saved?.at ?? 0);
   const [done, setDone] = useState(saved?.done ?? false);
   const recorded = useRef(saved?.recorded ?? false);
@@ -150,22 +164,33 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       if (!test) localStorage.removeItem(storageKey);
       else {
         const refs = test.map((q) => ({ courseId: q.courseId, itemId: q.item.id }));
-        const record: SavedTest = { refs, answers, answeredAt, at, done, recorded: recorded.current, savedAt: Date.now() };
+        const record: SavedTest = { refs, answers, answeredAt, marks, marking, at, done, recorded: recorded.current, savedAt: Date.now() };
         localStorage.setItem(storageKey, JSON.stringify(record));
       }
     } catch {
       // Storage full or blocked: the test still works, it just won't survive a reload.
     }
-  }, [storageKey, test, answers, answeredAt, at, done]);
+  }, [storageKey, test, answers, answeredAt, marks, marking, at, done]);
 
   const start = (questions: TestQuestion[]) => {
     setTest(questions);
     setAnswers(questions.map(() => null));
     setAnsweredAt(questions.map(() => null));
+    setMarks(questions.map(() => null));
+    setMarking(false);
     setAt(0);
     setDone(false);
     recorded.current = false;
     window.scrollTo(0, 0);
+  };
+
+  // A test with written questions ends in ticking their points, then the score.
+  const end = () => {
+    if (!test) return;
+    if (test.some((q) => isWritten(q.item)) && !marking) {
+      setMarking(true);
+      window.scrollTo(0, 0);
+    } else finish();
   };
 
   const finish = () => {
@@ -176,15 +201,24 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       // over newer study: a test left on Monday and marked on Wednesday must
       // not put Monday's miss on top of Tuesday's right answer.
       const progress = useProgressStore.getState();
+      // A written question answered in the head and ticked at the end was
+      // answered while the test was being taken: its last answer's time, so
+      // newer study elsewhere still wins.
+      const lastAnswer = Math.max(0, ...answeredAt.map((t) => t ?? 0));
       recordAnswers(
         test.flatMap((q, i) => {
           const chose = answers[i];
-          const when = answeredAt[i] ?? 0;
+          const ticks = marks[i];
+          // A written question counts once something was written or a point
+          // ticked (answered in the head); left blank, it says nothing either.
+          const answered = isWritten(q.item) ? !!(typeof chose === 'string' && chose.trim()) || !!ticks?.some(Boolean) : chose != null;
+          const when = answeredAt[i] ?? (answered ? lastAnswer : 0);
           const seen = progress.getProgress(q.courseId)[q.item.id]?.lastSeen ?? 0;
-          return chose != null && seen < when ? [{ courseId: q.courseId, item: q.item, got: chose === q.item.correct_index }] : [];
+          return answered && seen < when ? [{ courseId: q.courseId, item: q.item, got: answeredRight(q.item, chose ?? '', ticks) }] : [];
         }),
       );
     }
+    setMarking(false);
     setDone(true);
     window.scrollTo(0, 0);
   };
@@ -196,8 +230,28 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
         header={header}
         test={test}
         answers={answers}
+        marks={marks}
         onRetakeMissed={(missed) => start(drawTest(missed))}
         onNew={() => setTest(null)}
+      />
+    );
+  }
+  if (marking) {
+    return (
+      <Marking
+        header={header}
+        test={test}
+        answers={answers}
+        marks={marks}
+        onTick={(i, k) =>
+          setMarks((m) => {
+            const item = test[i].item;
+            const n = isWritten(item) ? (answerPoints(item)?.points.length ?? 0) : 0;
+            const ticks = m[i] ?? Array.from({ length: n }, () => false);
+            return test.map((_, j) => (j === i ? ticks.map((v, p) => (p === k ? !v : v)) : (m[j] ?? null)));
+          })
+        }
+        onDone={finish}
       />
     );
   }
@@ -206,13 +260,13 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       test={test}
       at={at}
       answers={answers}
-      onPick={(i) => {
-        setAnswers((a) => a.map((x, n) => (n === at ? i : x)));
+      onPick={(a) => {
+        setAnswers((x) => test.map((_, n) => (n === at ? a : (x[n] ?? null))));
         setAnsweredAt((t) => test.map((_, n) => (n === at ? Date.now() : (t[n] ?? null))));
       }}
       onBack={() => setAt((n) => Math.max(0, n - 1))}
-      onNext={() => (at + 1 < test.length ? setAt(at + 1) : finish())}
-      onEnd={finish}
+      onNext={() => (at + 1 < test.length ? setAt(at + 1) : end())}
+      onEnd={end}
       backTo={back}
     />
   );
@@ -229,6 +283,8 @@ function Setup({ header, pool, onStart }: { header: ReactNode; pool: TestQuestio
       <p className="mt-4 max-w-prose text-small text-text-2">
         The medium and hard questions, the ones that ask you to use what you know rather than recognise it. Answers
         wait until the end, as in an exam; then you see your score and every question you missed, with why.
+        {pool.some((q) => isWritten(q.item)) &&
+          ' Short and long answers are written, as the exam has you write them; at the end you tick each point of the model answer you made.'}
       </p>
       {pool.length === 0 ? (
         <p className="mt-6 border-y border-border py-3 text-small text-text-2">
@@ -306,8 +362,8 @@ function Taking({
 }: {
   test: TestQuestion[];
   at: number;
-  answers: (number | null)[];
-  onPick: (i: number) => void;
+  answers: TestAnswer[];
+  onPick: (a: TestAnswer) => void;
   onBack: () => void;
   onNext: () => void;
   onEnd: () => void;
@@ -316,7 +372,8 @@ function Taking({
   const q = test[at];
   const chosen = answers[at];
   const last = at + 1 === test.length;
-  const answered = answers.filter((a) => a != null).length;
+  const answered = answers.filter((a) => (typeof a === 'string' ? a.trim() : a != null)).length;
+  const blank = typeof chosen === 'string' ? !chosen.trim() : chosen == null;
 
   useKeyboardShortcuts((e) => {
     // Enter on a focused control (Back, Leave, End and mark it) does what
@@ -327,7 +384,7 @@ function Taking({
     if (e.key === 'Enter' && focus?.closest('button, a') && !inOptions) return;
     if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && inOptions) return;
     const n = Number(e.key);
-    if (Number.isInteger(n) && n >= 1 && n <= q.item.options.length) {
+    if (!isWritten(q.item) && Number.isInteger(n) && n >= 1 && n <= q.item.options.length) {
       e.preventDefault();
       onPick(n - 1);
     } else if (e.key === 'Enter' || e.key === 'ArrowRight') {
@@ -355,6 +412,25 @@ function Taking({
         </span>
         <span className="text-xs tabular-nums text-text-3">{answered} answered</span>
       </div>
+      {isWritten(q.item) ? (
+        <>
+          <div className="prose-set mt-4 text-heading text-text">{q.item.front}</div>
+          <label htmlFor="test-written" className="sr-only">
+            Your answer
+          </label>
+          <textarea
+            id="test-written"
+            // Its own box per question, so a half-written answer is never carried to the next.
+            key={`${q.courseId}/${q.item.id}`}
+            value={typeof chosen === 'string' ? chosen : ''}
+            onChange={(e) => onPick(e.target.value)}
+            rows={7}
+            placeholder="Write it as you would in the exam"
+            className="field mt-4 block w-full resize-y text-body"
+          />
+        </>
+      ) : (
+      <>
       <div className="prose-set mt-4 text-heading text-text">{q.item.question}</div>
       <div role="radiogroup" aria-label="Answer options" className="mt-4 space-y-2">
         {q.item.options.map((opt, i) => {
@@ -378,12 +454,14 @@ function Taking({
           );
         })}
       </div>
+      </>
+      )}
       <div className="mt-6 flex items-center gap-3">
         <button type="button" onClick={onBack} disabled={at === 0} className="press tap-safe disabled:opacity-40">
           Back
         </button>
         <button type="button" onClick={onNext} className="press press-ink tap-safe">
-          {last ? 'Finish and mark it' : chosen == null ? 'Skip' : 'Next'}
+          {last ? 'Finish and mark it' : blank ? 'Skip' : 'Next'}
         </button>
       </div>
     </div>
@@ -396,16 +474,18 @@ function Results({
   header,
   test,
   answers,
+  marks,
   onRetakeMissed,
   onNew,
 }: {
   header: ReactNode;
   test: TestQuestion[];
-  answers: (number | null)[];
+  answers: TestAnswer[];
+  marks: (boolean[] | null)[];
   onRetakeMissed: (missed: TestQuestion[]) => void;
   onNew: () => void;
 }) {
-  const result = useMemo(() => scoreTest(test, answers), [test, answers]);
+  const result = useMemo(() => scoreTest(test, answers, marks), [test, answers, marks]);
   const pct = result.total ? Math.round((result.got / result.total) * 100) : 0;
   const lectures = new Set(test.map((q) => q.courseId)).size;
   // Most missed first, then the lowest share: a section missed four times
@@ -466,17 +546,40 @@ function Results({
         <section className="mt-8">
           <h2 className="mark mb-2 text-text-3">What you missed</h2>
           <ol className="border-t border-border">
-            {result.missed.map(({ q, chose }) => {
-              const why = chose != null ? normalisedRationale(q.item)?.[chose] : undefined;
+            {result.missed.map(({ q, chose, ticks }) => {
+              const where = (
+                <div className="text-xs text-text-3">
+                  {lectures > 1 ? `${q.lecture} · ` : ''}
+                  {q.section}
+                </div>
+              );
+              if (isWritten(q.item)) {
+                const points = answerPoints(q.item)?.points ?? [];
+                const wrote = typeof chose === 'string' ? chose.trim() : '';
+                return (
+                  <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
+                    {where}
+                    <div className="prose-set mt-1 text-body text-text">{q.item.front}</div>
+                    <div className="mt-2 whitespace-pre-wrap border-l-2 border-border-strong pl-3 text-small text-text-2">
+                      {wrote || 'Nothing written'}
+                    </div>
+                    <ul className="mt-2 space-y-1">
+                      {points.map((point, k) => (
+                        <li key={k} className={`text-small ${ticks?.[k] ? 'text-success' : 'text-error'}`}>
+                          {ticks?.[k] ? '✓' : '✗'} {point}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                );
+              }
+              const why = typeof chose === 'number' ? normalisedRationale(q.item)?.[chose] : undefined;
               return (
                 <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
-                  <div className="text-xs text-text-3">
-                    {lectures > 1 ? `${q.lecture} · ` : ''}
-                    {q.section}
-                  </div>
+                  {where}
                   <div className="prose-set mt-1 text-body text-text">{q.item.question}</div>
                   <div className="mt-2 text-small text-error">
-                    {chose == null ? 'No answer' : `✗ ${q.item.options[chose]}`}
+                    {typeof chose !== 'number' ? 'No answer' : `✗ ${q.item.options[chose]}`}
                   </div>
                   {why && <div className="mt-1 border-l-2 border-error pl-3 text-small text-text-2">{why}</div>}
                   <div className="mt-2 text-small text-success">✓ {q.item.options[q.item.correct_index]}</div>
@@ -489,6 +592,79 @@ function Results({
       )}
 
       {result.missed.length > 0 && <div className="mt-6">{actions}</div>}
+    </div>
+  );
+}
+
+/**
+ * The end of a test with written questions: each one's answer beside the
+ * model answer's points, to tick the ones made, before the score. Ticked
+ * here once, then fixed: the score and the record follow from it.
+ */
+function Marking({
+  header,
+  test,
+  answers,
+  marks,
+  onTick,
+  onDone,
+}: {
+  header: ReactNode;
+  test: TestQuestion[];
+  answers: TestAnswer[];
+  marks: (boolean[] | null)[];
+  onTick: (question: number, point: number) => void;
+  onDone: () => void;
+}) {
+  const written = test.flatMap((q, i) => (isWritten(q.item) ? [{ q, i, item: q.item }] : []));
+  return (
+    <div>
+      {header}
+      <p className="mt-4 max-w-prose text-small text-text-2">
+        Before your score: tick each point of the model answer that your answer made. A question counts as right with
+        every point, as full marks would.
+      </p>
+      <ol className="mt-6 border-t border-border">
+        {written.map(({ q, i, item }) => {
+          const points = answerPoints(item)?.points ?? [];
+          const lead = answerPoints(item)?.lead;
+          const wrote = typeof answers[i] === 'string' ? (answers[i] as string).trim() : '';
+          const made = (marks[i] ?? []).filter(Boolean).length;
+          return (
+            <li key={`${q.courseId}/${item.id}`} className="border-b border-border py-4">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="mark text-text-3">Question {i + 1}</span>
+                <span className="text-xs tabular-nums text-text-3">
+                  {made} of {points.length}
+                </span>
+              </div>
+              <div className="prose-set mt-1 text-body text-text">{item.front}</div>
+              <div className="mt-2 whitespace-pre-wrap border-l-2 border-border-strong pl-3 text-small text-text-2">
+                {wrote || 'Nothing written. Tick what you would have said, if anything.'}
+              </div>
+              {lead && <p className="mt-3 text-small text-text">{lead}</p>}
+              <ul className="mt-2">
+                {points.map((point, k) => (
+                  <li key={k}>
+                    <label className="flex cursor-pointer items-start gap-3 py-1.5 text-small text-text">
+                      <input
+                        type="checkbox"
+                        checked={!!marks[i]?.[k]}
+                        onChange={() => onTick(i, k)}
+                        className="tap-safe mt-1 shrink-0 accent-accent"
+                      />
+                      <span>{point}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          );
+        })}
+      </ol>
+      <button type="button" onClick={onDone} className="press press-ink tap-safe mt-6">
+        See my score
+      </button>
     </div>
   );
 }

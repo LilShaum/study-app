@@ -101,3 +101,35 @@ describe('a test over several lectures', () => {
     expect(testPool([{ courseId: 'big', course: big, covers: 'all', only }]).map((q) => q.item.id)).toEqual(['b1', 'b2']);
   });
 });
+
+describe('written questions', () => {
+  const written = (id: string, extra: Record<string, unknown> = {}): StudyItem =>
+    ({ id, type: 'flashcard', front: `${id}?`, back: '(1) One. (2) Two. (3) Three.', ...extra }) as StudyItem;
+
+  it('asks medium and hard short answers, never a plain or an easy flashcard', () => {
+    const c = course([
+      {
+        id: 's1',
+        items: [
+          written('sa'),
+          written('tagged', { back: 'Plate tectonics.', tags: ['short-answer'], difficulty: 'hard' }),
+          written('easy', { difficulty: 'easy' }),
+          { id: 'plain', type: 'flashcard', front: 'f', back: 'b' } as StudyItem,
+          mcq('m'),
+        ],
+      },
+    ]);
+    expect(testPool([{ courseId: 'c', course: c, covers: 'all' }]).map((q) => q.item.id)).toEqual(['sa', 'tagged', 'm']);
+  });
+
+  it('counts a written answer right only with every point ticked', () => {
+    const c = course([{ id: 's1', items: [written('a'), written('b'), written('c')] }]);
+    const pool = testPool([{ courseId: 'c', course: c, covers: 'all' }]);
+    const r = scoreTest(pool, ['all three', 'two of them', 'not marked'], [[true, true, true], [true, false, true], null]);
+    expect(r.got).toBe(1);
+    expect(r.missed.map((m) => [m.q.item.id, m.ticks])).toEqual([
+      ['b', [true, false, true]],
+      ['c', []],
+    ]);
+  });
+});

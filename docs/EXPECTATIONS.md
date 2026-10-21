@@ -261,13 +261,18 @@ lecture.
 
 **Goal.** Check understanding the way an exam does.
 
-**How it works.** Only medium and hard MCQs (a question with no difficulty
-counts as medium), drawn at random from a lecture, a section, a lecture's
+**How it works.** Only medium and hard MCQs and written questions (see
+Written answers; a question with no difficulty counts as medium), drawn at random from a lecture, a section, a lecture's
 or a class's studies, everything an exam covers, or a whole class; 20, 40
 or all. Over several lectures, 20 or 40 are shared by each lecture's size,
 or equally if the student picks Each the same. No feedback until the end;
 then the score, each section weakest first, and every miss with the
-answer, why the pick was wrong, and the explanation. Retake the missed ones.
+answer, why the pick was wrong, and the explanation. With written
+questions, ending the test first lists each one's answer beside the model
+answer's points to tick (right only with every point); the score follows,
+and a missed one shows each point ✓ or ✗. A written question left blank
+with nothing ticked is not recorded, like a blank MCQ. Retake the missed
+ones.
 A test in progress, and its results, survive leaving and a reload (a phone
 reloads the app after switching away) until the student starts a new one.
 Answers count as practice once, when the test is marked, so Today knows

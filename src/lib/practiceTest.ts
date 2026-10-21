@@ -1,4 +1,5 @@
-import type { Course, McqItem } from '@/schema/course';
+import type { Course, FlashcardItem, McqItem } from '@/schema/course';
+import { answerPoints } from './answerPoints';
 import type { Coverage } from './classExams';
 import { shuffle } from './shuffle';
 import { sortedSections } from './sortedSections';
@@ -8,19 +9,35 @@ import { sortedSections } from './sortedSections';
  * exam asks them (no answer until the end), across one lecture or every
  * lecture an exam covers.
  *
- * Only MCQs, and only the medium and hard ones: an easy MCQ recognises a fact
- * as stated, which the typed terms already practise, while medium and hard
- * ones apply, tell apart, chain and predict (prompts/generator.md, part 3).
- * A question with no difficulty counts as medium: older lectures were made
- * before every question carried one.
+ * Only the medium and hard MCQs: an easy MCQ recognises a fact as stated,
+ * which the typed terms already practise, while medium and hard ones apply,
+ * tell apart, chain and predict (prompts/generator.md, part 3). And the
+ * medium and hard written questions (lib/answerPoints): an exam that has the
+ * student write short and long answers is practised by writing them; they
+ * are ticked point by point once the test ends. A question with no
+ * difficulty counts as medium: older lectures were made before every
+ * question carried one.
  */
+
+/** A written question: a flashcard asked as a short or long answer. */
+export type WrittenItem = FlashcardItem;
+export type TestItem = McqItem | WrittenItem;
+
+export const isWritten = (item: TestItem): item is WrittenItem => item.type === 'flashcard';
+
+/**
+ * An answer: the option picked, the text written (a written question), or
+ * null for none. A written question's text is its answer even when empty
+ * once its points are ticked: the student may answer in their head.
+ */
+export type TestAnswer = number | string | null;
 
 export interface TestQuestion {
   courseId: string;
   lecture: string;
   sectionId: string;
   section: string;
-  item: McqItem;
+  item: TestItem;
 }
 
 export interface TestScope {
@@ -33,7 +50,7 @@ export interface TestScope {
 
 export const TEST_LENGTHS = [20, 40] as const;
 
-const usable = (item: McqItem): boolean => {
+const usableMcq = (item: McqItem): boolean => {
   const n = item.options?.length ?? 0;
   return (
     n >= 2 &&
@@ -51,8 +68,13 @@ export function testPool(scopes: TestScope[]): TestQuestion[] {
     for (const section of sortedSections(course)) {
       if (covers !== 'all' && !covers.includes(section.id)) continue;
       for (const item of section.items) {
-        if (item.type !== 'mcq' || item.set_aside || !usable(item) || (only && !only.has(item.id))) continue;
-        out.push({ courseId, lecture: course.metadata.title, sectionId: section.id, section: section.title, item });
+        if (item.set_aside || (only && !only.has(item.id))) continue;
+        const asked: TestItem | null =
+          item.type === 'mcq'
+            ? usableMcq(item) ? item : null
+            : item.type === 'flashcard' && item.difficulty !== 'easy' && answerPoints(item) ? item : null;
+        if (!asked) continue;
+        out.push({ courseId, lecture: course.metadata.title, sectionId: section.id, section: section.title, item: asked });
       }
     }
   }
@@ -99,20 +121,30 @@ export interface TestResult {
   total: number;
   /** Per section, in the order they first appear in the test. */
   bySection: { key: string; lecture: string; section: string; got: number; total: number }[];
-  /** The questions answered wrong or left blank, in test order. */
-  missed: { q: TestQuestion; chose: number | null }[];
+  /** The questions answered wrong or left blank, in test order, with a written one's ticks. */
+  missed: { q: TestQuestion; chose: TestAnswer; ticks?: boolean[] }[];
 }
 
-/** Scores answers (option index, or null for none) against the test. */
-export function scoreTest(test: TestQuestion[], answers: (number | null)[]): TestResult {
+/**
+ * Whether a question was answered right. A written one needs every point
+ * ticked, as full marks; until it is marked it is not.
+ */
+export function answeredRight(item: TestItem, answer: TestAnswer, ticks?: boolean[] | null): boolean {
+  if (!isWritten(item)) return answer === item.correct_index;
+  return answer != null && !!ticks?.length && ticks.every(Boolean);
+}
+
+/** Scores answers against the test; `marks` holds each written question's ticked points. */
+export function scoreTest(test: TestQuestion[], answers: TestAnswer[], marks: (boolean[] | null)[] = []): TestResult {
   const sections = new Map<string, TestResult['bySection'][number]>();
   const missed: TestResult['missed'] = [];
   let got = 0;
   test.forEach((q, i) => {
     const chose = answers[i] ?? null;
-    const right = chose === q.item.correct_index;
+    const ticks = marks[i] ?? undefined;
+    const right = answeredRight(q.item, chose, ticks);
     if (right) got++;
-    else missed.push({ q, chose });
+    else missed.push(isWritten(q.item) ? { q, chose, ticks: ticks ?? [] } : { q, chose });
     const key = `${q.courseId}/${q.sectionId}`;
     const row = sections.get(key) ?? { key, lecture: q.lecture, section: q.section, got: 0, total: 0 };
     row.total++;
