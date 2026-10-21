@@ -231,6 +231,12 @@ sitting and reaching every lecture in a short one (`sim/FINDINGS.md`,
 2026-10-18). A pick holds in the situation it was made in: one made weeks
 before does not keep exam week one at a time, and one made in exam week
 does not outlast the exam.
+Under the Cards row, a line says what the picked choice is for (`CARDS`
+use): each has one use the others lack. Due now is Today's review alone;
+Weakest first is every card, least known first, for extra time; Everything
+is every card shuffled, studied or not, for a student who reads the slides
+and then answers (a first miss counts like reading, sim/FINDINGS.md
+2026-10-12).
 Mistakes holds a card from its miss until it is got right on a later day
 (`isMistake`): a right answer minutes after the miss used to clear it, and
 in the simulator such a retry kept nothing for a later day (sim/FINDINGS.md,

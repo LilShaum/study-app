@@ -304,6 +304,7 @@ function PracticePage() {
           choices={CARDS.map((c) => ({ ...c, count: sum(counts[c.value][kind]) }))}
           value={cards}
           onPick={(v) => setPickedCards(v)}
+          note={CARDS.find((c) => c.value === cards)?.use}
         />
         <Choices
           label="Kind"
@@ -430,17 +431,21 @@ function Choices<T extends string>({
   choices,
   value,
   onPick,
+  note,
 }: {
   label: string;
   /** Without a count, a choice is a way of doing it rather than a set of cards: never empty. */
   choices: { value: T; label: string; count?: number }[];
   value: T;
   onPick: (value: T) => void;
+  /** What the picked choice is for, under the row. */
+  note?: string;
 }) {
   return (
     <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
       <span className="mark shrink-0 text-text-3 sm:w-16">{label}</span>
-      <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
         {choices.map((c, i) => {
           const active = c.value === value;
           const empty = c.count === 0;
@@ -473,6 +478,8 @@ function Choices<T extends string>({
             </span>
           );
         })}
+        </div>
+        {note && <p className="mt-1 text-small text-text-3">{note}</p>}
       </div>
     </div>
   );

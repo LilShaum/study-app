@@ -15,11 +15,12 @@ import { onlyStudies } from './studies';
 export type Cards = 'due' | 'weakest' | 'missed' | 'everything';
 export type Kind = 'all' | CardKind;
 
-export const CARDS: { value: Cards; label: string }[] = [
-  { value: 'due', label: 'Due now' },
-  { value: 'weakest', label: 'Weakest first' },
-  { value: 'missed', label: 'Mistakes' },
-  { value: 'everything', label: 'Everything' },
+/** Each choice has one use the others do not (CLAUDE.md, the owner's picture), said under the row. */
+export const CARDS: { value: Cards; label: string; use: string }[] = [
+  { value: 'due', label: 'Due now', use: 'What is fading now: Today’s review on its own, with no new material.' },
+  { value: 'weakest', label: 'Weakest first', use: 'Every card, the ones you know least first: for extra time after Today.' },
+  { value: 'missed', label: 'Mistakes', use: 'Cards you got wrong, until you get them right on a later day.' },
+  { value: 'everything', label: 'Everything', use: 'Every card shuffled, studied or not, mixed the way an exam mixes them.' },
 ];
 
 export const KINDS: { value: Kind; label: string }[] = [
