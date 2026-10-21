@@ -18,9 +18,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
-- **Shuffle multiple-choice options** (asked before 2026-10-14, again
-  2026-10-21: "have u randomized multiple choice answers yet"). In
-  progress 2026-10-21.
 - **Wrong options that teach** (2026-10-17: "making good fake answers. like
   mistakes a student would actually make or terms that are very similar";
   2026-10-20: "well reasoned distractor answers that actually helps a
@@ -51,6 +48,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-21 Multiple-choice options shuffled at every showing, in
+  sessions and the Practice test (asked before 2026-10-14, again
+  2026-10-21). (lib/optionOrder, McqCard, TestRoute)
 
 - 2026-10-21 Each way to study has one clear use, checked against the
   owner's picture; Practice says what each choice is for. (CLAUDE.md,

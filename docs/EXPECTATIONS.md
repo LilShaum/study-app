@@ -40,6 +40,11 @@ These hold for every feature.
   simulated students (`.claude/skills/simulate`).
 - Check a feature through the doors a student uses, not by calling its
   code directly.
+- Multiple-choice options are shuffled at every showing (`lib/optionOrder`),
+  the key and each option's "why not" with them, so where an answer sits
+  tells nothing: one generated lecture had every right answer first. A
+  practice test keeps one order through a reload. An option that points at
+  the others ("all of the above", "A and C") keeps the written order.
 
 **Content** (the owner's rules, 2026-10-13 to 10-15)
 

@@ -12,7 +12,7 @@ import type { ItemFrame } from './frame';
 interface ItemRendererProps {
   /** A file item, or one the app derives from it for a session (see RecallItem). */
   item: AnyItem;
-  onAnswered?: (correct: boolean) => void;
+  onAnswered?: (correct: boolean, picked?: number) => void;
   onNext?: () => void;
   onGot?: () => void;
   onMissed?: () => void;

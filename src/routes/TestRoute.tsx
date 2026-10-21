@@ -6,6 +6,7 @@ import { useProgressStore } from '@/store/progress';
 import { classExams, lecturesOf } from '@/lib/classExams';
 import { answeredRight, drawTest, isWritten, lecturesIn, scoreTest, testPool, TEST_LENGTHS, type TestAnswer, type TestQuestion, type TestScope } from '@/lib/practiceTest';
 import { answerPoints } from '@/lib/answerPoints';
+import { optionOrder } from '@/lib/optionOrder';
 import { onlyStudies, studiesIn } from '@/lib/studies';
 import type { Course } from '@/schema/course';
 import { normalisedRationale } from '@/lib/mcqRationale';
@@ -95,6 +96,8 @@ interface SavedTest {
   marks?: (boolean[] | null)[];
   /** Ended, and the written answers being ticked. */
   marking?: boolean;
+  /** Orders this test's options (lib/optionOrder), so a reload shows them as before. */
+  seed?: string;
   at: number;
   done: boolean;
   recorded: boolean;
@@ -136,6 +139,7 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
       answeredAt,
       marks,
       marking: !!saved.marking,
+      seed: typeof saved.seed === 'string' ? saved.seed : String(saved.savedAt),
       at: Math.min(Math.max(0, saved.at | 0), test.length - 1),
       done: !!saved.done,
       recorded: !!saved.recorded,
@@ -155,6 +159,7 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
   const [answeredAt, setAnsweredAt] = useState<(number | null)[]>(saved?.answeredAt ?? []);
   const [marks, setMarks] = useState<(boolean[] | null)[]>(saved?.marks ?? []);
   const [marking, setMarking] = useState(saved?.marking ?? false);
+  const [seed, setSeed] = useState(saved?.seed ?? '');
   const [at, setAt] = useState(saved?.at ?? 0);
   const [done, setDone] = useState(saved?.done ?? false);
   const recorded = useRef(saved?.recorded ?? false);
@@ -164,13 +169,13 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       if (!test) localStorage.removeItem(storageKey);
       else {
         const refs = test.map((q) => ({ courseId: q.courseId, itemId: q.item.id }));
-        const record: SavedTest = { refs, answers, answeredAt, marks, marking, at, done, recorded: recorded.current, savedAt: Date.now() };
+        const record: SavedTest = { refs, answers, answeredAt, marks, marking, seed, at, done, recorded: recorded.current, savedAt: Date.now() };
         localStorage.setItem(storageKey, JSON.stringify(record));
       }
     } catch {
       // Storage full or blocked: the test still works, it just won't survive a reload.
     }
-  }, [storageKey, test, answers, answeredAt, marks, marking, at, done]);
+  }, [storageKey, test, answers, answeredAt, marks, marking, seed, at, done]);
 
   const start = (questions: TestQuestion[]) => {
     setTest(questions);
@@ -178,6 +183,7 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
     setAnsweredAt(questions.map(() => null));
     setMarks(questions.map(() => null));
     setMarking(false);
+    setSeed(Math.random().toString(36));
     setAt(0);
     setDone(false);
     recorded.current = false;
@@ -260,6 +266,7 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       test={test}
       at={at}
       answers={answers}
+      seed={seed}
       onPick={(a) => {
         setAnswers((x) => test.map((_, n) => (n === at ? a : (x[n] ?? null))));
         setAnsweredAt((t) => test.map((_, n) => (n === at ? Date.now() : (t[n] ?? null))));
@@ -354,6 +361,7 @@ function Taking({
   test,
   at,
   answers,
+  seed,
   onPick,
   onBack,
   onNext,
@@ -363,6 +371,7 @@ function Taking({
   test: TestQuestion[];
   at: number;
   answers: TestAnswer[];
+  seed: string;
   onPick: (a: TestAnswer) => void;
   onBack: () => void;
   onNext: () => void;
@@ -374,6 +383,9 @@ function Taking({
   const last = at + 1 === test.length;
   const answered = answers.filter((a) => (typeof a === 'string' ? a.trim() : a != null)).length;
   const blank = typeof chosen === 'string' ? !chosen.trim() : chosen == null;
+  // Shown in the test's own order; answers are kept by the file's index.
+  const options = useMemo(() => (isWritten(q.item) ? [] : q.item.options), [q]);
+  const order = useMemo(() => optionOrder(options, `${seed}/${q.courseId}/${q.item.id}`), [options, q, seed]);
 
   useKeyboardShortcuts((e) => {
     // Enter on a focused control (Back, Leave, End and mark it) does what
@@ -384,9 +396,9 @@ function Taking({
     if (e.key === 'Enter' && focus?.closest('button, a') && !inOptions) return;
     if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && inOptions) return;
     const n = Number(e.key);
-    if (!isWritten(q.item) && Number.isInteger(n) && n >= 1 && n <= q.item.options.length) {
+    if (!isWritten(q.item) && Number.isInteger(n) && n >= 1 && n <= order.length) {
       e.preventDefault();
-      onPick(n - 1);
+      onPick(order[n - 1]);
     } else if (e.key === 'Enter' || e.key === 'ArrowRight') {
       e.preventDefault();
       onNext();
@@ -433,15 +445,16 @@ function Taking({
       <>
       <div className="prose-set mt-4 text-heading text-text">{q.item.question}</div>
       <div role="radiogroup" aria-label="Answer options" className="mt-4 space-y-2">
-        {q.item.options.map((opt, i) => {
-          const picked = chosen === i;
+        {order.map((k, i) => {
+          const opt = options[k];
+          const picked = chosen === k;
           return (
             <button
               key={i}
               type="button"
               role="radio"
               aria-checked={picked}
-              onClick={() => onPick(i)}
+              onClick={() => onPick(k)}
               className={`flex w-full items-center gap-3 border-0 border-b px-1 py-3 text-left text-small transition-colors ${
                 picked ? 'border-accent text-accent' : 'border-border text-text hover:border-text-3'
               }`}

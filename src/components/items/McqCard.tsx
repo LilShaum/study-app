@@ -2,13 +2,15 @@ import { useMemo, useState, type KeyboardEvent } from 'react';
 import type { McqItem } from '@/schema/course';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { normalisedRationale } from '@/lib/mcqRationale';
+import { inOrder, optionOrder } from '@/lib/optionOrder';
 import { DifficultyBadge } from './DifficultyBadge';
 import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
 
 interface McqCardProps {
   item: McqItem;
-  onAnswered?: (correct: boolean) => void;
+  /** `picked`: the chosen option's index in the lecture file, whatever order it was shown in. */
+  onAnswered?: (correct: boolean, picked: number) => void;
   /** Shows an inline "Next →" link after the answer is revealed. */
   onNext?: () => void;
   /** Only true for the single card in a study session, never in Browse. */
@@ -18,7 +20,11 @@ interface McqCardProps {
   learning?: boolean;
 }
 
-export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, frame = 'card', learning = false }: McqCardProps) {
+export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = false, frame = 'card', learning = false }: McqCardProps) {
+  // A new order at every showing, the key and notes following (lib/optionOrder).
+  const [seed] = useState(() => Math.random().toString(36));
+  const order = useMemo(() => optionOrder(written.options ?? [], seed + written.id), [written, seed]);
+  const item = useMemo(() => inOrder(written, order), [written, order]);
   const [selected, setSelected] = useState(-1);
   const [revealed, setRevealed] = useState(false);
   const options = item.options ?? [];
@@ -60,7 +66,7 @@ export function McqCard({ item, onAnswered, onNext, keyboardEnabled = false, fra
   const check = () => {
     if (selected < 0 || revealed) return;
     setRevealed(true);
-    if (!keyBroken) onAnswered?.(selected === item.correct_index);
+    if (!keyBroken) onAnswered?.(selected === item.correct_index, order[selected] ?? selected);
   };
 
   // 1-9 picks an option, Enter checks, then Enter advances. Matches the

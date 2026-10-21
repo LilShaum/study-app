@@ -26,20 +26,33 @@ describe('McqCard', () => {
     const onAnswered = vi.fn();
     render(<McqCard item={item()} onAnswered={onAnswered} />);
     answer('beta');
-    expect(onAnswered).toHaveBeenCalledWith(true);
+    // The index in the file, whatever order the options were shown in.
+    expect(onAnswered).toHaveBeenCalledWith(true, 1);
     expect(screen.getByText('✓ Correct')).toBeTruthy();
-    expect(screen.getByLabelText('B, the answer')).toBeTruthy();
+    expect(screen.getByLabelText(/, the answer$/).closest('button')!.textContent).toContain('beta');
   });
 
   it('names the correct option when you get it wrong', () => {
     const onAnswered = vi.fn();
     render(<McqCard item={item()} onAnswered={onAnswered} />);
     answer('gamma');
-    expect(onAnswered).toHaveBeenCalledWith(false);
+    expect(onAnswered).toHaveBeenCalledWith(false, 2);
     // The answer is marked in the list, and the verdict names its letter.
-    expect(screen.getByText(/the answer is B\./)).toBeTruthy();
-    expect(screen.getByLabelText('B, the answer')).toBeTruthy();
-    expect(screen.getByLabelText('C, your answer')).toBeTruthy();
+    const right = screen.getByLabelText(/, the answer$/);
+    expect(right.closest('button')!.textContent).toContain('beta');
+    const letter = right.getAttribute('aria-label')!.charAt(0);
+    expect(screen.getByText(new RegExp(`the answer is ${letter}\\.`))).toBeTruthy();
+    expect(screen.getByLabelText(/, your answer$/).closest('button')!.textContent).toContain('gamma');
+  });
+
+  it('shows the options in a new order across showings, the answer moving with them', () => {
+    const firsts = new Set<string>();
+    for (let k = 0; k < 30; k++) {
+      const { unmount } = render(<McqCard item={item()} />);
+      firsts.add(screen.getAllByRole('radio')[0].textContent!);
+      unmount();
+    }
+    expect(firsts.size).toBeGreaterThan(1);
   });
 
   /**
