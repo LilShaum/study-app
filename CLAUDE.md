@@ -67,6 +67,12 @@ this is the intent it serves.
 
 ## How to work here
 
+**Every ask goes in `docs/ASKS.md` the moment the owner makes it** (dated,
+their words), and leaves Open only when it is live or the owner drops it.
+The session-start hook prints the Open list; work it before proposing
+anything new, and when the owner asks "what's next", start from it. An ask
+kept only in chat or a task list is lost when the session ends.
+
 Plan first: keep a task list for anything over two steps, one task in
 progress at a time, and a task is done only when it is tested and live
 (pushed, merged to `main`, and the live site checked). Leave anything blocked

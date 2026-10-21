@@ -6,6 +6,13 @@
 # /opt/pw-browsers/chromium, so nothing is downloaded for it.
 set -euo pipefail
 
+# What the owner has asked for and is not done yet, in every session's
+# context from its first turn (docs/ASKS.md).
+if [ -f "$CLAUDE_PROJECT_DIR/docs/ASKS.md" ]; then
+  echo "Open asks from the owner (docs/ASKS.md), to work before anything new:"
+  sed -n '/^## Open/,/^## Done/p' "$CLAUDE_PROJECT_DIR/docs/ASKS.md" | sed '$d'
+fi
+
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi

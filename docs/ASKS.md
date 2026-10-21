@@ -1,0 +1,90 @@
+# What the owner has asked for
+
+Every request the owner makes goes here the moment it is made: dated, in
+their words where possible. It moves to Done only once it is live (pushed,
+merged to `main`, the live site checked), with where it lives. Something
+dropped says who dropped it and why. The Open list is printed at the start
+of every session (`.claude/hooks/session-start.sh`): work it before
+proposing anything new.
+
+This list exists because asks were lost between sessions: the owner asked
+long before 2026-10-14 for multiple-choice options to be shuffled, it was
+never written down, and on 2026-10-21 one generated lecture had every right
+answer in position A. History before 2026-10-14 is not on record; anything
+the owner remembers asking that is not here goes in when they say so.
+
+How the owner wants the app to work, as standing rules, is in CLAUDE.md
+("How the owner wants it to work"); this file is for things to get done.
+
+## Open
+
+- **Shuffle multiple-choice options** (asked before 2026-10-14, again
+  2026-10-21: "have u randomized multiple choice answers yet"). In
+  progress 2026-10-21.
+- **Wrong options that teach** (2026-10-17: "making good fake answers. like
+  mistakes a student would actually make or terms that are very similar";
+  2026-10-20: "well reasoned distractor answers that actually helps a
+  student learn gaps in their knowledge"; go 2026-10-21). Still to do:
+  remember which wrong option was picked and, when it is another card's
+  answer, pair the two in Review, with a mix-ups list on Progress; a
+  qualifier-swap distractor type in the generator ("never", "only",
+  "often" are what test nuance, 2026-10-20); a lecture check and cheap
+  repair for wrong options with no reason.
+- **Item counts follow importance** (2026-10-14). Prompt and check
+  shipped 2026-10-15; waits on a lecture generated with the current prompt
+  to confirm. Proposed and waiting on the owner's go: "mentioned" only for
+  names never explained; Add material skips only facts already tested at
+  the same depth (docs/HANDOFF.md §0).
+- **Nutrition lectures (EPHE 155)** (2026-10-20: "let me know if … i
+  should regenerate"). Answered: yes, regenerate per lecture with the
+  current prompt. Waits on the owner; do not upload the old EPHE 155
+  even-out file to the new lectures.
+- **ASTR 201 midterm** (2026-10-20). Lectures 2–6 delivered. Lecture 7 is
+  not on it (the teacher: up to the Cambrian explosion, lecture 6 page
+  40). Lecture 1 was never sent; ask if it is wanted. Captions of the
+  teacher's videos, if sent, can be folded in.
+
+## Waiting on the owner (do not start)
+
+- Anything that needs a real study log (2026-10-15: "put anything that
+  requires my real study logs on the back burner"): calibrating the
+  simulator, the three-cards-per-term limit, weighting by importance.
+
+## Done
+
+- 2026-10-21 Each way to study has one clear use, checked against the
+  owner's picture; Practice says what each choice is for. (CLAUDE.md,
+  EXPECTATIONS "Practice")
+- 2026-10-21 Written answers: short and long answers are written and
+  ticked point by point, in sessions and in the Practice test.
+  (lib/answerPoints, FlashcardCard, TestRoute)
+- 2026-10-21 Mistakes: a miss stays until right on a later day. (isMistake)
+- 2026-10-21 The owner's picture of the app, in CLAUDE.md, for future
+  sessions to check the app against (2026-10-21: "there should be an area
+  where u describe everything i tell you about how we want the app to work").
+- 2026-10-21 Lecture 7 question answered from the teacher's reply.
+- 2026-10-21 ASTR 201 lectures 2–6 as course files, assignments as the
+  guide to question style, concepts over niche values, maths notes folded
+  in (handed over, not in the repo).
+- 2026-10-20 Nutrition regeneration verdict, checked properly per lecture.
+- 2026-10-19 Mixed lectures closer to an exam: mixed by default in the week
+  before one. (lib/practice examSoon)
+- 2026-10-18 Better systems suggested and tested: mixed-lecture class
+  Practice, modelled in the simulator first.
+- 2026-10-17 Audit of the app's weak points. (docs/audits/2026-10-17)
+- 2026-10-17 iPhone header: dropped by the owner ("stop wasting time on
+  it"). Do not try again unless asked.
+- 2026-10-15 Practise every lecture of a class together, and a class
+  practice test. (class Practice, TestRoute)
+- 2026-10-15 Studies easy to reach: practise only the study cards. (lib/studies)
+- 2026-10-15 Unflip a flashcard ("Flip back").
+- 2026-10-15 Slides explained only in class: a cited study may be filled in
+  from outside the slides, labelled. (generator.md)
+- 2026-10-15 Expectations for every feature written out. (docs/EXPECTATIONS.md)
+- 2026-10-14 Practice test of medium and hard questions. (TestRoute)
+- 2026-10-14 The generator reasons about why the teacher showed each slide:
+  objectives, summaries, titles, bullets, studies, what comes before and
+  after. (generator.md, pass 1 reading map)
+- 2026-10-14 Basics keep their definition cards.
+- 2026-10-14 Diagrams the AI cannot read: listed as unclear figures, and
+  the PDF attached. (generator.md, lecture check)
