@@ -358,6 +358,11 @@ covers the wrong answers is ambiguous about which slot is which.)
 { "id", "type": "flashcard", "front", "back", "hint"?,
   "difficulty", "tags", "source_excerpt" }
 ```
+A flashcard that asks for an answer in several points (explain, give three,
+compare: the short and long answers an exam has the student write) writes
+`back` as numbered points, "(1) … (2) … (3) …", one per point a marker
+would give a mark for, and is tagged `short-answer` (or `long-answer`). The
+app asks it as a written answer, and the student ticks each point they made.
 
 **`definition`** — a term and its precise meaning, faithful to the source's own phrasing.
 ```

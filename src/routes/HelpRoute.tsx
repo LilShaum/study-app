@@ -65,6 +65,7 @@ const SHORTCUTS: { keys: string; what: string }[] = [
   { keys: 'Enter', what: 'Check your answer, or go to the next item' },
   { keys: 'Space', what: 'Flip a flashcard' },
   { keys: 'G / M', what: 'Mark a flashcard as got it / missed it' },
+  { keys: '1 – 9', what: 'Tick a point of a written answer; Enter when done' },
   { keys: '← →', what: 'Previous / next item' },
   { keys: 'Esc', what: 'Leave the session' },
 ];
@@ -185,6 +186,11 @@ const SECTIONS: HelpSection[] = [
     body: (
       <>
         <p>Questions, flashcards and typed terms are scored. Examples and diagrams are for reading.</p>
+        <p className="mt-2">
+          A short- or long-answer question, the kind an exam has you write, is asked as one: write your answer (or
+          answer in your head), then tick each point of the model answer you made. It counts as got it only with every
+          point, as full marks would.
+        </p>
         <p className="mt-2">
           An answer counts wherever you give it, in any mode. The app uses your answers to work out
           how well you remember each item, and that decides what comes back in Today and Practice, how full the

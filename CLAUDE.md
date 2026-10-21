@@ -19,6 +19,42 @@ must never be committed, pushed, or saved inside this folder.
   uncommitted changes: `*.study.json` is ignored by git for this reason.
 - Test courses for the app live in `scripts/__fixtures__/` and are made up.
 
+## How the owner wants it to work
+
+The picture the owner has of the app, in their words where they gave them.
+How the app actually works and feels can drift from it: check a feature
+against its line before changing it, treat a gap as work worth proposing,
+and add a line here whenever the owner says how something should be
+(dated, short). `docs/EXPECTATIONS.md` has each feature's working detail;
+this is the intent it serves.
+
+- **Every way to study has one clear use**, a reason to pick it over the
+  others. Two modes that do the same job are a gap (2026-10-21).
+- **Today:** like Duolingo in how easy it is: open it anywhere, on a bus,
+  and study a bit every day. Not in streaks or guilt: the reason to come
+  back is what is fading (2026-10-21).
+- **Learn:** takes you through the lecture the way the teacher did, in the
+  slides' order, so you can follow along in your slides or your own notes
+  beside it. No drastic changes to how it teaches (2026-10-21).
+- **Practice:** mixed lectures, closer to an exam, as the exam gets near
+  (2026-10-19).
+- **Practice test and written questions:** what you practise should look
+  like what the exam asks. Where a class's exam is calculations, short and
+  long answers, the app should have you write them (2026-10-21).
+- **Wrong options:** a well-reasoned wrong answer that shows a gap in
+  what you know matters more than equal length. Words like never, only,
+  often are what test the nuance and are not a giveaway (2026-10-20).
+- **Course content:** where a class is about concepts, the cards are too,
+  not niche values. The assignments show what kind of question the exam
+  asks; extrapolate that to the other topics. The slides' titles, bullets
+  that lead into each other, overviews and summary slides show what
+  matters (2026-10-20).
+- **How the owner studies:** reads the slides or notes, then answers from
+  memory; Learn section by section alongside the notes.
+- **Working with the owner:** usage is limited, so ask before expensive
+  work and run one agent at a time. "What's next?" means work you can do
+  without them. Done means tested and live.
+
 ## Working on the app
 
 - `prompts/generator.md` is the generator prompt the app hands out (imported

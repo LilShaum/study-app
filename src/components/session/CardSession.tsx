@@ -25,6 +25,7 @@ import { sectionsToLearn } from '@/lib/nextToLearn';
 import { useLearnStore } from '@/store/learn';
 import { lectureName, lecturesOf } from '@/lib/classExams';
 import { choiceOf, countBasis, practiceCount, practiceLink } from '@/lib/practice';
+import { answerPoints } from '@/lib/answerPoints';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
 
@@ -110,6 +111,20 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
     ...NAV_HINTS,
   ],
 };
+
+/** A short- or long-answer card (lib/answerPoints) has its own keys, whatever the mode. */
+const WRITTEN_HINTS: KeyHint[] = [
+  { keys: ['Space'], label: 'show the answer' },
+  { keys: ['1', '–', '9'], label: 'tick a point' },
+  { keys: ['Enter'], label: 'done' },
+  ...NAV_HINTS,
+];
+const ONE_POINT_HINTS: KeyHint[] = [
+  { keys: ['Space'], label: 'show the answer' },
+  { keys: ['G'], label: 'got it' },
+  { keys: ['M'], label: 'missed it' },
+  ...NAV_HINTS,
+];
 
 const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
   learn: { title: 'Nothing to learn yet', text: 'This lecture has no items to walk through.' },
@@ -266,6 +281,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   const index = useSessionStore((s) => s.index);
   const score = useSessionStore((s) => s.score);
   const current = useSessionStore((s) => s.current());
+  const written = current?.type === 'flashcard' ? answerPoints(current) : null;
+  const hints = written ? (written.points.length === 1 ? ONE_POINT_HINTS : WRITTEN_HINTS) : KEY_HINTS[mode];
   const total = useSessionStore((s) => s.total());
   const hasNext = useSessionStore((s) => s.hasNext());
   const hasPrev = useSessionStore((s) => s.hasPrev());
@@ -956,7 +973,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       <p
         className={`mt-4 hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-3 lg:!hidden ${pause ? '' : '[@media(hover:hover)]:flex'}`}
       >
-        {KEY_HINTS[mode].map((hint) => (
+        {hints.map((hint) => (
           <span key={hint.keys.join()} className="flex items-center gap-1">
             {hint.keys.map((k) => (
               <kbd key={k} className="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-[11px]">
@@ -973,7 +990,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         index={index}
         course={course}
         score={score}
-        hints={pause ? [] : KEY_HINTS[mode]}
+        hints={pause ? [] : hints}
         // A mixed sitting shows neither which lecture the card is from (that
         // is part of the question) nor its parts (a run is a card or two).
         parts={!mixedClass}

@@ -262,6 +262,24 @@ reloads the app after switching away) until the student starts a new one.
 Answers count as practice once, when the test is marked, so Today knows
 what the test found.
 
+### Written answers
+
+**Goal.** Practise the questions an exam asks you to write (short and long
+answers, a worked calculation) by writing them, not by flipping a card.
+
+**How it works.** A flashcard whose back is numbered points, "(1) … (2) …",
+or that is tagged `short-answer`, `long-answer` or `assignment-style`, is
+asked as a written answer wherever it comes up (Learn, Today, Practice).
+Write the answer in the box, or answer in your head, then Show the answer:
+what you wrote stays above the model answer, and you tick each of its
+points you made. Every point ticked counts as got it; fewer counts as a
+miss and comes back sooner. A card with one point asks Got it or Missed it.
+Numbers tick points, Enter is Done (lib/answerPoints, FlashcardCard).
+
+**Working means.** A point is never split mid-sentence; a number inside a
+point ("2) hours") does not start a new one; an ordinary flashcard stays a
+flip card.
+
 ### The memory model and review
 
 **Goal.** Bring each card back when it is about to be forgotten.
