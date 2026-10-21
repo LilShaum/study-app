@@ -20,7 +20,7 @@ function isStudyMode(mode: string | undefined): mode is StudyMode {
  * starts from the course's saved bookmark. Both are search params rather than
  * path segments so that every existing session link keeps working and means
  * exactly what it did before. `?kind=questions|flashcards|terms` is the
- * Practice page's filter for Review, Weakest first and Review missed, and
+ * Practice page's filter for Review, Weakest first and Mistakes, and
  * `?study=all|<key>` keeps only the cards on studies (lib/studies.ts).
  * `?class=CODE&mix=1` is a class's Practice with its lectures mixed in one
  * sitting (store/session initMixed); `:id` is then the lecture it opened in.

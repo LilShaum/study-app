@@ -53,7 +53,7 @@ const MODE_LABELS: Record<string, string> = {
   definitions: 'Terms',
   mixed: 'Mixed',
   weakest: 'Weakest first',
-  missed: 'Review missed',
+  missed: 'Mistakes',
   review: 'Review',
   browse: 'Browse',
   today: 'Today',

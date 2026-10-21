@@ -10,7 +10,6 @@ describe('isMissed — the latest answer decides', () => {
     useProgressStore.getState().recordResult('m', 'x', true);
     // 1 right, 3 wrong: the counts would still call it missed.
     expect(isMissed(useProgressStore.getState().getProgress('m').x)).toBe(false);
-    expect(useProgressStore.getState().missedIds('m').has('x')).toBe(false);
   });
 
   it('follows an override of the latest answer', async () => {
@@ -54,5 +53,30 @@ describe('what an answer keeps', () => {
     useProgressStore.getState().recordResult('k3', 'c', false);
     useProgressStore.getState().recordResult('k3', 'c', true);
     expect(useProgressStore.getState().getProgress('k3').c.confusedWith).toEqual(['other']);
+  });
+});
+
+describe('isMistake: Practice keeps a miss until it is right on a later day', () => {
+  const day = 86_400_000;
+  const at = new Date(2026, 9, 21, 10).getTime();
+
+  it('keeps a card got right minutes after its miss, and lets it go when right a later day', async () => {
+    const { isMistake } = await import('./progress');
+    expect(isMistake({ got: 1, missed: 1, lastSeen: at + 60_000, lastGot: true, missedAt: at })).toBe(true);
+    expect(isMistake({ got: 1, missed: 1, lastSeen: at + day, lastGot: true, missedAt: at })).toBe(false);
+    expect(isMistake({ got: 0, missed: 1, lastSeen: at, lastGot: false, missedAt: at })).toBe(true);
+    expect(isMistake({ got: 2, missed: 0, lastSeen: at, lastGot: true })).toBe(false);
+    expect(isMistake(undefined)).toBe(false);
+  });
+
+  it('is what the store lists, and an overruled miss is not one', async () => {
+    const { useProgressStore } = await import('./progress');
+    const s = useProgressStore.getState();
+    s.recordResult('k', 'a', false);
+    s.recordResult('k', 'a', true);
+    expect(useProgressStore.getState().missedIds('k').has('a')).toBe(true);
+    s.recordResult('k', 'b', false);
+    s.reviseResult('k', 'b', true);
+    expect(useProgressStore.getState().missedIds('k').has('b')).toBe(false);
   });
 });

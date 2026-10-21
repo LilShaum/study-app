@@ -82,7 +82,7 @@ function loadChoice(scope: string): Saved | null {
  * outside the plan.
  *
  * It replaces six format-named modes on the course page (Quiz, Flashcards,
- * Terms, Mixed, Weakest first, Review missed) and the separate Review row.
+ * Terms, Mixed, Weakest first, Mistakes) and the separate Review row.
  * They were one question asked six ways: which cards, of which kind, from
  * where. Here each is a choice of its own, with how many cards it would give.
  *

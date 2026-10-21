@@ -18,7 +18,7 @@ export type Kind = 'all' | CardKind;
 export const CARDS: { value: Cards; label: string }[] = [
   { value: 'due', label: 'Due now' },
   { value: 'weakest', label: 'Weakest first' },
-  { value: 'missed', label: 'Missed last time' },
+  { value: 'missed', label: 'Mistakes' },
   { value: 'everything', label: 'Everything' },
 ];
 

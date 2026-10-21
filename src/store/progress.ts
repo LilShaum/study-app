@@ -47,6 +47,18 @@ export function isMissed(r: ItemResult | undefined): boolean {
   return r.lastGot != null ? !r.lastGot : r.missed > r.got;
 }
 
+/**
+ * Practice's Mistakes: missed, and not yet got right on a later day than the
+ * miss. A right answer minutes after a miss is the answer just seen, and
+ * held nothing on a later day in the simulator (sim/FINDINGS.md,
+ * 2026-10-12); it used to take the card off the list. The same rule keeps a
+ * mix-up (confusedWith).
+ */
+export function isMistake(r: ItemResult | undefined): boolean {
+  if (isMissed(r)) return true;
+  return r?.lastGot === true && r.missedAt != null && r.lastSeen != null && sameDay(r.missedAt, r.lastSeen);
+}
+
 type CourseProgress = Record<string, ItemResult>;
 
 /**
@@ -117,7 +129,7 @@ export const useProgressStore = create<ProgressState>()(
         return new Set(
           Object.keys(progress).filter((itemId) => {
             const r = progress[itemId];
-            return isMissed(r);
+            return isMistake(r);
           }),
         );
       },

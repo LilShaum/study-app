@@ -212,8 +212,8 @@ two-card dead ends.
 **Goal.** Drill outside the plan: before a quiz, or on a section that feels
 shaky.
 
-**How it works.** One page: which cards (due now, weakest first, missed
-last time, everything) × which kind (questions, flashcards, typed terms) ×
+**How it works.** One page: which cards (due now, weakest first,
+mistakes, everything) × which kind (questions, flashcards, typed terms) ×
 which part of the lecture: a section, or its studies (every card about an
 empirical study, or one study; `lib/studies.ts`). A class page has the same
 Practice across all its lectures, where the part is a lecture or a study.
@@ -231,6 +231,11 @@ sitting and reaching every lecture in a short one (`sim/FINDINGS.md`,
 2026-10-18). A pick holds in the situation it was made in: one made weeks
 before does not keep exam week one at a time, and one made in exam week
 does not outlast the exam.
+Mistakes holds a card from its miss until it is got right on a later day
+(`isMistake`): a right answer minutes after the miss used to clear it, and
+in the simulator such a retry kept nothing for a later day (sim/FINDINGS.md,
+2026-10-12). A miss is not asked again within a Practice sitting for the
+same reason; Review brings it back a few hours on.
 Choices are remembered per lecture and per class. It says plainly that
 cards not yet fading gain little. The count beside each choice is cards to
 answer; under Start, a line says what the sitting holds when that differs
