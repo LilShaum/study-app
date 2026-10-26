@@ -53,7 +53,8 @@ describe('FlashcardCard, moving between cards', () => {
     rerender(<FlashcardCard item={card({ id: 'f2', back: '(1) A. (2) B. (3) C. (4) D.' })} />);
     expect((screen.getByLabelText('Your answer') as HTMLTextAreaElement).value).toBe('');
     fireEvent.click(screen.getByRole('button', { name: 'Show the answer' }));
-    expect(screen.getByRole('button', { name: 'Done: 0 of 4' })).toBeTruthy();
+    // "Name three" of four listed: three is full marks.
+    expect(screen.getByRole('button', { name: 'Done: 0 of 3' })).toBeTruthy();
   });
 });
 
@@ -78,5 +79,17 @@ describe('FlashcardCard, I don’t know', () => {
     expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     expect(onMissed).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('FlashcardCard, any three of five', () => {
+  it('counts three ticked as got it', () => {
+    const onGot = vi.fn();
+    render(<FlashcardCard item={card({ front: 'Name three sources.', back: 'Any three of: (1) A1. (2) B2. (3) C3. (4) D4. (5) E5.' })} onGot={onGot} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Show the answer' }));
+    expect(screen.getByText(/any 3 of these 5/)).toBeTruthy();
+    for (const p of ['A1.', 'C3.', 'E5.']) fireEvent.click(screen.getByLabelText(p));
+    fireEvent.click(screen.getByRole('button', { name: 'Done: 3 of 3' }));
+    expect(onGot).toHaveBeenCalledTimes(1);
   });
 });

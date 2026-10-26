@@ -26,6 +26,9 @@ import { answerPoints } from './answerPoints';
 /** Terms taught per step. Four keeps a step to roughly ten cards on a dense section. */
 export const STEP_TERMS = 4;
 
+/** Cards to write that a section asks in its first sitting; the rest wait for the next. */
+export const WRITTEN_PER_SITTING = 2;
+
 /** Cards asked on one term at its first meeting, its typed name included; the rest wait a sitting. */
 export const TERM_BUDGET = 3;
 
@@ -503,6 +506,19 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
     held.push(...built[0].filter(isWritten));
     built = [built[0].filter((i) => !isWritten(i))];
   }
+  // No more than WRITTEN_PER_SITTING cards to write in a section's first
+  // sitting: four in a row at a section's end was the owner's "five write
+  // the answer questions about shit I don't know" (2026-10-26). The rest wait
+  // for the second look, the next sitting.
+  let writtenLeft = WRITTEN_PER_SITTING;
+  built = built.map((step) =>
+    step.filter((item) => {
+      if (!isWrittenCard(item)) return true;
+      if (writtenLeft-- > 0) return true;
+      held.push(item);
+      return false;
+    }),
+  );
   built = built.map((step) =>
     step.filter((item) => {
       if (phaseOf(item.type) === 'read') return true;

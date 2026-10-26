@@ -65,6 +65,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-10-26 From the owner's nutrition screenshots: "Name three" of five
+  listed is full marks at three (it demanded all five); a list question is
+  judged by whether its points explain anything, not their length (the
+  design-questions and credentialed-experts cards were missed); at most two
+  cards to write per section in a sitting, the rest the next.
+
 - 2026-10-26 Write the answer only where it belongs (2026-10-26): the
   generator has a "which type for what" table and a strict rule for written
   questions (rare, a key idea the lecture explains in connected points,

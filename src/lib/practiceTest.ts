@@ -135,7 +135,8 @@ export interface TestResult {
  */
 export function answeredRight(item: TestItem, answer: TestAnswer, ticks?: boolean[] | null): boolean {
   if (!isWritten(item)) return answer === item.correct_index;
-  return answer != null && !!ticks?.length && ticks.every(Boolean);
+  const need = answerPoints(item)?.need ?? ticks?.length ?? 1;
+  return answer != null && !!ticks?.length && ticks.filter(Boolean).length >= need;
 }
 
 /** Scores answers against the test; `marks` holds each written question's ticked points. */

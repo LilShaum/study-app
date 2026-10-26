@@ -3,7 +3,7 @@ import { analyseCourseGaps, type CourseGaps } from './courseGaps';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 import { analyseQuestionQuality, type QuestionQuality } from './questionQuality';
 import { normalisedRationale } from './mcqRationale';
-import { answerPoints } from './answerPoints';
+import { answerPoints, isListOfNames } from './answerPoints';
 import { givesAway, restatesDefinition, sameFact, sameName, type Asked } from './contentChecks';
 import { acceptedForms, normalise } from './typedAnswer';
 import { sectionDensity } from './sectionDensity';
@@ -56,8 +56,6 @@ function promptOf(item: StudyItem): string {
  * makes two items share one score, and a term that is defined but never asked
  * about is read and never retrieved.
  */
-/** Points this short on average are a list, not an explanation (lib/answerPoints). */
-const WRITTEN_LIST_WORDS = 4;
 /** Questions to write out a section can carry before they crowd it. */
 const WRITTEN_PER_SECTION = 2;
 
@@ -131,18 +129,12 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       (i): i is Extract<StudyItem, { type: 'flashcard' }> => i.type === 'flashcard' && !i.set_aside && (answerPoints(i)?.points.length ?? 0) >= 2,
     ),
   }));
-  const wordsIn = (t: string) => t.trim().split(/\s+/).filter(Boolean).length;
-  const lists = written
-    .flatMap((w) => w.cards)
-    .filter((c) => {
-      const points = answerPoints(c)!.points;
-      return points.reduce((n, p) => n + wordsIn(p), 0) / points.length <= WRITTEN_LIST_WORDS;
-    });
+  const lists = written.flatMap((w) => w.cards).filter((c) => isListOfNames(answerPoints(c)!.points));
   if (lists.length) {
     findings.push({
       id: 'written-list',
       severity: 'warning',
-      message: `${lists.length} question${lists.length === 1 ? ' asks' : 's ask'} you to write out a list of a word or two each, with no explanation to learn from. Multiple choice tests a list better.`,
+      message: `${lists.length} question${lists.length === 1 ? ' asks' : 's ask'} you to write out a list (names or labels, nothing explaining why or how). Multiple choice tests a list better.`,
       items: lists.map((c) => c.id),
     });
   }

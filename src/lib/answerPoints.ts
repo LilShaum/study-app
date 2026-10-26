@@ -15,6 +15,22 @@ export interface AnswerPoints {
   lead: string;
   /** One entry per point to find in the answer; never empty. */
   points: string[];
+  /**
+   * How many points make full marks: every one, unless the question asks
+   * for some of them ("Name three…" with five listed, "Any three of:").
+   */
+  need: number;
+}
+
+const NUMBER_WORDS: Record<string, number> = { two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+/** "Name three…", "any 3 of": a number the student is asked for, not a count of marks. */
+const ASKED_FOR = /\b(?:name|list|give|state|identify|any)\s+(two|three|four|five|six|seven|eight|nine|ten|\d{1,2})\b(?!\s*marks?)/i;
+
+/** The points needed for full marks: the number asked for, when it is fewer than the points listed. */
+function needed(text: string, points: number): number {
+  const m = ASKED_FOR.exec(text);
+  const n = m ? (NUMBER_WORDS[m[1].toLowerCase()] ?? Number(m[1])) : NaN;
+  return n >= 1 && n < points ? n : points;
 }
 
 const WRITTEN_TAGS = new Set(['short-answer', 'long-answer', 'assignment-style']);
@@ -38,14 +54,16 @@ export function splitPoints(back: string): AnswerPoints | null {
   if (found.length < 2) return null;
   const points = found.map((f, k) => back.slice(f.end, found[k + 1]?.at ?? back.length).trim()).filter(Boolean);
   if (points.length < 2) return null;
-  return { lead: back.slice(0, found[0].at).trim(), points };
+  const lead = back.slice(0, found[0].at).trim();
+  return { lead, points, need: needed(lead, points.length) };
 }
 
 /** How to check a written answer to this card, or null for an ordinary flip card. */
-export function answerPoints(item: Pick<FlashcardItem, 'back' | 'tags'>): AnswerPoints | null {
+export function answerPoints(item: Pick<FlashcardItem, 'back' | 'tags'> & { front?: string }): AnswerPoints | null {
   const split = splitPoints(item.back);
-  if (split) return split;
-  return item.tags?.some((t) => WRITTEN_TAGS.has(t)) ? { lead: '', points: [item.back.trim()] } : null;
+  // The question may ask for some of the points listed ("Name three…").
+  if (split) return { ...split, need: Math.min(split.need, needed(item.front ?? '', split.points.length)) };
+  return item.tags?.some((t) => WRITTEN_TAGS.has(t)) ? { lead: '', points: [item.back.trim()], need: 1 } : null;
 }
 
 const WRITTEN_TITLE = /^(long|short)[- ]answer\b/i;
@@ -81,4 +99,24 @@ export function writtenFromExample(ex: ExampleItem): FlashcardItem {
     ...(ex.source_excerpt ? { source_excerpt: ex.source_excerpt } : {}),
     ...(ex.set_aside ? { set_aside: ex.set_aside } : {}),
   } as FlashcardItem;
+}
+
+/** A point that says why or how: a reason, a consequence, a mechanism, not a bare name. */
+const GLOSS = /,\s*(the|a|an|its|their)\s/i;
+const EXPLAINS = /\b(because|so|since|which|that|by|when|means|leads?|causes?|therefore|thus|while|whereas|through|in order|due to)\b/i;
+
+/**
+ * Points that explain nothing: names, labels, short questions. A list asked
+ * as "Write the answer" is memorised on the spot, word by word (the owner's
+ * nutrition lectures, 2026-10-26: five organizations, five qualities of a
+ * diet, four design questions). It belongs in multiple choice.
+ */
+export function isListOfNames(points: readonly string[]): boolean {
+  const explains = (p: string) =>
+    // A question to ask is a label, however long ("Was it double-blind?").
+    !p.trim().endsWith('?') &&
+    // A reason, a gloss after a comma ("Liquid water, the solvent life's
+    // chemistry needs"), or a sentence long enough to carry one.
+    (EXPLAINS.test(p) || GLOSS.test(p) || p.trim().split(/\s+/).length >= 12);
+  return points.filter(explains).length * 2 < points.length;
 }

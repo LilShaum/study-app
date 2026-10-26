@@ -674,7 +674,7 @@ function Marking({
               <div className="flex items-baseline justify-between gap-3">
                 <span className="mark text-text-3">Question {i + 1}</span>
                 <span className="text-xs tabular-nums text-text-3">
-                  {made} of {points.length}
+                  {made} of {answerPoints(item)?.need ?? points.length}
                 </span>
               </div>
               <div className="prose-set mt-1 text-body text-text">{item.front}</div>

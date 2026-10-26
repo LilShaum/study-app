@@ -189,6 +189,9 @@ function WrittenCard({
   const [dontKnow, setDontKnow] = useState(false);
   const fieldId = useId();
   const one = answer.points.length === 1;
+  // "Name three" of five listed: three is full marks (lib/answerPoints need).
+  const need = answer.need;
+  const some = need < answer.points.length;
   const made = ticked.filter(Boolean).length;
 
   const grade = (got: boolean) => {
@@ -225,7 +228,7 @@ function WrittenCard({
       toggle(k);
     } else if (!one && e.key === 'Enter') {
       e.preventDefault();
-      grade(made === answer.points.length);
+      grade(made >= need);
     } else if (one && (e.key === 'g' || e.key === 'G' || e.key === 'm' || e.key === 'M')) {
       e.preventDefault();
       grade(e.key.toLowerCase() === 'g');
@@ -306,7 +309,9 @@ function WrittenCard({
                 <p className="mt-4 font-display text-heading text-text">{answer.points[0]}</p>
               ) : (
                 <>
-                  <p className="mark mt-4 text-text-3">The points to make</p>
+                  <p className="mark mt-4 text-text-3">
+                    The points to make{some && ` (any ${need} of these ${answer.points.length})`}
+                  </p>
                   <ol className="mt-1 border-y border-border">
                     {answer.points.map((point, k) => (
                       <li key={k} className="flex gap-3 border-b border-border py-2.5 text-body text-text last:border-b-0">
@@ -340,6 +345,7 @@ function WrittenCard({
             <>
               <p className="mark mt-4 text-text-3">
                 {written.trim() ? 'Tick each point you made' : 'Tick each point you would have made'}
+                {some && ` (any ${need} of these ${answer.points.length})`}
               </p>
               <ul className="mt-1 border-y border-border">
                 {answer.points.map((point, k) => (
@@ -359,13 +365,13 @@ function WrittenCard({
               <div className="mt-5 flex flex-wrap items-baseline gap-3">
                 <button
                   type="button"
-                  onClick={() => grade(made === answer.points.length)}
-                  className={`press tap-safe ${made === answer.points.length ? 'press-yes' : 'press-ink'}`}
+                  onClick={() => grade(made >= need)}
+                  className={`press tap-safe ${made >= need ? 'press-yes' : 'press-ink'}`}
                 >
-                  Done: {made} of {answer.points.length}
+                  Done: {Math.min(made, need)} of {need}
                 </button>
                 <span className="text-small text-text-3">
-                  {made === answer.points.length ? 'Every point: counted as got it.' : 'Short of every point, it comes back sooner.'}
+                  {made >= need ? (some ? `${need} of them: counted as got it.` : 'Every point: counted as got it.') : 'Short of full marks, it comes back sooner.'}
                 </span>
               </div>
             </>

@@ -341,3 +341,21 @@ describe('Learn: writing comes after multiple choice', () => {
     expect(second.at(-1)?.id).toBe('w3');
   });
 });
+
+describe('Learn: a few written questions at a time', () => {
+  it('asks at most two in a section’s first sitting, the rest in the next', () => {
+    const said = [
+      '',
+      '(1) Hormone binding activates it, because the receptor changes shape. (2) Activation produces cyclic AMP, which spreads the signal.',
+      '(1) GTP swaps for GDP when the receptor fires, so the alpha subunit frees itself. (2) That subunit then switches on the enzyme nearby.',
+      '(1) Cyclic AMP releases the catalytic subunits by binding the regulatory pair. (2) Freed subunits phosphorylate target proteins across the cytoplasm.',
+      '(1) Breaking cyclic AMP down ends the message, which keeps signals brief. (2) Caffeine blocks this step, so effects last longer.',
+    ];
+    const w = (n: number) => ({ id: `w${n}`, type: 'flashcard', front: `Explain ${TERMS[n]}?`, back: said[n] }) as StudyItem;
+    const items = whole([...defs, mcq('q1', 'What does Calmodulin bind?'), w(1), w(2), w(3), w(4)]);
+    const first = items.filter((i) => !i._second && /^w\d$/.test(i.id));
+    const second = items.filter((i) => i._second && /^w\d$/.test(i.id));
+    expect(first).toHaveLength(2);
+    expect(second).toHaveLength(2);
+  });
+});
