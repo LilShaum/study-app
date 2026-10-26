@@ -23,7 +23,15 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   teaches is actually effective … I don't want to have to spell everything
   out for you"). Brainstorm and test properly before building; think of the
   obvious QOL basics without being asked (shuffled options and "I don't
-  know" were missed for weeks).
+  know" were missed for weeks). Standing, never closed.
+  Round 1 (2026-10-26, live): from reading a real Learn sitting, a worked
+  example now comes before the cards that practise it, exam answers to
+  write come last in their section, and long answers are asked and scored
+  instead of only read. Next, from the same reading: a one-term step asks
+  the term straight after showing it (the weakest first test); an MCQ can
+  still land before the idea it needs when it names only an earlier term
+  (a decay-chain question in step 1); a plain flashcard's "Got it" is
+  still the kindest grade in the app (type or write the short ones?).
 - **Nutrition lectures (EPHE 155)** (2026-10-20: "let me know if … i
   should regenerate"). Answered: yes, regenerate per lecture with the
   current prompt. Waits on the owner; do not upload the old EPHE 155
