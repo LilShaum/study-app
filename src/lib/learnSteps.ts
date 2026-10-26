@@ -3,6 +3,7 @@ import type { AnyItem, SessionItem } from './buildSessionItems';
 import { recallId } from './scored';
 import { answeredBy, type Asked } from './contentChecks';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
+import { answerPoints } from './answerPoints';
 
 /**
  * Learn, in steps.
@@ -104,6 +105,21 @@ function excerptWords(item: SessionItem): Set<string> {
   const excerpt = 'source_excerpt' in item ? item.source_excerpt : undefined;
   return new Set([...termTokens(excerpt ?? '')].filter((w) => w.length >= 4));
 }
+
+/**
+ * A card practises a worked example when most of its own words are in the
+ * example: the same quantities, the same method. Measured on five real
+ * lectures, such pairs share 0.5 to 0.84 of the card's words; unrelated
+ * cards of the same section, under 0.4.
+ */
+const PRACTISES = 0.5;
+
+function contentWords(item: SessionItem): Set<string> {
+  return new Set([...termTokens(textOf(item))].filter((w) => w.length >= 4));
+}
+
+/** A short- or long-answer question, asked written (lib/answerPoints). */
+const isWritten = (item: SessionItem): boolean => item.type === 'flashcard' && !!answerPoints(item);
 
 function overlap(a: Set<string>, b: Set<string>): number {
   const small = a.size <= b.size ? a : b;
@@ -357,6 +373,8 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   }
 
   const readAt = new Map(defs.map((d, k) => [d.id, k]));
+  const exampleWords = new Map(others.filter((i) => i.type === 'example').map((ex) => [ex, contentWords(ex)]));
+  const cardWords = new Map(others.filter((i) => i.type === 'flashcard' || i.type === 'mcq').map((i) => [i, contentWords(i)]));
 
   /** Which step every item goes in, with the terms cut into `defSteps` steps. */
   const place = (defSteps: number) => {
@@ -398,6 +416,24 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
         ofType.forEach((item, k) => stepOf.set(item, Math.floor((k * defSteps) / ofType.length)));
       }
     }
+    // A card that practises a worked example comes after it, never before:
+    // placed by the terms it names, a calculation could be set a step before
+    // the formula and the example that shows the method (a real lecture,
+    // 2026-10-26). The example teaches, then the card asks.
+    for (const [ex, words] of exampleWords) {
+      const at = stepOf.get(ex);
+      if (at == null) continue;
+      for (const item of others) {
+        if (item.type !== 'flashcard' && item.type !== 'mcq') continue;
+        if ((stepOf.get(item) ?? 0) >= at) continue;
+        const own = cardWords.get(item)!;
+        if (own.size >= 3 && [...own].filter((w) => words.has(w)).length / own.size >= PRACTISES) stepOf.set(item, at);
+      }
+    }
+    // An exam question to write (a short or long answer) pulls the section
+    // together: it is asked in the last step, once its parts have been taught
+    // and asked, so the whole answer is recalled rather than just read.
+    for (const item of others) if (isWritten(item)) stepOf.set(item, steps - 1);
     for (const item of group) {
       if (item.type === 'definition') stepOf.set(item, stepOfDef.get(item.id)!);
       if (item.type === 'recall') stepOf.set(item, stepOfDef.get(item.target.id) ?? 0);
@@ -419,7 +455,8 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       out.push(
         inStep
           .map((item, i) => ({ item, i: rank(item, i) }))
-          .sort((a, b) => ORDER[a.item.type] - ORDER[b.item.type] || a.i - b.i)
+          // A written question last of all: it gathers what the step asked.
+          .sort((a, b) => Number(isWritten(a.item)) - Number(isWritten(b.item)) || ORDER[a.item.type] - ORDER[b.item.type] || a.i - b.i)
           .map(({ item }) => item),
       );
     }

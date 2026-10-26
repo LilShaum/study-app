@@ -10,6 +10,32 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-26 — Learn: worked example before its practice, written answers last; an artifact removed
+
+**Change.** In Learn, a card that practises a worked example (most of its
+words in the example) is asked after the example, never in an earlier step
+(`lib/learnSteps.ts` PRACTISES); a short or long answer to write is asked
+last in its section; and a long answer laid out as an example is asked as a
+written question and scored (`lib/answerPoints.ts` isWrittenExample). Found
+by reading a real sitting: a calculation came a step before its formula and
+both worked examples, and every long answer was only ever read.
+
+**Assumption changed.** The first run moved the suite by 1 to 5 points
+(held ≥0.8 −5 in steady-30-half-scope) with the rule on and not at all with
+it off: the synthetic examples were written from the same 17 filler words
+as the cards, so every card read as practising every example. Examples now
+have their own filler (`EXAMPLE_FILLER` in sim/course.ts) and share words
+with a card only through the terms both name. With that, the suite is
+exactly the baseline.
+
+**What it means.** The simulator cannot judge this change: its cards have no
+relation to its examples, and its student does not learn from reading an
+example. The case for it is the ordering principle Learn already holds (a
+step never asks what it has not shown) and the delayed first test
+(docs/evidence.md). On the owner's 16 real lectures the rule touches 483
+of 1923 cards, and the sampled matches are true pairs (a study's questions
+after its walkthrough, a calculation after its worked example).
+
 ## 2026-10-21 — A wrong pick that names another term is a mix-up: not modelled
 
 **Change.** An MCQ answered with an option that is another term of the

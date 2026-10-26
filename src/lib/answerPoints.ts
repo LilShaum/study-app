@@ -1,4 +1,4 @@
-import type { FlashcardItem } from '@/schema/course';
+import type { ExampleItem, FlashcardItem, StudyItem } from '@/schema/course';
 
 /**
  * A flashcard asked as an exam question: written out, then checked point by
@@ -46,4 +46,39 @@ export function answerPoints(item: Pick<FlashcardItem, 'back' | 'tags'>): Answer
   const split = splitPoints(item.back);
   if (split) return split;
   return item.tags?.some((t) => WRITTEN_TAGS.has(t)) ? { lead: '', points: [item.back.trim()] } : null;
+}
+
+const WRITTEN_TITLE = /^(long|short)[- ]answer\b/i;
+
+/**
+ * A long or short answer written as a worked `example`: a model answer laid
+ * out in steps, tagged or titled as one. Read as an example, its answer was
+ * shown before the student ever tried it, and since examples are not scored,
+ * Review never brought it back: the one format the exam asks for was the one
+ * never practised (2026-10-26). Everywhere a student is asked, it is a
+ * written question instead (`writtenFromExample`); Browse still shows it
+ * as the model answer.
+ */
+export function isWrittenExample(item: StudyItem): item is ExampleItem {
+  if (item.type !== 'example' || (item.steps?.length ?? 0) < 2) return false;
+  return !!item.tags?.some((t) => t === 'long-answer' || t === 'short-answer') || WRITTEN_TITLE.test(item.title ?? '');
+}
+
+/** The written question a long-answer example is asked as: its steps the points, its takeaway above them. */
+export function writtenFromExample(ex: ExampleItem): FlashcardItem {
+  const title = (ex.title ?? '').trim() || 'Long answer';
+  const context = ex.context?.trim();
+  const front = context ? `${title}${/[.?!:]$/.test(title) ? '' : '.'} ${context}` : title;
+  const points = (ex.steps ?? []).map((step, k) => `(${k + 1}) ${String(step).trim()}`).join(' ');
+  const tags = ex.tags?.includes('long-answer') || ex.tags?.includes('short-answer') ? ex.tags : [...(ex.tags ?? []), 'long-answer'];
+  return {
+    id: ex.id,
+    type: 'flashcard',
+    front,
+    back: ex.takeaway?.trim() ? `${ex.takeaway.trim()} ${points}` : points,
+    ...(ex.difficulty ? { difficulty: ex.difficulty } : {}),
+    tags,
+    ...(ex.source_excerpt ? { source_excerpt: ex.source_excerpt } : {}),
+    ...(ex.set_aside ? { set_aside: ex.set_aside } : {}),
+  } as FlashcardItem;
 }

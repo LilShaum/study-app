@@ -1,4 +1,5 @@
 import type { Course, StudyItem } from '@/schema/course';
+import { isWrittenExample, writtenFromExample } from './answerPoints';
 import type { ItemResult } from '@/store/progress';
 import { shuffle } from './shuffle';
 import { sortedSections } from './sortedSections';
@@ -339,7 +340,8 @@ export function buildSessionItems(
     // Set aside by the student (schema: set_aside): out of every session.
     // Browse renders from the file and shows them with Put back.
     section.items.filter((item) => (mode === 'browse' || !item.set_aside) && (!onlyIds || onlyIds.has(item.id))).map((item) => ({
-      ...item,
+      // A long answer laid out as an example is asked, not shown (lib/answerPoints).
+      ...(mode !== 'browse' && isWrittenExample(item) ? writtenFromExample(item) : item),
       _sectionTitle: section.title,
       _sectionId: section.id,
       _sectionOrder: section.order ?? 0,

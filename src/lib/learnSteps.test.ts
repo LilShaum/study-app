@@ -250,3 +250,43 @@ describe('Learn on a section with only its second look left', () => {
     expect(items.some((i) => i._sectionId === 't')).toBe(true);
   });
 });
+
+describe('Learn: worked examples and written answers', () => {
+  const example = (id: string, title: string, steps: string[], extra: Record<string, unknown> = {}): StudyItem =>
+    ({ id, type: 'example', title, steps, ...extra }) as StudyItem;
+
+  it('asks a card that practises a worked example after the example, not where its term is taught', () => {
+    // The card names only the first term, but works the second step's example.
+    const ex = example('ex', 'Dating basalt from uranium decay with the logarithm', [
+      'Protein kinase C fraction remaining 0.70 of uranium',
+      'logarithm ratio divided by halving gives fraction of halflife',
+    ]);
+    const calc = card('calc', 'Adenylyl cyclase: basalt keeps 0.70 uranium; using the logarithm ratio, give its halflife fraction');
+    const items = whole([...defs, ex, calc]);
+    expect(stepOf(items, 'calc')).toBeGreaterThanOrEqual(stepOf(items, 'ex')!);
+    expect(items.findIndex((i) => i.id === 'calc')).toBeGreaterThan(items.findIndex((i) => i.id === 'ex'));
+  });
+
+  it('asks a short answer last in its section, once its parts are taught and asked', () => {
+    const sa = card('sa', 'Short answer (3 marks): how does Adenylyl cyclase signal?') as StudyItem & { back: string };
+    sa.back = '(1) Gs protein. (2) Adenylyl cyclase. (3) Protein kinase A.';
+    const items = learn([...defs, sa, mcq('q1', 'What does Calmodulin bind?')]);
+    const last = Math.max(...items.map((i) => i._step ?? 0));
+    expect(stepOf(items, 'sa')).toBe(last);
+    expect(items.filter((i) => i._step === last).at(-1)?.id).toBe('sa');
+  });
+
+  it('asks a long answer laid out as an example as a written question, scored under its id', () => {
+    const la = example('la', 'Long answer (6 marks): the cAMP pathway', ['Gs protein activates Adenylyl cyclase.', 'cAMP activates Protein kinase A.'], {
+      context: 'Describe each step.',
+      takeaway: 'A cascade amplifies the signal.',
+    });
+    const items = learn([...defs, la]);
+    const asked = items.find((i) => i.id === 'la');
+    expect(asked?.type).toBe('flashcard');
+    expect(asked && 'front' in asked && asked.front).toBe('Long answer (6 marks): the cAMP pathway. Describe each step.');
+    expect(asked && 'back' in asked && asked.back).toBe('A cascade amplifies the signal. (1) Gs protein activates Adenylyl cyclase. (2) cAMP activates Protein kinase A.');
+    // Browse still shows the model answer as written.
+    expect(buildSessionItems(course([...defs, la]), 'browse').find((i) => i.id === 'la')?.type).toBe('example');
+  });
+});

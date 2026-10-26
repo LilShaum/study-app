@@ -104,6 +104,11 @@ const NUCLEI = ['a', 'e', 'i', 'o', 'u', 'ai', 'ou'];
 const CODAS = ['n', 'r', 'l', 'x', 'm', 's', 'th', 'v'];
 const NOUNS = ['kinase', 'receptor', 'channel', 'hormone', 'factor', 'pathway', 'domain', 'messenger', 'enzyme', 'protein', 'ligand', 'cascade'];
 const FILLER = ['which', 'statement', 'best', 'describes', 'role', 'when', 'what', 'happens', 'during', 'effect', 'on', 'cell', 'the', 'is', 'a', 'of', 'in'];
+// A worked example's own wording (2026-10-26). From FILLER, an example's
+// eighteen words held nearly every word a card can have, so every card read
+// as practising every example (lib/learnSteps PRACTISES) and Learn moved it.
+// A card now shares words with an example only through the terms both name.
+const EXAMPLE_FILLER = ['then', 'gives', 'step', 'next', 'rises', 'falls', 'so', 'so', 'and', 'to', 'by', 'it'];
 
 function word(r: Rand): string {
   const syl = () => ONSETS[Math.floor(r() * ONSETS.length)] + NUCLEI[Math.floor(r() * NUCLEI.length)];
@@ -111,6 +116,7 @@ function word(r: Rand): string {
 }
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 const filler = (r: Rand, n: number) => Array.from({ length: n }, () => FILLER[Math.floor(r() * FILLER.length)]).join(' ');
+const stepWords = (r: Rand, n: number) => Array.from({ length: n }, () => EXAMPLE_FILLER[Math.floor(r() * EXAMPLE_FILLER.length)]).join(' ');
 
 interface Term {
   term: string;
@@ -200,7 +206,7 @@ export function makeCourse(shape: CourseShape, seed = 1): Course {
         id: `s${j}_e${k}`,
         type: 'example',
         title: `Worked ${namesFor(k, sh.example).join(' and ')} ${k}`,
-        steps: [filler(r, 6), filler(r, 6), filler(r, 6)],
+        steps: [stepWords(r, 6), stepWords(r, 6), stepWords(r, 6)],
       } as StudyItem);
     }
     for (let k = 0; k < sh.graphic; k++) {

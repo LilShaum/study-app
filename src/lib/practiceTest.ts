@@ -1,5 +1,5 @@
 import type { Course, FlashcardItem, McqItem } from '@/schema/course';
-import { answerPoints } from './answerPoints';
+import { answerPoints, isWrittenExample, writtenFromExample } from './answerPoints';
 import type { Coverage } from './classExams';
 import { shuffle } from './shuffle';
 import { sortedSections } from './sortedSections';
@@ -72,10 +72,11 @@ export function testPool(scopes: TestScope[]): TestQuestion[] {
       if (covers !== 'all' && !covers.includes(section.id)) continue;
       for (const item of section.items) {
         if (item.set_aside || (only && !only.has(item.id))) continue;
+        const card = isWrittenExample(item) ? writtenFromExample(item) : item;
         const asked: TestItem | null =
-          item.type === 'mcq'
-            ? usableMcq(item) ? item : null
-            : item.type === 'flashcard' && item.difficulty !== 'easy' && answerPoints(item) ? item : null;
+          card.type === 'mcq'
+            ? usableMcq(card) ? card : null
+            : card.type === 'flashcard' && card.difficulty !== 'easy' && answerPoints(card) ? card : null;
         if (!asked) continue;
         out.push({ courseId, lecture: course.metadata.title, sectionId: section.id, section: section.title, item: asked });
       }

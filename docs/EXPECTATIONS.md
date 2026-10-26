@@ -216,6 +216,13 @@ once. A section with a slide range can start with "read these slides", then
 everything is asked first. "Skip the reading" asks every card first, for
 material already met in class. At the end Learn offers the next section.
 
+A card that practises a worked example (most of its words in the example)
+comes after the example, never a step before it. A short or long answer to
+write comes last in its section, after its parts. A long answer laid out as
+a worked example (tagged or titled as one) is asked as a written question
+everywhere a student is asked, and scored; Browse still shows it as the
+model answer.
+
 **Working means.** A step only asks about what it showed; no answer is
 printed on the card before; no term that spells itself out is asked; no
 two-card dead ends.

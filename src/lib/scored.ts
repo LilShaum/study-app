@@ -1,5 +1,6 @@
 import type { StudyItem } from '@/schema/course';
 import { givesAway } from './contentChecks';
+import { isWrittenExample } from './answerPoints';
 
 /** The id a definition's typed-recall question is scored under. */
 export const recallId = (definitionId: string) => `${definitionId}~recall`;
@@ -31,6 +32,9 @@ export function scoredEntries(items: readonly StudyItem[]): { id: string; item: 
     // Set aside by the student: out of every count, as it is out of every session.
     if (item.set_aside) continue;
     if (item.type === 'mcq' || item.type === 'flashcard') out.push({ id: item.id, item });
+    // A long answer laid out as an example is asked as a written question
+    // (lib/answerPoints isWrittenExample), so it is scored like one.
+    else if (isWrittenExample(item)) out.push({ id: item.id, item });
     // A definition whose own words spell out its term is read, never asked
     // as "name the term": the answer is on the card (lib/contentChecks).
     else if (item.type === 'definition' && !givesAway(item.term, item.definition)) out.push({ id: recallId(item.id), item });
