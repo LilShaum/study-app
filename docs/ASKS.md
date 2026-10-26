@@ -24,11 +24,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   out for you"). Brainstorm and test properly before building; think of the
   obvious QOL basics without being asked (shuffled options and "I don't
   know" were missed for weeks).
-- **Item counts follow importance** (2026-10-14). Prompt and check
-  shipped 2026-10-15; waits on a lecture generated with the current prompt
-  to confirm. Go given 2026-10-26 ("start pushing the other things I asked
-  u for too") on: "mentioned" only for names never explained; Add material
-  skips only facts already tested at the same depth (docs/HANDOFF.md §0).
 - **Nutrition lectures (EPHE 155)** (2026-10-20: "let me know if … i
   should regenerate"). Answered: yes, regenerate per lecture with the
   current prompt. Waits on the owner; do not upload the old EPHE 155
@@ -45,6 +40,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-26 Item counts follow importance (2026-10-14): the weight table
+  and per-section density check (2026-10-15), "mentioned" only for terms
+  the slides name or cover another way, and Add skipping only facts tested
+  at the same depth (commit 23e637b) were all already live; confirmed on
+  ASTR 201 lectures 2–6, made with the current prompt.
 
 - 2026-10-26 Related terms answered and made useful: they are the
   neighbours to tell a term apart from; only those the lecture defines

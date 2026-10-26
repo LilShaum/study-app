@@ -193,10 +193,11 @@ Weigh it against logs from other classes before changing Learn's order.
   first Add material run (parts 3–4 of a lecture) gave about 2 items per
   slide, put 57 terms the slides teach in sentences (SNARE parts, Mg²⁺
   block, desensitized state, transporters) into "mentioned", and skipped
-  topics the course had covered only at less depth. Proposed, waiting on the
-  owner's go: "mentioned" only for names never explained; Add skips only
-  facts already tested at the same depth; a course check on items per slide
-  (`source_range`) that flags thin key sections and over-dense basics.
+  topics the course had covered only at less depth. **Done** (2026-10-14/15,
+  confirmed 2026-10-26): "mentioned" only for names never explained or
+  covered another way; Add skips only facts already tested at the same
+  depth; a course check on items per slide flags thin and over-dense
+  sections.
 
 **Done 2026-10-13 (live):** the owner's first real study of a lecture, with
 screenshots: cards on one term all at once, an MCQ straight after the
