@@ -10,6 +10,7 @@ import { toast } from '@/store/toast';
 import { router } from './router';
 import { applyPersonalScale } from '@/lib/personalScale';
 import { watchStatusBar } from '@/lib/statusBarFallback';
+import { watchForUpdates } from '@/lib/appUpdate';
 import '@/styles/index.css';
 
 // Let the storage layer surface write failures (quota, blocked site data)
@@ -28,6 +29,8 @@ watchForRestore();
 announceRestore();
 startAutoSync();
 watchStatusBar();
+// A new deploy reaches an app left open for days (lib/appUpdate).
+watchForUpdates();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -11,6 +11,7 @@ import { BackupButton, RestoreButton } from '@/components/Backup';
 import { useOnboardingStore } from '@/store/onboarding';
 import { storageUsage } from '@/lib/safeStorage';
 import { scrollToAnchor } from '@/lib/scrollToAnchor';
+import { VERSION } from '@/lib/appUpdate';
 
 interface HelpSection {
   id: string;
@@ -503,6 +504,8 @@ export function HelpRoute() {
         ← Library
       </Link>
       <h1 className="mt-3 font-display text-display font-semibold text-text">Help</h1>
+      {/* Which copy is running, to check against the live one. */}
+      <p className="mt-1 text-small text-text-3">Version {VERSION}</p>
       {search.has('devtools') && <TestingTools />}
 
       <div className="mt-4">

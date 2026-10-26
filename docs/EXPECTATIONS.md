@@ -233,7 +233,8 @@ each term from its meaning, then the flashcards and MCQs on them. Two cards
 on one fact are at least 5 cards apart; at most 3 cards on a term at its
 first meeting, the rest in a second look at the next sitting (never in the
 sitting that taught it). A miss comes back later in its step with the
-passage from the notes. A term defined the same way in two lectures counts
+passage from the notes, before the step's question to write, which stays
+last. A term defined the same way in two lectures counts
 once. A section with a slide range can start with "read these slides", then
 everything is asked first. "Skip the reading" asks every card first, for
 material already met in class. At the end Learn offers the next section.
@@ -442,6 +443,13 @@ wrong ones to the AI to rewrite.
   it is kept packed in the tab's sessionStorage. No Undo with sync on, or
   where the browser won't keep that copy, and the sheet says so first.
 - **Toasts** sit above the page (and its dialogs) on every screen width.
+- **Updates** reach an app left open: it looks for a new version each time
+  it comes back into view, and once one is in, reloads where that loses
+  nothing (not in a session or the practice test, no dialog open, not
+  typing), or on coming back to it, or on leaving the session; in a session
+  a toast offers Reload. An iPhone home-screen app otherwise ran a copy
+  days old (the owner, 2026-10-26). Help shows the version running
+  (`lib/appUpdate.ts`).
 - **Storage**: lectures are kept compressed, one key each
   (`lib/packedStorage.ts`), about an eighth of their plain size; the old
   plain form is still read and converted on load, and backups stay plain

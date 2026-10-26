@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
 import { useSessionStore } from './session';
+import type { SessionItem } from '@/lib/buildSessionItems';
 import { useProgressStore } from './progress';
 
 function mcq(id: string, question: string): StudyItem {
@@ -228,6 +229,16 @@ describe('session store: Learn brings a missed card back', () => {
     const before = s().items.length;
     s().record(false);
     expect(s().items).toHaveLength(before);
+  });
+
+  it('puts it back before the step’s question to write, which stays last', () => {
+    const qs = s().items.filter((i) => i.type === 'mcq').slice(0, 3);
+    const w = { id: 'w', type: 'flashcard', front: 'How do Alpha and Theta differ?', back: '(1) Alpha is first. (2) Theta is last.' };
+    // One step: three questions, then the question to write.
+    useSessionStore.setState({ items: [...qs, w].map((i) => ({ ...i, _block: 's1#0' })) as SessionItem[], index: 0 });
+    s().record(false);
+    const ids = s().items.map((i) => `${i.id}${i._again ? '+' : ''}`);
+    expect(ids).toEqual([qs[0].id, qs[1].id, qs[2].id, `${qs[0].id}+`, 'w']);
   });
 
   it('puts it back a few cards on, until it is right once', () => {

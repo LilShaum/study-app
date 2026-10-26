@@ -424,7 +424,12 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     // labelled with the old one, was a friend's complaint.
     let end = index;
     while (end + 1 < items.length && items[end + 1]._block === item._block) end++;
-    const at = Math.min(index + 1 + AGAIN_AFTER, end + 1);
+    let at = Math.min(index + 1 + AGAIN_AFTER, end + 1);
+    // Before the step's question to write, which is asked last as the
+    // thorough test (lib/learnSteps): a retry after it read as the order
+    // going wrong (the owner, 2026-10-26). Unless that is straight after itself.
+    const writing = items.findIndex((i, n) => n > index + 1 && n < at && i.type === 'flashcard' && !!answerPoints(i));
+    if (writing > 0) at = writing;
     // Never straight after itself: with nothing in between it is only the
     // answer just seen, clicked again. Left to the catch-up and Review.
     if (at === index + 1) return;

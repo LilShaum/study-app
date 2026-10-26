@@ -18,6 +18,35 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
+- **Answers in a new place from the very first showing** (2026-10-26: "I'm
+  doing multiple choice problems for the first time and they all had the
+  answer A. Make sure the answers are shuffled whenever the question is
+  shown even the first time"). The live app shuffles at every showing,
+  the first included (checked on the live site 2026-10-26: right answers at
+  B D C D B B B A A C B A A in one sitting). The owner's phone was running
+  an old copy: an iPhone home-screen app keeps the page it loaded. Fixed
+  (lib/appUpdate): the app looks for a new version whenever it comes back
+  into view and reloads where that loses nothing; Help shows the version.
+  Live; waits on the owner checking Help's version after reopening.
+- **"I don't know" on a name-the-term card with Read first** (2026-10-26:
+  "I'm doing a name the term question and don't see a don't know option.
+  Is it because I am on the not skip the reading mode?"). It is there in
+  both modes on the live site (screenshot at phone width); the same old
+  copy. Waits on the same check.
+- **The order in a step, with the write-the-answer cards on an unfixed
+  lecture** (2026-10-26: "they now show up as flash cards but after the
+  multiple choice questions … there is now another multiple choice after it
+  so now I'm confused on what's happening with this order"). Nothing in the
+  app turns a written question into a flashcard; an old copy shows written
+  questions as plain flashcards. The multiple choice after it was a missed
+  question coming back ("Again, from earlier"); it now comes back before
+  the step's question to write, so writing stays last (store/session
+  requeue). Live; waits on the owner's look.
+- **Say when to regenerate the lectures or use Fix** (2026-10-26: "Let me
+  know when I'm good to regenerate the lectures or use the fix mode").
+  Answered 2026-10-26: now, once the app on the phone shows the current
+  version (the prompt it hands out is part of the app). Barely studied:
+  regenerate. Studied: Fix, then Add explanations, which keeps the scores.
 - **Look at the regenerated nutrition lectures** (2026-10-26). Waits on the
   owner sending the files here: this session cannot reach other chats.
 - **Study and learning modes keep improving, effectiveness first**
@@ -38,11 +67,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   should regenerate"). Answered: yes, regenerate per lecture with the
   current prompt. Waits on the owner; do not upload the old EPHE 155
   even-out file to the new lectures.
-- **ASTR 201 midterm** (2026-10-20). Lectures 2–6 delivered. Lecture 7 is
-  not on it (the teacher: up to the Cambrian explosion, lecture 6 page
-  40). Lecture 1 was never sent; ask if it is wanted. Captions of the
-  teacher's videos, if sent, can be folded in.
-
 ## Waiting on the owner (do not start)
 
 - Anything that needs a real study log (2026-10-15: "put anything that
@@ -50,6 +74,9 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-26 ASTR 201 midterm: written (the owner, 2026-10-26: "I already
+  did the astronomy midterm"). Lecture 1 no longer needed.
 
 - 2026-10-26 Taught before tested, for a student who has not been to
   lecture (2026-10-26: "help the user achieve them in the first place, even
