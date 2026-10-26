@@ -61,9 +61,12 @@ this is the intent it serves.
   (2026-10-19).
 - **Practice test and written questions:** what you practise should look
   like what the exam asks. Where a class's exam is calculations, short and
-  long answers, the app should have you write them (2026-10-21). Right or
-  wrong is shown as each is answered, and what was missed comes back first
-  in the next test: "Remember, ADAPTIVE" (2026-10-26).
+  long answers, the app should have you write them (2026-10-21). The
+  practice test is multiple choice unless written answers are chosen on
+  its setup ("I NEVER TOLD YOU TO ADD WRITTEN ANSWERS", 2026-10-26). Right
+  or wrong is shown as each is answered, with the same reasons and passage
+  as the other modes, and what was missed comes back first in the next
+  test: "Remember, ADAPTIVE" (2026-10-26).
 - **Wrong options:** a well-reasoned wrong answer that shows a gap in
   what you know matters more than equal length. Words like never, only,
   often are what test the nuance and are not a giveaway (2026-10-20).

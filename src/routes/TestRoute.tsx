@@ -12,6 +12,7 @@ import { onlyStudies, studiesIn } from '@/lib/studies';
 import type { Course } from '@/schema/course';
 import { normalisedRationale } from '@/lib/mcqRationale';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
+import { SourceNote } from '@/components/items/SourceNote';
 
 /**
  * "/study/:id/test" (one lecture, `?section=` for one section) and
@@ -288,9 +289,9 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       <Setup
         header={header}
         pool={pool}
-        missed={pool.filter(missedLast).length}
-        fresh={pool.filter((q) => !missedLast(q) && !recordOf(q)?.testedAt).length}
-        onStart={(n, even) => start(drawTest(pool, n, even, firstBy))}
+        missedLast={missedLast}
+        fresh={(q) => !missedLast(q) && !recordOf(q)?.testedAt}
+        onStart={(chosen, n, even) => start(drawTest(chosen, n, even, firstBy))}
       />
     );
   if (done) {
@@ -355,9 +356,31 @@ function firstLine(total: number, missed: number, fresh: number): string {
     : ' You have had every question here on a test; a new one asks first those you had longest ago.';
 }
 
-function Setup({ header, pool, missed, fresh, onStart }: { header: ReactNode; pool: TestQuestion[]; missed: number; fresh: number; onStart: (n?: number, even?: boolean) => void }) {
+function Setup({
+  header,
+  pool: all,
+  missedLast,
+  fresh: isFresh,
+  onStart,
+}: {
+  header: ReactNode;
+  pool: TestQuestion[];
+  missedLast: (q: TestQuestion) => boolean;
+  fresh: (q: TestQuestion) => boolean;
+  onStart: (chosen: TestQuestion[], n?: number, even?: boolean) => void;
+}) {
+  // Multiple choice only, unless written answers are asked for too (the
+  // owner, 2026-10-26: "BY DEFAULT ONLY MULTIPLE CHOICE BUT YOU CAN CHOOSE
+  // WHAT GOES ON IT BEFORE").
+  const [written, setWritten] = useState(false);
+  const hasWritten = all.some((q) => isWritten(q.item));
+  const pool = written ? all : all.filter((q) => !isWritten(q.item));
+  const missed = pool.filter(missedLast).length;
+  const fresh = pool.filter(isFresh).length;
   const lengths = TEST_LENGTHS.filter((n) => n < pool.length);
-  const [length, setLength] = useState<number | undefined>(lengths[0]);
+  const [picked, setLength] = useState<number | undefined>(lengths[0]);
+  // A length the other choice offered may be past this one's questions.
+  const length = picked != null && picked >= pool.length ? lengths[0] : picked;
   const [even, setEven] = useState(false);
   const lectures = lecturesIn(pool);
   return (
@@ -366,17 +389,40 @@ function Setup({ header, pool, missed, fresh, onStart }: { header: ReactNode; po
       <p className="mt-4 max-w-prose text-small text-text-2">
         The medium and hard questions, the ones that ask you to use what you know rather than recognise it. Each
         answer is marked as you give it, right or wrong with why; at the end, your score and every question you missed.
-        {pool.some((q) => isWritten(q.item)) &&
+        {written &&
           ' Short and long answers are written, as the exam has you write them; then you tick each point of the model answer you made.'}
         {firstLine(pool.length, missed, fresh)}
       </p>
+      {hasWritten && (
+        <div className="mt-6 flex flex-col gap-y-1 border-t border-border py-5 sm:flex-row sm:items-baseline sm:gap-x-3">
+          <span className="mark shrink-0 text-text-3 sm:w-20">On it</span>
+          <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
+            {[
+              { value: false, label: 'Multiple choice' },
+              { value: true, label: 'Multiple choice and written answers' },
+            ].map((c, i) => (
+              <span key={c.label} className="flex items-baseline">
+                <button
+                  type="button"
+                  aria-pressed={written === c.value}
+                  onClick={() => setWritten(c.value)}
+                  className={`tap-safe px-0.5 text-small transition-colors ${written === c.value ? 'text-accent' : 'text-text-2 hover:text-text'}`}
+                >
+                  <span className={written === c.value ? 'underline decoration-accent decoration-2 underline-offset-4' : ''}>{c.label}</span>
+                </button>
+                {i === 0 && <span className="ml-1 text-text-3">·</span>}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
       {pool.length === 0 ? (
         <p className="mt-6 border-y border-border py-3 text-small text-text-2">
-          There are no medium or hard questions here yet. More practice, on the lecture page, can write some.
+          There are no medium or hard {written ? 'questions' : 'multiple choice questions'} here yet. More practice, on the lecture page, can write some.
         </p>
       ) : (
         <>
-          <div className="mt-6 flex flex-col gap-y-1 border-y border-border py-5 sm:flex-row sm:items-baseline sm:gap-x-3">
+          <div className={`flex flex-col gap-y-1 border-y border-border py-5 sm:flex-row sm:items-baseline sm:gap-x-3 ${hasWritten ? '' : 'mt-6'}`}>
             <span className="mark shrink-0 text-text-3 sm:w-20">Questions</span>
             <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
               {[...lengths, undefined].map((n, i, all) => {
@@ -425,7 +471,7 @@ function Setup({ header, pool, missed, fresh, onStart }: { header: ReactNode; po
               </div>
             </div>
           )}
-          <button type="button" onClick={() => onStart(length, even)} className="press press-ink tap-safe mt-6">
+          <button type="button" onClick={() => onStart(pool, length, even)} className="press press-ink tap-safe mt-6">
             Start the test
           </button>
         </>
@@ -475,6 +521,7 @@ function Taking({
   const blank = typeof chosen === 'string' ? !chosen.trim() : chosen == null;
   // Shown in the test's own order; answers are kept by the file's index.
   const options = useMemo(() => (isWritten(q.item) ? [] : q.item.options), [q]);
+  const rationales = useMemo(() => (isWritten(q.item) ? null : normalisedRationale(q.item)), [q]);
   const order = useMemo(() => optionOrder(options, `${seed}/${q.courseId}/${q.item.id}`), [options, q, seed]);
   // A written answer is checked by hand, once something is written.
   const toCheck = isWritten(q.item) && !shown && !blank;
@@ -559,21 +606,32 @@ function Taking({
                 : picked
                   ? 'border-accent text-accent'
                   : 'border-border text-text hover:border-text-3';
+              // As in a study session (McqCard): each wrong option's reason,
+              // the one picked set to be read.
+              const why = shown && !right ? rationales?.[k] : undefined;
+              const pickedWrong = shown && picked && !right;
               return (
-                <button
-                  key={i}
-                  type="button"
-                  role="radio"
-                  aria-checked={picked}
-                  disabled={shown}
-                  onClick={() => onPick(k, true)}
-                  className={`flex w-full items-center gap-3 border-0 border-b px-1 py-3 text-left text-small transition-colors disabled:cursor-default ${tone}`}
-                >
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold">
-                    {shown && right ? '✓' : shown && picked ? '✗' : ('ABCD'[i] ?? i + 1)}
-                  </span>
-                  <span>{opt}</span>
-                </button>
+                <div key={i}>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={picked}
+                    disabled={shown}
+                    onClick={() => onPick(k, true)}
+                    className={`flex w-full items-center gap-3 border-0 border-b px-1 py-3 text-left text-small transition-colors disabled:cursor-default ${tone}`}
+                  >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold">
+                      {shown && right ? '✓' : pickedWrong ? '✗' : ('ABCD'[i] ?? i + 1)}
+                    </span>
+                    <span>{opt}</span>
+                  </button>
+                  {why && (
+                    <div className={pickedWrong ? 'mt-1.5 border-l-2 border-error py-0.5 pl-3 text-small text-text-2' : 'mt-1 pl-3 text-xs text-text-3'}>
+                      <span className={pickedWrong ? 'text-error' : 'text-text-2'}>{pickedWrong ? 'Why that is wrong: ' : 'Why not: '}</span>
+                      {why}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -611,18 +669,14 @@ function Taking({
 function McqMarked({ item, chosen, order }: { item: Extract<TestQuestion['item'], { type: 'mcq' }>; chosen: TestAnswer; order: number[] }) {
   const letter = 'ABCD'[order.indexOf(item.correct_index)] ?? '';
   const right = chosen === item.correct_index;
-  const why = typeof chosen === 'number' && chosen >= 0 && !right ? normalisedRationale(item)?.[chosen] : undefined;
   return (
     <div className="mt-4" aria-live="polite">
       <p className={`font-medium ${chosen === DONT_KNOW ? 'text-text' : right ? 'text-success' : 'text-error'}`}>
-        {right ? '✓ Right.' : chosen === DONT_KNOW ? `The answer is ${letter}.` : `✗ Not this time: the answer is ${letter}.`}
+        {right ? '✓ Correct' : chosen === DONT_KNOW ? `The answer is ${letter}.` : `✗ Not this time: the answer is ${letter}.`}
       </p>
-      {why && (
-        <p className="mt-2 border-l-2 border-error pl-3 text-small text-text-2">
-          <span className="font-medium text-text">Why that is wrong:</span> {why}
-        </p>
-      )}
-      {item.explanation && <p className="mt-2 text-small text-text-2">{item.explanation}</p>}
+      {item.explanation && <p className="mt-1 text-sm text-text-2">{item.explanation}</p>}
+      {/* After a miss the passage is open: the lesson again, not only the right option. */}
+      <SourceNote excerpt={item.source_excerpt} open={!right} />
     </div>
   );
 }

@@ -366,14 +366,18 @@ lecture.
 
 **Goal.** Check understanding the way an exam does.
 
-**How it works.** Only medium and hard MCQs and written questions (see
-Written answers; a question with no difficulty counts as medium), drawn at random from a lecture, a section, a lecture's
+**How it works.** Only medium and hard MCQs (a question with no
+difficulty counts as medium); written questions too only when "Multiple
+choice and written answers" is chosen on the setup (the owner, 2026-10-26:
+"BY DEFAULT ONLY MULTIPLE CHOICE"). Drawn at random from a lecture, a section, a lecture's
 or a class's studies, everything an exam covers, or a whole class; 20, 40
 or all. Over several lectures, 20 or 40 are shared by each lecture's size,
 or equally if the student picks Each the same. Each answer is marked as it
 is given (the owner, 2026-10-26: "TELL YOU IF THE QUESTION IS CORRECT OR
 WRONG RIGHT AWAY"): a pick or I don't know shows right, or the right
-answer, why the pick was wrong and the explanation, and the answer is kept;
+answer, as a study session shows it (McqCard): every wrong option's
+reason, the pick's set to be read, the explanation, and the passage from
+the notes open after a miss; the answer is kept;
 a written answer's Check shows the model answer's points to tick (right
 only with the points needed). The end gives the score, each section
 weakest first, and every miss; a written answer not checked is ticked

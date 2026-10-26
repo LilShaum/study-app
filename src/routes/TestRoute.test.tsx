@@ -23,6 +23,7 @@ const lecture = {
         explanation: `Because ${n}.`,
         distractor_rationale: ['', `not ${n}a`, `not ${n}b`, `not ${n}c`],
         difficulty: 'medium',
+        source_excerpt: `passage ${n}`,
       })),
     },
   ],
@@ -56,6 +57,9 @@ describe('practice test: marked as you answer', () => {
     expect(screen.getByText(/Not this time: the answer is/)).toBeTruthy();
     expect(screen.getByText(new RegExp(`not ${picked.split(' ')[1]}`))).toBeTruthy();
     expect(screen.getAllByRole('radio').every((b) => (b as HTMLButtonElement).disabled)).toBe(true);
+    // As in the other modes: a reason under every wrong option, and the passage after a miss.
+    expect(screen.getAllByText(/^Why not:$/).length).toBe(2);
+    expect(screen.getByText(/^passage \d$/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'I don’t know' })).toBeNull();
   });
 
@@ -66,7 +70,7 @@ describe('practice test: marked as you answer', () => {
     expect(screen.getByText(/^The answer is [ABCD]\.$/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     fireEvent.click(screen.getAllByRole('radio').find((b) => /right/.test(b.textContent ?? ''))!);
-    expect(screen.getByText('✓ Right.')).toBeTruthy();
+    expect(screen.getByText('✓ Correct')).toBeTruthy();
   });
 });
 
@@ -75,5 +79,27 @@ describe('practice test: adaptive', () => {
     useProgressStore.setState({ byCourse: { c: { q2: { got: 0, missed: 1, lastSeen: 1, lastGot: false, testedAt: 1 }, q3: { got: 1, missed: 0, lastSeen: 1, lastGot: true, testedAt: 1 } } } });
     open();
     expect(screen.getByText(/A new test asks first the 1 you last got wrong or didn’t know, then 1 not on a test yet\./)).toBeTruthy();
+  });
+});
+
+describe('practice test: what goes on it', () => {
+  const withWritten = {
+    ...lecture,
+    sections: [{ ...lecture.sections[0], items: [...lecture.sections[0].items, { id: 'w', type: 'flashcard', front: 'Explain it.', back: '(1) One. (2) Two.', difficulty: 'medium' }] }],
+  } as unknown as Course;
+
+  it('is multiple choice only unless written answers are chosen', () => {
+    useCoursesStore.setState({ courses: { c: withWritten } });
+    render(
+      <MemoryRouter initialEntries={['/study/c/test']}>
+        <Routes>
+          <Route path="/study/:id/test" element={<TestRoute />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('button', { name: 'Multiple choice' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'All 3' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Multiple choice and written answers' }));
+    expect(screen.getByRole('button', { name: 'All 4' })).toBeTruthy();
   });
 });
