@@ -24,6 +24,11 @@ export interface ItemResult {
   /** Whether the latest answer was right. Absent on records from before it was kept. */
   lastGot?: boolean;
   /**
+   * When it was last answered in a practice test: a new test asks first
+   * what has not been on one yet (lib/practiceTest drawTest).
+   */
+  testedAt?: number;
+  /**
    * When it was last answered wrong. A miss put right by a retry minutes
    * later in the same sitting is still worth the catch-up a few hours on
    * (lib/memory.ts, missedThisSitting).
@@ -90,6 +95,8 @@ interface ProgressState {
   reviseResult: (courseId: string, itemId: string, got: boolean) => void;
   /** Note that the answer to `itemId` was mistaken for definition `otherId`. */
   noteConfusion: (courseId: string, itemId: string, otherId: string) => void;
+  /** Marks cards as answered in a practice test at `at` (ItemResult.testedAt). */
+  noteTested: (courseId: string, itemIds: string[], at: number) => void;
   removeCourseProgress: (courseId: string) => void;
 
   /** Bulk-replace, used only by the one-time legacy-data migration. */
@@ -114,6 +121,7 @@ function answered(was: ItemResult | undefined, got: boolean, now: number): ItemR
     ...(prev.confusedWith?.length && !(got && prev.lastSeen != null && !sameDay(prev.lastSeen, now))
       ? { confusedWith: prev.confusedWith }
       : {}),
+    ...(prev.testedAt != null ? { testedAt: prev.testedAt } : {}),
   };
 }
 
@@ -185,6 +193,16 @@ export const useProgressStore = create<ProgressState>()(
           // confused with anything in particular.
           const confusedWith = [otherId, ...(prev.confusedWith ?? []).filter((id) => id !== otherId)].slice(0, 3);
           return { byCourse: { ...state.byCourse, [courseId]: { ...course, [itemId]: { ...prev, confusedWith } } } };
+        });
+      },
+
+      noteTested: (courseId, itemIds, at) => {
+        set((state) => {
+          const course = state.byCourse[courseId];
+          if (!course || !itemIds.length) return state;
+          const next = { ...course };
+          for (const id of itemIds) if (next[id]) next[id] = { ...next[id], testedAt: Math.max(at, next[id].testedAt ?? 0) };
+          return { byCourse: { ...state.byCourse, [courseId]: next } };
         });
       },
 

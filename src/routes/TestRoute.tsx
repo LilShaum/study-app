@@ -164,6 +164,10 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
   const [at, setAt] = useState(saved?.at ?? 0);
   const [done, setDone] = useState(saved?.done ?? false);
   const recorded = useRef(saved?.recorded ?? false);
+  // When each question was last answered in a test: a new test asks first
+  // what has not been on one yet (lib/practiceTest drawTest).
+  const byCourse = useProgressStore((s) => s.byCourse);
+  const testedAt = (q: TestQuestion) => byCourse[q.courseId]?.[q.item.id]?.testedAt;
 
   useEffect(() => {
     try {
@@ -214,20 +218,29 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       // answered while the test was being taken: its last answer's time, so
       // newer study elsewhere still wins.
       const lastAnswer = Math.max(0, ...answeredAt.map((t) => t ?? 0));
+      // A written question counts once something was written or a point
+      // ticked (answered in the head); left blank, it says nothing either.
+      const answered = test.map((q, i) =>
+        isWritten(q.item)
+          ? answers[i] === DONT_KNOW || !!(typeof answers[i] === 'string' && (answers[i] as string).trim()) || !!marks[i]?.some(Boolean)
+          : answers[i] != null,
+      );
       recordAnswers(
         test.flatMap((q, i) => {
           const chose = answers[i];
           const ticks = marks[i];
-          // A written question counts once something was written or a point
-          // ticked (answered in the head); left blank, it says nothing either.
-          const answered = isWritten(q.item)
-            ? chose === DONT_KNOW || !!(typeof chose === 'string' && chose.trim()) || !!ticks?.some(Boolean)
-            : chose != null;
-          const when = answeredAt[i] ?? (answered ? lastAnswer : 0);
+          const when = answeredAt[i] ?? (answered[i] ? lastAnswer : 0);
           const seen = studied[i];
-          return answered && seen < when ? [{ courseId: q.courseId, item: q.item, got: answeredRight(q.item, chose ?? '', ticks) }] : [];
+          return answered[i] && seen < when ? [{ courseId: q.courseId, item: q.item, got: answeredRight(q.item, chose ?? '', ticks) }] : [];
         }),
       );
+      // On a test now, newer study or not: the next test asks the others first.
+      const testedNow = Date.now();
+      const byLecture = new Map<string, string[]>();
+      test.forEach((q, i) => {
+        if (answered[i]) byLecture.set(q.courseId, [...(byLecture.get(q.courseId) ?? []), q.item.id]);
+      });
+      for (const [courseId, ids] of byLecture) progress.noteTested(courseId, ids, testedNow);
       // A wrong pick that is another term of the lecture (lib/mixUps), under
       // the same rule: not over newer study of that card.
       const { courses } = useCoursesStore.getState();
@@ -245,7 +258,15 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
     window.scrollTo(0, 0);
   };
 
-  if (!test) return <Setup header={header} pool={pool} onStart={(n, even) => start(drawTest(pool, n, even))} />;
+  if (!test)
+    return (
+      <Setup
+        header={header}
+        pool={pool}
+        fresh={pool.filter((q) => !testedAt(q)).length}
+        onStart={(n, even) => start(drawTest(pool, n, even, testedAt))}
+      />
+    );
   if (done) {
     return (
       <Results
@@ -295,7 +316,7 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
   );
 }
 
-function Setup({ header, pool, onStart }: { header: ReactNode; pool: TestQuestion[]; onStart: (n?: number, even?: boolean) => void }) {
+function Setup({ header, pool, fresh, onStart }: { header: ReactNode; pool: TestQuestion[]; fresh: number; onStart: (n?: number, even?: boolean) => void }) {
   const lengths = TEST_LENGTHS.filter((n) => n < pool.length);
   const [length, setLength] = useState<number | undefined>(lengths[0]);
   const [even, setEven] = useState(false);
@@ -308,6 +329,10 @@ function Setup({ header, pool, onStart }: { header: ReactNode; pool: TestQuestio
         wait until the end, as in an exam; then you see your score and every question you missed, with why.
         {pool.some((q) => isWritten(q.item)) &&
           ' Short and long answers are written, as the exam has you write them; at the end you tick each point of the model answer you made.'}
+        {fresh < pool.length &&
+          (fresh > 0
+            ? ` A new test asks first the ${fresh} of ${pool.length} you have not had on a test yet.`
+            : ' You have had every question here on a test; a new one asks first those you had longest ago.')}
       </p>
       {pool.length === 0 ? (
         <p className="mt-6 border-y border-border py-3 text-small text-text-2">

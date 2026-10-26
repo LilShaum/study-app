@@ -80,3 +80,15 @@ describe('isMistake: Practice keeps a miss until it is right on a later day', ()
     expect(useProgressStore.getState().missedIds('k').has('b')).toBe(false);
   });
 });
+
+describe('noteTested', () => {
+  it('marks a card as on a test, and a later answer anywhere keeps the mark', async () => {
+    const { useProgressStore } = await import('./progress');
+    useProgressStore.getState().recordResult('t', 'q', true);
+    useProgressStore.getState().noteTested('t', ['q', 'never-answered'], 1000);
+    expect(useProgressStore.getState().getProgress('t').q.testedAt).toBe(1000);
+    expect(useProgressStore.getState().getProgress('t')['never-answered']).toBeUndefined();
+    useProgressStore.getState().recordResult('t', 'q', false);
+    expect(useProgressStore.getState().getProgress('t').q.testedAt).toBe(1000);
+  });
+});

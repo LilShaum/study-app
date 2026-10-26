@@ -36,11 +36,17 @@ export const EMPTY_SNAPSHOT: Snapshot = { courses: {}, editedAt: {}, deletedAt: 
 const lastChange = (s: Snapshot, id: string) => Math.max(s.editedAt[id] ?? 0, s.deletedAt[id] ?? 0);
 const isDeleted = (s: Snapshot, id: string) => !(id in s.courses) && (s.deletedAt[id] ?? 0) > 0;
 
+/** A time from another device's copy, or 0 when it is not one. */
+const stamp = (t: unknown): number => (typeof t === 'number' && Number.isFinite(t) && t > 0 ? t : 0);
+
 function mergeProgress(a: Record<string, ItemResult> = {}, b: Record<string, ItemResult> = {}): Record<string, ItemResult> {
   const out: Record<string, ItemResult> = { ...b };
   for (const [id, r] of Object.entries(a)) {
     const other = out[id];
     if (!other || (r.lastSeen ?? 0) >= (other.lastSeen ?? 0)) out[id] = r;
+    // On a test on either device: the later of the two, whichever record wins.
+    const tested = Math.max(stamp(r.testedAt), stamp(other?.testedAt));
+    if (tested && out[id].testedAt !== tested) out[id] = { ...out[id], testedAt: tested };
   }
   return out;
 }

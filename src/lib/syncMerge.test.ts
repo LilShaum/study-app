@@ -83,3 +83,12 @@ describe('mergeSnapshots — study log and shared daily time', () => {
     expect(mergeSnapshots(withLog({}), withLog({})).planTotal).toBeUndefined();
   });
 });
+
+describe('mergeSnapshots: when a card was last on a test', () => {
+  it('keeps the later test of the two devices, whichever record wins', () => {
+    const local = snap({ courses: { a: course('A') }, progress: { a: { q: { got: 2, missed: 0, lastSeen: 90 } } } });
+    const remote = snap({ courses: { a: course('A') }, progress: { a: { q: { got: 1, missed: 0, lastSeen: 40, testedAt: 40 } } } });
+    expect(mergeSnapshots(local, remote).progress.a.q).toMatchObject({ lastSeen: 90, testedAt: 40 });
+    expect(mergeSnapshots(remote, local).progress.a.q).toMatchObject({ lastSeen: 90, testedAt: 40 });
+  });
+});

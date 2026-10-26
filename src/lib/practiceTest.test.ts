@@ -143,3 +143,26 @@ describe('I don’t know in a test', () => {
     expect(r.missed.map((m) => m.chose)).toEqual([DONT_KNOW, null]);
   });
 });
+
+describe('drawTest: what has not been on a test first', () => {
+  const pool = testPool([{ courseId: 'c', course: course([{ id: 's1', items: Array.from({ length: 30 }, (_, n) => mcq(`q${n}`)) }]), covers: 'all' }]);
+  const ids = (t: { item: { id: string } }[]) => t.map((q) => q.item.id);
+
+  it('asks first the questions never on a test, then those on one longest ago', () => {
+    // Twenty of thirty on a test, at times 1 to 20.
+    const at = new Map(Array.from({ length: 20 }, (_, n) => [`q${n}`, n + 1]));
+    const test = drawTest(pool, 20, false, (q) => at.get(q.item.id));
+    const untested = pool.filter((q) => !at.has(q.item.id)).map((q) => q.item.id);
+    expect(ids(test)).toEqual(expect.arrayContaining(untested));
+    // The other ten are those tested longest ago, q0 to q9.
+    expect(ids(test).filter((id) => at.has(id)).sort()).toEqual(['q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9'].sort());
+  });
+
+  it('mixes the fresh questions in rather than asking them all first', () => {
+    const at = new Map(Array.from({ length: 20 }, (_, n) => [`q${n}`, n + 1]));
+    const orders = new Set(Array.from({ length: 5 }, () => ids(drawTest(pool, 20, false, (q) => at.get(q.item.id))).slice(0, 10).join()));
+    expect(orders.size).toBeGreaterThan(1);
+    const first = ids(drawTest(pool, 20, false, (q) => at.get(q.item.id))).slice(0, 10);
+    expect(first.some((id) => at.has(id))).toBe(true);
+  });
+});

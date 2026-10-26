@@ -76,6 +76,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-10-26 A new practice test asks first the questions not on a test
+  yet (2026-10-26: "Yes", to the offer): then those on one longest ago, so
+  tests one after another work through the pool; the setup says how many
+  are new to a test. Kept across devices by sync. (practiceTest drawTest,
+  ItemResult.testedAt)
+
 - 2026-10-26 Read, Recall easy to hard, Apply in a Learn step (2026-10-26:
   "easy multiple choice shows up before writing questions that are easy and
   then in apply it goes to the more conceptual multiple choice and the

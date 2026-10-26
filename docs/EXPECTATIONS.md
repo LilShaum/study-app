@@ -369,6 +369,12 @@ answer's points to tick (right only with every point); the score follows,
 and a missed one shows each point ✓ or ✗. A written question left blank
 with nothing ticked is not recorded, like a blank MCQ. Retake the missed
 ones.
+A new test asks first the questions never answered in a test, then those
+answered in one longest ago (`ItemResult.testedAt`, kept across devices by
+sync; random within each group, and mixed in the test), so tests taken one
+after another work through the pool: two random tests of 20 from 60 shared
+a third of their questions (the owner, 2026-10-26). The setup says how many
+are new to a test.
 A test in progress, and its results, survive leaving and a reload (a phone
 reloads the app after switching away) until the student starts a new one.
 Answers count as practice once, when the test is marked, so Today knows
