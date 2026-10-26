@@ -905,6 +905,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           // same item, and must start unanswered.
           key={`${current.id}@${index}`}
           item={current}
+          courseId={lectureOf(current, courseId)}
           frame="sheet"
           onAnswered={(got, picked) => {
             record(got);

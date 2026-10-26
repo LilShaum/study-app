@@ -351,6 +351,12 @@ wrong ones to the AI to rewrite.
   mix-ups on record: answers that named another term of the lecture
   (`lib/mixUps.ts`), typed or picked from the options. Each brings that term
   straight after the card in Review until the card is right on a later day.
+- **Related terms** under a definition, and under a typed term once it is
+  answered, are the neighbours the lecture sets beside it: only those the
+  lecture defines are shown ("Compare with"), and a tap opens that term's
+  meaning under this one, to read the two side by side. They used to be
+  buttons that did nothing (the owner, 2026-10-26). The Glossary's "See
+  also" jumps to the entry.
 - **Browse** is the whole lecture to read and edit; **Glossary** every term
   A to Z; **Plates** the diagrams.
 

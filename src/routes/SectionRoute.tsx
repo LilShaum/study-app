@@ -181,7 +181,7 @@ export function SectionRoute() {
           <h2 className="mb-4 mt-10 font-display text-title font-semibold text-text">Everything in this section</h2>
           <div className="space-y-4">
             {section.items.map((item) => (
-              <ItemRenderer key={item.id} item={item} />
+              <ItemRenderer key={item.id} item={item} courseId={id} />
             ))}
           </div>
         </>

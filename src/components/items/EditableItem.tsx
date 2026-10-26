@@ -62,7 +62,7 @@ export function EditableItem({ courseId, sectionId, item }: EditableItemProps) {
           </button>
         </div>
       )}
-      <ItemRenderer item={item} />
+      <ItemRenderer item={item} courseId={courseId} />
       {/* Hover-reveal on pointer devices; always visible (but muted) on touch,
           where there is no hover and the controls would be unreachable. */}
       <div className="pointer-events-none absolute right-3 top-3 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-70">

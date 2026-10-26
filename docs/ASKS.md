@@ -18,9 +18,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
-- **Related terms on definitions: what are they for?** (2026-10-26: "I have
-  never found it useful tbh but maybe I just don't see the vision"). Answer,
-  and make them useful or take them away.
 - **Study and learning modes keep improving, effectiveness first**
   (2026-10-26: "more important than QOL is making sure the way the app
   teaches is actually effective … I don't want to have to spell everything
@@ -48,6 +45,11 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-26 Related terms answered and made useful: they are the
+  neighbours to tell a term apart from; only those the lecture defines
+  show, as "Compare with", and a tap opens the neighbour's meaning beside
+  it (definitions, and typed terms once answered). (RelatedTerms)
 
 - 2026-10-26 "I don't know" on multiple choice, typed terms and the
   practice test: the answer, every option's reason and the passage from

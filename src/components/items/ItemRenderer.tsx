@@ -28,6 +28,8 @@ interface ItemRendererProps {
   learning?: boolean;
   /** Learn, on a section's slides card: the student has read them, so ask first. */
   onReadThem?: () => void;
+  /** The lecture the item is in (a definition opens its related terms from it). */
+  courseId?: string;
 }
 
 /** Routes to the right card by item.type — the one place that needs to know them all. */
@@ -43,6 +45,7 @@ export function ItemRenderer({
   frame = 'card',
   learning = false,
   onReadThem,
+  courseId,
 }: ItemRendererProps) {
   switch (item.type) {
     case 'slides':
@@ -72,6 +75,7 @@ export function ItemRenderer({
           onNext={onNext}
           frame={frame}
           notesOpen={learning}
+          courseId={courseId}
         />
       );
     case 'preview':

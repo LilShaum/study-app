@@ -3,6 +3,7 @@ import type { RecallItem } from '@/lib/buildSessionItems';
 import { gradeTyped, maskTerm, type Verdict } from '@/lib/typedAnswer';
 import { DifficultyBadge } from './DifficultyBadge';
 import { SourceNote } from './SourceNote';
+import { RelatedTerms } from './RelatedTerms';
 import { FRAME, type ItemFrame } from './frame';
 
 interface RecallCardProps {
@@ -181,6 +182,14 @@ export function RecallCard({
               <span className="mr-1.5 font-semibold uppercase tracking-wider text-text">{mixedUp.term}.</span>
               {mixedUp.definition}
             </p>
+          )}
+          {/* After any answer, the neighbours to tell it apart from. */}
+          {!item.question && (
+            <RelatedTerms
+              names={item.target.related_terms?.filter((n) => n !== mixedUp?.term)}
+              glossary={item.pool}
+              self={item.target}
+            />
           )}
           {overruled && (
             <p className="mt-1 text-small text-text-3">
