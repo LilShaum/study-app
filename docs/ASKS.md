@@ -18,6 +18,19 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
+- **Write the answer only where it belongs** (2026-10-26, nutrition: "a lot
+  of the write the answer questions don't need to be in that format. I
+  think it should be very clearly defined and outlined when to make a
+  certain thing into a certain type of item"; five in a row on things not
+  yet taught, points that are bare words with no explanation, asked again
+  straight after). The generator's "give three" rule (2026-10-21) invited
+  lists as written questions.
+- **Teach before testing, for a student who has not been to lecture**
+  (2026-10-26: "it needs to not only be able to test those last things but
+  also help the user achieve them in the first place, even if the user has
+  never been to lecture or hasn't gone over the slides"). Design to propose.
+- **Look at the regenerated nutrition lectures** (2026-10-26). Waits on the
+  owner sending the files here: this session cannot reach other chats.
 - **Study and learning modes keep improving, effectiveness first**
   (2026-10-26: "more important than QOL is making sure the way the app
   teaches is actually effective … I don't want to have to spell everything

@@ -22,6 +22,20 @@ must never be committed, pushed, or saved inside this folder.
 ## How the owner wants it to work
 
 The picture the owner has of the app, in their words where they gave them.
+
+**What it is for, above everything below (2026-10-26).** A one-stop shop
+for studying, grown from the owner's first-year "master prompt" for Gemini:
+adaptive quizzes that went through topics in the order of the slides while
+coming back to what they struggled with, with multiple choice near test
+quality. So the app is a lesson plan in which each thing the student does
+builds logically on the last, as if a friend or tutor were teaching them:
+making the connections the teacher would have made in class, so they learn
+rather than memorise; following the slides' order so they can follow along;
+adapting to their needs and gaps; efficient on high-yield content without
+losing the nuance; testing comprehension and mastery, not recall alone. And
+it must help them reach that, not only test it, even if they never went to
+the lecture or opened the slides.
+
 How the app actually works and feels can drift from it: check a feature
 against its line before changing it, treat a gap as work worth proposing,
 and add a line here whenever the owner says how something should be
