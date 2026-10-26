@@ -18,9 +18,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
-- **Practice test: choose answers as you go or at the end** (2026-10-26:
-  "AND THEN AFTER MAKE IT SO U CAN CHOOSE IF U GET ANSWERS AT THE END OR AT
-  START"). After the above.
 - **Answers in a new place from the very first showing** (2026-10-26: "I'm
   doing multiple choice problems for the first time and they all had the
   answer A. Make sure the answers are shuffled whenever the question is
@@ -78,6 +75,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-26 Practice test: answers as you go or at the end, chosen on its
+  setup (2026-10-26: "MAKE IT SO U CAN CHOOSE IF U GET ANSWERS AT THE END
+  OR AT START"); as you go is the default. (TestRoute Setup Answers)
 
 - 2026-10-26 Practice test multiple choice by default, written answers only
   when chosen on its setup; a marked question shows what the other modes

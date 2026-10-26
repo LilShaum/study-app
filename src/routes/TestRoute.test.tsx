@@ -103,3 +103,20 @@ describe('practice test: what goes on it', () => {
     expect(screen.getByRole('button', { name: 'All 4' })).toBeTruthy();
   });
 });
+
+describe('practice test: answers at the end, if chosen', () => {
+  it('marks nothing until the end, and lets an answer be changed', () => {
+    open();
+    fireEvent.click(screen.getByRole('button', { name: 'At the end' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
+    const radios = () => screen.getAllByRole('radio');
+    fireEvent.click(radios().find((b) => /wrong/.test(b.textContent ?? ''))!);
+    expect(screen.queryByText(/Not this time|Correct/)).toBeNull();
+    // Changed to the right one: still nothing said.
+    fireEvent.click(radios().find((b) => /right/.test(b.textContent ?? ''))!);
+    expect(radios().find((b) => /right/.test(b.textContent ?? ''))!.getAttribute('aria-checked')).toBe('true');
+    expect(screen.queryByText(/Correct/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'End and see my score' }));
+    expect(screen.getByText(/1 of 3|1\/3/)).toBeTruthy();
+  });
+});

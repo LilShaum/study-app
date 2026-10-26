@@ -372,8 +372,11 @@ choice and written answers" is chosen on the setup (the owner, 2026-10-26:
 "BY DEFAULT ONLY MULTIPLE CHOICE"). Drawn at random from a lecture, a section, a lecture's
 or a class's studies, everything an exam covers, or a whole class; 20, 40
 or all. Over several lectures, 20 or 40 are shared by each lecture's size,
-or equally if the student picks Each the same. Each answer is marked as it
-is given (the owner, 2026-10-26: "TELL YOU IF THE QUESTION IS CORRECT OR
+or equally if the student picks Each the same. Answers: As you go (the
+default) or At the end, as an exam gives them (the owner, 2026-10-26:
+"CHOOSE IF U GET ANSWERS AT THE END OR AT START"); at the end, nothing is
+marked until the test ends and an answer can be changed. As you go, each
+answer is marked as it is given ("TELL YOU IF THE QUESTION IS CORRECT OR
 WRONG RIGHT AWAY"): a pick or I don't know shows right, or the right
 answer, as a study session shows it (McqCard): every wrong option's
 reason, the pick's set to be read, the explanation, and the passage from

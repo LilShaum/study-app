@@ -66,7 +66,8 @@ this is the intent it serves.
   its setup ("I NEVER TOLD YOU TO ADD WRITTEN ANSWERS", 2026-10-26). Right
   or wrong is shown as each is answered, with the same reasons and passage
   as the other modes, and what was missed comes back first in the next
-  test: "Remember, ADAPTIVE" (2026-10-26).
+  test: "Remember, ADAPTIVE" (2026-10-26). Answers as you go by default, or
+  at the end if chosen (2026-10-26).
 - **Wrong options:** a well-reasoned wrong answer that shows a gap in
   what you know matters more than equal length. Words like never, only,
   often are what test the nuance and are not a giveaway (2026-10-20).

@@ -101,6 +101,8 @@ interface SavedTest {
   marking?: boolean;
   /** Each question marked as it was answered: right or wrong shown, the answer kept. */
   checked?: boolean[];
+  /** Answers at the end, as an exam gives them, rather than as each is answered. */
+  atEnd?: boolean;
   /** Orders this test's options (lib/optionOrder), so a reload shows them as before. */
   seed?: string;
   at: number;
@@ -146,6 +148,7 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
       answeredAt,
       marks,
       checked,
+      atEnd: !!saved.atEnd,
       marking: !!saved.marking,
       seed: typeof saved.seed === 'string' ? saved.seed : String(saved.savedAt),
       at: Math.min(Math.max(0, saved.at | 0), test.length - 1),
@@ -167,6 +170,7 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
   const [answeredAt, setAnsweredAt] = useState<(number | null)[]>(saved?.answeredAt ?? []);
   const [marks, setMarks] = useState<(boolean[] | null)[]>(saved?.marks ?? []);
   const [checked, setChecked] = useState<boolean[]>(saved?.checked ?? []);
+  const [atEnd, setAtEnd] = useState(saved?.atEnd ?? false);
   const [marking, setMarking] = useState(saved?.marking ?? false);
   const [seed, setSeed] = useState(saved?.seed ?? '');
   const [at, setAt] = useState(saved?.at ?? 0);
@@ -187,16 +191,17 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       if (!test) localStorage.removeItem(storageKey);
       else {
         const refs = test.map((q) => ({ courseId: q.courseId, itemId: q.item.id }));
-        const record: SavedTest = { refs, answers, answeredAt, marks, checked, marking, seed, at, done, recorded: recorded.current, savedAt: Date.now() };
+        const record: SavedTest = { refs, answers, answeredAt, marks, checked, atEnd, marking, seed, at, done, recorded: recorded.current, savedAt: Date.now() };
         localStorage.setItem(storageKey, JSON.stringify(record));
       }
     } catch {
       // Storage full or blocked: the test still works, it just won't survive a reload.
     }
-  }, [storageKey, test, answers, answeredAt, marks, checked, marking, seed, at, done]);
+  }, [storageKey, test, answers, answeredAt, marks, checked, atEnd, marking, seed, at, done]);
 
-  const start = (questions: TestQuestion[]) => {
+  const start = (questions: TestQuestion[], answersAtEnd = atEnd) => {
     setTest(questions);
+    setAtEnd(answersAtEnd);
     setAnswers(questions.map(() => null));
     setAnsweredAt(questions.map(() => null));
     setMarks(questions.map(() => null));
@@ -291,7 +296,7 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
         pool={pool}
         missedLast={missedLast}
         fresh={(q) => !missedLast(q) && !recordOf(q)?.testedAt}
-        onStart={(chosen, n, even) => start(drawTest(chosen, n, even, firstBy))}
+        onStart={(chosen, n, even, answersAtEnd) => start(drawTest(chosen, n, even, firstBy), answersAtEnd)}
       />
     );
   if (done) {
@@ -326,13 +331,14 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       answers={answers}
       marks={marks}
       shown={!!checked[at]}
+      instant={!atEnd}
       unmarked={unmarked}
       seed={seed}
       onPick={(a, andCheck) => {
         if (checked[at]) return;
         setAnswers((x) => test.map((_, n) => (n === at ? a : (x[n] ?? null))));
         setAnsweredAt((t) => test.map((_, n) => (n === at ? Date.now() : (t[n] ?? null))));
-        if (andCheck) check();
+        if (andCheck && !atEnd) check();
       }}
       onCheck={check}
       onTick={(k) => tick(at, k)}
@@ -367,8 +373,12 @@ function Setup({
   pool: TestQuestion[];
   missedLast: (q: TestQuestion) => boolean;
   fresh: (q: TestQuestion) => boolean;
-  onStart: (chosen: TestQuestion[], n?: number, even?: boolean) => void;
+  onStart: (chosen: TestQuestion[], n?: number, even?: boolean, answersAtEnd?: boolean) => void;
 }) {
+  // As you go by default (the owner, 2026-10-26: "TELL YOU IF THE QUESTION
+  // IS CORRECT OR WRONG RIGHT AWAY"), or at the end, as an exam does
+  // ("MAKE IT SO U CAN CHOOSE IF U GET ANSWERS AT THE END OR AT START").
+  const [answersAtEnd, setAnswersAtEnd] = useState(false);
   // Multiple choice only, unless written answers are asked for too (the
   // owner, 2026-10-26: "BY DEFAULT ONLY MULTIPLE CHOICE BUT YOU CAN CHOOSE
   // WHAT GOES ON IT BEFORE").
@@ -387,8 +397,10 @@ function Setup({
     <div>
       {header}
       <p className="mt-4 max-w-prose text-small text-text-2">
-        The medium and hard questions, the ones that ask you to use what you know rather than recognise it. Each
-        answer is marked as you give it, right or wrong with why; at the end, your score and every question you missed.
+        The medium and hard questions, the ones that ask you to use what you know rather than recognise it.
+        {answersAtEnd
+          ? ' Answers wait until the end, as in an exam; then your score and every question you missed, with why.'
+          : ' Each answer is marked as you give it, right or wrong with why; at the end, your score and every question you missed.'}
         {written &&
           ' Short and long answers are written, as the exam has you write them; then you tick each point of the model answer you made.'}
         {firstLine(pool.length, missed, fresh)}
@@ -471,7 +483,28 @@ function Setup({
               </div>
             </div>
           )}
-          <button type="button" onClick={() => onStart(pool, length, even)} className="press press-ink tap-safe mt-6">
+          <div className="flex flex-col gap-y-1 border-b border-border py-5 sm:flex-row sm:items-baseline sm:gap-x-3">
+            <span className="mark shrink-0 text-text-3 sm:w-20">Answers</span>
+            <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
+              {[
+                { value: false, label: 'As you go' },
+                { value: true, label: 'At the end' },
+              ].map((c, i) => (
+                <span key={c.label} className="flex items-baseline">
+                  <button
+                    type="button"
+                    aria-pressed={answersAtEnd === c.value}
+                    onClick={() => setAnswersAtEnd(c.value)}
+                    className={`tap-safe px-0.5 text-small transition-colors ${answersAtEnd === c.value ? 'text-accent' : 'text-text-2 hover:text-text'}`}
+                  >
+                    <span className={answersAtEnd === c.value ? 'underline decoration-accent decoration-2 underline-offset-4' : ''}>{c.label}</span>
+                  </button>
+                  {i === 0 && <span className="ml-1 text-text-3">·</span>}
+                </span>
+              ))}
+            </div>
+          </div>
+          <button type="button" onClick={() => onStart(pool, length, even, answersAtEnd)} className="press press-ink tap-safe mt-6">
             Start the test
           </button>
         </>
@@ -486,6 +519,7 @@ function Taking({
   answers,
   marks,
   shown,
+  instant,
   unmarked,
   seed,
   onPick,
@@ -502,6 +536,8 @@ function Taking({
   marks: (boolean[] | null)[];
   /** This question is marked: right or wrong shown, the answer kept. */
   shown: boolean;
+  /** Marked as each is answered; otherwise all at the end, as an exam does. */
+  instant: boolean;
   /** Written answers still to tick at the end. */
   unmarked: boolean;
   seed: string;
@@ -524,7 +560,7 @@ function Taking({
   const rationales = useMemo(() => (isWritten(q.item) ? null : normalisedRationale(q.item)), [q]);
   const order = useMemo(() => optionOrder(options, `${seed}/${q.courseId}/${q.item.id}`), [options, q, seed]);
   // A written answer is checked by hand, once something is written.
-  const toCheck = isWritten(q.item) && !shown && !blank;
+  const toCheck = instant && isWritten(q.item) && !shown && !blank;
 
   useKeyboardShortcuts((e) => {
     // Enter on a focused control (Back, Leave, End and mark it) does what
@@ -641,8 +677,9 @@ function Taking({
       {!shown && (
         <button
           type="button"
+          aria-pressed={chosen === DONT_KNOW}
           onClick={() => onPick(DONT_KNOW, true)}
-          className="tap-safe mt-3 block text-small text-text-3 underline-offset-4 hover:text-text hover:underline"
+          className={`tap-safe mt-3 block text-small underline-offset-4 hover:underline ${chosen === DONT_KNOW ? 'text-accent underline decoration-accent decoration-2' : 'text-text-3 hover:text-text'}`}
         >
           I don&rsquo;t know
         </button>
