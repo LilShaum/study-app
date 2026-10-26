@@ -1,7 +1,7 @@
 import type { ItemResult } from '@/store/progress';
 import type { AnyItem, SessionItem } from './buildSessionItems';
 import { previewId, recallId } from './scored';
-import { answeredBy, type Asked } from './contentChecks';
+import { answeredBy, revealsAnswer, type Asked } from './contentChecks';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 import { answerPoints } from './answerPoints';
 
@@ -43,7 +43,7 @@ const GENERIC_SHARE = 0.4;
 export type LearnPhase = 'read' | 'recall' | 'apply';
 
 export function phaseOf(type: AnyItem['type']): LearnPhase | null {
-  if (type === 'definition' || type === 'example' || type === 'graphic' || type === 'preview' || type === 'slides') return 'read';
+  if (type === 'definition' || type === 'explain' || type === 'example' || type === 'graphic' || type === 'preview' || type === 'slides') return 'read';
   if (type === 'flashcard' || type === 'recall') return 'recall';
   if (type === 'mcq') return 'apply';
   return null;
@@ -58,6 +58,8 @@ export function phaseOf(type: AnyItem['type']): LearnPhase | null {
 const ORDER: Record<AnyItem['type'], number> = {
   slides: -1,
   definition: 0,
+  // After the terms it uses, before the worked example that applies it.
+  explain: 0.5,
   example: 1,
   graphic: 2,
   preview: 3,
@@ -91,6 +93,8 @@ function textOf(item: SessionItem): string {
       return [item.front, item.back].join(' ');
     case 'example':
       return [item.title, item.context ?? '', ...(item.steps ?? []), item.takeaway ?? ''].join(' ');
+    case 'explain':
+      return [item.title, item.text].join(' ');
     case 'graphic':
       return [item.title, item.caption ?? '', item.alt_text].join(' ');
     default:
@@ -202,17 +206,25 @@ interface Shown {
   asked: Asked;
   /** A read definition's id: its own typed term is meant to follow it. */
   def?: string;
+  /** An explanation read: it can print a later card's answer, and asks nothing itself. */
+  explains?: boolean;
 }
 
 export function shownOf(item: SessionItem): Shown | null {
   if (item.type === 'definition') return { asked: { question: item.definition, answer: item.term }, def: item.id };
+  // Prose that teaches, so a card whose answer it prints waits as it would
+  // after a definition that prints it.
+  if (item.type === 'explain') return { asked: { question: `${item.title}. ${item.text}`, answer: '' }, explains: true };
   const asked = item._again ? null : askedOf(item);
   return asked ? { asked } : null;
 }
 
 /** An earlier card that answers a later ask, the definition and its own typed term aside. */
 export function answers(earlier: Shown, item: SessionItem, asked: Asked): boolean {
+  if (item.type === 'explain') return false;
   if (earlier.def && item.type === 'recall' && item.target.id === earlier.def) return false;
+  // An explanation has no answer of its own to be the same fact as.
+  if (earlier.explains) return revealsAnswer(earlier.asked, asked);
   return answeredBy(earlier.asked, asked);
 }
 
@@ -369,10 +381,13 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   const texts = new Map(others.map((i) => [i, termTokens(textOf(i))]));
   const uses = (text: Set<string>, n: Set<string>[]) => n.some((t) => coversTokens(text, t));
   const defNames = defs.map((d) => namesOf(d));
+  // Judged on the cards, examples and figures: an explanation's prose names
+  // many terms, and adding explanations must not move the cards.
+  const counted = others.filter((i) => i.type !== 'explain');
   const genericIdx = new Set(
     defNames
       .map((n, k) => ({ n, k }))
-      .filter(({ n }) => others.length > 4 && others.filter((o) => uses(texts.get(o)!, n)).length > others.length * GENERIC_SHARE)
+      .filter(({ n }) => counted.length > 4 && counted.filter((o) => uses(texts.get(o)!, n)).length > counted.length * GENERIC_SHARE)
       .map(({ k }) => k),
   );
   const defWords = defs.map((d) => excerptWords(d));
@@ -396,8 +411,14 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   }
 
   const readAt = new Map(defs.map((d, k) => [d.id, k]));
-  const exampleWords = new Map(others.filter((i) => i.type === 'example').map((ex) => [ex, contentWords(ex)]));
-  const cardWords = new Map(others.filter((i) => i.type === 'flashcard' || i.type === 'mcq').map((i) => [i, contentWords(i)]));
+  // An explanation teaches as a worked example does: a card on it comes after it.
+  const exampleWords = new Map(others.filter((i) => i.type === 'example' || i.type === 'explain').map((ex) => [ex, contentWords(ex)]));
+  const cardWords = new Map<SessionItem, Set<string>>(others.filter((i) => i.type === 'flashcard' || i.type === 'mcq').map((i) => [i, contentWords(i)]));
+  /** A question or flashcard most of whose words are in this example or explanation. */
+  const practises = (item: SessionItem, words: Set<string>) => {
+    const own = cardWords.get(item);
+    return !!own && own.size >= 3 && [...own].filter((w) => words.has(w)).length / own.size >= PRACTISES;
+  };
 
   /** Which step every item goes in, with the terms cut into `defSteps` steps. */
   const place = (defSteps: number) => {
@@ -430,14 +451,23 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
     // A section with no terms has nothing to wait for and is cut by count; one
     // with a single step already reads everything before it asks anything.
     let steps = defSteps;
-    if (defs.length && defSteps > 1 && leftover.length) {
-      for (const item of leftover) stepOf.set(item, defSteps);
+    const rest = leftover.filter((i) => i.type !== 'explain');
+    if (defs.length && defSteps > 1 && rest.length) {
+      for (const item of rest) stepOf.set(item, defSteps);
       steps = defSteps + 1;
     } else {
       for (const type of ['example', 'graphic', 'flashcard', 'mcq'] as const) {
-        const ofType = leftover.filter((i) => i.type === type);
+        const ofType = rest.filter((i) => i.type === type);
         ofType.forEach((item, k) => stepOf.set(item, Math.floor((k * defSteps) / ofType.length)));
       }
+    }
+    // An explanation that names no term is read with the first card it
+    // teaches, or first of all: never after the questions it prepares for.
+    for (const ex of leftover) {
+      if (ex.type !== 'explain') continue;
+      const words = exampleWords.get(ex)!;
+      const taught = others.filter((item) => practises(item, words)).map((item) => stepOf.get(item) ?? 0);
+      stepOf.set(ex, taught.length ? Math.min(...taught) : 0);
     }
     // A card that practises a worked example comes after it, never before:
     // placed by the terms it names, a calculation could be set a step before
@@ -447,10 +477,8 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       const at = stepOf.get(ex);
       if (at == null) continue;
       for (const item of others) {
-        if (item.type !== 'flashcard' && item.type !== 'mcq') continue;
         if ((stepOf.get(item) ?? 0) >= at) continue;
-        const own = cardWords.get(item)!;
-        if (own.size >= 3 && [...own].filter((w) => words.has(w)).length / own.size >= PRACTISES) stepOf.set(item, at);
+        if (practises(item, words)) stepOf.set(item, at);
       }
     }
     // An exam question to write (a short or long answer) pulls the section

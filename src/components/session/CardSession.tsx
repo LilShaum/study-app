@@ -597,7 +597,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       } else if (e.key === 'ArrowLeft' && hasPrev) {
         e.preventDefault();
         prev();
-      } else if (e.key === 'Enter' && (current?.type === 'example' || current?.type === 'graphic')) {
+      } else if (e.key === 'Enter' && (current?.type === 'example' || current?.type === 'explain' || current?.type === 'graphic')) {
         // Cards with no internal state advance on Enter.
         e.preventDefault();
         handleNext();

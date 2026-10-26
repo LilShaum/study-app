@@ -7,6 +7,7 @@ import { planMerge, type MergePlan } from '@/lib/mergeFragment';
 import { buildAddPrompt } from '@/lib/buildAddPrompt';
 import { buildPractisePrompt } from '@/lib/buildPractisePrompt';
 import { buildFixPrompt, planFixes } from '@/lib/buildFixPrompt';
+import { buildExplainPrompt } from '@/lib/buildExplainPrompt';
 import { buildEvenOptionsPrompt, longestShare, optionsToRework, readEvenOptions, readEvenReply, withCorrections } from '@/lib/evenOptions';
 import { analyseCourseGaps } from '@/lib/courseGaps';
 import { sectionDensity } from '@/lib/sectionDensity';
@@ -22,7 +23,7 @@ import { cutMessage, readReply } from '@/lib/readReply';
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
 
-export type AddMode = 'material' | 'practice' | 'fix' | 'options';
+export type AddMode = 'material' | 'practice' | 'explain' | 'fix' | 'options';
 
 interface AddToCourseDialogProps {
   courseId: string;
@@ -37,6 +38,7 @@ const TYPE_LABELS: Record<string, string> = {
   flashcard: 'flashcard',
   definition: 'definition',
   example: 'example',
+  explain: 'explanation',
   graphic: 'diagram',
 };
 
@@ -67,7 +69,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
   // Re-planned on every keystroke: parsing a paste is cheap and pure, and it
   // means the preview and the error both track what's actually in the box.
-  const result = useMemo((): { plan: MergePlan; cut: string | null; share?: [number, number]; skipped?: string[] } | { error: string } | null => {
+  const result = useMemo((): { plan: MergePlan; cut: string | null; share?: [number, number]; skipped?: string[]; note?: string } | { error: string } | null => {
     if (!pasted.trim()) return null;
 
     // Even out the answers: new wrong options only, merged as corrections
@@ -97,8 +99,23 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
     const parsed = parseFragment(read.json, firstSectionId);
     if (!parsed.ok) return { error: parsed.error };
+    const cut = read.cut ? cutMessage(read.cut) : null;
 
-    return { plan: planMerge(course, parsed.fragment, { skipDuplicates }), cut: read.cut ? cutMessage(read.cut) : null };
+    // Explanations only: a model that adds a few questions "to check
+    // understanding" would otherwise slip new scored cards in unasked.
+    if (mode === 'explain') {
+      const sections = (parsed.fragment.sections ?? []).map((sec) => ({ ...sec, items: sec.items.filter((i) => i.type === 'explain') }));
+      const kept = sections.reduce((n, sec) => n + sec.items.length, 0);
+      const all = (parsed.fragment.sections ?? []).reduce((n, sec) => n + sec.items.length, 0) + (parsed.fragment.corrections?.length ?? 0);
+      if (!kept) return { error: 'The reply has no explanations in it (items of type "explain"). Copy the prompt again into the chat that wrote this lecture.' };
+      return {
+        plan: planMerge(course, { sections: sections.filter((sec) => sec.items.length) }, { skipDuplicates }),
+        cut,
+        note: all > kept ? `Left out ${plural(all - kept, 'item')} that ${all - kept === 1 ? 'is not an explanation' : 'are not explanations'}.` : undefined,
+      };
+    }
+
+    return { plan: planMerge(course, parsed.fragment, { skipDuplicates }), cut };
   }, [pasted, course, firstSectionId, skipDuplicates, mode]);
 
   const plan = result && 'plan' in result ? result.plan : null;
@@ -110,6 +127,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   const fixes = useMemo(() => planFixes(course), [course]);
   const rework = useMemo(() => optionsToRework(course), [course]);
   const shareNow = useMemo(() => longestShare(course), [course]);
+  const explained = useMemo(() => course.sections.reduce((n, s) => n + s.items.filter((i) => i.type === 'explain' && !i.set_aside).length, 0), [course]);
 
   const copyPrompt = async () => {
     // Kept on the lecture, so the next prompt for it carries them too.
@@ -124,7 +142,9 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
         ? buildFixPrompt(course, kept)
         : mode === 'practice'
           ? buildPractisePrompt(course, kept)
-          : buildAddPrompt(course, kept);
+          : mode === 'explain'
+            ? buildExplainPrompt(course, kept)
+            : buildAddPrompt(course, kept);
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
@@ -190,6 +210,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   const MODE_TITLES: Record<AddMode, string> = {
     material: 'Add material to this lecture',
     practice: 'More practice on this lecture',
+    explain: 'Add explanations',
     fix: 'Fix what the check found',
     options: 'Even out the answers',
   };
@@ -214,11 +235,12 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
           </button>
         </div>
 
-        <div className="flex gap-1 border-b border-border px-5 pt-3" role="tablist">
+        <div className="flex flex-wrap gap-x-1 border-b border-border px-5 pt-3" role="tablist">
           {(
             [
               ['material', 'New material'],
               ['practice', 'More practice'],
+              ['explain', 'Explanations'],
               ['fix', 'Fix gaps'],
               ['options', 'Even out answers'],
             ] as const
@@ -234,7 +256,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 setMode(value);
                 setCopied(false);
               }}
-              className={`rounded-t px-3 py-1.5 text-sm ${
+              className={`shrink-0 whitespace-nowrap rounded-t px-3 py-1.5 text-sm ${
                 mode === value
                   ? 'border-b-2 border-accent font-medium text-text'
                   : 'text-text-2 hover:text-text'
@@ -265,6 +287,14 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 lecture&apos;s questions right; fair is about 25%). This prompt asks only for new wrong answers to those, a short reply.{' '}
                 <strong>Paste it into the chat that wrote this lecture</strong>, which still has your notes. The
                 questions, their right answers and your scores stay exactly as they are.
+              </p>
+            ) : mode === 'explain' ? (
+              <p className="mb-2 text-sm text-text-2">
+                Asks for a short explanation of each key idea, the connections a teacher makes in
+                class, which Learn shows just before the questions on it.{' '}
+                <strong>Paste it into the chat that wrote this lecture</strong>, which still has your
+                slides. {explained > 0 ? `This lecture has ${plural(explained, 'explanation')} already; the prompt asks only for the ones missing. ` : ''}
+                Your questions and scores stay as they are.
               </p>
             ) : mode === 'fix' ? (
               <p className="mb-2 text-sm text-text-2">
@@ -449,6 +479,11 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
           {result && 'cut' in result && result.cut && (
             <div role="status" className="border-l-2 border-warning py-2 pl-3 text-sm text-text-2">
               {result.cut}
+            </div>
+          )}
+          {result && 'note' in result && result.note && (
+            <div role="status" className="border-l-2 border-border py-2 pl-3 text-sm text-text-2">
+              {result.note}
             </div>
           )}
 

@@ -297,7 +297,7 @@ it('lecture', () => {
         const seen = st().items.slice(0, n);
         const review = seen.filter((i) => i._block === 'review');
         const fresh = seen.filter((i) => i._block !== 'review');
-        const reading = seen.filter((i) => ['definition', 'example', 'graphic', 'preview', 'slides'].includes(i.type));
+        const reading = seen.filter((i) => ['definition', 'explain', 'example', 'graphic', 'preview', 'slides'].includes(i.type));
         const asks: SessionItem[] = seen.filter((i) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall');
         const servedOld = fresh.filter((i) => asks.includes(i) && !i._again && (before[i.id]?.got ?? 0) + (before[i.id]?.missed ?? 0) > 0).length;
         const firstAsks = asks.filter((i) => !i._again);

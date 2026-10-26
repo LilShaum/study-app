@@ -3,6 +3,7 @@ import { McqCard } from './McqCard';
 import { FlashcardCard } from './FlashcardCard';
 import { DefinitionCard } from './DefinitionCard';
 import { ExampleCard } from './ExampleCard';
+import { ExplainCard } from './ExplainCard';
 import { GraphicCard } from './GraphicCard';
 import { RecallCard } from './RecallCard';
 import { PreviewCard } from './PreviewCard';
@@ -80,6 +81,8 @@ export function ItemRenderer({
       );
     case 'preview':
       return <PreviewCard item={item} keyboardEnabled={keyboardEnabled} onNext={onNext} frame={frame} />;
+    case 'explain':
+      return <ExplainCard item={item} frame={frame} notesOpen={learning} />;
     case 'example':
       return <ExampleCard item={item} frame={frame} notesOpen={learning} />;
     case 'graphic':

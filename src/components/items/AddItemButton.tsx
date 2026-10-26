@@ -11,6 +11,7 @@ const TYPES: { value: ItemType; label: string }[] = [
   { value: 'mcq', label: 'Multiple Choice' },
   { value: 'flashcard', label: 'Flashcard' },
   { value: 'definition', label: 'Definition' },
+  { value: 'explain', label: 'Explanation' },
   { value: 'example', label: 'Worked Example' },
   { value: 'graphic', label: 'Diagram' },
 ];

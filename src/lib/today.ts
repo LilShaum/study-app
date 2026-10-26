@@ -38,6 +38,8 @@ export const DEFAULT_MINUTES = 30;
 // (store/studyLog, measuredPace).
 const CARD_SECONDS: Record<string, number> = {
   definition: 22,
+  // Read once, 2 to 4 sentences: a guess, as sim/student.ts has it.
+  explain: 30,
   example: 40,
   graphic: 25,
   flashcard: 13,

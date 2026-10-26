@@ -15,6 +15,7 @@ const TYPE_LABELS: Record<string, string> = {
   flashcard: 'flashcard',
   definition: 'definition',
   example: 'example',
+  explain: 'explanation',
   graphic: 'diagram',
 };
 

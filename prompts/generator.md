@@ -326,7 +326,7 @@ come from. Leave it out when the source has no numbers; never guess one.
 Every item, of any type, carries these common fields:
 
 - `id` (string, required) — unique within the file, slug-like (e.g. `"q_km_1"`)
-- `type` (required) — one of `mcq` | `flashcard` | `definition` | `example` | `graphic`
+- `type` (required) — one of `mcq` | `flashcard` | `definition` | `explain` | `example` | `graphic`
 - `source_excerpt` (string, **required**) — see obligation 1
 - `difficulty` (`"easy" | "medium" | "hard"`, optional but strongly encouraged)
 - `tags` (string[], optional) — consistent keywords for later filtering; reuse
@@ -340,6 +340,7 @@ Every item, of any type, carries these common fields:
 
 | The student has to… | Type |
 |---|---|
+| understand a key idea before being asked about it: what it is, why, how it follows from what came before | `explain` to read (below) |
 | name a term from its meaning | `definition` (the app asks it typed) |
 | recall one fact, or say in a sentence what something does or why | `flashcard` |
 | tell close things apart, apply an idea to a case, predict, catch a qualifier | `mcq` |
@@ -382,6 +383,26 @@ sources of…"): a list is tested by an MCQ that tells its members from
 near-misses, or each member where it is taught. Where the student gave
 assignments or past questions that ask for written answers, match their
 style on those topics.
+
+**`explain`** — a key idea explained the way a good tutor says it in class,
+to read before the questions on it. Not scored.
+```
+{ "id", "type": "explain", "title", "text", "difficulty", "tags", "source_excerpt" }
+```
+The student may never have been to the lecture: the slides' bullets are
+often all they have, and the connections the teacher made out loud are what
+they lack. Write one for each key idea (part 2's table) whose questions
+need more than its definitions: a mechanism, a cause and effect, a
+comparison, a principle with its reason, a list whose items each mean
+something. `text` is 2 to 4 plain sentences: what it is, why it works or
+matters, and how it links to the idea just before it ("This is why…",
+"Unlike…"). Give each item of a list its meaning in a few words, so the
+list makes sense rather than being memorised. Teach only what the slides
+and your notes on them support; anything filled in from outside them is
+marked as obligation 1 says. Never a question, never a summary of
+the cards, never filler on a basic term a definition already covers. Put it
+in the section before the cards that ask about it; the app shows it just
+before them, and leaves it out for a student who chose to be asked first.
 
 **`definition`** — a term and its precise meaning, faithful to the source's own phrasing.
 ```
@@ -444,7 +465,7 @@ The app does not show a section in the order you wrote it, and it does not
 show every card at once. Plan for this:
 
 1. **Steps.** A section is taught in steps of about a dozen cards: read a
-   few definitions (with their examples and diagrams), type each term from
+   few definitions (with their explanations, examples and diagrams), type each term from
    its definition, then answer the flashcards and MCQs on those terms.
 2. **Every definition is a question.** The app shows the meaning and the
    student types the term. So "name the term from its meaning" is already
@@ -697,7 +718,7 @@ measures this overlap across the whole course and reports the share.
 
 **What is graded.** `mcq` and `flashcard` items, and each `definition` one
 way only: the student types the term from its meaning. That tests naming,
-never use. Examples and diagrams are read, not scored. A definition is the
+never use. Explanations, examples and diagrams are read, not scored. A definition is the
 right and whole card for a basic term; every concept the student must
 *apply* also needs an MCQ or flashcard.
 

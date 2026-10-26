@@ -15,7 +15,7 @@ export { askedOf };
  * by tests (sessionAudit.test.ts).
  */
 
-const READING = new Set(['definition', 'preview', 'example', 'graphic', 'slides']);
+const READING = new Set(['definition', 'explain', 'preview', 'example', 'graphic', 'slides']);
 
 export interface SessionAudit {
   cards: number;
@@ -117,7 +117,7 @@ export function formatWalk(items: readonly SessionItem[]): string {
       ? `${asked.question.slice(0, 90)}  →  ${asked.answer.slice(0, 40)}`
       : item.type === 'definition'
         ? `${item.term}: ${item.definition.slice(0, 80)}`
-        : item.type === 'example' || item.type === 'graphic'
+        : item.type === 'example' || item.type === 'explain' || item.type === 'graphic'
           ? item.title
           : '';
     lines.push(`${String(n + 1).padStart(4)} ${close.has(n + 1) ? '!' : ' '} ${item.type.padEnd(10)} ${what}`);

@@ -149,6 +149,26 @@ mix that is too easy, too few gradable items.
 **Working means.** New angles on the same material, never rewordings of
 existing cards, and nothing that is not in the notes.
 
+### Add explanations
+
+**Goal.** Give a lecture made before explanations existed the teaching
+before its questions: the connections a teacher makes in class, for a
+student who may never have been (2026-10-26).
+
+**How it works.** "Add explanations" on the lecture page (shown while the
+lecture has none; also a tab of Add material). The prompt lists each
+section by id with its slide range, the terms it defines, every question
+it asks, the explanations it already has and the passages its items
+quoted, and the generator's own `explain` rules word for word
+(lib/buildExplainPrompt). Pasted into the chat that wrote the lecture, it
+writes from the slides; elsewhere from the quoted passages. The reply is
+explanations only, merged into their sections like any fragment.
+
+**Working means.** One to three per section where its questions turn on a
+mechanism, a cause, a comparison or a reason; none for a section of plain
+terms; nothing the slides do not support, and anything from outside them
+labelled. Questions and scores are untouched.
+
 ### The lecture check and Fix
 
 **Goal.** Show the student what is wrong or missing in a lecture file,
@@ -217,6 +237,16 @@ passage from the notes. A term defined the same way in two lectures counts
 once. A section with a slide range can start with "read these slides", then
 everything is asked first. "Skip the reading" asks every card first, for
 material already met in class. At the end Learn offers the next section.
+
+An explanation (`explain`: a key idea in 2 to 4 sentences, what it is,
+why, how it follows from the one before, as a tutor would say it) is read
+in the step of the terms it uses, before that step's worked examples and
+questions, and a card on it (most of its words in the explanation) never
+comes a step before it. One that names no term is read with the first card
+it teaches, or first of all. A card whose answer it prints waits at least
+five cards, as after a definition. It does not change which terms place the
+cards, nor count toward a section's density in the lecture check. Skip the
+reading leaves explanations out; Review and Practice never show them.
 
 A card that practises a worked example (most of its words in the example)
 comes after the example, never a step before it. A written answer of several points

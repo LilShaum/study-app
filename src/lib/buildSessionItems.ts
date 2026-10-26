@@ -245,7 +245,8 @@ function learnOrder(
     const all = stepSection(group, progress);
     // The steps are cut with the reading in, so a step still holds the
     // terms it would have taught; only the cards that give answers go.
-    const steps = questionsFirst ? all.filter((i) => i.type !== 'definition' && i.type !== 'preview') : all;
+    // Skip the reading leaves out every card that teaches, explanations included.
+    const steps = questionsFirst ? all.filter((i) => i.type !== 'definition' && i.type !== 'preview' && i.type !== 'explain') : all;
     if (questionsFirst) return steps;
     const range = ranges?.get(group[0]._sectionId);
     const first = steps[0];

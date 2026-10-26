@@ -30,7 +30,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Learn',
-    what: 'Teaches a section a few terms at a time, about a dozen cards a step. Each step: read the terms, type them from memory, then answer flashcards and questions that use them. Two cards on the same fact are never close together: the second waits for a later step, so you answer it from what you know and not from the card before. A term whose definition spells out its own name is read but not asked; the lecture check lists those, and Fix rewords them. A term gets at most three cards the first time you meet it; the rest, and any card that would come too soon after its twin, open your next sitting as a second look. A term defined the same way in two of your lectures counts once: answer it in one and the other knows. Anything you get wrong comes back a few cards later in the same step, with the passage from your notes. After each step you can stop, and Learn picks up at the next one. At the end it offers the next section. When the lecture says which slides a section covers, Learn starts there: read those slides yourself, tap I’ve read them, and it asks before it shows, which helps even when you get it wrong. Studying alongside your slides works best this way: read a few, put them away, then answer. Skip the reading, at the right of the step line, does this for every lecture: each card is asked before it is shown, with the answer and the passage after. It suits material you have already met in a lecture or your slides; Read first switches back.',
+    what: 'Teaches a section a few terms at a time, about a dozen cards a step. Each step: read the terms, type them from memory, then answer flashcards and questions that use them. Two cards on the same fact are never close together: the second waits for a later step, so you answer it from what you know and not from the card before. A term whose definition spells out its own name is read but not asked; the lecture check lists those, and Fix rewords them. A term gets at most three cards the first time you meet it; the rest, and any card that would come too soon after its twin, open your next sitting as a second look. A term defined the same way in two of your lectures counts once: answer it in one and the other knows. Where a section turns on how or why something works, a short explanation (The idea) comes before the questions on it: what the idea is, why, and how it follows from the one before. Anything you get wrong comes back a few cards later in the same step, with the passage from your notes. After each step you can stop, and Learn picks up at the next one. At the end it offers the next section. When the lecture says which slides a section covers, Learn starts there: read those slides yourself, tap I’ve read them, and it asks before it shows, which helps even when you get it wrong. Studying alongside your slides works best this way: read a few, put them away, then answer. Skip the reading, at the right of the step line, does this for every lecture: each card is asked before it is shown, with the answer and the passage after. It suits material you have already met in a lecture or your slides; Read first switches back.',
     scored: true,
   },
   {
@@ -217,6 +217,12 @@ const SECTIONS: HelpSection[] = [
           <li>
             <strong>More practice</strong> is for more questions on the notes you already have. It
             does not need the notes again.
+          </li>
+          <li>
+            <strong>Add explanations</strong> is for a lecture made before explanations existed. It
+            asks for a short explanation of each key idea, the connections your teacher makes in
+            class, which Learn shows just before the questions on it. Paste it into the chat that
+            wrote the lecture, so it writes from your slides.
           </li>
           <li>
             <strong>Send these to your AI to fix</strong>, in the lecture check, asks the AI to fix

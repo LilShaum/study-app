@@ -10,6 +10,21 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-26 — Learn: explanations before the questions on them, not modelled
+
+An `explain` card (a key idea in 2 to 4 sentences, as a tutor says it) is
+read in the step of the terms it uses, before that step's questions, and a
+card that shares most of its words never comes a step before it. The suite
+is level (no change in any figure): no synthetic or fixture lecture has an
+explanation, and the simulated student cannot learn from reading prose,
+only from a definition read before its typed term. What it should change,
+the first-time accuracy on questions about a mechanism or a reason, waits
+on real answer logs: compare a lecture's MCQs answered after its
+explanations with the same lecture before them. Reading time is guessed at
+30 s (sim/student.ts, lib/today.ts).
+
+---
+
 ## 2026-10-26 — Learn: a written answer is outlined at its section's start
 
 A section with a short or long answer of several points opens with it and

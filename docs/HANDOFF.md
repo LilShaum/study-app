@@ -19,6 +19,17 @@ Start here. Make each step a task, keep one in progress, and only mark it
 done when it is tested and live (see §7). Load `working-method`,
 `arborous-design` and `app-making` at the start; `simulate` before Learn.
 
+**Done 2026-10-26, teach before testing (live):** an `explain` item type
+(schema, ExplainCard, the editor), placed by Learn in the step of the terms
+it uses and before the cards that share its words (learnSteps
+`exampleWords`), dropped by Skip the reading. The generator writes one per
+key idea whose questions need more than definitions; "Add explanations"
+(AddToCourseDialog mode `explain`, lib/buildExplainPrompt) gives an older
+lecture its own, shown on the lecture page while it has none. Not
+modelled by the simulator (FINDINGS 2026-10-26). **Next:** see how the
+owner's regenerated lectures use them, and the design-pass items in
+docs/ASKS.md.
+
 **Done 2026-10-21, every way to study has one use (live):** a review of
 each mode against the owner's picture (now in CLAUDE.md, "How the owner
 wants it to work"). Written answers: a short- or long-answer flashcard is

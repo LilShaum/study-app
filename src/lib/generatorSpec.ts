@@ -41,3 +41,17 @@ export const ITEM_TYPES_SPEC = specSection('### Item types');
 
 /** The rules for what makes an item good rather than merely valid. */
 export const QUALITY_BAR_SPEC = specSection('## Quality bar');
+
+/**
+ * One item type's entry in the spec, from its bold name to the next type's,
+ * for a prompt that asks for that type alone.
+ */
+export function itemTypeSpec(type: string, source: string = ITEM_TYPES_SPEC): string {
+  const start = source.indexOf(`**\`${type}\`**`);
+  if (start < 0) return '';
+  const next = source.slice(start + 1).search(/\n\*\*`[a-z]+`\*\*/);
+  return source.slice(start, next < 0 ? source.length : start + 1 + next).trim();
+}
+
+/** What an explanation is and how to write one. */
+export const EXPLAIN_SPEC = itemTypeSpec('explain');

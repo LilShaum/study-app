@@ -25,6 +25,7 @@ const TYPE_LABEL: Record<StudyItem['type'], string> = {
   flashcard: 'Flashcard',
   definition: 'Term',
   example: 'Example',
+  explain: 'Explanation',
   graphic: 'Diagram',
 };
 

@@ -34,6 +34,7 @@ import { classOf, lectureExam } from '@/lib/classExams';
 interface Counts {
   total: number;
   definition: number;
+  explain: number;
   graphic: number;
   gradable: number;
   /** Studied items due for review now (see lib/memory.ts). */
@@ -126,6 +127,8 @@ export function CourseRoute() {
     return {
       total: items.length,
       definition: byType('definition'),
+      // Set-aside ones do not count: the lecture still lacks them.
+      explain: items.filter((i) => i.type === 'explain' && !i.set_aside).length,
       graphic: byType('graphic'),
       gradable: gradableIds.length,
       studied,
@@ -451,6 +454,8 @@ export function CourseRoute() {
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 sm:gap-x-5">
             <ToolButton onClick={() => setAdding('material')}>Add material</ToolButton>
             <ToolButton onClick={() => setAdding('practice')}>More practice</ToolButton>
+            {/* For a lecture made before explanations existed. */}
+            {counts.explain === 0 && <ToolButton onClick={() => setAdding('explain')}>Add explanations</ToolButton>}
             <ToolButton onClick={() => setEditingDetails(true)}>Edit details</ToolButton>
             <ToolButton
               onClick={async () => {

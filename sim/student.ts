@@ -93,6 +93,8 @@ MEMORY['fsrs-power'] = {
  */
 export const SECONDS: Record<SessionItem['type'], number> = {
   definition: 22,
+  // An assumption until a real log has one: a few sentences to read.
+  explain: 30,
   example: 40,
   graphic: 25,
   flashcard: 13,

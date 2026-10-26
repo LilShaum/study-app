@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
 import { buildSessionItems, recallId, type SessionItem } from './buildSessionItems';
-import { phaseOf, STEP_CARDS, STEP_TERMS, TERM_BUDGET } from './learnSteps';
+import { MIN_GAP, phaseOf, STEP_CARDS, STEP_TERMS, TERM_BUDGET } from './learnSteps';
 
 const TERMS = ['Adenylyl cyclase', 'Gs protein', 'Protein kinase A', 'Phosphodiesterase', 'Calmodulin', 'Inositol trisphosphate', 'Diacylglycerol', 'Protein kinase C'];
 
@@ -357,5 +357,84 @@ describe('Learn: a few written questions at a time', () => {
     const second = items.filter((i) => i._second && /^w\d$/.test(i.id));
     expect(first).toHaveLength(2);
     expect(second).toHaveLength(2);
+  });
+});
+
+describe('Learn: an explanation is read before the questions on it', () => {
+  const explain = (id: string, title: string, text: string): StudyItem => ({ id, type: 'explain', title, text }) as StudyItem;
+  const why = explain(
+    'why',
+    'Why Protein kinase C needs two signals',
+    'Diacylglycerol holds Protein kinase C at the membrane while calcium switches it on, so the enzyme fires only when both arrive together.',
+  );
+
+  it('comes before the cards it teaches, wherever it sits in the section', () => {
+    // Listed last, and the question names only a first-step term.
+    const q = mcq('q', 'Adenylyl cyclase aside, why does the enzyme at the membrane fire only when calcium and both signals arrive together?');
+    const items = whole([...defs, q, why]);
+    expect(stepOf(items, 'q')).toBeGreaterThanOrEqual(stepOf(items, 'why')!);
+    expect(items.findIndex((i) => i.id === 'q')).toBeGreaterThan(items.findIndex((i) => i.id === 'why'));
+  });
+
+  it('is read before the multiple choice in its own step', () => {
+    const items = learn([defs[0], mcq('q1', 'What does Adenylyl cyclase make?'), explain('e', 'What Adenylyl cyclase does', 'It turns ATP into cAMP, the second messenger.')]);
+    expect(items.findIndex((i) => i.id === 'e')).toBeLessThan(items.findIndex((i) => i.id === 'q1'));
+  });
+
+  it('is left out with Skip the reading and in Review', () => {
+    const cold = buildSessionItems(course([...defs, why, mcq('q1', 'What does Calmodulin bind?')]), 'learn', { questionsFirst: true });
+    expect(cold.some((i) => i.type === 'explain')).toBe(false);
+    const review = buildSessionItems(course([...defs, why, mcq('q1', 'What does Calmodulin bind?')]), 'review', { progress: { q1: { got: 0, missed: 1, lastSeen: 1 } } });
+    expect(review.some((i) => i.type === 'explain')).toBe(false);
+  });
+});
+
+describe('Learn: explanations, placed and spaced', () => {
+  const explain = (id: string, title: string, text: string): StudyItem => ({ id, type: 'explain', title, text }) as StudyItem;
+  const at = (items: SessionItem[], id: string) => items.findIndex((i) => i.id === id);
+
+  it('keeps a card whose answer it prints at least a few cards away, as a definition would', () => {
+    const e = explain('e', 'What Adenylyl cyclase does', 'Adenylyl cyclase turns ATP into cyclic AMP inside the cell, which carries the signal on.');
+    const q = { id: 'q', type: 'mcq', question: 'What does Adenylyl cyclase make from ATP?', options: ['cyclic AMP inside the cell', 'calcium', 'glucose', 'insulin'], correct_index: 0, explanation: 'x' } as StudyItem;
+    const items = whole([defs[0], defs[1], e, q, mcq('q2', 'What does Gs protein bind?')]);
+    expect(items.find((i) => i.id === 'q')?._second || at(items, 'q') - at(items, 'e') - 1 >= MIN_GAP).toBe(true);
+  });
+
+  it('naming no term, is read with the first card it teaches, not after the questions', () => {
+    const e = explain('e', 'Why one signal becomes many', 'Each enzyme in the chain activates hundreds of the next, so a single hormone molecule ends as thousands of responses.');
+    const q = mcq('q', 'Adenylyl cyclase: why does a single hormone molecule end as thousands of responses?');
+    // A card that matches nothing, so the section has a last step of its own.
+    const loose = card('loose', 'Which way does the flow run overall?');
+    const items = learn([...defs, q, loose, e]);
+    expect(stepOf(items, 'e')).toBe(0);
+    expect(stepOf(items, 'q')).toBe(0);
+    expect(at(items, 'e')).toBeLessThan(at(items, 'q'));
+  });
+
+  it('teaching no card, is read first', () => {
+    const e = explain('e', 'The big picture', 'Signals arrive outside, are relayed across, and are amplified within.');
+    const items = learn([...defs, card('loose', 'Which way does the flow run overall?'), e]);
+    expect(stepOf(items, 'e')).toBe(0);
+  });
+
+  it('does not change which terms place the cards', () => {
+    // Three of eight cards name Calmodulin with a first-step term.
+    const cards = [
+      mcq('c1', 'How do Adenylyl cyclase and Calmodulin differ?'),
+      mcq('c2', 'When do Adenylyl cyclase and Calmodulin act together?'),
+      mcq('c3', 'What links Adenylyl cyclase to Calmodulin?'),
+      mcq('o1', 'What does Gs protein bind?'),
+      mcq('o2', 'What does Protein kinase A phosphorylate?'),
+      mcq('o3', 'What breaks down cAMP besides Phosphodiesterase?'),
+      mcq('o4', 'Where is Diacylglycerol made?'),
+      mcq('o5', 'What does Protein kinase C need?'),
+    ];
+    const extra = [1, 2, 3].map((n) => explain(`e${n}`, `Note ${n} on Calmodulin`, `Calmodulin story number ${n}: sentences about lanterns, rivers and mountains.`));
+    // The steps may be cut differently (explanations take room in a step),
+    // but each card stays with the last term it names.
+    for (const items of [learn([...defs, ...cards]), learn([...defs, ...cards, ...extra])]) {
+      expect(stepOf(items, 'c1')).toBe(stepOf(items, 'd4'));
+      expect(stepOf(items, 'c2')).toBe(stepOf(items, 'd4'));
+    }
   });
 });

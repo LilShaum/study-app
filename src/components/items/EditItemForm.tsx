@@ -223,6 +223,17 @@ function TypeFields({
           </Field>
         </>
       );
+    case 'explain':
+      return (
+        <>
+          <Field label="Title">
+            <input name="title" defaultValue={item.title} className={inputClass} />
+          </Field>
+          <Field label="Explanation">
+            <textarea name="text" defaultValue={item.text} rows={5} className={inputClass} />
+          </Field>
+        </>
+      );
     case 'graphic':
       return (
         <>
@@ -298,6 +309,9 @@ export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
           steps: str('steps').split('\n').map((s) => s.trim()).filter(Boolean),
           takeaway: str('takeaway') || undefined,
         };
+        break;
+      case 'explain':
+        updated = { ...item, title: str('title'), text: str('text') };
         break;
       case 'graphic':
         updated = {

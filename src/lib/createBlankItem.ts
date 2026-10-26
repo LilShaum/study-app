@@ -11,6 +11,8 @@ export function createBlankItem(type: ItemType, id: string): StudyItem {
       return { id, type, term: '', definition: '' };
     case 'example':
       return { id, type, title: '', steps: [] };
+    case 'explain':
+      return { id, type, title: '', text: '' };
     case 'graphic':
       return { id, type, title: '' };
   }

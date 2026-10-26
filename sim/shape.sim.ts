@@ -28,6 +28,7 @@ it('measure a course shape', () => {
       case 'mcq': return [i.question, i.options?.[i.correct_index] ?? '', i.explanation ?? ''].join(' ');
       case 'flashcard': return [i.front, i.back].join(' ');
       case 'example': return [i.title, i.context ?? '', ...(i.steps ?? []), i.takeaway ?? ''].join(' ');
+      case 'explain': return [i.title, i.text].join(' ');
       case 'graphic': return [i.title, i.caption ?? '', i.alt_text].join(' ');
       default: return '';
     }

@@ -18,20 +18,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
-- **Teach before testing, for a student who has not been to lecture**
-  (2026-10-26: "it needs to not only be able to test those last things but
-  also help the user achieve them in the first place, even if the user has
-  never been to lecture or hasn't gone over the slides"). Proposed
-  2026-10-26, waiting on the owner's go (it changes what every lecture
-  generates and costs usage): Learn teaches terms (definitions), processes
-  (examples) and pictures, but every connection between ideas (the
-  mechanism, the why, how one slide leads to the next) is only in the MCQs
-  and their explanations, asked cold. Proposal: a short "explain" reading
-  card per key idea, written the way a tutor would say it in class (2 to 4
-  sentences, what it is, why, how it links to what came before), placed in
-  Learn just before the questions on it, left out with Skip the reading and
-  in Review; plus an "Add explanations" prompt to give existing lectures
-  theirs cheaply, without regenerating.
 - **Look at the regenerated nutrition lectures** (2026-10-26). Waits on the
   owner sending the files here: this session cannot reach other chats.
 - **Study and learning modes keep improving, effectiveness first**
@@ -64,6 +50,16 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-26 Taught before tested, for a student who has not been to
+  lecture (2026-10-26: "help the user achieve them in the first place, even
+  if the user has never been to lecture"; go given the same day): a new
+  `explain` card, a key idea in 2 to 4 sentences (what, why, how it follows
+  from the one before), read in Learn just before the questions on it, left
+  out with Skip the reading, in Review and in Practice. New lectures get
+  them from the generator; an older one gets them from "Add explanations"
+  on its page, a prompt for the chat that wrote it, without regenerating.
+  (ExplainCard, lib/buildExplainPrompt, learnSteps)
 
 - 2026-10-26 Export works on an iPhone (2026-10-26: "they won't download to
   my iPhone files"): a lecture's Export opens the share sheet on a phone

@@ -68,7 +68,8 @@ export function sectionDensity(course: Course): DensityReport | null {
   for (const s of course.sections) {
     const slides = slidesIn(s.source_range);
     if (!slides) continue;
-    const items = s.items.filter((i) => !i.set_aside).length;
+    // What the slides were turned into; an explanation retells them and asks nothing.
+    const items = s.items.filter((i) => !i.set_aside && i.type !== 'explain').length;
     rows.push({ id: s.id, title: s.title, slides, items, perSlide: items / slides });
   }
   if (rows.length < MIN_SECTIONS) return null;

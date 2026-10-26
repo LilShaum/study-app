@@ -67,6 +67,19 @@ export const ExampleItemSchema = z.looseObject({
   takeaway: z.string().optional(),
 });
 
+/**
+ * A key idea explained the way a tutor would say it in class: what it is,
+ * why, and how it links to what came before. Read in Learn just before the
+ * questions on it; never scored (the owner, 2026-10-26: the app must help a
+ * student reach understanding "even if the user has never been to lecture").
+ */
+export const ExplainItemSchema = z.looseObject({
+  ...itemBase,
+  type: z.literal('explain'),
+  title: z.string(),
+  text: z.string(),
+});
+
 export const GraphicItemSchema = z.looseObject({
   ...itemBase,
   type: z.literal('graphic'),
@@ -81,6 +94,7 @@ export const StudyItemSchema = z.discriminatedUnion('type', [
   FlashcardItemSchema,
   DefinitionItemSchema,
   ExampleItemSchema,
+  ExplainItemSchema,
   GraphicItemSchema,
 ]);
 
@@ -196,6 +210,7 @@ export type CourseMetadata = z.infer<typeof CourseMetadataSchema>;
 export type ClassExam = z.infer<typeof ClassExamSchema>;
 export type Section = z.infer<typeof SectionSchema>;
 export type StudyItem = z.infer<typeof StudyItemSchema>;
+export type ExplainItem = z.infer<typeof ExplainItemSchema>;
 export type ItemType = StudyItem['type'];
 export type McqItem = z.infer<typeof McqItemSchema>;
 export type FlashcardItem = z.infer<typeof FlashcardItemSchema>;
