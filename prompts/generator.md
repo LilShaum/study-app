@@ -336,6 +336,17 @@ Every item, of any type, carries these common fields:
 
 ### Item types
 
+**Which type for what.** Choose by what the student has to do:
+
+| The student has to… | Type |
+|---|---|
+| name a term from its meaning | `definition` (the app asks it typed) |
+| recall one fact, or say in a sentence what something does or why | `flashcard` |
+| tell close things apart, apply an idea to a case, predict, catch a qualifier | `mcq` |
+| follow a process or a calculation step by step | `example` to read, then an `mcq` or `flashcard` that uses it |
+| see a structure, cycle or pathway | `graphic` |
+| explain a mechanism, comparison or argument in several connected points | a written `flashcard` (below), rarely |
+
 **`mcq`** — one factual question, four options, one correct answer.
 ```
 { "id", "type": "mcq", "question", "options": [4 strings],
@@ -358,11 +369,19 @@ covers the wrong answers is ambiguous about which slot is which.)
 { "id", "type": "flashcard", "front", "back", "hint"?,
   "difficulty", "tags", "source_excerpt" }
 ```
-A flashcard whose answer has several points (explain, give three,
-compare) writes
-`back` as numbered points, "(1) … (2) … (3) …", one per point a marker
-would give a mark for, and is tagged `short-answer` (or `long-answer`). The
-app asks it as a written answer, and the student ticks each point they made.
+**A written flashcard** has its `back` as numbered points, "(1) … (2) …",
+and is tagged `short-answer` (or `long-answer`). The app asks it as "Write
+the answer" and the student ticks each point they made: the hardest and
+slowest card, so it is rare. Write one only for a key idea the lecture
+itself explains in connected points (the steps of a mechanism, the two
+sides of a comparison, reasons each with its because), only where other
+items teach each point first, and usually no more than one or two in a
+section. Each point is a full sentence that carries its reason, never a
+bare word. Never write one for a list of names or examples ("give three
+sources of…"): a list is tested by an MCQ that tells its members from
+near-misses, or each member where it is taught. Where the student gave
+assignments or past questions that ask for written answers, match their
+style on those topics.
 
 **`definition`** — a term and its precise meaning, faithful to the source's own phrasing.
 ```

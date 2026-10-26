@@ -279,3 +279,24 @@ describe('analyseCourseHealth: wrong options with no reason', () => {
     expect(find(h, 'rationale-missing')).toBeUndefined();
   });
 });
+
+describe('analyseCourseHealth: questions to write out', () => {
+  const written = (id: string, back: string): StudyItem => ({ id, type: 'flashcard', front: `${id}?`, back, tags: ['short-answer'] }) as StudyItem;
+
+  it('flags a list of bare words asked as a written answer, not one that explains', () => {
+    const h = analyseCourseHealth(
+      course([
+        written('list', '(1) Iron. (2) Zinc. (3) Iodine.'),
+        written('ok', '(1) Iron carries oxygen in haemoglobin, so too little means tiredness. (2) Zinc is needed by many enzymes, so wounds heal slowly without it.'),
+      ]),
+    );
+    expect(find(h, 'written-list')).toMatchObject({ severity: 'warning', items: ['list'] });
+  });
+
+  it('flags a section with more than two, naming the ones past two', () => {
+    const long = (id: string) => written(id, `(1) ${id} happens because one thing leads to another. (2) And then it finishes for a stated reason.`);
+    const h = analyseCourseHealth(course([long('a'), long('b'), long('c'), long('d')]));
+    expect(find(h, 'written-many')?.items).toEqual(['c', 'd']);
+    expect(find(analyseCourseHealth(course([long('a'), long('b')])), 'written-many')).toBeUndefined();
+  });
+});

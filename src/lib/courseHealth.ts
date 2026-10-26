@@ -3,6 +3,7 @@ import { analyseCourseGaps, type CourseGaps } from './courseGaps';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 import { analyseQuestionQuality, type QuestionQuality } from './questionQuality';
 import { normalisedRationale } from './mcqRationale';
+import { answerPoints } from './answerPoints';
 import { givesAway, restatesDefinition, sameFact, sameName, type Asked } from './contentChecks';
 import { acceptedForms, normalise } from './typedAnswer';
 import { sectionDensity } from './sectionDensity';
@@ -55,6 +56,11 @@ function promptOf(item: StudyItem): string {
  * makes two items share one score, and a term that is defined but never asked
  * about is read and never retrieved.
  */
+/** Points this short on average are a list, not an explanation (lib/answerPoints). */
+const WRITTEN_LIST_WORDS = 4;
+/** Questions to write out a section can carry before they crowd it. */
+const WRITTEN_PER_SECTION = 2;
+
 export function analyseCourseHealth(course: Course): CourseHealth {
   const findings: HealthFinding[] = [];
   const gaps = analyseCourseGaps(course);
@@ -112,6 +118,41 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       severity: 'warning',
       message: `${reasonless.length} question${reasonless.length === 1 ? ' has' : 's have'} wrong options with no reason, so picking one teaches nothing about why it is wrong.`,
       items: reasonless.map((m) => m.id),
+    });
+  }
+
+  // "Write the answer" is the slowest card, for an idea the lecture explains
+  // in connected points. A list of bare words asked that way is memorising
+  // on the spot, and a section of them is the owner's "five in a row about
+  // things I don't know" (2026-10-26).
+  const written = course.sections.map((section) => ({
+    section,
+    cards: section.items.filter(
+      (i): i is Extract<StudyItem, { type: 'flashcard' }> => i.type === 'flashcard' && !i.set_aside && (answerPoints(i)?.points.length ?? 0) >= 2,
+    ),
+  }));
+  const wordsIn = (t: string) => t.trim().split(/\s+/).filter(Boolean).length;
+  const lists = written
+    .flatMap((w) => w.cards)
+    .filter((c) => {
+      const points = answerPoints(c)!.points;
+      return points.reduce((n, p) => n + wordsIn(p), 0) / points.length <= WRITTEN_LIST_WORDS;
+    });
+  if (lists.length) {
+    findings.push({
+      id: 'written-list',
+      severity: 'warning',
+      message: `${lists.length} question${lists.length === 1 ? ' asks' : 's ask'} you to write out a list of a word or two each, with no explanation to learn from. Multiple choice tests a list better.`,
+      items: lists.map((c) => c.id),
+    });
+  }
+  const crowded = written.filter((w) => w.cards.length > WRITTEN_PER_SECTION);
+  if (crowded.length) {
+    findings.push({
+      id: 'written-many',
+      severity: 'warning',
+      message: `${crowded.length} section${crowded.length === 1 ? ' has' : 's have'} more than ${WRITTEN_PER_SECTION} questions to write out. They are the slowest kind; one or two for the key ideas is enough.`,
+      items: crowded.flatMap((w) => w.cards.slice(WRITTEN_PER_SECTION).map((c) => c.id)),
     });
   }
 
@@ -477,6 +518,8 @@ const GROUPS: Record<string, FindingGroup> = {
   'filler-options': 'fix',
   'option-count': 'fix',
   'rationale-missing': 'fix',
+  'written-list': 'fix',
+  'written-many': 'fix',
   'unsafe-svg': 'fix',
   'unclear-figures': 'slides',
   'sparse-sections': 'slides',

@@ -206,6 +206,30 @@ describe('session store: Learn brings a missed card back', () => {
     s().init('learn-c', learnCourse, 'learn');
   });
 
+  it('never puts back a written answer of several points: Review brings it back', () => {
+    const names = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta'];
+    const written = {
+      schema_version: '1.0',
+      metadata: { title: 'W' },
+      sections: [
+        {
+          id: 's1',
+          title: 'One',
+          items: [
+            ...names.map((t, n) => ({ id: `d${n}`, type: 'definition', term: t, definition: `meaning ${n}` })),
+            mcq('q1', 'Which is Alpha?'),
+            { id: 'w', type: 'flashcard', front: 'How do Alpha and Theta differ?', back: '(1) Alpha is first. (2) Theta is last.' },
+          ],
+        },
+      ],
+    } as unknown as Course;
+    s().init('w-c', written, 'learn');
+    goTo('w');
+    const before = s().items.length;
+    s().record(false);
+    expect(s().items).toHaveLength(before);
+  });
+
   it('puts it back a few cards on, until it is right once', () => {
     goTo('q1');
     const at = s().index;

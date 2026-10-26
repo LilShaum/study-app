@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { Course } from '@/schema/course';
 import { buildSessionItems, recallId, type CardKind, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { isMissed, useProgressStore, type ItemResult } from './progress';
+import { answerPoints } from '@/lib/answerPoints';
 import { examRule } from '@/lib/exam';
 import { usePlanStore } from './plan';
 import { useLearnStore } from './learn';
@@ -410,6 +411,11 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     const item = items[index];
     const learning = mode === 'learn' || (mode === 'today' && item?._step !== undefined);
     if (!learning || !item || !isGradable(item) || (item._again ?? 0) >= AGAIN_MAX) return;
+    // A written answer of several points is not asked again minutes later:
+    // that is memorising a list on the spot, again and again (the owner,
+    // 2026-10-26). Review brings it back on a later day, which is what held
+    // in the simulator (sim/FINDINGS.md, 2026-10-12).
+    if (item.type === 'flashcard' && (answerPoints(item)?.points.length ?? 0) >= 2) return;
     // Until it is right once, and no more: a higher bar in the first sitting
     // buys nothing that lasts once it is relearned on a later day (Vaughn,
     // Dunlosky & Rawson 2016, in docs/evidence.md). Review is that later day.

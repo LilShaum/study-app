@@ -158,7 +158,9 @@ and get it corrected by the AI that wrote it.
 keys), answer-shape give-aways, definitions that name their own term, the
 same fact asked twice, MCQs that restate a definition, wrong options with
 no reason (`rationale-missing`: Fix writes the reason, or replaces an
-option that has none), terms never defined, sections that only test recall, figures the AI could not read,
+option that has none), questions to write out that are lists of a word or
+two (`written-list`) or crowd a section past two (`written-many`), which
+Fix turns into multiple choice, terms never defined, sections that only test recall, figures the AI could not read,
 and sections with far fewer or far more items for their slides than the
 rest of the lecture (`lib/sectionDensity.ts`). Fix turns the findings into
 a prompt for the same chat, which judges each one against the notes.
@@ -217,7 +219,9 @@ everything is asked first. "Skip the reading" asks every card first, for
 material already met in class. At the end Learn offers the next section.
 
 A card that practises a worked example (most of its words in the example)
-comes after the example, never a step before it. Every card asked as
+comes after the example, never a step before it. A written answer of several points
+is not asked again within the sitting after a miss (Review brings it back a
+later day). Every card asked as
 "Write the answer" (one point or several) comes after the multiple choice:
 in its section's last step, and last in any step it is in, the next
 sitting's second look included. A short or long answer of several points
