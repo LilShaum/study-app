@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { McqItem } from '@/schema/course';
-import { inOrder, optionOrder } from './optionOrder';
+import { inOrder, optionOrder, orderForShowing } from './optionOrder';
 
 const item: McqItem = {
   id: 'q',
@@ -45,5 +45,27 @@ describe('inOrder', () => {
     expect(inOrder({ ...item, distractor_rationale: ['no 1', 'no 2', 'no 3'] }, [3, 2, 1, 0]).distractor_rationale).toEqual(['no 3', 'no 2', 'no 1', '']);
     const broken = { ...item, correct_index: 9 };
     expect(inOrder(broken, [3, 2, 1, 0])).toBe(broken);
+  });
+});
+
+describe('orderForShowing', () => {
+  it('moves the right answer every time the question comes back', () => {
+    let before = orderForShowing('back', item.options, 0, 'first').indexOf(0);
+    for (let k = 0; k < 100; k++) {
+      const now = orderForShowing('back', item.options, 0, `again-${k}`).indexOf(0);
+      expect(now).not.toBe(before);
+      before = now;
+    }
+  });
+
+  it('gives the same order again for the same showing', () => {
+    const a = orderForShowing('same', item.options, 0, 's');
+    expect(orderForShowing('same', item.options, 0, 's')).toEqual(a);
+  });
+
+  it('leaves a fixed order fixed', () => {
+    const fixed = ['a', 'b', 'c', 'All of the above'];
+    orderForShowing('fixed', fixed, 3, 'one');
+    expect(orderForShowing('fixed', fixed, 3, 'two')).toEqual([0, 1, 2, 3]);
   });
 });

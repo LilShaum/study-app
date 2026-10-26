@@ -39,14 +39,39 @@ function seeded(seed: string): () => number {
 }
 
 /** The order to show the options in: entry k is the index, in the file, of the option shown k-th. */
+const fixedOrder = (options: readonly string[]) => options.some((o) => POINTS_AT_OTHERS.some((p) => p.test(o)));
+
 export function optionOrder(options: readonly string[], seed: string): number[] {
   const order = options.map((_, i) => i);
-  if (options.some((o) => POINTS_AT_OTHERS.some((p) => p.test(o)))) return order;
+  if (fixedOrder(options)) return order;
   const rand = seeded(seed);
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
   }
+  return order;
+}
+
+/** The last order each question was shown in, while the app is open, by question id. */
+const lastShown = new Map<string, { seed: string; order: number[] }>();
+
+/**
+ * The order for one showing of a question, with its right answer somewhere
+ * other than where it was the last time the question was shown. A shuffle
+ * alone gave the same order back one time in 24, and the answer in the same
+ * place one time in 4: a missed question that came back as it was let the
+ * student answer from where it sat (the owner, 2026-10-26). The same seed
+ * gives the same order again (a re-render, or React's double call in
+ * development).
+ */
+export function orderForShowing(id: string, options: readonly string[], correctIndex: number, seed: string): number[] {
+  const last = lastShown.get(id);
+  if (last?.seed === seed) return last.order;
+  let order = optionOrder(options, seed);
+  const moved = (o: number[]) => !last || last.order.length !== o.length || o.indexOf(correctIndex) !== last.order.indexOf(correctIndex);
+  // A fixed order (an option that points at the others) cannot move.
+  if (!fixedOrder(options)) for (let k = 1; k < 64 && !moved(order); k++) order = optionOrder(options, `${seed}/${k}`);
+  lastShown.set(id, { seed, order });
   return order;
 }
 

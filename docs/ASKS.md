@@ -40,6 +40,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-10-26 A missed question that comes back has its options in a new
+  order, its right answer in a new place (2026-10-26: "when it came back
+  it's multiple choice options were in the same order"). (orderForShowing)
+
 - 2026-10-21 Wrong options that teach (2026-10-17, 10-20): a wrong pick that
   is another term of the lecture is kept as a mix-up and asked beside the
   question in Review, listed on Progress (lib/mixUps); the generator has a

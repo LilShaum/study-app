@@ -2,7 +2,7 @@ import { useMemo, useState, type KeyboardEvent } from 'react';
 import type { McqItem } from '@/schema/course';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { normalisedRationale } from '@/lib/mcqRationale';
-import { inOrder, optionOrder } from '@/lib/optionOrder';
+import { inOrder, orderForShowing } from '@/lib/optionOrder';
 import { DifficultyBadge } from './DifficultyBadge';
 import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
@@ -23,7 +23,7 @@ interface McqCardProps {
 export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = false, frame = 'card', learning = false }: McqCardProps) {
   // A new order at every showing, the key and notes following (lib/optionOrder).
   const [seed] = useState(() => Math.random().toString(36));
-  const order = useMemo(() => optionOrder(written.options ?? [], seed + written.id), [written, seed]);
+  const order = useMemo(() => orderForShowing(written.id, written.options ?? [], written.correct_index, seed), [written, seed]);
   const item = useMemo(() => inOrder(written, order), [written, order]);
   const [selected, setSelected] = useState(-1);
   const [revealed, setRevealed] = useState(false);

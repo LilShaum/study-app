@@ -43,6 +43,8 @@ These hold for every feature.
 - Multiple-choice options are shuffled at every showing (`lib/optionOrder`),
   the key and each option's "why not" with them, so where an answer sits
   tells nothing: one generated lecture had every right answer first. A
+  question that comes back has its right answer in a new place
+  (`orderForShowing`): a plain reshuffle repeated it one time in four. A
   practice test keeps one order through a reload. An option that points at
   the others ("all of the above", "A and C") keeps the written order.
 
