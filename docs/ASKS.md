@@ -18,19 +18,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
-- **Name the term after the multiple choice, not straight after reading**
-  (2026-10-26: "in the learning mode when I am not skipping the reading, I
-  have to go through a bunch of definitions and right after do name the
-  term. It makes no sense. We said writing questions should go at the end.
-  They should be after multiple choices since multiple choice helps the
-  user remember and apply what they just learned rather than trying to get
-  them to quickly memorize the definitions and terms and fill them out
-  right after which is accomplishing no teaching and slows shit down").
-  Built 2026-10-26: in a step, multiple choice, then flashcards, then the
-  typed terms, then writing; a step with no question whose terms a later
-  one uses joins it. On the test lecture, named straight after reading
-  went from 21 times to 4 (sections whose questions only restate the
-  definitions). Live once pushed.
 - **Answers in a new place from the very first showing** (2026-10-26: "I'm
   doing multiple choice problems for the first time and they all had the
   answer A. Make sure the answers are shuffled whenever the question is
@@ -88,6 +75,16 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-26 Name the term after the multiple choice, not straight after
+  reading (2026-10-26: "I have to go through a bunch of definitions and
+  right after do name the term. It makes no sense … multiple choice helps
+  the user remember and apply what they just learned"). A Learn step
+  reads, asks its multiple choice, then flashcards, then the terms named,
+  writing last; a step with no question whose terms a later one uses joins
+  it. Checked on the live site (read ×3, multiple choice ×2, name ×3). The
+  simulator scores it lower (sim/FINDINGS.md, 2026-10-26); the owner's
+  order, re-baselined. (lib/learnSteps ORDER, withQuestions)
 
 - 2026-10-26 ASTR 201 midterm: written (the owner, 2026-10-26: "I already
   did the astronomy midterm"). Lecture 1 no longer needed.
