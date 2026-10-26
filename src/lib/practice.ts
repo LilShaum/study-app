@@ -25,7 +25,7 @@ export const CARDS: { value: Cards; label: string; use: string }[] = [
 
 export const KINDS: { value: Kind; label: string }[] = [
   { value: 'all', label: 'All kinds' },
-  { value: 'questions', label: 'Questions' },
+  { value: 'questions', label: 'Multiple choice' },
   { value: 'flashcards', label: 'Flashcards' },
   { value: 'terms', label: 'Terms' },
 ];

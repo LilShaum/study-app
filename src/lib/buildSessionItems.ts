@@ -443,7 +443,9 @@ export function buildSessionItems(
       _sectionOrder: item._sectionOrder,
     };
   };
-  const asTyped = (list: SessionItem[]) => list.map((i) => typedFrom(i) ?? i);
+  // Multiple choice chosen as the kind (Practice) is asked with its options,
+  // even once right before: typed it would not be what was asked for.
+  const asTyped = (list: SessionItem[]) => (kind === 'questions' ? list : list.map((i) => typedFrom(i) ?? i));
 
   /** Studied in the last few hours: a section's second look waits (see withoutSecondLook). */
   const lastStudied = new Map<string, number>();
@@ -510,7 +512,9 @@ export function buildSessionItems(
 
   switch (mode) {
     case 'quiz':
-      items = asTyped(items.filter((i) => i.type === 'mcq'));
+      // Multiple choice, chosen as such: asked with its options, even once
+      // right before. Review and the mixed sittings ask those typed.
+      items = items.filter((i) => i.type === 'mcq');
       break;
     case 'flashcards':
       items = items.filter((i) => i.type === 'flashcard');

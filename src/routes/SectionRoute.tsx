@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PracticeKinds } from '@/components/PracticeKinds';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { scoredEntries } from '@/lib/scored';
 import { isDueFor } from '@/lib/memory';
@@ -169,6 +170,11 @@ export function SectionRoute() {
                     <span className="leaders hidden sm:block" aria-hidden="true" />
                     <span className="mark shrink-0 tabular-nums text-text-3">{m.unit}</span>
                   </Link>
+                )}
+                {m.to === practice && (
+                  <div className="pb-3">
+                    <PracticeKinds courseId={id} course={course} sectionId={section.id} />
+                  </div>
                 )}
               </li>
             ))}

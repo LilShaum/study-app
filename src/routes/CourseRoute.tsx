@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { PracticeKinds } from '@/components/PracticeKinds';
 import { useCoursesStore } from '@/store/courses';
 import type { Course } from '@/schema/course';
 import { exportCourse } from '@/lib/exportCourse';
@@ -48,10 +49,10 @@ interface Counts {
  */
 const MODE_LABELS: Record<string, string> = {
   learn: 'Learn',
-  quiz: 'Quiz',
+  quiz: 'Multiple choice',
   flashcards: 'Flashcards',
   definitions: 'Terms',
-  mixed: 'Mixed',
+  mixed: 'Everything',
   weakest: 'Weakest first',
   missed: 'Mistakes',
   review: 'Review',
@@ -372,6 +373,7 @@ export function CourseRoute() {
                     </span>
                   )}
                 </span>
+                <span className="mt-0.5 block text-small text-text-3">A bit every day: what is fading first, then something new, sized to your time.</span>
                 <span className="mt-0.5 block text-small text-text-2">{todaySummary}</span>
                 {partLine && <span className="mt-1 block text-small text-text-3">{partLine}</span>}
                 <button
@@ -389,27 +391,37 @@ export function CourseRoute() {
               )}
             </div>
           </li>
+          {/* Each says what it is for: three ways in with nothing to tell
+              them apart was the owner's "idek know anymore" (2026-10-26). */}
           {[
             {
               to: nextUp ? `learn?section=${encodeURIComponent(nextUp.section.id)}` : 'learn',
               label: 'Learn',
               unit: nextUp ? `section ${nextUp.index + 1}` : plural(counts.total + counts.definition, 'item'),
+              use: 'The lecture in the order of your slides, a few terms at a time. Follow along in your slides or notes.',
             },
             {
               to: null,
               label: 'Practice',
               unit: counts.due > 0 ? `${counts.due} due` : 'any part',
+              use: 'Drill what you choose: one kind of card, one part of the lecture, or a test.',
             },
           ].map((m) => (
-            <li key={m.label} className="border-b border-border">
+            <li key={m.label} className="border-b border-border pb-3">
               <Link
                 to={m.to === null ? `/study/${id}/practice` : `/session/${id}/${m.to}`}
-                className="group tap-safe flex items-baseline gap-3 py-3"
+                className="group tap-safe flex items-baseline gap-3 pt-3"
               >
                 <span className="font-display text-body text-text group-hover:text-accent">{m.label}</span>
                 <span className="leaders hidden sm:block" aria-hidden="true" />
                 <span className="mark shrink-0 tabular-nums text-text-3">{m.unit}</span>
               </Link>
+              <span className="mt-0.5 block text-small text-text-3">{m.use}</span>
+              {m.to === null && (
+                <div className="mt-1.5">
+                  <PracticeKinds courseId={id} course={course} />
+                </div>
+              )}
             </li>
           ))}
         </ul>

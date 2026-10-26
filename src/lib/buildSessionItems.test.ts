@@ -275,17 +275,24 @@ describe('buildSessionItems — a question answered right comes back typed', () 
   const right = { got: 1, missed: 0, lastSeen: 1 };
 
   it('asks it without its options once it has been answered right', () => {
-    const [q1] = buildSessionItems(qc, 'quiz', { progress: { q1: right } });
+    const q1 = buildSessionItems(qc, 'weakest', { progress: { q1: right } }).find((i) => i.id === 'q1');
     expect(q1).toMatchObject({ id: 'q1', type: 'recall', question: 'Which tissue moves water from the roots to the leaves?', answer: 'Phospholipase A2' });
   });
 
   it('keeps it multiple choice until then', () => {
-    expect(buildSessionItems(qc, 'quiz', { progress: {} })[0].type).toBe('mcq');
+    expect(buildSessionItems(qc, 'weakest', { progress: {} }).find((i) => i.id === 'q1')?.type).toBe('mcq');
+  });
+
+  it('stays multiple choice when multiple choice is what was chosen', () => {
+    const items = buildSessionItems(qc, 'quiz', { progress: { q1: right, q2: right, q3: right } });
+    expect(items.map((i) => i.type)).toEqual(['mcq', 'mcq', 'mcq']);
   });
 
   it('leaves questions that need their options, or whose answer is not a course term', () => {
-    const items = buildSessionItems(qc, 'quiz', { progress: { q1: right, q2: right, q3: right } });
+    const items = buildSessionItems(qc, 'weakest', { progress: { q1: right, q2: right, q3: right } }).filter((i) => /^q\d$/.test(i.id));
     expect(items.map((i) => i.type)).toEqual(['recall', 'mcq', 'mcq']);
+    // Multiple choice chosen as the kind stays multiple choice.
+    expect(buildSessionItems(qc, 'weakest', { progress: { q1: right }, kind: 'questions' }).find((i) => i.id === 'q1')?.type).toBe('mcq');
   });
 });
 
@@ -585,7 +592,7 @@ describe('buildSessionItems — an MCQ asked again typed', () => {
   const progress = { q1: { got: 1, missed: 0, lastSeen: 1 }, q2: { got: 1, missed: 0, lastSeen: 1 }, q3: { got: 1, missed: 0, lastSeen: 1 } };
 
   it('stays multiple choice when typed it would be the definition again or would spell its answer', () => {
-    const items = buildSessionItems(c, 'quiz', { progress });
+    const items = buildSessionItems(c, 'weakest', { progress });
     expect(items.find((i) => i.id === 'q1')?.type).toBe('mcq');
     expect(items.find((i) => i.id === 'q2')?.type).toBe('mcq');
     expect(items.find((i) => i.id === 'q3')?.type).toBe('recall');

@@ -256,6 +256,14 @@ sitting and reaching every lecture in a short one (`sim/FINDINGS.md`,
 2026-10-18). A pick holds in the situation it was made in: one made weeks
 before does not keep exam week one at a time, and one made in exam week
 does not outlast the exam.
+On the lecture page, Today, Learn and Practice each carry one line on what
+they are for, and under Practice, and under a section page's Practice this
+section, are direct links: Multiple choice, Flashcards, Terms (every card of
+that kind in the lecture or section, started at once) and Practice test
+(the owner looked for "just flashcards" and "just multiple choice" for
+weeks; they were a Kind choice inside this page). Multiple choice chosen as
+the kind is always asked with its options; elsewhere a question answered
+right before comes back typed.
 Under the Cards row, a line says what the picked choice is for (`CARDS`
 use): each has one use the others lack. Due now is Today's review alone;
 Weakest first is every card, least known first, for extra time; Everything

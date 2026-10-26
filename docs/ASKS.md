@@ -18,12 +18,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
-- **Just flashcards, or just multiple choice, by section, easy to find**
-  (2026-10-26: "why is there not a mode to just practice flash cards or
-  just do multiple choice problems?"), listed with Today, Learn and
-  Practice; the practice test easier to find and able to cover everything.
-  Today, Learn and Practice each clearly differentiated and geared to one
-  use.
 - **Study and learning modes keep improving, effectiveness first**
   (2026-10-26: "more important than QOL is making sure the way the app
   teaches is actually effective … I don't want to have to spell everything
@@ -54,6 +48,14 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-26 Just flashcards or just multiple choice, by section, easy to
+  find (2026-10-26): under Practice on the lecture page and under a
+  section's Practice this section, direct links to Multiple choice,
+  Flashcards, Terms (every card of that kind, started at once) and the
+  Practice test. Today, Learn and Practice each say what they are for.
+  Multiple choice chosen as the kind always comes with its options.
+  Session headers renamed to match (Multiple choice, Everything, Mistakes).
 
 - 2026-10-26 Written answers taught before they are asked (2026-10-26):
   with Read first, a section opens with each short or long answer it builds

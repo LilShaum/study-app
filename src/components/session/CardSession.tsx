@@ -52,11 +52,11 @@ interface CardSessionProps {
 const MODE_LABELS: Record<CardMode, string> = {
   learn: 'Learn',
   weakest: 'Weakest first',
-  quiz: 'Quiz',
+  quiz: 'Multiple choice',
   flashcards: 'Flashcards',
   definitions: 'Terms',
-  mixed: 'Mixed',
-  missed: 'Review Missed',
+  mixed: 'Everything',
+  missed: 'Mistakes',
   review: 'Review',
   today: 'Today',
 };
