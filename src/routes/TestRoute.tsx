@@ -124,7 +124,7 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
       if (q) {
         test.push(q);
         const a = saved.answers[i];
-        const ok = isWritten(q.item) ? typeof a === 'string' : typeof a === 'number' && a >= DONT_KNOW && a < q.item.options.length;
+        const ok = isWritten(q.item) ? typeof a === 'string' || a === DONT_KNOW : typeof a === 'number' && a >= DONT_KNOW && a < q.item.options.length;
         answers.push(ok ? a : null);
         answeredAt.push(ok ? (saved.answeredAt?.[i] ?? saved.savedAt ?? null) : null);
         // Ticks only while the card still has that many points.
@@ -220,7 +220,9 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
           const ticks = marks[i];
           // A written question counts once something was written or a point
           // ticked (answered in the head); left blank, it says nothing either.
-          const answered = isWritten(q.item) ? !!(typeof chose === 'string' && chose.trim()) || !!ticks?.some(Boolean) : chose != null;
+          const answered = isWritten(q.item)
+            ? chose === DONT_KNOW || !!(typeof chose === 'string' && chose.trim()) || !!ticks?.some(Boolean)
+            : chose != null;
           const when = answeredAt[i] ?? (answered ? lastAnswer : 0);
           const seen = studied[i];
           return answered && seen < when ? [{ courseId: q.courseId, item: q.item, got: answeredRight(q.item, chose ?? '', ticks) }] : [];
@@ -481,16 +483,16 @@ function Taking({
           );
         })}
       </div>
+      </>
+      )}
       <button
         type="button"
         aria-pressed={chosen === DONT_KNOW}
         onClick={() => onPick(DONT_KNOW)}
-        className={`tap-safe mt-3 text-small underline-offset-4 hover:underline ${chosen === DONT_KNOW ? 'text-accent underline decoration-accent decoration-2' : 'text-text-3 hover:text-text'}`}
+        className={`tap-safe mt-3 block text-small underline-offset-4 hover:underline ${chosen === DONT_KNOW ? 'text-accent underline decoration-accent decoration-2' : 'text-text-3 hover:text-text'}`}
       >
         I don&rsquo;t know
       </button>
-      </>
-      )}
       <div className="mt-6 flex items-center gap-3">
         <button type="button" onClick={onBack} disabled={at === 0} className="press tap-safe disabled:opacity-40">
           Back
@@ -596,7 +598,7 @@ function Results({
                     {where}
                     <div className="prose-set mt-1 text-body text-text">{q.item.front}</div>
                     <div className="mt-2 whitespace-pre-wrap border-l-2 border-border-strong pl-3 text-small text-text-2">
-                      {wrote || 'Nothing written'}
+                      {chose === DONT_KNOW ? 'You didn’t know' : wrote || 'Nothing written'}
                     </div>
                     <ul className="mt-2 space-y-1">
                       {points.map((point, k) => (
@@ -665,6 +667,8 @@ function Marking({
           const lead = answerPoints(item)?.lead;
           const wrote = typeof answers[i] === 'string' ? (answers[i] as string).trim() : '';
           const made = (marks[i] ?? []).filter(Boolean).length;
+          // Nothing to tick: the points are shown to read, and it is a miss.
+          const unknown = answers[i] === DONT_KNOW;
           return (
             <li key={`${q.courseId}/${item.id}`} className="border-b border-border py-4">
               <div className="flex items-baseline justify-between gap-3">
@@ -675,19 +679,23 @@ function Marking({
               </div>
               <div className="prose-set mt-1 text-body text-text">{item.front}</div>
               <div className="mt-2 whitespace-pre-wrap border-l-2 border-border-strong pl-3 text-small text-text-2">
-                {wrote || 'Nothing written. Tick what you would have said, if anything.'}
+                {unknown ? 'You didn’t know.' : wrote || 'Nothing written. Tick what you would have said, if anything.'}
               </div>
               {lead && <p className="mt-3 text-small text-text">{lead}</p>}
               <ul className="mt-2">
                 {points.map((point, k) => (
                   <li key={k}>
                     <label className="flex cursor-pointer items-start gap-3 py-1.5 text-small text-text">
-                      <input
-                        type="checkbox"
-                        checked={!!marks[i]?.[k]}
-                        onChange={() => onTick(i, k)}
-                        className="tap-safe mt-1 shrink-0 accent-accent"
-                      />
+                      {unknown ? (
+                        <span className="mt-0.5 shrink-0 tabular-nums text-text-3">{k + 1}.</span>
+                      ) : (
+                        <input
+                          type="checkbox"
+                          checked={!!marks[i]?.[k]}
+                          onChange={() => onTick(i, k)}
+                          className="tap-safe mt-1 shrink-0 accent-accent"
+                        />
+                      )}
                       <span>{point}</span>
                     </label>
                   </li>

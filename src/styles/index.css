@@ -677,8 +677,12 @@
   .flip-scene {
     perspective: 1200px;
   }
+  /* Both faces in one grid cell, so the card is as tall as the taller one.
+     The back used to be pinned to the front's height (absolute, inset 0), and
+     an answer longer than its question ran over the card's rules. */
   .flip-card {
     position: relative;
+    display: grid;
     transform-style: preserve-3d;
     transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
   }
@@ -686,12 +690,11 @@
     transform: rotateY(180deg);
   }
   .flip-face {
+    grid-area: 1 / 1;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
   .flip-face--back {
-    position: absolute;
-    inset: 0;
     transform: rotateY(180deg);
   }
 }

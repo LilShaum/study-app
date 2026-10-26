@@ -56,3 +56,27 @@ describe('FlashcardCard, moving between cards', () => {
     expect(screen.getByRole('button', { name: 'Done: 0 of 4' })).toBeTruthy();
   });
 });
+
+describe('FlashcardCard, I don’t know', () => {
+  it('on a flip card shows the answer, and Next counts it as missed', () => {
+    const onGot = vi.fn();
+    const onMissed = vi.fn();
+    render(<FlashcardCard item={card({ back: 'Mitochondria.' })} onGot={onGot} onMissed={onMissed} />);
+    fireEvent.click(screen.getByRole('button', { name: 'I don’t know' }));
+    expect(screen.queryByRole('button', { name: 'Got it' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(onMissed).toHaveBeenCalledTimes(1);
+    expect(onGot).not.toHaveBeenCalled();
+  });
+
+  it('on a written answer shows the points to make, with nothing to tick', () => {
+    const onMissed = vi.fn();
+    render(<FlashcardCard item={card()} onMissed={onMissed} />);
+    fireEvent.click(screen.getByRole('button', { name: 'I don’t know' }));
+    expect(screen.getByText('The points to make')).toBeTruthy();
+    expect(screen.getByText('Carbon.')).toBeTruthy();
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(onMissed).toHaveBeenCalledTimes(1);
+  });
+});

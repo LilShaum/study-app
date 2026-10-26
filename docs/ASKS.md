@@ -18,9 +18,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
-- **"I don't know" on everything that tests you** (2026-10-26: "I meant to
-  EVERYTHING that tests you. I'm looking at a write the answer question and
-  it doesn't have the option"): flashcards and written answers too.
 - **Written answers are too hard at first meeting** (2026-10-26: "If I
   haven't gone over the slides at all, I have no clue what the answers
   would be so I have to get it wrong on purpose"). Teach them before asking
@@ -63,6 +60,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-26 "I don't know" on everything that tests you: flashcards and
+  written answers too, in sessions and the practice test (2026-10-26). The
+  answer or the points to make show, it counts as a miss, Next moves on.
+  Fixed with it: a flashcard's answer longer than its question ran over the
+  card's rules (the back was pinned to the front's height).
 
 - 2026-10-26 Item counts follow importance (2026-10-14): the weight table
   and per-section density check (2026-10-15), "mentioned" only for terms

@@ -27,10 +27,13 @@ export function FlashcardCard(props: FlashcardCardProps) {
 function FlipCard({ item, onGot, onMissed, keyboardEnabled = false, learning = false }: FlashcardCardProps) {
   const [flipped, setFlipped] = useState(false);
   const [hintShown, setHintShown] = useState(false);
+  /** Said "I don't know": the answer shown, and it is a miss (the owner, 2026-10-26). */
+  const [dontKnow, setDontKnow] = useState(false);
 
   const grade = (got: boolean) => {
     setFlipped(false);
     setHintShown(false);
+    setDontKnow(false);
     if (got) onGot?.();
     else onMissed?.();
   };
@@ -44,6 +47,13 @@ function FlipCard({ item, onGot, onMissed, keyboardEnabled = false, learning = f
       return;
     }
     if (!flipped) return;
+    if (dontKnow) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        grade(false);
+      }
+      return;
+    }
     if (e.key === 'g' || e.key === 'G') {
       e.preventDefault();
       grade(true);
@@ -101,6 +111,17 @@ function FlipCard({ item, onGot, onMissed, keyboardEnabled = false, learning = f
             >
               Flip card
             </button>
+            <button
+              type="button"
+              tabIndex={flipped ? -1 : 0}
+              onClick={() => {
+                setDontKnow(true);
+                setFlipped(true);
+              }}
+              className="tap-safe text-small text-text-3 underline-offset-4 hover:text-text hover:underline"
+            >
+              I don&rsquo;t know
+            </button>
           </div>
 
           {/* Back */}
@@ -109,29 +130,38 @@ function FlipCard({ item, onGot, onMissed, keyboardEnabled = false, learning = f
                 against the other before saying whether you got it. */}
             <p className="text-small text-text-3">{item.front}</p>
             <p className="font-display text-heading text-text">{item.back}</p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                tabIndex={flipped ? 0 : -1}
-                onClick={() => grade(true)}
-                className="press press-yes tap-safe"
-              >
-                Got it
-              </button>
-              <button
-                type="button"
-                tabIndex={flipped ? 0 : -1}
-                onClick={() => grade(false)}
-                className="press press-no tap-safe"
-              >
-                Missed it
-              </button>
-            </div>
+            {dontKnow ? (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-small text-text-3">Counted as missed, so it comes back sooner.</p>
+                <button type="button" tabIndex={flipped ? 0 : -1} onClick={() => grade(false)} className="press press-ink tap-safe">
+                  Next
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  tabIndex={flipped ? 0 : -1}
+                  onClick={() => grade(true)}
+                  className="press press-yes tap-safe"
+                >
+                  Got it
+                </button>
+                <button
+                  type="button"
+                  tabIndex={flipped ? 0 : -1}
+                  onClick={() => grade(false)}
+                  className="press press-no tap-safe"
+                >
+                  Missed it
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {flipped && <SourceNote excerpt={item.source_excerpt} open={learning} />}
+      {flipped && <SourceNote excerpt={item.source_excerpt} open={learning || dontKnow} />}
     </div>
   );
 }
@@ -155,6 +185,8 @@ function WrittenCard({
   const [shown, setShown] = useState(false);
   const [hintShown, setHintShown] = useState(false);
   const [ticked, setTicked] = useState<boolean[]>(() => answer.points.map(() => false));
+  /** Said "I don't know": the model answer shown, nothing to tick, a miss. */
+  const [dontKnow, setDontKnow] = useState(false);
   const fieldId = useId();
   const one = answer.points.length === 1;
   const made = ticked.filter(Boolean).length;
@@ -164,6 +196,7 @@ function WrittenCard({
     setShown(false);
     setHintShown(false);
     setTicked(answer.points.map(() => false));
+    setDontKnow(false);
     if (got) onGot?.();
     else onMissed?.();
   };
@@ -176,6 +209,13 @@ function WrittenCard({
       if (e.code === 'Space') {
         e.preventDefault();
         setShown(true);
+      }
+      return;
+    }
+    if (dontKnow) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        grade(false);
       }
       return;
     }
@@ -234,9 +274,21 @@ function WrittenCard({
             placeholder="Write it as you would in the exam, or answer in your head"
             className="field mt-4 block w-full resize-y text-body"
           />
-          <button type="button" onClick={() => setShown(true)} className="press press-ink tap-safe mt-4">
-            Show the answer
-          </button>
+          <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+            <button type="button" onClick={() => setShown(true)} className="press press-ink tap-safe">
+              Show the answer
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDontKnow(true);
+                setShown(true);
+              }}
+              className="tap-safe text-small text-text-3 underline-offset-4 hover:text-text hover:underline"
+            >
+              I don&rsquo;t know
+            </button>
+          </div>
         </div>
       ) : (
         <div>
@@ -248,7 +300,31 @@ function WrittenCard({
             </div>
           )}
           {answer.lead && <p className="mt-4 text-body text-text">{answer.lead}</p>}
-          {one ? (
+          {dontKnow ? (
+            <>
+              {one ? (
+                <p className="mt-4 font-display text-heading text-text">{answer.points[0]}</p>
+              ) : (
+                <>
+                  <p className="mark mt-4 text-text-3">The points to make</p>
+                  <ol className="mt-1 border-y border-border">
+                    {answer.points.map((point, k) => (
+                      <li key={k} className="flex gap-3 border-b border-border py-2.5 text-body text-text last:border-b-0">
+                        <span className="shrink-0 tabular-nums text-text-3">{k + 1}.</span>
+                        <span>{point}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </>
+              )}
+              <div className="mt-5 flex flex-wrap items-baseline gap-3">
+                <button type="button" onClick={() => grade(false)} className="press press-ink tap-safe">
+                  Next
+                </button>
+                <span className="text-small text-text-3">Counted as missed, so it comes back sooner.</span>
+              </div>
+            </>
+          ) : one ? (
             <>
               <p className="mt-4 font-display text-heading text-text">{answer.points[0]}</p>
               <div className="mt-5 flex gap-2">
@@ -294,7 +370,7 @@ function WrittenCard({
               </div>
             </>
           )}
-          <SourceNote excerpt={item.source_excerpt} open={learning} />
+          <SourceNote excerpt={item.source_excerpt} open={learning || dontKnow} />
         </div>
       )}
     </div>
