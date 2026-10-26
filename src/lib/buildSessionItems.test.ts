@@ -113,12 +113,12 @@ const mixedCourse = {
 } as unknown as Course;
 
 describe('buildSessionItems — learn mode', () => {
-  it('orders a section definition → example/diagram → typed recall → flashcard → mcq', () => {
+  it('orders a section definition → example/diagram → mcq → flashcard → typed term', () => {
     // Everything is read first, then asked in the order it was read, so each
     // ask is as far from its reading as the step allows. A flashcard never
     // answered is shown open first, then asked.
     const items = buildSessionItems(mixedCourse, 'learn', { sectionId: 'sa' });
-    expect(items.map((i) => i.id)).toEqual(['a_def', 'a_eg', 'a_gfx', 'a_def~recall', 'a_card', 'a_mcq']);
+    expect(items.map((i) => i.id)).toEqual(['a_def', 'a_eg', 'a_gfx', 'a_mcq', 'a_card', 'a_def~recall']);
   });
 
   it('never shows a flashcard open before asking it', () => {
@@ -131,8 +131,8 @@ describe('buildSessionItems — learn mode', () => {
     // course before answering anything.
     const items = buildSessionItems(mixedCourse, 'learn');
     expect(items.map((i) => i.id)).toEqual([
-      'a_def', 'a_eg', 'a_gfx', 'a_def~recall', 'a_card', 'a_mcq',
-      'b_def', 'b_def~recall', 'b_mcq',
+      'a_def', 'a_eg', 'a_gfx', 'a_mcq', 'a_card', 'a_def~recall',
+      'b_def', 'b_mcq', 'b_def~recall',
     ]);
   });
 
@@ -526,7 +526,7 @@ describe('Learn with the student\'s own slides', () => {
 describe('Learn, questions first', () => {
   it('drops the cards that give answers, and keeps what is asked and the worked material', () => {
     const items = buildSessionItems(mixedCourse, 'learn', { sectionId: 'sa', questionsFirst: true });
-    expect(items.map((i) => i.id)).toEqual(['a_eg', 'a_gfx', 'a_def~recall', 'a_card', 'a_mcq']);
+    expect(items.map((i) => i.id)).toEqual(['a_eg', 'a_gfx', 'a_mcq', 'a_card', 'a_def~recall']);
   });
 
   it('leaves out the slides card too: there is no reading to ask for', () => {

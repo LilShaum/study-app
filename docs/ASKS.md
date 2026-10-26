@@ -18,6 +18,19 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
+- **Name the term after the multiple choice, not straight after reading**
+  (2026-10-26: "in the learning mode when I am not skipping the reading, I
+  have to go through a bunch of definitions and right after do name the
+  term. It makes no sense. We said writing questions should go at the end.
+  They should be after multiple choices since multiple choice helps the
+  user remember and apply what they just learned rather than trying to get
+  them to quickly memorize the definitions and terms and fill them out
+  right after which is accomplishing no teaching and slows shit down").
+  Built 2026-10-26: in a step, multiple choice, then flashcards, then the
+  typed terms, then writing; a step with no question whose terms a later
+  one uses joins it. On the test lecture, named straight after reading
+  went from 21 times to 4 (sections whose questions only restate the
+  definitions). Live once pushed.
 - **Answers in a new place from the very first showing** (2026-10-26: "I'm
   doing multiple choice problems for the first time and they all had the
   answer A. Make sure the answers are shuffled whenever the question is
@@ -58,8 +71,9 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   Round 1 (2026-10-26, live): from reading a real Learn sitting, a worked
   example now comes before the cards that practise it, exam answers to
   write come last in their section, and long answers are asked and scored
-  instead of only read. Next, from the same reading: a one-term step asks
-  the term straight after showing it (the weakest first test); an MCQ can
+  instead of only read. Next, from the same reading: (done 2026-10-26: a
+  term is named after the questions on it, not straight after reading it);
+  an MCQ can
   still land before the idea it needs when it names only an earlier term
   (a decay-chain question in step 1); a plain flashcard's "Got it" is
   still the kindest grade in the app (type or write the short ones?).

@@ -160,8 +160,8 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
 
 const PHASES: { key: LearnPhase; label: string }[] = [
   { key: 'read', label: 'Read' },
-  { key: 'recall', label: 'Recall' },
   { key: 'apply', label: 'Apply' },
+  { key: 'recall', label: 'Recall' },
 ];
 
 /**

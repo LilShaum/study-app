@@ -228,8 +228,15 @@ due is starved; new material is reached; the plan follows the exam.
 **Goal.** The first time through a section: teach it in small steps so it
 sticks.
 
-**How it works.** Steps of at most 12 cards: read a few definitions, type
-each term from its meaning, then the flashcards and MCQs on them. Two cards
+**How it works.** Steps of at most 12 cards: read a few definitions, then
+the multiple choice on them (to apply what was just read), the flashcards,
+and last each term typed from its meaning (the owner, 2026-10-26: name the
+term straight after reading it was "accomplishing no teaching"). A step
+with no question of its own whose terms a later question uses joins the
+next step, so its terms are named after that question; a step whose terms
+no question uses keeps them. Where every question on a term only restates
+its definition, the question still waits five cards after it, and the
+typed terms are what comes between. Two cards
 on one fact are at least 5 cards apart; at most 3 cards on a term at its
 first meeting, the rest in a second look at the next sitting (never in the
 sitting that taught it). A miss comes back later in its step with the

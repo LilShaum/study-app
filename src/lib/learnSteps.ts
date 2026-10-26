@@ -63,9 +63,12 @@ const ORDER: Record<AnyItem['type'], number> = {
   example: 1,
   graphic: 2,
   preview: 3,
-  recall: 4,
+  // Multiple choice first, to apply what was just read; naming a term from
+  // its meaning after it, never straight after reading the definition
+  // (the owner, 2026-10-26: "accomplishing no teaching and slows shit down").
+  mcq: 4,
   flashcard: 5,
-  mcq: 6,
+  recall: 6,
 };
 
 type Def = Extract<AnyItem, { type: 'definition' }>;
@@ -311,20 +314,62 @@ function apart(steps: SessionItem[][]): SessionItem[][] {
     });
     // The section's last step: at its end, if that is far enough from the
     // twin, rather than a step of one or two cards with a pause after it.
-    if (moved.length && s === steps.length - 1 && !tooClose([...stay, ...moved])) {
-      out[s] = [...stay, ...moved];
-      break;
+    if (moved.length && s === steps.length - 1) {
+      // In the step's order if that keeps them apart, at its end if only that does.
+      const sorted = inOrder([...stay, ...moved]);
+      const kept = !tooClose(sorted) ? sorted : !tooClose([...stay, ...moved]) ? [...stay, ...moved] : null;
+      if (kept) {
+        out[s] = kept;
+        break;
+      }
     }
     n += stay.length;
     out[s] = stay;
     if (!moved.length) continue;
     if (s + 1 === out.length) out.push([]);
-    out[s + 1] = [...out[s + 1], ...moved];
+    // Among the next step's cards in their order (a question before its
+    // typed terms), then checked there in turn.
+    out[s + 1] = s + 1 < steps.length ? inOrder([...out[s + 1], ...moved]) : [...out[s + 1], ...moved];
   }
   // Steps past the original last are the second look.
   return out
     .map((st, k) => (k < steps.length ? st : st.map((item) => ({ ...item, _second: true }))))
     .filter((st) => st.length);
+}
+
+/** A step's cards in the order they are met: reading, questions, typed terms, a card to write last. */
+const inOrder = (step: SessionItem[]): SessionItem[] =>
+  step
+    .map((item, i) => ({ item, i }))
+    .sort((a, b) => Number(isWrittenCard(a.item)) - Number(isWrittenCard(b.item)) || ORDER[a.item.type] - ORDER[b.item.type] || a.i - b.i)
+    .map(({ item }) => item);
+
+/**
+ * A step with no question or flashcard, only terms to read and then name,
+ * joins the next step when a later question uses one of its terms: they are
+ * read with that step's, used in its questions, and named after them. Read
+ * and then named straight away was "accomplishing no teaching" (the owner,
+ * 2026-10-26). A step whose terms no question uses keeps its own: there is
+ * nothing to apply them in first.
+ */
+function withQuestions(steps: SessionItem[][], termsIn: (item: SessionItem) => readonly number[]): SessionItem[][] {
+  const isAsk = (i: SessionItem) => i.type === 'mcq' || i.type === 'flashcard';
+  const out: SessionItem[][] = [];
+  let carry: SessionItem[] = [];
+  steps.forEach((step, s) => {
+    const own = [...carry, ...step];
+    if (!step.some(isAsk) && s + 1 < steps.length) {
+      const terms = new Set(own.filter((i) => i.type === 'recall').flatMap(termsIn));
+      const usedLater = steps.slice(s + 1).some((later) => later.some((i) => isAsk(i) && termsIn(i).some((k) => terms.has(k))));
+      if (usedLater) {
+        carry = own;
+        return;
+      }
+    }
+    out.push(carry.length ? inOrder(own) : step);
+    carry = [];
+  });
+  return out;
 }
 
 /**
@@ -521,8 +566,8 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   while (defs.length && defSteps < defs.length && Math.max(...built.map((s) => s.length)) > STEP_CARDS) {
     built = place(++defSteps);
   }
-  // A first meeting asks at most TERM_BUDGET cards on one term (its typed
-  // name first, in step order); the rest wait for the second look, the next
+  // A first meeting asks at most TERM_BUDGET cards on one term (in step
+  // order: the questions on it, then its typed name); the rest wait for the second look, the next
   // sitting. Every card on a basic idea in one go was the owner's "all my
   // time on feedback loops, the same question in different formats".
   const perTerm = new Map<number, number>();
@@ -559,7 +604,7 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       return false;
     }),
   );
-  built = apart(built);
+  built = apart(withQuestions(built, (item) => (item.type === 'recall' ? [readAt.get(item.target.id) ?? -1] : (termsOf.get(item) ?? []))));
   if (held.length) built.push(held.map((item) => ({ ...item, _second: true })));
   // A step still too long (one term with many questions, or the last step of
   // what fits no term) asks the rest in a step of its own, after its reading,

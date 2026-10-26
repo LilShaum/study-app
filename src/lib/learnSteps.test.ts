@@ -32,11 +32,11 @@ describe('Learn in steps', () => {
     expect(items.filter((i) => i.type === 'definition' && i._step === 0)).toHaveLength(4);
   });
 
-  it('reads, then recalls, then applies, inside every step', () => {
+  it('reads, then applies, then names, inside every step', () => {
     const items = learn([...defs, mcq('q1', 'What does Calmodulin bind?'), card('f1', 'Where is Gs protein?')]);
     for (const step of [0, 1]) {
       const phases = items.filter((i) => i._step === step).map((i) => phaseOf(i.type));
-      const rank = { read: 0, recall: 1, apply: 2 } as const;
+      const rank = { read: 0, apply: 1, recall: 2 } as const;
       expect(phases.map((p) => rank[p!])).toEqual([...phases.map((p) => rank[p!])].sort());
     }
   });
@@ -49,7 +49,8 @@ describe('Learn in steps', () => {
 
   it('holds a question back until every term it uses has been taught', () => {
     const items = learn([...defs, mcq('both', 'How does Gs protein differ from Diacylglycerol?')]);
-    expect(stepOf(items, 'both')).toBe(1);
+    expect(items.findIndex((i) => i.id === 'both')).toBeGreaterThan(items.findIndex((i) => i.id === 'd6'));
+    expect(stepOf(items, 'both')).toBe(stepOf(items, 'd6'));
   });
 
   it('knows a term by its abbreviation', () => {
@@ -149,7 +150,8 @@ describe('Learn in steps', () => {
     const items = whole([defs[0], ...qs]);
     expect(items[0]._steps).toBeGreaterThanOrEqual(2);
     for (let s = 0; s < items[0]._steps!; s++) expect(items.filter((i) => i._step === s).length).toBeLessThanOrEqual(STEP_CARDS);
-    expect(items.filter((i) => i._step! > 0).every((i) => i.type === 'mcq')).toBe(true);
+    // Later parts only ask: the questions, then the term named.
+    expect(items.filter((i) => i._step! > 0).every((i) => i.type === 'mcq' || i.type === 'recall')).toBe(true);
     expect(items.filter((i) => i.type === 'mcq')).toHaveLength(15);
   });
 
@@ -168,8 +170,9 @@ describe('Learn in steps', () => {
       km('a', 'What range do typical Gs protein Km values fall in?'),
       mcq('b', 'Typical Gs protein Km values fall in which range?'),
     ]);
-    expect(stepOf(items, 'a')).toBe(0);
-    expect(stepOf(items, 'b')).toBe(1);
+    // Multiple choice first in a step; the flashcard on the same fact waits.
+    expect(stepOf(items, 'b')).toBe(0);
+    expect(stepOf(items, 'a')).toBe(1);
   });
 
   it('never asks a term straight after a card that printed it', () => {

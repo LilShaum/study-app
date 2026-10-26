@@ -281,18 +281,25 @@ describe('session store: Learn brings a missed card back', () => {
     expect(s().stillMissed()).toEqual([id]);
   });
 
+  /** The id of the card `back` places before the end of the first step. */
+  const nearStepEnd = (back: number) => {
+    const block = s().items[0]._block;
+    return s().items.filter((i) => i._block === block).at(-1 - back)!.id;
+  };
+
   it('keeps a miss in its own step: as its last card when the step ends sooner', () => {
-    goTo('q3');
+    const id = nearStepEnd(1);
+    goTo(id);
     const block = s().current()!._block;
     s().record(false);
-    const copy = s().items.findIndex((i, n) => n > s().index && i.id === 'q3');
+    const copy = s().items.findIndex((i, n) => n > s().index && i.id === id);
     expect(s().items[copy]).toMatchObject({ _again: 1, _block: block });
     expect(s().items[copy + 1]?._block).not.toBe(block);
-    expect(s().items[copy - 1].id).not.toBe('q3');
+    expect(s().items[copy - 1].id).not.toBe(id);
   });
 
   it('never brings a miss back straight after itself', () => {
-    goTo('q4');
+    goTo(nearStepEnd(0));
     const before = s().items.length;
     // The step's last card: nothing to put between it and itself.
     s().record(false);

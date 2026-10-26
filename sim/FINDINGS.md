@@ -10,6 +10,37 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-26 — Learn: multiple choice before the typed term, as the owner asked: lower here, kept
+
+The owner (2026-10-26): reading definitions and naming each term straight
+after "accomplish[es] no teaching and slows shit down"; multiple choice
+"helps the user remember and apply what they just learned". Now in a step:
+read, multiple choice, flashcards, the typed terms, writing last (ORDER in
+lib/learnSteps), and a step with no question whose terms a later question
+uses joins that step. On the biochem test lecture, a term named straight
+after its reading went from 21 times to 4; spacing held (0 too close).
+
+**Result** (3 seeds, against the previous baseline). Exam score 3 to 10
+points lower in the everyday scenarios (steady-30 −5, steady-30-half-scope
+−9, crammer −6), never studied 3 to 16 points higher, `harsh` within ±1.
+Re-baselined, because this is the order the owner chose.
+
+**Why, checked one step at a time.** The step merge is not it (the same
+without it), nor which cards a term's first meeting holds (the same with
+the typed term counted first). It is the order: a typed term is cheap
+(25 s) and, straight after reading, mostly right; multiple choice costs
+40 s and is right 60% of the time at first. Asked first, the questions are
+no longer held behind the typed terms for the next sitting (190 at first
+meetings on the spec-estimate lecture against 148), so a first pass costs
+more per section and fewer sections are reached by the exam. The model
+counts every card as one exam point and gives a question no credit for
+teaching the term it uses, which is the owner's reason for the order.
+**What to check with a real log:** first-try accuracy on typed terms asked
+after the questions, against straight after reading; minutes per section
+at first meeting.
+
+---
+
 ## 2026-10-26 — Learn: explanations before the questions on them, not modelled
 
 An `explain` card (a key idea in 2 to 4 sentences, as a tutor says it) is
