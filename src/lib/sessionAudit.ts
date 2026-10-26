@@ -76,7 +76,12 @@ export function auditSession(items: readonly SessionItem[]): SessionAudit {
     asked: items.length - reading,
     readingShare: items.length ? reading / items.length : 0,
     giveawaysAsked,
-    shownThenAsked: items.filter((i) => i.type === 'preview').length,
+    // A card shown open and asked in the same step is read back, not
+    // recalled. An outline at a section's start, asked at its end or in the
+    // next sitting, is not (lib/learnSteps outlines).
+    shownThenAsked: items.filter(
+      (p) => p.type === 'preview' && items.some((i) => i.id === p.target.id && i._block === p._block),
+    ).length,
     sameFactInStep,
   };
 }

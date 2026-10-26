@@ -18,12 +18,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
-- **Written answers are too hard at first meeting** (2026-10-26: "If I
-  haven't gone over the slides at all, I have no clue what the answers
-  would be so I have to get it wrong on purpose"). Teach them before asking
-  where the student has not read yet (at least the points, the why if the
-  slides give it), without hand-holding a student who has; depends on the
-  mode and on Read first / Skip the reading.
 - **Just flashcards, or just multiple choice, by section, easy to find**
   (2026-10-26: "why is there not a mode to just practice flash cards or
   just do multiple choice problems?"), listed with Today, Learn and
@@ -60,6 +54,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-26 Written answers taught before they are asked (2026-10-26):
+  with Read first, a section opens with each short or long answer it builds
+  to and its points; the cards teach the parts; the answer is written last
+  (in a one-step section, the next sitting). Skip the reading asks it cold,
+  with I don't know. Review, Practice and the test ask it straight.
 
 - 2026-10-26 "I don't know" on everything that tests you: flashcards and
   written answers too, in sessions and the practice test (2026-10-26). The

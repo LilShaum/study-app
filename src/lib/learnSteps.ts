@@ -1,6 +1,6 @@
 import type { ItemResult } from '@/store/progress';
 import type { AnyItem, SessionItem } from './buildSessionItems';
-import { recallId } from './scored';
+import { previewId, recallId } from './scored';
 import { answeredBy, type Asked } from './contentChecks';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 import { answerPoints } from './answerPoints';
@@ -118,8 +118,19 @@ function contentWords(item: SessionItem): Set<string> {
   return new Set([...termTokens(textOf(item))].filter((w) => w.length >= 4));
 }
 
-/** A short- or long-answer question, asked written (lib/answerPoints). */
-const isWritten = (item: SessionItem): boolean => item.type === 'flashcard' && !!answerPoints(item);
+/** Answered at least once: past its first meeting. */
+const answeredBefore = (item: SessionItem, progress?: Record<string, ItemResult>): boolean => {
+  const r = progress?.[item.id];
+  return !!r && r.got + r.missed > 0;
+};
+
+/**
+ * A short or long answer of several points to write (lib/answerPoints): the
+ * synthesis a section builds to. A one-point written card (a calculation)
+ * is not: it practises a method its worked example shows, and its outline
+ * would be the worked answer before the method.
+ */
+const isWritten = (item: SessionItem): boolean => item.type === 'flashcard' && (answerPoints(item)?.points.length ?? 0) >= 2;
 
 function overlap(a: Set<string>, b: Set<string>): number {
   const small = a.size <= b.size ? a : b;
@@ -476,6 +487,13 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   // time on feedback loops, the same question in different formats".
   const perTerm = new Map<number, number>();
   const held: SessionItem[] = [];
+  // A written question in a section of one step would be asked a few cards
+  // after its outline is read (below): that is reading it back. It waits for
+  // the second look, the next sitting, and is recalled then.
+  if (built.length === 1 && built[0].some(isWritten) && built[0].some((i) => !isWritten(i))) {
+    held.push(...built[0].filter(isWritten));
+    built = [built[0].filter((i) => !isWritten(i))];
+  }
   built = built.map((step) =>
     step.filter((item) => {
       if (phaseOf(item.type) === 'read') return true;
@@ -516,6 +534,29 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   }
   // A step can end up empty: every term known and nothing else placed in it.
   const steps = joinSmall(cut.filter((s) => s.length));
+  // What the section builds to, first: each written question not yet
+  // answered opens the section with its points, to read, and is asked at the
+  // section's end (or the next sitting). Asked cold, a three-point answer
+  // the student had never met was "get it wrong on purpose, then memorise
+  // the answer" (the owner, 2026-10-26). The section between the two is what
+  // makes it a recall, not a reading back. Skip the reading leaves it out
+  // (buildSessionItems learnOrder), for a student who has read the slides.
+  const outlines = steps
+    .flat()
+    .filter((i): i is SessionItem & { type: 'flashcard' } => isWritten(i) && !answeredBefore(i, progress))
+    .map(
+      (card): SessionItem => ({
+        id: previewId(card.id),
+        type: 'preview',
+        target: card,
+        ...(card.difficulty ? { difficulty: card.difficulty } : {}),
+        _sectionTitle: card._sectionTitle,
+        _sectionId: card._sectionId,
+        _sectionOrder: card._sectionOrder,
+        _courseId: card._courseId,
+      }) as SessionItem,
+    );
+  if (outlines.length && steps.length) steps[0] = [...outlines, ...steps[0]];
   return steps.flatMap((step, s) =>
     step.map((item) => ({
       ...item,

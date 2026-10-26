@@ -10,6 +10,18 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-26 — Learn: a written answer is outlined at its section's start
+
+A section with a short or long answer of several points opens with it and
+its points to read, and asks it at the section's end (the next sitting in a
+one-step section). The suite is unchanged: no synthetic card has numbered
+points. The case for it is the owner's (asked cold, a three-point answer
+was "get it wrong on purpose and memorise it") and the delayed first test
+(docs/evidence.md); the walk of a real lecture shows the outline 24 cards
+before its ask, with the parts taught between.
+
+---
+
 ## 2026-10-26 — Learn: worked example before its practice, written answers last; an artifact removed
 
 **Change.** In Learn, a card that practises a worked example (most of its

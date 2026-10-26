@@ -290,3 +290,35 @@ describe('Learn: worked examples and written answers', () => {
     expect(buildSessionItems(course([...defs, la]), 'browse').find((i) => i.id === 'la')?.type).toBe('example');
   });
 });
+
+describe('Learn: a written answer is outlined before it is asked', () => {
+  const sa = { id: 'sa', type: 'flashcard', front: 'Short answer (3 marks): how does Adenylyl cyclase signal?', back: '(1) Gs protein. (2) Adenylyl cyclase. (3) Protein kinase A.' } as StudyItem;
+
+  it('opens the section with its points, and asks it in a later step', () => {
+    const items = learn([...defs, sa, mcq('q1', 'What does Calmodulin bind?')]);
+    const outline = items.findIndex((i) => i.id === 'sa~preview');
+    expect(outline).toBe(0);
+    expect(stepOf(items, 'sa')).toBeGreaterThan(stepOf(items, 'sa~preview')!);
+  });
+
+  it('is not outlined once answered, or with Skip the reading', () => {
+    expect(learn([...defs, sa], { sa: { got: 0, missed: 1, lastSeen: 1 } }).some((i) => i.id === 'sa~preview')).toBe(false);
+    const cold = buildSessionItems(course([...defs, sa]), 'learn', { questionsFirst: true });
+    expect(cold.some((i) => i.type === 'preview')).toBe(false);
+    expect(cold.some((i) => i.id === 'sa')).toBe(true);
+  });
+
+  it('waits for the next sitting in a section of one step, so it is never read back', () => {
+    const items = whole([defs[0], defs[1], sa, mcq('q1', 'What does Gs protein do?')]);
+    expect(items.find((i) => i.id === 'sa')?._second).toBe(true);
+    const outline = items.findIndex((i) => i.id === 'sa~preview');
+    expect(outline).toBeGreaterThanOrEqual(0);
+    expect(items[outline]._second).toBeFalsy();
+    expect(outline).toBeLessThan(items.findIndex((i) => i.id === 'sa'));
+  });
+
+  it('does not outline a one-point written card, such as a calculation', () => {
+    const calc = { id: 'calc', type: 'flashcard', front: 'Work out the age.', back: 't = 2.3 × 10⁹ years.', tags: ['assignment-style'] } as StudyItem;
+    expect(learn([...defs, calc]).some((i) => i.id === 'calc~preview')).toBe(false);
+  });
+});

@@ -3,6 +3,7 @@ import { Icon } from '@/components/Icon';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
+import { answerPoints } from '@/lib/answerPoints';
 
 interface PreviewCardProps {
   item: PreviewItem;
@@ -23,6 +24,31 @@ export function PreviewCard({ item, keyboardEnabled = false, onNext, frame = 'sh
     onNext?.();
   }, keyboardEnabled);
   const card = item.target;
+  const points = answerPoints(card);
+
+  // A written question's outline: what the section builds to, read before
+  // its parts are taught and asked at its end (lib/learnSteps outlines).
+  if (points && points.points.length >= 2) {
+    return (
+      <div className={FRAME[frame]}>
+        <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-3">This section builds to this answer</div>
+        <p className="font-display text-heading text-text">{card.front}</p>
+        {points.lead && <p className="mt-3 text-body text-text">{points.lead}</p>}
+        <ol className="mt-3 border-y border-border">
+          {points.points.map((point, k) => (
+            <li key={k} className="flex gap-3 border-b border-border py-2.5 text-body text-text last:border-b-0">
+              <span className="shrink-0 tabular-nums text-text-3">{k + 1}.</span>
+              <span>{point}</span>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-3 text-small text-text-2">
+          Read the points now. The cards that follow teach them, and you write the whole answer from memory later.
+        </p>
+        <SourceNote excerpt={card.source_excerpt} />
+      </div>
+    );
+  }
 
   return (
     <div className={FRAME[frame]}>
