@@ -22,6 +22,8 @@ const CORRECTABLE = [
   'option-count',
   'rationale-misaligned',
   'rationale-missing',
+  'two-questions',
+  'rationale-cites-source',
   'written-list',
   'written-many',
   'no-explanation',
@@ -42,6 +44,10 @@ const FAULT_LABELS: Record<string, string> = {
   'rationale-misaligned': "the distractor_rationale array isn't index-aligned with the options",
   'rationale-missing':
     'a wrong option has no reason in distractor_rationale. For each, write in one short phrase why a student might pick it and why it is wrong, from my notes. If there is no real reason, the option is filler: replace it with a mistake a student who studied would really make (the neighbouring term, the fact turned round, the one word that limits it swapped) and give its reason',
+  'two-questions':
+    'it asks two things in one question ("What happens, and how else…?"), so the right answer is two facts joined together and knowing one half counts for nothing. Keep the id for one question that asks one thing, with options and reasons to match; if the other half is worth asking, write it as a new MCQ of its own',
+  'rationale-cites-source':
+    'a wrong option\'s reason only says my notes do not describe it ("not described as…"). Say in one short phrase what is actually wrong with it, about the subject, from my notes',
   'written-list':
     'it asks me to write out a list (names or labels, nothing that explains why or how). Replace it with an MCQ that tells the list\'s members from near-misses, keeping the id; or, if my notes explain each point, rewrite each as a sentence that carries its reason',
   'written-many':

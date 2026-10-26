@@ -119,6 +119,31 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     });
   }
 
+  // Two questions in one stem ("What happens, and how else could they…?"):
+  // the right answer is two facts glued together and a wrong option can fail
+  // on either half. The owner read one as an answer "completely unrelated to
+  // the question" (2026-10-26).
+  const twoAsked = mcqs.filter((m) => asksTwoThings(m.question ?? ''));
+  if (twoAsked.length) {
+    findings.push({
+      id: 'two-questions',
+      severity: 'warning',
+      message: `${twoAsked.length} question${twoAsked.length === 1 ? ' asks' : 's ask'} two things at once, so the right answer is two facts joined together and knowing one half counts for nothing.`,
+      items: twoAsked.map((m) => m.id),
+    });
+  }
+  // A wrong option's reason that only says the notes don't say it ("not
+  // described as…"): the student learns nothing about why it is wrong.
+  const citesSource = mcqs.filter((m) => (normalisedRationale(m) ?? []).some((r, i) => i !== m.correct_index && !!r && reasonFromSource(r)));
+  if (citesSource.length) {
+    findings.push({
+      id: 'rationale-cites-source',
+      severity: 'warning',
+      message: `${citesSource.length} question${citesSource.length === 1 ? ' explains' : 's explain'} a wrong option only by saying your notes don't mention it, not by why it is wrong.`,
+      items: citesSource.map((m) => m.id),
+    });
+  }
+
   // "Write the answer" is the slowest card, for an idea the lecture explains
   // in connected points. A list of bare words asked that way is memorising
   // on the spot, and a section of them is the owner's "five in a row about
@@ -510,6 +535,8 @@ const GROUPS: Record<string, FindingGroup> = {
   'filler-options': 'fix',
   'option-count': 'fix',
   'rationale-missing': 'fix',
+  'two-questions': 'fix',
+  'rationale-cites-source': 'fix',
   'written-list': 'fix',
   'written-many': 'fix',
   'unsafe-svg': 'fix',
@@ -523,6 +550,20 @@ export function findingGroup(f: Pick<HealthFinding, 'id' | 'severity'>): Finding
   if (f.severity === 'problem') return 'fix';
   return GROUPS[f.id] ?? 'minor';
 }
+
+/**
+ * A stem that asks two things: a second question joined on with "and"
+ * ("What happens, and how else…?"), or two question marks. "…, and why?"
+ * is one: the answer and its reason.
+ */
+export function asksTwoThings(question: string): boolean {
+  return /,\s*and\s+(what|how|which|when|where|who)\b[^?]*\?\s*$/i.test(question) || (question.match(/\?/g)?.length ?? 0) >= 2;
+}
+
+const FROM_SOURCE = /\bnot (described|mentioned|stated|listed|discussed|covered|given|shown|named)\b|\b(notes|slides?|lecture|source)\s+(do(es)?\s*n[o']?t|never)\b/i;
+
+/** A short reason that is only that the source does not say it; a longer one says why as well. */
+const reasonFromSource = (reason: string) => FROM_SOURCE.test(reason) && reason.trim().split(/\s+/).length <= 12;
 
 /**
  * When the right answer is the longest option often enough to report:

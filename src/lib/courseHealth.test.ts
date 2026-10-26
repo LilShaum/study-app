@@ -300,3 +300,37 @@ describe('analyseCourseHealth: questions to write out', () => {
     expect(find(analyseCourseHealth(course([long('a'), long('b')])), 'written-many')).toBeUndefined();
   });
 });
+
+describe('analyseCourseHealth — a question that asks two things', () => {
+  // The owner's nutrition card, 2026-10-26: the key was right, the question was two.
+  const probiotics = mcq('pro', 'Someone takes probiotics for a month, then stops. What happens, and how else could they support healthy gut bacteria?', {
+    options: [
+      'The probiotics stay for life, so no further intake of anything is ever needed',
+      'The probiotics wash out quickly; consuming prebiotics can promote healthy bacteria',
+      'The probiotics wash out slowly over years, and the risks of stopping are high',
+      'The probiotics stay about a year; taking antacids then helps bacteria grow',
+    ],
+    correct_index: 1,
+    distractor_rationale: ['They wash out of the system quite quickly', '', 'They wash out quickly, and their risks are considered negligible', 'Antacids are not described as promoting gut bacteria'],
+  });
+
+  it('flags two questions joined in one stem, and a reason that only cites the notes', () => {
+    const h = analyseCourseHealth(course([probiotics]));
+    expect(find(h, 'two-questions')?.items).toEqual(['pro']);
+    expect(find(h, 'rationale-cites-source')?.items).toEqual(['pro']);
+  });
+
+  it('leaves one question with a clause, and reasons about the subject, alone', () => {
+    const h = analyseCourseHealth(
+      course([
+        mcq('one', 'When insulin is low and glucagon rises, what does the liver do?'),
+        mcq('why', 'Which regulatory mechanism is the slowest, and why?', {
+          distractor_rationale: ['', 'Cooperativity changes the shape of the response to [S]; kcat is a separate parameter the slide does not link to it.', 'y', 'z'],
+        }),
+        mcq('two', 'Which statement about fibre is correct?', { distractor_rationale: ['', 'Fibre is not digested by human enzymes', 'It slows absorption, not speeds it', 'z'] }),
+      ]),
+    );
+    expect(find(h, 'two-questions')).toBeUndefined();
+    expect(find(h, 'rationale-cites-source')).toBeUndefined();
+  });
+});

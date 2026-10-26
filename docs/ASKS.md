@@ -76,6 +76,15 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-10-26 A question that asks two things at once (2026-10-26, a
+  nutrition screenshot: "Am I crazy or is the correct answer completely
+  unrelated to the fucking question"). The key was right; the question was
+  two joined ("What happens, and how else…?"). The generator now asks one
+  thing per question and gives each wrong option a reason about the
+  subject, not "not described as…"; the lecture check flags both, and Fix
+  splits or rewrites them. (courseHealth two-questions,
+  rationale-cites-source)
+
 - 2026-10-26 Name the term after the multiple choice, not straight after
   reading (2026-10-26: "I have to go through a bunch of definitions and
   right after do name the term. It makes no sense … multiple choice helps

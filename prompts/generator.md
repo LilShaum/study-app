@@ -656,10 +656,16 @@ wrong thing. For every MCQ:
   the stem's grammar, and are equally specific. Absolutes ("always",
   "never", "only") are not only on the wrong ones; the hedge ("usually",
   "can") is not only on the right one.
+- **One question per stem.** Never two joined ("What happens, and how else
+  could they…?"): the right answer becomes two facts glued together, a wrong
+  option can fail on either half, and a student who knows one half is
+  marked as knowing neither. Ask the second in its own MCQ.
 - Fill `distractor_rationale` with one short phrase per wrong option
-  explaining *why* a student might pick it and why it's wrong. If you can't
-  write a real rationale for an option, replace that option — it's not a
-  good distractor.
+  explaining *why* a student might pick it and why it's wrong, about the
+  subject: what is wrong with it, never only that the source does not say
+  it ("not described as…" teaches nothing). If you can't write a real
+  rationale for an option, replace that option — it's not a good
+  distractor.
 - `explanation` states why the correct answer is right, grounded in the
   source, not just "because it's correct." One or two sentences: the
   explanations and rationales are most of a course's length, and a reply

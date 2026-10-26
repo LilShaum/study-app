@@ -178,7 +178,11 @@ and get it corrected by the AI that wrote it.
 keys), answer-shape give-aways, definitions that name their own term, the
 same fact asked twice, MCQs that restate a definition, wrong options with
 no reason (`rationale-missing`: Fix writes the reason, or replaces an
-option that has none), questions to write out that are lists (names,
+option that has none), a wrong option's short reason that only says the
+notes don't mention it (`rationale-cites-source`: Fix says what is wrong
+about the subject), questions that ask two things at once ("What happens,
+and how else…?", `two-questions`; "…, and why?" is one: Fix splits it,
+2026-10-26), questions to write out that are lists (names,
 labels or questions, nothing explaining why or how: `written-list`) or crowd a section past two (`written-many`), which
 Fix turns into multiple choice, terms never defined, sections that only test recall, figures the AI could not read,
 and sections with far fewer or far more items for their slides than the
