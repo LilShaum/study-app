@@ -62,9 +62,9 @@ describe('useResumeStore', () => {
 
 describe('session init — resuming', () => {
   it('starts at the bookmarked item', () => {
-    // Learn serves a, c, b, then a's typed term.
+    // Learn serves a, b, a's typed term, then c.
     useSessionStore.getState().init('c1', course, 'learn', undefined, 'c');
-    expect(useSessionStore.getState().index).toBe(1);
+    expect(useSessionStore.getState().index).toBe(3);
     expect(useSessionStore.getState().resumed).toBe(true);
   });
 

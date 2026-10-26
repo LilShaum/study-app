@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
 import { buildSessionItems, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
-import { phaseOf, type LearnPhase } from '@/lib/learnSteps';
+import { phaseOfItem, type LearnPhase } from '@/lib/learnSteps';
 import { useSessionStore, restartCardTimer, fileItemOf, lectureOf, cardKey } from '@/store/session';
 import { onlyStudies } from '@/lib/studies';
 import { toast } from '@/store/toast';
@@ -160,8 +160,8 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
 
 const PHASES: { key: LearnPhase; label: string }[] = [
   { key: 'read', label: 'Read' },
-  { key: 'apply', label: 'Apply' },
   { key: 'recall', label: 'Recall' },
+  { key: 'apply', label: 'Apply' },
 ];
 
 /**
@@ -172,7 +172,7 @@ const PHASES: { key: LearnPhase; label: string }[] = [
  * same thing for minutes at a time.
  */
 function StepLine({ item, questionsFirst, onSwitch }: { item: SessionItem; questionsFirst: boolean; onSwitch: () => void }) {
-  const phase = phaseOf(item.type);
+  const phase = item._phase ?? phaseOfItem(item);
   // Today's sitting opens with what is due; say so, the way a step is named.
   if (item._block === 'review') {
     return (

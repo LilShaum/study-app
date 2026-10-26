@@ -63,13 +63,47 @@ const ORDER: Record<AnyItem['type'], number> = {
   example: 1,
   graphic: 2,
   preview: 3,
-  // Multiple choice first, to apply what was just read; naming a term from
-  // its meaning after it, never straight after reading the definition
-  // (the owner, 2026-10-26: "accomplishing no teaching and slows shit down").
-  mcq: 4,
+  // Recall, easy to hard: an easy question recognises what was just read
+  // (rankOf puts it here), then the flashcards, then each term named from
+  // its meaning, never straight after reading it (the owner, 2026-10-26:
+  // "accomplishing no teaching and slows shit down").
   flashcard: 5,
   recall: 6,
+  // Apply: the medium and hard questions, which use the ideas; a card to
+  // write comes after them (rankOf).
+  mcq: 7,
 };
+
+/**
+ * Where a card sits in its step: what is read, then recall from easy to
+ * hard, then apply. An easy question is recall (it recognises a fact as
+ * stated, as the practice test also judges it, lib/practiceTest); a
+ * question with no difficulty counts as medium. The owner's order
+ * (2026-10-26): "easy multiple choice … before writing questions that are
+ * easy and then in apply it goes to the more conceptual multiple choice and
+ * the annoying write the answer questions".
+ */
+function rankOf(item: SessionItem, namesInRecall: boolean): number {
+  if (isWrittenCard(item)) return 9;
+  if (item.type === 'mcq' && item.difficulty === 'easy') return 4;
+  if (item.type === 'recall' && !namesInRecall) return 8;
+  return ORDER[item.type];
+}
+
+/**
+ * Whether a step names its terms in recall: only after an easy question or
+ * a flashcard has gone first. With neither, the terms are named after the
+ * step's other questions, never straight after reading them.
+ */
+const namesInRecall = (step: readonly SessionItem[]): boolean =>
+  step.some((i) => (i.type === 'mcq' && i.difficulty === 'easy') || (i.type === 'flashcard' && !isWrittenCard(i)));
+
+/** The part of a step a card belongs to, by the card: an easy question is recall, a card to write is apply. */
+export function phaseOfItem(item: SessionItem): LearnPhase | null {
+  if (item.type === 'mcq' && item.difficulty === 'easy') return 'recall';
+  if (isWrittenCard(item)) return 'apply';
+  return phaseOf(item.type);
+}
 
 type Def = Extract<AnyItem, { type: 'definition' }>;
 
@@ -338,11 +372,13 @@ function apart(steps: SessionItem[][]): SessionItem[][] {
 }
 
 /** A step's cards in the order they are met: reading, questions, typed terms, a card to write last. */
-const inOrder = (step: SessionItem[]): SessionItem[] =>
-  step
+const inOrder = (step: SessionItem[]): SessionItem[] => {
+  const early = namesInRecall(step);
+  return step
     .map((item, i) => ({ item, i }))
-    .sort((a, b) => Number(isWrittenCard(a.item)) - Number(isWrittenCard(b.item)) || ORDER[a.item.type] - ORDER[b.item.type] || a.i - b.i)
+    .sort((a, b) => rankOf(a.item, early) - rankOf(b.item, early) || a.i - b.i)
     .map(({ item }) => item);
+};
 
 /**
  * A step with no question or flashcard, only terms to read and then name,
@@ -373,6 +409,24 @@ function withQuestions(steps: SessionItem[][], termsIn: (item: SessionItem) => r
 }
 
 /**
+ * Each step put back in its order once the spacing has moved cards about:
+ * a card moved away can change where a step names its terms (namesInRecall).
+ * Kept only where every card stays clear of one that answers it.
+ */
+function reordered(steps: SessionItem[][]): SessionItem[][] {
+  const out = steps.map((step) => [...step]);
+  for (let s = 0; s < out.length; s++) {
+    if (out[s][0]?._second) continue;
+    const sorted = inOrder(out[s]);
+    if (sorted.every((item, k) => item === out[s][k])) continue;
+    // This sitting's steps only: the second look is another day.
+    const trial = out.filter((step) => !step[0]?._second).map((step) => (step === out[s] ? sorted : step));
+    if (!tooClose(trial.flat())) out[s] = sorted;
+  }
+  return out;
+}
+
+/**
  * A step of a card or two is a pause screen after every card or two. One
  * that small joins the step before it when the two fit in one and no card
  * comes too soon after one that answers it; its reading moves up with the
@@ -383,7 +437,7 @@ function joinSmall(steps: SessionItem[][]): SessionItem[][] {
   const out: SessionItem[][] = [];
   steps.forEach((step, k) => {
     const prev = out.at(-1);
-    const joined = prev && [...prev, ...step].sort((a, b) => ORDER[a.type] - ORDER[b.type]);
+    const joined = prev && inOrder([...prev, ...step]);
     // Sorting the two together moves cards nearer the steps on either side,
     // so their edges are checked too.
     const before = (out.at(-2) ?? []).slice(-MIN_GAP);
@@ -548,11 +602,12 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       // not here goes after them.
       const rank = (item: SessionItem, i: number) =>
         item.type === 'recall' ? (readAt.get(item.target.id) ?? group.length + i) : i;
+      const early = namesInRecall(inStep);
       out.push(
         inStep
           .map((item, i) => ({ item, i: rank(item, i) }))
           // A written question last of all: it gathers what the step asked.
-          .sort((a, b) => Number(isWrittenCard(a.item)) - Number(isWrittenCard(b.item)) || ORDER[a.item.type] - ORDER[b.item.type] || a.i - b.i)
+          .sort((a, b) => rankOf(a.item, early) - rankOf(b.item, early) || a.i - b.i)
           .map(({ item }) => item),
       );
     }
@@ -604,7 +659,7 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       return false;
     }),
   );
-  built = apart(withQuestions(built, (item) => (item.type === 'recall' ? [readAt.get(item.target.id) ?? -1] : (termsOf.get(item) ?? []))));
+  built = reordered(apart(withQuestions(built, (item) => (item.type === 'recall' ? [readAt.get(item.target.id) ?? -1] : (termsOf.get(item) ?? [])))));
   if (held.length) built.push(held.map((item) => ({ ...item, _second: true })));
   // A step still too long (one term with many questions, or the last step of
   // what fits no term) asks the rest in a step of its own, after its reading,
@@ -660,12 +715,23 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       }) as SessionItem,
     );
   if (outlines.length && steps.length) steps[0] = [...outlines, ...steps[0]];
-  return steps.flatMap((step, s) =>
-    step.map((item) => ({
-      ...item,
-      _step: s,
-      _steps: steps.length,
-      _block: `${item._sectionId}#${s}`,
-    })),
-  );
+  return steps.flatMap((step, s) => {
+    // The part of the step each card is in, never going back: terms named
+    // after the questions (namesInRecall) are part of applying them.
+    let reached = 0;
+    return step.map((item) => {
+      const phase = phaseOfItem(item);
+      if (phase) reached = Math.max(reached, PHASE_RANK[phase]);
+      return {
+        ...item,
+        _step: s,
+        _steps: steps.length,
+        _block: `${item._sectionId}#${s}`,
+        ...(phase ? { _phase: PHASES_IN_ORDER[reached] } : {}),
+      };
+    });
+  });
 }
+
+const PHASES_IN_ORDER: LearnPhase[] = ['read', 'recall', 'apply'];
+const PHASE_RANK: Record<LearnPhase, number> = { read: 0, recall: 1, apply: 2 };

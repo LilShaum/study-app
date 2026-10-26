@@ -135,6 +135,8 @@ export type SessionItem = AnyItem & {
   /** Learn only: which step of its section this is, of how many (see lib/learnSteps). */
   _step?: number;
   _steps?: number;
+  /** Learn only: the part of its step the card is in, as the step line shows it (lib/learnSteps). */
+  _phase?: 'read' | 'recall' | 'apply';
   /**
    * Learn only: the step this card sits in, as "section#step". A missed card
    * that comes back is placed a few cards on and takes the block of wherever

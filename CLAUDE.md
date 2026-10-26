@@ -50,10 +50,11 @@ this is the intent it serves.
 - **Learn:** takes you through the lecture the way the teacher did, in the
   slides' order, so you can follow along in your slides or your own notes
   beside it. No drastic changes to how it teaches (2026-10-21).
-- **Learn's order in a step:** read, then multiple choice ("helps the user
-  remember and apply what they just learned"), then flashcards, then name
-  the term, then write. Never read and then name straight away: it
-  "accomplish[es] no teaching and slows shit down" (2026-10-26).
+- **Learn's order in a step:** Read, Recall, Apply. Recall easy to hard
+  (easy multiple choice, flashcards, name the term), then Apply: the
+  conceptual multiple choice and the write-the-answer questions
+  (2026-10-26). Never read and then name straight away: it "accomplish[es]
+  no teaching and slows shit down" (2026-10-26).
 - **Practice:** mixed lectures, closer to an exam, as the exam gets near
   (2026-10-19).
 - **Practice test and written questions:** what you practise should look

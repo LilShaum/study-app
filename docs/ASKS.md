@@ -76,9 +76,20 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-10-26 Read, Recall easy to hard, Apply in a Learn step (2026-10-26:
+  "easy multiple choice shows up before writing questions that are easy and
+  then in apply it goes to the more conceptual multiple choice and the
+  annoying write the answer questions"): easy question, flashcards, term
+  named, then the medium and hard questions, writing last; with nothing easy
+  first, the term is named after the questions. The simulator gains 2 to 7
+  points on the order before it (sim/FINDINGS.md). (learnSteps rankOf)
+- 2026-10-26 How the practice test works and what repeating it does:
+  answered in chat.
+
 - 2026-10-26 A question that asks two things at once (2026-10-26, a
   nutrition screenshot: "Am I crazy or is the correct answer completely
-  unrelated to the fucking question"). The key was right; the question was
+  unrelated to the fucking question"; then "Ignore my question about the
+  multiple choice just now I realized": the key was right, the fix stands). The key was right; the question was
   two joined ("What happens, and how else…?"). The generator now asks one
   thing per question and gives each wrong option a reason about the
   subject, not "not described as…"; the lecture check flags both, and Fix

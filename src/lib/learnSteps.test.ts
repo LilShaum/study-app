@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
 import { buildSessionItems, recallId, type SessionItem } from './buildSessionItems';
-import { MIN_GAP, phaseOf, STEP_CARDS, STEP_TERMS, TERM_BUDGET } from './learnSteps';
+import { MIN_GAP, phaseOf, phaseOfItem, STEP_CARDS, STEP_TERMS, TERM_BUDGET } from './learnSteps';
 
 const TERMS = ['Adenylyl cyclase', 'Gs protein', 'Protein kinase A', 'Phosphodiesterase', 'Calmodulin', 'Inositol trisphosphate', 'Diacylglycerol', 'Protein kinase C'];
 
@@ -32,13 +32,25 @@ describe('Learn in steps', () => {
     expect(items.filter((i) => i.type === 'definition' && i._step === 0)).toHaveLength(4);
   });
 
-  it('reads, then applies, then names, inside every step', () => {
-    const items = learn([...defs, mcq('q1', 'What does Calmodulin bind?'), card('f1', 'Where is Gs protein?')]);
-    for (const step of [0, 1]) {
-      const phases = items.filter((i) => i._step === step).map((i) => phaseOf(i.type));
-      const rank = { read: 0, apply: 1, recall: 2 } as const;
-      expect(phases.map((p) => rank[p!])).toEqual([...phases.map((p) => rank[p!])].sort());
-    }
+  it('reads, then recalls easy to hard, then applies', () => {
+    // The owner's order (2026-10-26): an easy question, then the flashcard,
+    // then the term named, then the conceptual question.
+    // None prints the term, so nothing has to wait to keep it from being read back.
+    const easy = { ...mcq('easy', 'Which enzyme turns ATP into cAMP?'), difficulty: 'easy' } as StudyItem;
+    const hard = { ...mcq('hard', 'Why does blocking the enzyme stop the signal?'), difficulty: 'hard' } as StudyItem;
+    const items = learn([defs[0], hard, card('f', 'What does the enzyme make from ATP?'), easy]);
+    const at = (id: string) => items.findIndex((i) => i.id === id);
+    expect(items.map((i) => phaseOfItem(i))).toEqual(['read', 'recall', 'recall', 'recall', 'apply']);
+    expect(at('easy')).toBeLessThan(at('f'));
+    expect(at('f')).toBeLessThan(at(recallId('d0')));
+    expect(at(recallId('d0'))).toBeLessThan(at('hard'));
+  });
+
+  it('names a term after the questions when nothing easy comes first, never straight after reading it', () => {
+    const items = learn([defs[0], defs[1], { ...mcq('q', 'Why does the receptor switch on the enzyme?'), difficulty: 'medium' } as StudyItem]);
+    expect(items.map((i) => i.type)).toEqual(['definition', 'definition', 'mcq', 'recall', 'recall']);
+    // The step line goes Read, Apply and stays there: it never goes back.
+    expect(items.map((i) => i._phase)).toEqual(['read', 'read', 'apply', 'apply', 'apply']);
   });
 
   it('puts a question in the step whose terms it uses', () => {
@@ -170,9 +182,8 @@ describe('Learn in steps', () => {
       km('a', 'What range do typical Gs protein Km values fall in?'),
       mcq('b', 'Typical Gs protein Km values fall in which range?'),
     ]);
-    // Multiple choice first in a step; the flashcard on the same fact waits.
-    expect(stepOf(items, 'b')).toBe(0);
-    expect(stepOf(items, 'a')).toBe(1);
+    expect(stepOf(items, 'a')).toBe(0);
+    expect(stepOf(items, 'b')).toBe(1);
   });
 
   it('never asks a term straight after a card that printed it', () => {

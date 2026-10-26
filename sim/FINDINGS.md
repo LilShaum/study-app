@@ -10,6 +10,28 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-26 — Learn: Read, Recall easy to hard, Apply: most of the loss back
+
+The owner's next order (2026-10-26): "easy multiple choice … before writing
+questions that are easy and then in apply it goes to the more conceptual
+multiple choice and the annoying write the answer questions". In a step:
+reading; then recall, an easy question, the flashcards, the typed terms;
+then apply, the medium and hard questions and a card to write (`rankOf`).
+Where nothing easy comes first, the terms are named after the questions.
+
+**Result** (3 seeds, against the entry below, re-baselined): exam score
++2 to +7 in every everyday scenario (steady-30 +4, steady-30-half-scope +7,
+crammer +3, late-start +2), never studied 2 to 9 points lower, `harsh` +1.
+Against the order before both changes it is 1 to 3 points lower
+(steady-30 48 → 47, half-scope 83 → 81, crammer 67 → 64). The typed terms
+are back between the reading and the conceptual questions, so fewer
+questions are held for the next sitting. On the biochem lecture, a term
+named straight after reading: 6 (21 before both changes), all where the
+questions only restate the definitions and the typed terms keep them
+apart, or where no question uses the term.
+
+---
+
 ## 2026-10-26 — Learn: multiple choice before the typed term, as the owner asked: lower here, kept
 
 The owner (2026-10-26): reading definitions and naming each term straight
