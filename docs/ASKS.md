@@ -65,6 +65,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-10-26 Export works on an iPhone (2026-10-26: "they won't download to
+  my iPhone files"): a lecture's Export opens the share sheet on a phone
+  (Save to Files, AirDrop, another app), as a backup does.
+
 - 2026-10-26 From the owner's nutrition screenshots: "Name three" of five
   listed is full marks at three (it demanded all five); a list question is
   judged by whether its points explain anything, not their length (the

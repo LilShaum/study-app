@@ -377,7 +377,8 @@ export async function saveFile(name: string, text: string): Promise<boolean> {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  // Not at once: Safari can still be reading the file when click() returns.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
   return true;
 }
 

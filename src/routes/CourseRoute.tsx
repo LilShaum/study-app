@@ -453,9 +453,8 @@ export function CourseRoute() {
             <ToolButton onClick={() => setAdding('practice')}>More practice</ToolButton>
             <ToolButton onClick={() => setEditingDetails(true)}>Edit details</ToolButton>
             <ToolButton
-              onClick={() => {
-                exportCourse(id, course);
-                toast('Lecture exported.', { type: 'success' });
+              onClick={async () => {
+                if (await exportCourse(id, course)) toast('Lecture exported.', { type: 'success' });
               }}
             >
               Export
