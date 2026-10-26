@@ -54,8 +54,8 @@ const WRITTEN_TITLE = /^(long|short)[- ]answer\b/i;
  * A long or short answer written as a worked `example`: a model answer laid
  * out in steps, tagged or titled as one. Read as an example, its answer was
  * shown before the student ever tried it, and since examples are not scored,
- * Review never brought it back: the one format the exam asks for was the one
- * never practised (2026-10-26). Everywhere a student is asked, it is a
+ * Review never brought it back: in a course that has long answers, they
+ * were the one kind never practised (2026-10-26). Everywhere a student is asked, it is a
  * written question instead (`writtenFromExample`); Browse still shows it
  * as the model answer.
  */

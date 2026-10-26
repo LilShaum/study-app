@@ -232,6 +232,12 @@ model answer.
 printed on the card before; no term that spells itself out is asked; no
 two-card dead ends.
 
+**Leaving and coming back.** Learn picks up at the card it was left on,
+whichever way it is opened again (Back, Learn on the lecture page, a reload
+after switching apps), and says so, with Start from the beginning. Today
+does the same within the day. Practice modes reshuffle, so they start fresh
+unless Continue is pressed (store/resume resumesOnOpen).
+
 ### Practice
 
 **Goal.** Drill outside the plan: before a quiz, or on a section that feels

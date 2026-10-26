@@ -45,10 +45,17 @@ this is the intent it serves.
   what you know matters more than equal length. Words like never, only,
   often are what test the nuance and are not a giveaway (2026-10-20).
 - **Course content:** where a class is about concepts, the cards are too,
-  not niche values. The assignments show what kind of question the exam
-  asks; extrapolate that to the other topics. The slides' titles, bullets
-  that lead into each other, overviews and summary slides show what
-  matters (2026-10-20).
+  not niche values. When the student gives assignments or past questions,
+  they show what kind of question that class's exam asks; extrapolate that
+  to the other topics. The slides' titles, bullets that lead into each
+  other, overviews and summary slides show what matters (2026-10-20).
+- **Built for any class** (2026-10-26: "Stop making changes that are based
+  on specific info. This app is supposed to work for essentially any
+  class"). What the owner says about one class (its exam format, its
+  teacher, its assignments) shapes that class's course files, never the
+  app's defaults. A feature switches on from what a lecture contains, not
+  from assumptions about the exam, and is judged on a class that has none
+  of it too.
 - **How the owner studies:** reads the slides or notes, then answers from
   memory; Learn section by section alongside the notes.
 - **Studying is the app's main job:** keep improving how it teaches,

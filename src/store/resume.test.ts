@@ -120,3 +120,15 @@ describe('bookmarkResolves', () => {
     expect(bookmarkResolves(course, at('d1~recall', 's1'))).toBe(true);
   });
 });
+
+describe('resumesOnOpen', () => {
+  it('picks Learn up where it was left, Today within the day, Practice only on Continue', async () => {
+    const { resumesOnOpen } = await import('./resume');
+    const now = new Date(2026, 9, 26, 15).getTime();
+    expect(resumesOnOpen('learn', { updatedAt: now - 3 * 86_400_000 }, now)).toBe(true);
+    expect(resumesOnOpen('today', { updatedAt: now - 3_600_000 }, now)).toBe(true);
+    expect(resumesOnOpen('today', { updatedAt: now - 86_400_000 }, now)).toBe(false);
+    for (const mode of ['mixed', 'quiz', 'flashcards', 'definitions', 'weakest', 'review', 'missed'] as const)
+      expect(resumesOnOpen(mode, { updatedAt: now }, now)).toBe(false);
+  });
+});

@@ -49,6 +49,16 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-10-26 Learn picks up where it was left (2026-10-26: "if you leave in
+  the middle of learn mode to go check the glossary or whatever that when
+  you come back it doesn't restart"): on Back, on Learn again, and after a
+  reload; Today within the same day. (store/resume resumesOnOpen)
+- 2026-10-26 Nothing in the app assumes one class's exam (2026-10-26: "This
+  app is supposed to work for essentially any class"): today's changes all
+  switch on from what a lecture contains; three class-specific phrasings
+  (generator prompt, a code note, CLAUDE.md) made general; the rule is in
+  CLAUDE.md.
+
 - 2026-10-26 Just flashcards or just multiple choice, by section, easy to
   find (2026-10-26): under Practice on the lecture page and under a
   section's Practice this section, direct links to Multiple choice,

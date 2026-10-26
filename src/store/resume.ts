@@ -84,6 +84,23 @@ export const useResumeStore = create<ResumeState>()(
 );
 
 /**
+ * Whether opening a mode picks up at its bookmark without Continue being
+ * pressed. Learn always does: its order is set by the lecture and the
+ * student's progress, so the card they were on is where they want to be,
+ * and leaving to check the Glossary or the slides (or a phone reloading the
+ * app on the way back) used to restart the step (the owner, 2026-10-26).
+ * Today does within the same day, when it is the same sitting; tomorrow's is
+ * a new plan. The Practice modes reshuffle, so they start fresh unless
+ * Continue is pressed. The bookmark must be for the same section and filters
+ * (CardSession checks those).
+ */
+export function resumesOnOpen(mode: StudyMode, bookmark: Pick<Bookmark, 'updatedAt'>, now: number): boolean {
+  if (mode === 'learn') return true;
+  if (mode === 'today') return new Date(bookmark.updatedAt).toDateString() === new Date(now).toDateString();
+  return false;
+}
+
+/**
  * Whether a bookmark still points at something in the course, so Continue is
  * offered only when it can land somewhere.
  *

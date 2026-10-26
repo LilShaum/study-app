@@ -7,7 +7,7 @@ import { phaseOf, type LearnPhase } from '@/lib/learnSteps';
 import { useSessionStore, restartCardTimer, fileItemOf, lectureOf, cardKey } from '@/store/session';
 import { onlyStudies } from '@/lib/studies';
 import { toast } from '@/store/toast';
-import { useResumeStore } from '@/store/resume';
+import { resumesOnOpen, useResumeStore } from '@/store/resume';
 import { CourseTree } from '@/components/CourseTree';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
@@ -309,7 +309,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     // Read the bookmark rather than subscribing to it: this session writes one
     // on every card, and a subscription would re-run this effect and restart
     // the session each time.
-    const bookmark = resume ? useResumeStore.getState().getBookmark(courseId) : null;
+    // Continue, or a mode that picks up where it was left (store/resume resumesOnOpen).
+    const saved = useResumeStore.getState().getBookmark(courseId);
+    const bookmark = saved && (resume || resumesOnOpen(mode, saved, Date.now())) ? saved : null;
     const usable =
       bookmark &&
       bookmark.mode === mode &&
