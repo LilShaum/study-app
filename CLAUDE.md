@@ -56,6 +56,10 @@ this is the intent it serves.
   how a student meets each screen and brainstorm before building; the
   obvious basics (shuffled options, an "I don't know") should never wait
   for the owner to ask (2026-10-26).
+- **Check what a feature is for against what it actually does**, without
+  bias toward what was built: related terms looked like buttons and did
+  nothing for weeks (2026-10-26). Use it the way a student does before
+  calling it done.
 - **Working with the owner:** usage is limited, so ask before expensive
   work and run one agent at a time. "What's next?" means work you can do
   without them. Done means tested and live.

@@ -18,6 +18,21 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
+- **"I don't know" on everything that tests you** (2026-10-26: "I meant to
+  EVERYTHING that tests you. I'm looking at a write the answer question and
+  it doesn't have the option"): flashcards and written answers too.
+- **Written answers are too hard at first meeting** (2026-10-26: "If I
+  haven't gone over the slides at all, I have no clue what the answers
+  would be so I have to get it wrong on purpose"). Teach them before asking
+  where the student has not read yet (at least the points, the why if the
+  slides give it), without hand-holding a student who has; depends on the
+  mode and on Read first / Skip the reading.
+- **Just flashcards, or just multiple choice, by section, easy to find**
+  (2026-10-26: "why is there not a mode to just practice flash cards or
+  just do multiple choice problems?"), listed with Today, Learn and
+  Practice; the practice test easier to find and able to cover everything.
+  Today, Learn and Practice each clearly differentiated and geared to one
+  use.
 - **Study and learning modes keep improving, effectiveness first**
   (2026-10-26: "more important than QOL is making sure the way the app
   teaches is actually effective … I don't want to have to spell everything
