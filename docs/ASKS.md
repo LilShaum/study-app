@@ -76,6 +76,15 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-10-26 Practice test: right or wrong straight away (2026-10-26:
+  "MAKE IT TELL YOU IF THE QUESTION IS CORRECT OR WRING RIGHT AWAY"): a
+  pick or I don't know is marked at once with the right answer and why; a
+  written answer's Check shows its points to tick. (TestRoute Taking)
+- 2026-10-26 A miss or I don't know in a test comes back (2026-10-26:
+  "Why does marking it as idk count and it never shows up again? …
+  ADAPTIVE"): a new test asks first what was last got wrong, then what has
+  not been on a test, then the longest ago. (TestRoute firstBy, drawTest)
+
 - 2026-10-26 The studies treatment only when ticked (2026-10-26: "you have
   to tick a box for it to do the whole studies bullshit because so much
   usage was wasted on my nutrition files"): New lecture has "My exams ask

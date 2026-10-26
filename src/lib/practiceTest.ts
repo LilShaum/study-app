@@ -91,21 +91,22 @@ export function testPool(scopes: TestScope[]): TestQuestion[] {
  * of the test to its share of the questions, and the lecture spends its
  * questions on what it weighs most.
  *
- * `testedAt` (when each question was last answered in a test) puts the
- * questions never on a test first, then those on one longest ago, so tests
- * taken one after another work through the pool rather than repeat it: two
- * random tests of 20 from 60 shared a third of their questions (the owner
- * asked for this, 2026-10-26). Random within each group.
+ * `firstBy` orders the draw, lowest first, random within a value: the
+ * test page gives a question last got wrong -1 (asked first, adaptive), one
+ * never on a test 0, and one on a test the time it was, so tests taken one
+ * after another come back to the misses and then work through the pool
+ * rather than repeat it: two random tests of 20 from 60 shared a third of
+ * their questions (the owner, 2026-10-26).
  *
  * `even` shares the test equally between the lectures instead, so a short
  * lecture is asked as much as a long one (an exam often gives each lecture
  * a similar share whatever its length). A lecture with too few questions for
  * its share gives the rest to the others.
  */
-export function drawTest(pool: TestQuestion[], length?: number, even = false, testedAt?: (q: TestQuestion) => number | undefined): TestQuestion[] {
-  const all = testedAt
+export function drawTest(pool: TestQuestion[], length?: number, even = false, firstBy?: (q: TestQuestion) => number | undefined): TestQuestion[] {
+  const all = firstBy
     ? shuffle(pool)
-        .map((q, i) => ({ q, i, at: testedAt(q) ?? 0 }))
+        .map((q, i) => ({ q, i, at: firstBy(q) ?? 0 }))
         .sort((a, b) => a.at - b.at || a.i - b.i)
         .map(({ q }) => q)
     : shuffle(pool);

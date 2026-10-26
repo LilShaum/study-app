@@ -166,3 +166,11 @@ describe('drawTest: what has not been on a test first', () => {
     expect(first.some((id) => at.has(id))).toBe(true);
   });
 });
+
+describe('drawTest: a miss first', () => {
+  it('asks a question last got wrong before any other', () => {
+    const pool = testPool([{ courseId: 'c', course: course([{ id: 's1', items: Array.from({ length: 30 }, (_, n) => mcq(`q${n}`)) }]), covers: 'all' }]);
+    const test = drawTest(pool, 5, false, (q) => (q.item.id === 'q29' ? -1 : 0));
+    expect(test.map((q) => q.item.id)).toContain('q29');
+  });
+});

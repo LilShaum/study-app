@@ -370,16 +370,19 @@ lecture.
 Written answers; a question with no difficulty counts as medium), drawn at random from a lecture, a section, a lecture's
 or a class's studies, everything an exam covers, or a whole class; 20, 40
 or all. Over several lectures, 20 or 40 are shared by each lecture's size,
-or equally if the student picks Each the same. No feedback until the end;
-then the score, each section weakest first, and every miss with the
-answer, why the pick was wrong, and the explanation. With written
-questions, ending the test first lists each one's answer beside the model
-answer's points to tick (right only with every point); the score follows,
-and a missed one shows each point ✓ or ✗. A written question left blank
+or equally if the student picks Each the same. Each answer is marked as it
+is given (the owner, 2026-10-26: "TELL YOU IF THE QUESTION IS CORRECT OR
+WRONG RIGHT AWAY"): a pick or I don't know shows right, or the right
+answer, why the pick was wrong and the explanation, and the answer is kept;
+a written answer's Check shows the model answer's points to tick (right
+only with the points needed). The end gives the score, each section
+weakest first, and every miss; a written answer not checked is ticked
+there first, and a missed one shows each point ✓ or ✗. A written question left blank
 with nothing ticked is not recorded, like a blank MCQ. Retake the missed
 ones.
-A new test asks first the questions never answered in a test, then those
-answered in one longest ago (`ItemResult.testedAt`, kept across devices by
+A new test asks first what was last got wrong (a miss or I don't know, in
+a test or anywhere: "Remember, ADAPTIVE", the owner, 2026-10-26), then the
+questions never answered in a test, then those answered in one longest ago (`ItemResult.testedAt`, kept across devices by
 sync; random within each group, and mixed in the test), so tests taken one
 after another work through the pool: two random tests of 20 from 60 shared
 a third of their questions (the owner, 2026-10-26). The setup says how many
