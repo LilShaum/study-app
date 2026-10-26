@@ -51,6 +51,11 @@ this is the intent it serves.
   matters (2026-10-20).
 - **How the owner studies:** reads the slides or notes, then answers from
   memory; Learn section by section alongside the notes.
+- **Studying is the app's main job:** keep improving how it teaches,
+  effectiveness before polish, without waiting to be told. Think through
+  how a student meets each screen and brainstorm before building; the
+  obvious basics (shuffled options, an "I don't know") should never wait
+  for the owner to ask (2026-10-26).
 - **Working with the owner:** usage is limited, so ask before expensive
   work and run one agent at a time. "What's next?" means work you can do
   without them. Done means tested and live.

@@ -18,11 +18,24 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
+- **"I don't know" on every question** (2026-10-26: "there should be an
+  option to select for I don't know the answer that way if you don't know
+  you aren't forced to make a guess or type something random"). With Skip
+  the reading, a don't-know shows the definition or an explanation next.
+- **Related terms on definitions: what are they for?** (2026-10-26: "I have
+  never found it useful tbh but maybe I just don't see the vision"). Answer,
+  and make them useful or take them away.
+- **Study and learning modes keep improving, effectiveness first**
+  (2026-10-26: "more important than QOL is making sure the way the app
+  teaches is actually effective … I don't want to have to spell everything
+  out for you"). Brainstorm and test properly before building; think of the
+  obvious QOL basics without being asked (shuffled options and "I don't
+  know" were missed for weeks).
 - **Item counts follow importance** (2026-10-14). Prompt and check
   shipped 2026-10-15; waits on a lecture generated with the current prompt
-  to confirm. Proposed and waiting on the owner's go: "mentioned" only for
-  names never explained; Add material skips only facts already tested at
-  the same depth (docs/HANDOFF.md §0).
+  to confirm. Go given 2026-10-26 ("start pushing the other things I asked
+  u for too") on: "mentioned" only for names never explained; Add material
+  skips only facts already tested at the same depth (docs/HANDOFF.md §0).
 - **Nutrition lectures (EPHE 155)** (2026-10-20: "let me know if … i
   should regenerate"). Answered: yes, regenerate per lecture with the
   current prompt. Waits on the owner; do not upload the old EPHE 155
