@@ -49,6 +49,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-10-26 Written questions after multiple choice, as the final, more
+  thorough test (2026-10-26: "these long written questions should usually
+  come after multiple choice since they are harder"): every Write the
+  answer card goes in its section's last step and last in any step,
+  including the next sitting's second look, which used to open with them.
+
 - 2026-10-26 Learn picks up where it was left (2026-10-26: "if you leave in
   the middle of learn mode to go check the glossary or whatever that when
   you come back it doesn't restart"): on Back, on Learn again, and after a

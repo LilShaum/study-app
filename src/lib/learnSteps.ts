@@ -132,6 +132,15 @@ const answeredBefore = (item: SessionItem, progress?: Record<string, ItemResult>
  */
 const isWritten = (item: SessionItem): boolean => item.type === 'flashcard' && (answerPoints(item)?.points.length ?? 0) >= 2;
 
+/**
+ * Any card asked as "Write the answer", one point or several: the hardest
+ * kind of ask, so it comes after the multiple choice on the same material,
+ * as the more thorough test (the owner, 2026-10-26: "these long written
+ * questions should usually come after multiple choice since they are
+ * harder").
+ */
+const isWrittenCard = (item: SessionItem): boolean => item.type === 'flashcard' && !!answerPoints(item);
+
 function overlap(a: Set<string>, b: Set<string>): number {
   const small = a.size <= b.size ? a : b;
   const large = small === a ? b : a;
@@ -444,7 +453,7 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
     // An exam question to write (a short or long answer) pulls the section
     // together: it is asked in the last step, once its parts have been taught
     // and asked, so the whole answer is recalled rather than just read.
-    for (const item of others) if (isWritten(item)) stepOf.set(item, steps - 1);
+    for (const item of others) if (isWrittenCard(item)) stepOf.set(item, steps - 1);
     for (const item of group) {
       if (item.type === 'definition') stepOf.set(item, stepOfDef.get(item.id)!);
       if (item.type === 'recall') stepOf.set(item, stepOfDef.get(item.target.id) ?? 0);
@@ -467,7 +476,7 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
         inStep
           .map((item, i) => ({ item, i: rank(item, i) }))
           // A written question last of all: it gathers what the step asked.
-          .sort((a, b) => Number(isWritten(a.item)) - Number(isWritten(b.item)) || ORDER[a.item.type] - ORDER[b.item.type] || a.i - b.i)
+          .sort((a, b) => Number(isWrittenCard(a.item)) - Number(isWrittenCard(b.item)) || ORDER[a.item.type] - ORDER[b.item.type] || a.i - b.i)
           .map(({ item }) => item),
       );
     }
@@ -534,6 +543,11 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   }
   // A step can end up empty: every term known and nothing else placed in it.
   const steps = joinSmall(cut.filter((s) => s.length));
+  // Last, after every other rule has moved cards about: in every step, the
+  // second look included, a card to write comes after everything else. The
+  // second look opens the next sitting, and it used to open with the written
+  // questions held back from a one-step section (the owner, 2026-10-26).
+  for (let k = 0; k < steps.length; k++) steps[k] = [...steps[k].filter((i) => !isWrittenCard(i)), ...steps[k].filter(isWrittenCard)];
   // What the section builds to, first: each written question not yet
   // answered opens the section with its points, to read, and is asked at the
   // section's end (or the next sitting). Asked cold, a three-point answer

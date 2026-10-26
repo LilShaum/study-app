@@ -322,3 +322,22 @@ describe('Learn: a written answer is outlined before it is asked', () => {
     expect(learn([...defs, calc]).some((i) => i.id === 'calc~preview')).toBe(false);
   });
 });
+
+describe('Learn: writing comes after multiple choice', () => {
+  const one = { id: 'w1', type: 'flashcard', front: 'Short answer: what does Calmodulin bind?', back: 'Calcium.', tags: ['short-answer'] } as StudyItem;
+  const three = { id: 'w3', type: 'flashcard', front: 'Short answer (3 marks): how does Adenylyl cyclase signal?', back: '(1) Gs protein. (2) Adenylyl cyclase. (3) Protein kinase A.' } as StudyItem;
+
+  it('asks a one-point written card after the multiple choice too', () => {
+    const items = learn([...defs, one, mcq('q1', 'What does Calmodulin bind?'), mcq('q2', 'What does Gs protein do?')]);
+    const at = (id: string) => items.findIndex((i) => i.id === id);
+    expect(at('w1')).toBeGreaterThan(at('q1'));
+    expect(at('w1')).toBeGreaterThan(at('q2'));
+  });
+
+  it('ends the next sitting’s second look with its written question, never opens it with one', () => {
+    const items = whole([defs[0], defs[1], three, mcq('q1', 'What does Gs protein do?'), mcq('q2', 'What does Gs protein make?'), mcq('q3', 'Where is Gs protein?'), mcq('q4', 'Why Gs protein?')]);
+    const second = items.filter((i) => i._second);
+    expect(second.length).toBeGreaterThan(1);
+    expect(second.at(-1)?.id).toBe('w3');
+  });
+});

@@ -217,8 +217,11 @@ everything is asked first. "Skip the reading" asks every card first, for
 material already met in class. At the end Learn offers the next section.
 
 A card that practises a worked example (most of its words in the example)
-comes after the example, never a step before it. A short or long answer of
-several points comes last in its section, after its parts; at its first
+comes after the example, never a step before it. Every card asked as
+"Write the answer" (one point or several) comes after the multiple choice:
+in its section's last step, and last in any step it is in, the next
+sitting's second look included. A short or long answer of several points
+comes last in its section, after its parts; at its first
 meeting the section opens with it and its points to read ("This section
 builds to this answer"), so it is never asked cold and never read back: in
 a section of one step it waits for the next sitting. Skip the reading
