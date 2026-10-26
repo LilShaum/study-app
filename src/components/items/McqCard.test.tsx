@@ -45,6 +45,17 @@ describe('McqCard', () => {
     expect(screen.getByLabelText(/, your answer$/).closest('button')!.textContent).toContain('gamma');
   });
 
+  it('lets you say you do not know: a miss, the answer shown, nothing picked', () => {
+    const onAnswered = vi.fn();
+    render(<McqCard item={item()} onAnswered={onAnswered} />);
+    fireEvent.click(screen.getByRole('button', { name: 'I don’t know' }));
+    expect(onAnswered).toHaveBeenCalledWith(false);
+    expect(screen.getByText(/^The answer is [A-D]\.$/)).toBeTruthy();
+    expect(screen.getByLabelText(/, the answer$/).closest('button')!.textContent).toContain('beta');
+    expect(screen.queryByLabelText(/, your answer$/)).toBeNull();
+    expect(screen.getByText('Because beta.')).toBeTruthy();
+  });
+
   it('shows the options in a new order across showings, the answer moving with them', () => {
     const firsts = new Set<string>();
     for (let k = 0; k < 30; k++) {

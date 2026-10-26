@@ -18,10 +18,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
-- **"I don't know" on every question** (2026-10-26: "there should be an
-  option to select for I don't know the answer that way if you don't know
-  you aren't forced to make a guess or type something random"). With Skip
-  the reading, a don't-know shows the definition or an explanation next.
 - **Related terms on definitions: what are they for?** (2026-10-26: "I have
   never found it useful tbh but maybe I just don't see the vision"). Answer,
   and make them useful or take them away.
@@ -52,6 +48,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-26 "I don't know" on multiple choice, typed terms and the
+  practice test: the answer, every option's reason and the passage from
+  the notes show, and it counts as a miss (2026-10-26). With Skip the
+  reading, the definition and passage show at once. (McqCard, RecallCard,
+  TestRoute DONT_KNOW)
 
 - 2026-10-26 A missed question that comes back has its options in a new
   order, its right answer in a new place (2026-10-26: "when it came back

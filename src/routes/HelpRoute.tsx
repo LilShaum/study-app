@@ -187,6 +187,10 @@ const SECTIONS: HelpSection[] = [
       <>
         <p>Questions, flashcards and typed terms are scored. Examples and diagrams are for reading.</p>
         <p className="mt-2">
+          Don&rsquo;t know it? Tap <strong>I don&rsquo;t know</strong> rather than guess: you see the answer and the passage
+          from your notes, and it counts as a miss, so it comes back sooner. A lucky guess would have counted as known.
+        </p>
+        <p className="mt-2">
           A short- or long-answer question, the kind an exam has you write, is asked as one: write your answer (or
           answer in your head), then tick each point of the model answer you made. It counts as got it only with every
           point, as full marks would.

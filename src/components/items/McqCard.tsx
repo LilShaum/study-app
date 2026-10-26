@@ -10,7 +10,7 @@ import { SourceNote } from './SourceNote';
 interface McqCardProps {
   item: McqItem;
   /** `picked`: the chosen option's index in the lecture file, whatever order it was shown in. */
-  onAnswered?: (correct: boolean, picked: number) => void;
+  onAnswered?: (correct: boolean, picked?: number) => void;
   /** Shows an inline "Next →" link after the answer is revealed. */
   onNext?: () => void;
   /** Only true for the single card in a study session, never in Browse. */
@@ -27,6 +27,8 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
   const item = useMemo(() => inOrder(written, order), [written, order]);
   const [selected, setSelected] = useState(-1);
   const [revealed, setRevealed] = useState(false);
+  /** Said "I don't know" rather than guess: shown the answer, counted as a miss. */
+  const [dontKnow, setDontKnow] = useState(false);
   const options = item.options ?? [];
 
   /**
@@ -67,6 +69,17 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
     if (selected < 0 || revealed) return;
     setRevealed(true);
     if (!keyBroken) onAnswered?.(selected === item.correct_index, order[selected] ?? selected);
+  };
+
+  // Rather than guess (the owner, 2026-10-26): the answer, every option's
+  // reason and the explanation, as a miss. A guess that happens to be right
+  // would have counted as known.
+  const giveUp = () => {
+    if (revealed) return;
+    setSelected(-1);
+    setDontKnow(true);
+    setRevealed(true);
+    if (!keyBroken) onAnswered?.(false);
   };
 
   // 1-9 picks an option, Enter checks, then Enter advances. Matches the
@@ -177,14 +190,18 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
       </div>
 
       {!revealed ? (
-        <button
-          type="button"
-          disabled={selected < 0}
-          onClick={check}
-          className="press press-ink tap-safe mt-4"
-        >
-          Check answer
-        </button>
+        <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+          <button type="button" disabled={selected < 0} onClick={check} className="press press-ink tap-safe">
+            Check answer
+          </button>
+          <button
+            type="button"
+            onClick={giveUp}
+            className="tap-safe text-small text-text-3 underline-offset-4 hover:text-text hover:underline"
+          >
+            I don&rsquo;t know
+          </button>
+        </div>
       ) : (
         <div className="mt-4">
           {keyBroken ? (
@@ -194,9 +211,13 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
               wasn&rsquo;t scored. The fault is in the lecture file, not your answer.
             </div>
           ) : (
-            <div className={`font-medium ${correct ? 'text-success' : 'text-error'}`}>
+            <div className={`font-medium ${dontKnow ? 'text-text' : correct ? 'text-success' : 'text-error'}`}>
               {/* The answer is marked in the list above; naming its letter is enough. */}
-              {correct ? '✓ Correct' : `✗ Not this time: the answer is ${'ABCD'[item.correct_index] ?? item.correct_index + 1}.`}
+              {dontKnow
+                ? `The answer is ${'ABCD'[item.correct_index] ?? item.correct_index + 1}.`
+                : correct
+                  ? '✓ Correct'
+                  : `✗ Not this time: the answer is ${'ABCD'[item.correct_index] ?? item.correct_index + 1}.`}
             </div>
           )}
           {item.explanation && <div className="mt-1 text-sm text-text-2">{item.explanation}</div>}

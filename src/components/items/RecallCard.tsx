@@ -63,6 +63,8 @@ export function RecallCard({
   const [verdict, setVerdict] = useState<Verdict | null>(null);
   /** What is recorded now — the verdict, or the student's override of it. */
   const [counted, setCounted] = useState<boolean | null>(null);
+  /** Said "I don't know" rather than guess: shown the answer, counted as a miss. */
+  const [dontKnow, setDontKnow] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
 
@@ -93,6 +95,16 @@ export function RecallCard({
       if (other) onConfused?.(other.id);
     }
   };
+  // Rather than type something random: the answer and its passage, as a
+  // miss (the owner, 2026-10-26). Nothing to overrule, no mix-up to note.
+  const giveUp = () => {
+    if (verdict) return;
+    setDontKnow(true);
+    setVerdict({ correct: false, kind: 'wrong' });
+    setCounted(false);
+    onAnswered?.(false);
+  };
+
   // The term that was typed instead, when there was one — shown with its own
   // definition, so the two meanings sit side by side while the mix-up is
   // fresh. "That is endocytosis" names the mistake; seeing what endocytosis
@@ -150,12 +162,19 @@ export function RecallCard({
           </button>
         )}
       </form>
+      {!verdict && (
+        <button type="button" onClick={giveUp} className="tap-safe mt-2 text-small text-text-3 underline-offset-4 hover:text-text hover:underline">
+          I don&rsquo;t know
+        </button>
+      )}
 
       {verdict && (
         <div className="mt-4" aria-live="polite">
           {/* The verdict keeps its own colour when overruled: a green ✗ reads
               as a contradiction. What is counted shows in the answer line. */}
-          <p className={`font-medium ${verdict.correct ? 'text-success' : 'text-error'}`}>{verdictLine(verdict, answer, asked)}</p>
+          <p className={`font-medium ${dontKnow ? 'text-text' : verdict.correct ? 'text-success' : 'text-error'}`}>
+            {dontKnow ? `The answer is ${answer}.` : verdictLine(verdict, answer, asked)}
+          </p>
           {verdict && item.explanation && <p className="mt-2 text-small text-text-2">{item.explanation}</p>}
           {mixedUp && (
             <p className="mt-2 border-l-2 border-border-strong pl-3 text-small text-text-2">
@@ -179,9 +198,11 @@ export function RecallCard({
             {/* The fallback for when the grader is wrong. One tap either way,
                 and it can be flipped back; it corrects the attempt already
                 recorded rather than recording another. */}
-            <button type="button" onClick={overrule} className="press press-quiet tap-safe">
-              {counted ? 'Count it as wrong' : 'I was right, count it'}
-            </button>
+            {!dontKnow && (
+              <button type="button" onClick={overrule} className="press press-quiet tap-safe">
+                {counted ? 'Count it as wrong' : 'I was right, count it'}
+              </button>
+            )}
           </div>
         </div>
       )}

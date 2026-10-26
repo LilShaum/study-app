@@ -4,7 +4,7 @@ import { useCoursesStore } from '@/store/courses';
 import { recordAnswers } from '@/store/session';
 import { useProgressStore } from '@/store/progress';
 import { classExams, lecturesOf } from '@/lib/classExams';
-import { answeredRight, drawTest, isWritten, lecturesIn, scoreTest, testPool, TEST_LENGTHS, type TestAnswer, type TestQuestion, type TestScope } from '@/lib/practiceTest';
+import { answeredRight, DONT_KNOW, drawTest, isWritten, lecturesIn, scoreTest, testPool, TEST_LENGTHS, type TestAnswer, type TestQuestion, type TestScope } from '@/lib/practiceTest';
 import { answerPoints } from '@/lib/answerPoints';
 import { optionOrder } from '@/lib/optionOrder';
 import { termPicked } from '@/lib/mixUps';
@@ -124,7 +124,7 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
       if (q) {
         test.push(q);
         const a = saved.answers[i];
-        const ok = isWritten(q.item) ? typeof a === 'string' : typeof a === 'number' && a >= 0 && a < q.item.options.length;
+        const ok = isWritten(q.item) ? typeof a === 'string' : typeof a === 'number' && a >= DONT_KNOW && a < q.item.options.length;
         answers.push(ok ? a : null);
         answeredAt.push(ok ? (saved.answeredAt?.[i] ?? saved.savedAt ?? null) : null);
         // Ticks only while the card still has that many points.
@@ -481,6 +481,14 @@ function Taking({
           );
         })}
       </div>
+      <button
+        type="button"
+        aria-pressed={chosen === DONT_KNOW}
+        onClick={() => onPick(DONT_KNOW)}
+        className={`tap-safe mt-3 text-small underline-offset-4 hover:underline ${chosen === DONT_KNOW ? 'text-accent underline decoration-accent decoration-2' : 'text-text-3 hover:text-text'}`}
+      >
+        I don&rsquo;t know
+      </button>
       </>
       )}
       <div className="mt-6 flex items-center gap-3">
@@ -606,7 +614,7 @@ function Results({
                   {where}
                   <div className="prose-set mt-1 text-body text-text">{q.item.question}</div>
                   <div className="mt-2 text-small text-error">
-                    {typeof chose !== 'number' ? 'No answer' : `✗ ${q.item.options[chose]}`}
+                    {typeof chose !== 'number' ? 'No answer' : chose === DONT_KNOW ? 'You didn’t know' : `✗ ${q.item.options[chose]}`}
                   </div>
                   {why && <div className="mt-1 border-l-2 border-error pl-3 text-small text-text-2">{why}</div>}
                   <div className="mt-2 text-small text-success">✓ {q.item.options[q.item.correct_index]}</div>

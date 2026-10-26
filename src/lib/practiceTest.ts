@@ -32,6 +32,9 @@ export const isWritten = (item: TestItem): item is WrittenItem => item.type === 
  */
 export type TestAnswer = number | string | null;
 
+/** A multiple-choice answer of "I don't know": a miss, unlike a blank, which says nothing. */
+export const DONT_KNOW = -1;
+
 export interface TestQuestion {
   courseId: string;
   lecture: string;

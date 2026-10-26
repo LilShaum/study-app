@@ -40,6 +40,11 @@ These hold for every feature.
   simulated students (`.claude/skills/simulate`).
 - Check a feature through the doors a student uses, not by calling its
   code directly.
+- Every question can be answered "I don't know" (multiple choice, typed
+  terms, the practice test): the answer, its reasons and the passage show,
+  and it counts as a miss, never a mix-up. A guess that happens to be right
+  would count as known; in the practice test it is a miss where Skip is a
+  blank. Flashcards already have Missed it, written answers Show the answer.
 - Multiple-choice options are shuffled at every showing (`lib/optionOrder`),
   the key and each option's "why not" with them, so where an answer sits
   tells nothing: one generated lecture had every right answer first. A

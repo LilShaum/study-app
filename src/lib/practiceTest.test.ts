@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
-import { drawTest, lecturesIn, scoreTest, testPool } from './practiceTest';
+import { DONT_KNOW, drawTest, lecturesIn, scoreTest, testPool } from './practiceTest';
 
 const mcq = (id: string, extra: Record<string, unknown> = {}): StudyItem =>
   ({
@@ -131,5 +131,15 @@ describe('written questions', () => {
       ['b', [true, false, true]],
       ['c', []],
     ]);
+  });
+});
+
+describe('I don’t know in a test', () => {
+  it('is a miss, unlike a blank', () => {
+    const c = course([{ id: 's1', items: [mcq('a'), mcq('b')] }]);
+    const pool = testPool([{ courseId: 'c', course: c, covers: 'all' }]);
+    const r = scoreTest(pool, [DONT_KNOW, null]);
+    expect(r.got).toBe(0);
+    expect(r.missed.map((m) => m.chose)).toEqual([DONT_KNOW, null]);
   });
 });
