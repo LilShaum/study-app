@@ -1,5 +1,6 @@
 // The canonical generator spec, imported straight from prompts/generator.md.
 import GENERATOR_SPEC from '../../prompts/generator.md?raw';
+import type { Course } from '@/schema/course';
 
 /**
  * Sections of prompts/generator.md, for the prompts that need part of the spec rather
@@ -34,6 +35,25 @@ export function specSection(heading: string, source: string = GENERATOR_SPEC): s
     }
   }
   return lines.slice(start, end).join('\n').trim();
+}
+
+const STUDY_BLOCK = /<!-- studies -->\n([\s\S]*?)<!-- no studies -->\n([\s\S]*?)<!-- end studies -->\n?/g;
+
+/**
+ * The generator spec with its studies passages chosen: teaching each cited
+ * study in depth (its question, method, result and meaning, filled in from
+ * the model's own knowledge where the slides only cite it), or a study only
+ * as evidence for its point. In depth by default cost a lecture whose exams
+ * never ask about studies much of the student's usage (the owner's
+ * nutrition lectures, 2026-10-26), so it is a choice made when generating.
+ */
+export function generatorSpec(studies: boolean, source: string = GENERATOR_SPEC): string {
+  return source.replace(STUDY_BLOCK, (_, inDepth: string, brief: string) => (studies ? inDepth : brief));
+}
+
+/** Whether a lecture already teaches studies: an item tagged with one (prompts/generator.md, `study:`). */
+export function hasStudies(course: Course): boolean {
+  return course.sections.some((s) => s.items.some((i) => !i.set_aside && i.tags?.some((t) => t.startsWith('study:'))));
 }
 
 /** How each item type is shaped — for prompts whose reader may not have the spec. */

@@ -9,6 +9,7 @@ import { beginWriteCheck, persisted, writesLanded } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
 import { TeacherNotesField } from './TeacherNotesField';
+import { StudiesField } from './StudiesField';
 import { cutMessage, readReply } from '@/lib/readReply';
 
 const STORAGE_FULL =
@@ -49,6 +50,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   useDialog(onClose);
   const [pasted, setPasted] = useState('');
   const [notes, setNotes] = useState('');
+  const [studies, setStudies] = useState(false);
   const [copied, setCopied] = useState(false);
   const lectures = useCoursesStore((s) => s.courses);
   // In a class, the lecture added last is the likeliest one this deck follows.
@@ -75,7 +77,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   const course = result && 'course' in result ? result.course : null;
 
   const copyPrompt = async () => {
-    const prompt = buildNewCoursePrompt(notes, after ? lectures[after] : undefined);
+    const prompt = buildNewCoursePrompt(notes, after ? lectures[after] : undefined, studies);
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
@@ -175,6 +177,9 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
             </p>
             <div className="mb-3">
               <TeacherNotesField value={notes} onChange={setNotes} />
+            </div>
+            <div className="mb-3">
+              <StudiesField checked={studies} onChange={setStudies} />
             </div>
             {Object.keys(lectures).length > 0 && (
               <label className="mb-3 block">

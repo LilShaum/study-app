@@ -1,6 +1,6 @@
-// Imported straight from prompts/generator.md so the prompt the app hands out
-// is byte-for-byte the spec the app parses. Editing it updates both.
-import GENERATOR_SPEC from '../../prompts/generator.md?raw';
+// From prompts/generator.md, so the prompt the app hands out is the spec the
+// app parses, with its studies passages chosen (lib/generatorSpec).
+import { generatorSpec } from './generatorSpec';
 import { teacherNotesBlock } from './teacherNotes';
 import { previousLectureBlock } from './previousLecture';
 import type { Course } from '@/schema/course';
@@ -13,9 +13,10 @@ import type { Course } from '@/schema/course';
  * lived only in a file in the repo. This hands it over.
  *
  * It is the generator spec verbatim, wrapped in the two lines of framing a
- * chat needs: what to do, and where the notes go.
+ * chat needs: what to do, and where the notes go. `studies`: the student's
+ * exams ask about the studies on the slides, so each is taught in depth.
  */
-export function buildNewCoursePrompt(notes?: string, previous?: Course): string {
+export function buildNewCoursePrompt(notes?: string, previous?: Course, studies = false): string {
   return `I want you to turn my course notes into an Arborous study course.
 
 Your full instructions are below. Follow them exactly — especially the
@@ -24,7 +25,7 @@ four-pass reading procedure and the coverage obligations — and reply with the
 
 ════════ YOUR INSTRUCTIONS ════════
 
-${GENERATOR_SPEC}
+${generatorSpec(studies)}
 
 ${teacherNotesBlock(notes)}${previousLectureBlock(previous)}════════ MY SOURCE MATERIAL ════════
 

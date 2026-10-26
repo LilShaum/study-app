@@ -83,7 +83,9 @@ const SECTIONS: HelpSection[] = [
         </p>
         <ol className="mt-2 list-decimal space-y-1 pl-5">
           <li>
-            On the library page, tap <strong>New lecture</strong>.
+            On the library page, tap <strong>New lecture</strong>. Tick <strong>My exams ask about the studies
+            on the slides</strong> only if they do: each study is then taught in full, which uses a lot more of the
+            AI&rsquo;s usage.
           </li>
           <li>
             Copy the prompt and paste it into a chat with an AI such as Claude. Attach your slides

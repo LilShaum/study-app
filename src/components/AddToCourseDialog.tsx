@@ -8,6 +8,8 @@ import { buildAddPrompt } from '@/lib/buildAddPrompt';
 import { buildPractisePrompt } from '@/lib/buildPractisePrompt';
 import { buildFixPrompt, planFixes } from '@/lib/buildFixPrompt';
 import { buildExplainPrompt } from '@/lib/buildExplainPrompt';
+import { hasStudies } from '@/lib/generatorSpec';
+import { StudiesField } from './StudiesField';
 import { buildEvenOptionsPrompt, longestShare, optionsToRework, readEvenOptions, readEvenReply, withCorrections } from '@/lib/evenOptions';
 import { analyseCourseGaps } from '@/lib/courseGaps';
 import { sectionDensity } from '@/lib/sectionDensity';
@@ -61,6 +63,8 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   const [pasted, setPasted] = useState('');
   const [notes, setNotes] = useState(course.metadata.student_notes ?? '');
   const [skipDuplicates, setSkipDuplicates] = useState(true);
+  // As the lecture was made: in depth if it already teaches studies.
+  const [studies, setStudies] = useState(() => hasStudies(course));
   const [copied, setCopied] = useState(false);
   const mergeIntoCourse = useCoursesStore((s) => s.mergeIntoCourse);
   const updateCourse = useCoursesStore((s) => s.updateCourse);
@@ -144,7 +148,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
           ? buildPractisePrompt(course, kept)
           : mode === 'explain'
             ? buildExplainPrompt(course, kept)
-            : buildAddPrompt(course, kept);
+            : buildAddPrompt(course, kept, studies);
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
@@ -421,6 +425,11 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             <div className="mb-3">
               <TeacherNotesField value={notes} onChange={setNotes} />
             </div>
+            {mode === 'material' && (
+              <div className="mb-3">
+                <StudiesField checked={studies} onChange={setStudies} />
+              </div>
+            )}
             <button
               type="button"
               onClick={copyPrompt}

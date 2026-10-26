@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Course, StudyItem } from '@/schema/course';
-import { ITEM_TYPES_SPEC, QUALITY_BAR_SPEC, specSection } from './generatorSpec';
+import { generatorSpec, hasStudies, ITEM_TYPES_SPEC, QUALITY_BAR_SPEC, specSection } from './generatorSpec';
+import { buildNewCoursePrompt } from './buildNewCoursePrompt';
+import { buildAddPrompt } from './buildAddPrompt';
 import { buildPractisePrompt } from './buildPractisePrompt';
 import { buildFixPrompt, planFixes } from './buildFixPrompt';
 
@@ -146,5 +148,41 @@ describe('planFixes / buildFixPrompt', () => {
 
   it('holds corrections to the same quality rules as new items', () => {
     expect(buildFixPrompt(course([mcq('broken', ['aa', 'bb', 'cc', 'dd'], 9)]))).toContain(QUALITY_BAR_SPEC);
+  });
+});
+
+describe('generatorSpec: the studies passages, chosen', () => {
+  const off = generatorSpec(false);
+  const on = generatorSpec(true);
+
+  it('teaches each study in depth only when asked', () => {
+    expect(on).toMatch(/One labelled exception: a cited study the slides show but do not explain/);
+    expect(on).toMatch(/Teach the\s+finding, how the experiment showed it/);
+    expect(off).not.toMatch(/One labelled exception/);
+    expect(off).not.toMatch(/how the experiment showed it/);
+    expect(off).toMatch(/Nothing comes from outside the source, studies included/);
+    expect(off).toMatch(/evidence for\s+the point it supports/);
+  });
+
+  it('leaves no markers, and the rest of the spec as it is', () => {
+    for (const spec of [on, off]) {
+      expect(spec).not.toMatch(/<!--/);
+      expect(spec).toContain(QUALITY_BAR_SPEC);
+      expect(spec).toContain(ITEM_TYPES_SPEC);
+    }
+  });
+
+  it('knows a lecture that already teaches studies by its study tags', () => {
+    const tagged = course([mcq('q1', ['aa', 'bb', 'cc', 'dd'], 0, { tags: ['study:Hollis et al. (1998)'] })]);
+    expect(hasStudies(tagged)).toBe(true);
+    expect(hasStudies(course([mcq('q1', ['aa', 'bb', 'cc', 'dd'], 0)]))).toBe(false);
+  });
+
+  it('hands the choice to the new-lecture and add-material prompts', () => {
+    expect(buildNewCoursePrompt()).not.toMatch(/One labelled exception/);
+    expect(buildNewCoursePrompt(undefined, undefined, true)).toMatch(/One labelled exception/);
+    const tagged = course([mcq('q1', ['aa', 'bb', 'cc', 'dd'], 0, { tags: ['study:Hollis et al. (1998)'] })]);
+    expect(buildAddPrompt(tagged)).toMatch(/One labelled exception/);
+    expect(buildAddPrompt(tagged, undefined, false)).not.toMatch(/One labelled exception/);
   });
 });

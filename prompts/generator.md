@@ -47,6 +47,7 @@ or equation rather than the running text, start the excerpt with `Figure:`,
 `Table:` or `Equation:` and quote its labels exactly as printed, so it can be
 checked against the page.
 
+<!-- studies -->
 **One labelled exception: a cited study the slides show but do not explain.**
 Some teachers put a study on a slide as a figure and a citation, explain it
 only in class, and tell students to read the original. Leaving it out loses
@@ -61,6 +62,12 @@ if you are not sure, write nothing on it and list it in
 ("Outside the slides: Posner 1980, cueing study"), so the student sees it
 is not from their material and checks it against class. Nothing else may
 come from outside the source.
+<!-- no studies -->
+**Nothing comes from outside the source, studies included.** A study the
+slides only cite (authors and year, a reference at the bottom) without
+saying what it found gets no items: this student's exams do not ask about
+studies.
+<!-- end studies -->
 
 ## How to read the source
 
@@ -103,12 +110,19 @@ is worth, more than how much text it holds. Clues to that job:
   it the weight; the slides on the way are its parts or its evidence. Slide
   titles, and how the bullets relate (kinds of one thing, steps in order, a
   claim and its support, a contrast), show the structure.
+<!-- studies -->
 - **A study or experiment.** When a slide shows a study (a researcher, a
   figure from a paper, an experiment and its result), its point is what the
   study found and what that showed, not who ran it or when. Teach the
   finding, how the experiment showed it, and what the result rules out.
   Names and dates are illustration detail unless the slide text asks for
   them.
+<!-- no studies -->
+- **A study or experiment.** When a slide shows a study, it is evidence for
+  the point it supports: teach that point. This student's exams do not ask
+  about studies, so at most one item on the study itself, on what it found
+  as the slide states it; never its method, participants, authors or date.
+<!-- end studies -->
 - **What comes back.** A term, structure or name that returns on later
   slides (in a new figure, a later example, a callback to an earlier
   topic) is something the lecture builds on: key. A name that appears once

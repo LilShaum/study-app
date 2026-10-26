@@ -1,7 +1,7 @@
 // The canonical generator spec, imported straight from prompts/generator.md so
 // the prompt this app hands out can never drift from the format the app
 // actually parses. Editing it updates both at once.
-import GENERATOR_SPEC from '../../prompts/generator.md?raw';
+import { generatorSpec, hasStudies } from './generatorSpec';
 import { teacherNotesBlock } from './teacherNotes';
 import type { Course } from '@/schema/course';
 import { allItems } from '@/schema/fragment';
@@ -22,7 +22,7 @@ import { freshIdPrefix } from './idPrefix';
  * `planMerge` defends against all of that anyway; telling the model up front
  * just means it produces less that has to be thrown away.
  */
-export function buildAddPrompt(course: Course, notes = course.metadata.student_notes): string {
+export function buildAddPrompt(course: Course, notes = course.metadata.student_notes, studies = hasStudies(course)): string {
   const sections = sortedSections(course);
   const items = allItems(course.sections);
 
@@ -98,7 +98,7 @@ ${covered || '(none yet)'}
 
 ════════ GENERATOR SPEC ════════
 
-${GENERATOR_SPEC}
+${generatorSpec(studies)}
 
 ${teacherNotesBlock(notes)}════════ MY SOURCE MATERIAL ════════
 

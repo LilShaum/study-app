@@ -97,6 +97,13 @@ file in one AI chat.
 **How it works.** The app hands out `prompts/generator.md` plus the
 student's notes on what their teacher stressed and, optionally, the lecture
 it follows on from. The student attaches their slides to the same message.
+"My exams ask about the studies on the slides" is off unless ticked
+(the owner, 2026-10-26: in depth by default wasted their usage on a class
+that never asks): ticked, each study is taught in full (question, method,
+result, what it shows) and one the slides only cite is filled in from the
+AI's knowledge, labelled; off, a study is evidence for its point, at most
+one card on what it found as the slide states it, nothing from outside
+(`generatorSpec(studies)`, the `<!-- studies -->` blocks).
 The AI reads everything, maps why each slide is there, builds an inventory,
 weights each idea, writes items, audits itself, and returns JSON. The app
 reads the reply even if it is wrapped in text or cut off.
@@ -112,7 +119,8 @@ reads the reply even if it is wrapped in text or cut off.
 - The reply is compact (no indentation, an item a line) and leaves counts
   to the app: about a sixth less to write. A cut reply still keeps every
   whole item.
-- Every item about an empirical study carries `study:<author> (<year>)`.
+- Every item about an empirical study carries `study:<author> (<year>)`;
+  with studies off there are few.
 - Each wrong option is a mistake a student who studied would make (the
   neighbour, the reversal, the wrong step, another case's answer), from the
   lecture's own terms; at least one is as long as the right answer.
@@ -129,7 +137,8 @@ figure was drawn.
 repeating it and without dropping what the new slides teach.
 
 **How it works.** The prompt carries the whole generator spec, every item
-already in the lecture, its sections, ids and tags. The AI writes only what
+already in the lecture, its sections, ids and tags. The studies box starts
+ticked only if the lecture already has study cards. The AI writes only what
 is new and returns a fragment the app previews and merges.
 
 **Working means.** A fact is skipped only when an item already tests it at

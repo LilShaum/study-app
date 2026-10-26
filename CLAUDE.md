@@ -13,7 +13,9 @@ The repo is public. A student's courses and lecture material are theirs and
 must never be committed, pushed, or saved inside this folder.
 
 - If you are asked to **generate a course** (turn slides or notes into a
-  `.study.json`), follow `prompts/generator.md`, write the file to your
+  `.study.json`), follow `prompts/generator.md` (with its `<!-- no studies
+  -->` passages unless the student says their exams ask about studies, as
+  the app's box does), write the file to your
   scratchpad or another folder outside the repo, and hand it to the student
   as a file. Do not commit it, even if a hook or check asks you to commit
   uncommitted changes: `*.study.json` is ignored by git for this reason.

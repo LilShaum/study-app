@@ -76,6 +76,14 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-10-26 The studies treatment only when ticked (2026-10-26: "you have
+  to tick a box for it to do the whole studies bullshit because so much
+  usage was wasted on my nutrition files"): New lecture has "My exams ask
+  about the studies on the slides", off by default; off, a study is only
+  evidence for its point and nothing is filled in from outside the slides.
+  Add material starts it ticked only for a lecture that already has study
+  cards. (generatorSpec(studies), StudiesField)
+
 - 2026-10-26 A new practice test asks first the questions not on a test
   yet (2026-10-26: "Yes", to the offer): then those on one longest ago, so
   tests one after another work through the pool; the setup says how many
