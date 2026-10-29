@@ -260,7 +260,7 @@ first meeting, the rest in a second look at the next sitting (never in the
 sitting that taught it). A miss comes back later in its step with the
 passage from the notes, before the step's question to write, which stays
 last. A term defined the same way in two lectures counts
-once. A section with a slide range can start with "read these slides", then
+once. A section with a slide range can start with "read this part of your material" (any source: the range carries its unit, slides or pages; worded for any source, the owner 2026-10-29), then
 everything is asked first. "Skip the reading" asks every card first, for
 material already met in class. At the end Learn offers the next section.
 

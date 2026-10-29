@@ -43,7 +43,7 @@ export function CourseHealthPanel({ course, onFix, onEvenOut }: CourseHealthPane
   const tone = health.problems > 0 ? 'text-error' : fix.length > 0 ? 'text-warning' : 'text-text-3';
   const summary = [
     fix.length > 0 && `${fix.length} to fix`,
-    toCheck > 0 && `${toCheck} to check on your slides`,
+    toCheck > 0 && `${toCheck} to check in your notes`,
     fix.length === 0 && toCheck === 0 && minor.length > 0 && `${minor.length} small note${minor.length === 1 ? '' : 's'}`,
   ].filter(Boolean);
 
@@ -100,7 +100,7 @@ export function CourseHealthPanel({ course, onFix, onEvenOut }: CourseHealthPane
           )}
           {(slides.length > 0 || missing > 0) && (
             <section>
-              <h3 className="mark mb-1.5 text-text-3">Check on your slides</h3>
+              <h3 className="mark mb-1.5 text-text-3">Check in your notes</h3>
               <ul className="space-y-1.5">
                 {missing > 0 && (
                   <li className="flex gap-2">

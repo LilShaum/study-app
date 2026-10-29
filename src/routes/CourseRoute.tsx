@@ -401,7 +401,7 @@ export function CourseRoute() {
               to: nextUp ? `learn?section=${encodeURIComponent(nextUp.section.id)}` : 'learn',
               label: 'Learn',
               unit: nextUp ? `section ${nextUp.index + 1}` : plural(counts.total + counts.definition, 'item'),
-              use: 'The lecture in the order of your slides, a few terms at a time. Follow along in your slides or notes.',
+              use: 'The lecture in the order it was taught, a few terms at a time. Follow along in your own notes or slides.',
             },
             {
               to: null,
