@@ -94,7 +94,18 @@ These hold for every feature.
 **Goal.** Turn a student's slides into a complete, well-weighted lecture
 file in one AI chat.
 
-**How it works.** The app hands out `prompts/generator.md` plus the
+**How it works.** Three short steps (the owner, 2026-10-29: the prompt
+screens were "massive blocks of text … not intuitive for new users"): what
+to make, copy the prompt, paste the reply; one line each, the reasons and
+options folded behind a "more" line (`PromptStep`, `More`). What to make
+is a box per kind (multiple choice, flashcards, terms to name, written
+answers, explanations, worked examples, diagrams), all ticked; untick one
+and the prompt says to make only the rest and where their content goes
+instead (`lib/makeKinds`, "if they just want flash cards … they will just
+get flash cards"). The choice is kept on the lecture (`metadata.make`):
+Add material, More practice and Fix keep to it, Add explanations is not
+offered without explanations, and the lecture check does not ask for a
+kind left out. The app hands out `prompts/generator.md` plus the
 student's notes on what their teacher stressed and, optionally, the lecture
 it follows on from. The student attaches their slides to the same message.
 "My exams ask about the studies on the slides" is off unless ticked
@@ -138,7 +149,8 @@ repeating it and without dropping what the new slides teach.
 
 **How it works.** The prompt carries the whole generator spec, every item
 already in the lecture, its sections, ids and tags. The studies box starts
-ticked only if the lecture already has study cards. The AI writes only what
+ticked only if the lecture already has study cards; What to make starts as
+the lecture was made. The AI writes only what
 is new and returns a fragment the app previews and merges.
 
 **Working means.** A fact is skipped only when an item already tests it at

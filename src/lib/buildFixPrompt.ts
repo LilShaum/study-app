@@ -4,6 +4,7 @@ import { freshIdPrefix } from './idPrefix';
 import { analyseCourseHealth } from './courseHealth';
 import { QUALITY_BAR_SPEC } from './generatorSpec';
 import { teacherNotesBlock } from './teacherNotes';
+import { kindsOf, makeOnlyBlock } from './makeKinds';
 
 /** Keeps a very large course's prompt inside a sane clipboard paste. */
 const MAX_EXCERPTS = 60;
@@ -328,7 +329,7 @@ checks the result against. Anything you write or correct should meet them.
 
 ${QUALITY_BAR_SPEC}
 
-${teacherNotesBlock(notes)}════════ THE COURSE ════════
+${makeOnlyBlock(kindsOf(course))}${teacherNotesBlock(notes)}════════ THE COURSE ════════
 
 Title: ${course.metadata.title}${course.metadata.course_code ? `\nCourse code: ${course.metadata.course_code}` : ''}
 

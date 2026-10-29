@@ -1,6 +1,7 @@
 // From prompts/generator.md, so the prompt the app hands out is the spec the
 // app parses, with its studies passages chosen (lib/generatorSpec).
 import { generatorSpec } from './generatorSpec';
+import { ALL_KINDS, makeOnlyBlock, type MakeKind } from './makeKinds';
 import { teacherNotesBlock } from './teacherNotes';
 import { previousLectureBlock } from './previousLecture';
 import type { Course } from '@/schema/course';
@@ -16,7 +17,7 @@ import type { Course } from '@/schema/course';
  * chat needs: what to do, and where the notes go. `studies`: the student's
  * exams ask about the studies on the slides, so each is taught in depth.
  */
-export function buildNewCoursePrompt(notes?: string, previous?: Course, studies = false): string {
+export function buildNewCoursePrompt(notes?: string, previous?: Course, studies = false, kinds: readonly MakeKind[] = ALL_KINDS): string {
   return `I want you to turn my course notes into an Arborous study course.
 
 Your full instructions are below. Follow them exactly — especially the
@@ -27,7 +28,7 @@ four-pass reading procedure and the coverage obligations — and reply with the
 
 ${generatorSpec(studies)}
 
-${teacherNotesBlock(notes)}${previousLectureBlock(previous)}════════ MY SOURCE MATERIAL ════════
+${makeOnlyBlock(kinds)}${teacherNotesBlock(notes)}${previousLectureBlock(previous)}════════ MY SOURCE MATERIAL ════════
 
 <<< ATTACH YOUR SLIDES / PDF / NOTES TO THIS MESSAGE (NOT ONLY AS PROJECT FILES), OR PASTE THEM BELOW THIS LINE >>>
 `;

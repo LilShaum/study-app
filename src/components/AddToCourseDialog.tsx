@@ -10,6 +10,12 @@ import { buildFixPrompt, planFixes } from '@/lib/buildFixPrompt';
 import { buildExplainPrompt } from '@/lib/buildExplainPrompt';
 import { hasStudies } from '@/lib/generatorSpec';
 import { StudiesField } from './StudiesField';
+import { MakeKindsField } from './MakeKindsField';
+import { More, PromptStep } from './PromptStep';
+import { ALL_KINDS, kindsOf, type MakeKind } from '@/lib/makeKinds';
+
+/** What More practice can make: questions, not reading. */
+const QUESTION_KINDS: readonly MakeKind[] = ['mcq', 'flashcard', 'written'];
 import { buildEvenOptionsPrompt, longestShare, optionsToRework, readEvenOptions, readEvenReply, withCorrections } from '@/lib/evenOptions';
 import { analyseCourseGaps } from '@/lib/courseGaps';
 import { sectionDensity } from '@/lib/sectionDensity';
@@ -65,6 +71,19 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   const [skipDuplicates, setSkipDuplicates] = useState(true);
   // As the lecture was made: in depth if it already teaches studies.
   const [studies, setStudies] = useState(() => hasStudies(course));
+  // What to make, as the lecture was made (lib/makeKinds); More practice
+  // makes questions only.
+  const [kinds, setKinds] = useState<MakeKind[]>(() => kindsOf(course));
+  // Written answers only when ticked, as on the practice test (the owner,
+  // 2026-10-26: "I NEVER TOLD YOU TO ADD WRITTEN ANSWERS").
+  // A lecture with neither keeps to what it has: written answers, or
+  // nothing ticked, for the student to choose.
+  const [practiceKinds, setPracticeKinds] = useState<MakeKind[]>(() => {
+    const made = kindsOf(course);
+    const asked = made.filter((k) => k === 'mcq' || k === 'flashcard');
+    return asked.length ? asked : made.filter((k) => QUESTION_KINDS.includes(k));
+  });
+  const chosenKinds = mode === 'material' ? kinds : mode === 'practice' ? practiceKinds : ALL_KINDS;
   const [copied, setCopied] = useState(false);
   const mergeIntoCourse = useCoursesStore((s) => s.mergeIntoCourse);
   const updateCourse = useCoursesStore((s) => s.updateCourse);
@@ -145,10 +164,10 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
         : mode === 'fix'
         ? buildFixPrompt(course, kept)
         : mode === 'practice'
-          ? buildPractisePrompt(course, kept)
+          ? buildPractisePrompt(course, kept, practiceKinds)
           : mode === 'explain'
             ? buildExplainPrompt(course, kept)
-            : buildAddPrompt(course, kept, studies);
+            : buildAddPrompt(course, kept, studies, kinds);
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
@@ -272,52 +291,76 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
         </div>
 
         <div className="space-y-5 px-5 py-4">
-          {/* Step 1 */}
-          <section>
-            <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-text-3">
-              Step 1: generate
-            </div>
+          {/* What it is for, in a line, and where to paste it; the rest folds. */}
+          <PromptStep n={1} title="Copy the prompt">
             {mode === 'material' ? (
-              <p className="mb-2 text-sm text-text-2">
-                Copy the prompt, paste it into your AI chat with your new notes attached to the same
-                message (not only as project files, which often lose the diagrams), and it will
-                return JSON. The prompt already tells it which sections, item ids and tags this
-                lecture uses, so it won&apos;t duplicate or collide with what you have.
-              </p>
+              <>
+                <p className="text-sm text-text-2">
+                  For new notes, such as next week&rsquo;s lecture. Paste the prompt into an AI with the new notes
+                  attached to the same message.
+                </p>
+                <More label="More about this">
+                  <p>
+                    The prompt tells the AI which sections, ids and tags this lecture uses, so nothing is made twice.
+                    Attach the files to the message itself: files kept only in a project often lose their diagrams.
+                  </p>
+                </More>
+              </>
             ) : mode === 'options' ? (
-              <p className="mb-2 text-sm text-text-2">
-                In {plural(rework.length, 'question')} the right answer is the longest option, or tied for it, so you
-                could pick it without knowing the material (guessing the longest gets {shareNow}% of this
-                lecture&apos;s questions right; fair is about 25%). This prompt asks only for new wrong answers to those, a short reply.{' '}
-                <strong>Paste it into the chat that wrote this lecture</strong>, which still has your notes. The
-                questions, their right answers and your scores stay exactly as they are.
-              </p>
+              <>
+                <p className="text-sm text-text-2">
+                  In {plural(rework.length, 'question')} the right answer is the longest option, so it can be guessed.
+                  This asks only for new wrong answers. <strong>Paste it into the chat that made this lecture.</strong>
+                </p>
+                <More label="More about this">
+                  <p>
+                    Guessing the longest option gets {shareNow}% of this lecture&rsquo;s questions right; fair is about
+                    25%. The questions, their right answers and your scores stay as they are.
+                  </p>
+                </More>
+              </>
             ) : mode === 'explain' ? (
-              <p className="mb-2 text-sm text-text-2">
-                Asks for a short explanation of each key idea, the connections a teacher makes in
-                class, which Learn shows just before the questions on it.{' '}
-                <strong>Paste it into the chat that wrote this lecture</strong>, which still has your
-                slides. {explained > 0 ? `This lecture has ${plural(explained, 'explanation')} already; the prompt asks only for the ones missing. ` : ''}
-                Your questions and scores stay as they are.
-              </p>
+              <>
+                <p className="text-sm text-text-2">
+                  A short explanation of each key idea, shown in Learn before the questions on it.{' '}
+                  <strong>Paste it into the chat that made this lecture.</strong>
+                </p>
+                <More label="More about this">
+                  <p>
+                    {explained > 0 ? `This lecture has ${plural(explained, 'explanation')} already; the prompt asks only for the ones missing. ` : ''}
+                    Your questions and scores stay as they are.
+                  </p>
+                </More>
+              </>
             ) : mode === 'fix' ? (
-              <p className="mb-2 text-sm text-text-2">
-                Hands the check&apos;s findings back to the AI that wrote this lecture.{' '}
-                <strong>Paste it into that same chat</strong>. Your original notes are still there,
-                and they are the only thing that can judge whether a missing term actually mattered.
-                The prompt asks for that judgement first: it is told that &ldquo;not worth an
-                item&rdquo; is a correct answer, so a term your notes only mention in passing gets
-                skipped with a reason rather than padded out.
-              </p>
+              <>
+                <p className="text-sm text-text-2">
+                  Sends what the lecture check found back to the AI to fix.{' '}
+                  <strong>Paste it into the chat that made this lecture</strong>, where your notes still are.
+                </p>
+                <More label="More about this">
+                  <p>
+                    Only your notes can say whether a missing term mattered, so the AI judges each one first. It is
+                    told that &ldquo;not worth a card&rdquo; is a fine answer, so a term your notes only mention in
+                    passing is skipped with a reason rather than padded out.
+                  </p>
+                </More>
+              </>
             ) : (
-              <p className="mb-2 text-sm text-text-2">
-                For when you already know the existing questions. This prompt asks for{' '}
-                <strong>new questions on the material you already have</strong>, no notes needed.
-                Each item recorded a quote from your original source, and the prompt hands those
-                back as the material to write from. Paste it into the same chat you generated the
-                lecture in and it will use your full notes instead, which is better.
-              </p>
+              <>
+                <p className="text-sm text-text-2">
+                  New questions on what this lecture already covers, for when you know the ones you have.{' '}
+                  <strong>Paste it into the chat that made this lecture</strong>, where your notes still are.
+                </p>
+                <More label="More about this">
+                  <p>
+                    In another chat it writes from the passages each card quoted from your notes, which works but
+                    misses what no card quoted.
+                  </p>
+                </More>
+              </>
             )}
+            <div className="mt-3" />
 
             {mode === 'fix' &&
               (fixes.empty ? (
@@ -422,36 +465,35 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                   </ul>
                 </div>
               )}
-            <div className="mb-3">
-              <TeacherNotesField value={notes} onChange={setNotes} />
-            </div>
-            {mode === 'material' && (
+            {(mode === 'material' || mode === 'practice') && (
               <div className="mb-3">
-                <StudiesField checked={studies} onChange={setStudies} />
+                <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-text-3">What to make</div>
+                {mode === 'material' ? (
+                  <MakeKindsField value={kinds} onChange={setKinds} />
+                ) : (
+                  <MakeKindsField value={practiceKinds} onChange={setPracticeKinds} only={QUESTION_KINDS} />
+                )}
               </div>
             )}
-            <button
-              type="button"
-              onClick={copyPrompt}
-              className="press"
-            >
+            <button type="button" onClick={copyPrompt} disabled={!chosenKinds.length} className="press">
               <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
-              {copied ? 'Prompt copied' : 'Copy prompt'}
+              {copied ? 'Prompt copied' : 'Copy the prompt'}
             </button>
-          </section>
+            <More label="More options">
+              <TeacherNotesField value={notes} onChange={setNotes} />
+              {mode === 'material' && <StudiesField checked={studies} onChange={setStudies} />}
+            </More>
+          </PromptStep>
 
-          {/* Step 2 */}
-          <section>
+          <PromptStep n={2} title="Paste the reply">
             <label className="block">
-              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-3">
-                Step 2: paste the JSON back
-              </span>
+              <span className="sr-only">The AI&rsquo;s reply</span>
               <textarea
                 value={pasted}
                 onChange={(e) => setPasted(e.target.value)}
                 rows={8}
                 spellCheck={false}
-                placeholder={'{\n  "sections": [\n    { "id": "…", "items": [ … ] }\n  ]\n}'}
+                placeholder="Paste the AI’s whole reply here"
                 className="field w-full font-mono text-xs"
               />
             </label>
@@ -473,7 +515,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 />
               </label>
             </div>
-          </section>
+          </PromptStep>
 
           {/* Feedback */}
           {result && 'error' in result && (

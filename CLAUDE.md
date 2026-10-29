@@ -68,6 +68,10 @@ this is the intent it serves.
   as the other modes, and what was missed comes back first in the next
   test: "Remember, ADAPTIVE" (2026-10-26). Answers as you go by default, or
   at the end if chosen (2026-10-26).
+- **Making a lecture:** the student ticks which kinds of item to make and
+  gets only those ("if they just want flash cards for example they will
+  just get flash cards"); prompt screens are a few short steps, details
+  folded, clear to a new user (2026-10-29).
 - **Wrong options:** a well-reasoned wrong answer that shows a gap in
   what you know matters more than equal length. Words like never, only,
   often are what test the nuance and are not a giveaway (2026-10-20).

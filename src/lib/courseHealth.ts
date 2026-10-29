@@ -7,6 +7,7 @@ import { answerPoints, isListOfNames } from './answerPoints';
 import { givesAway, restatesDefinition, sameFact, sameName, type Asked } from './contentChecks';
 import { acceptedForms, normalise } from './typedAnswer';
 import { sectionDensity } from './sectionDensity';
+import { kindsOf } from './makeKinds';
 
 export type HealthSeverity = 'problem' | 'warning';
 
@@ -62,6 +63,11 @@ const WRITTEN_PER_SECTION = 2;
 export function analyseCourseHealth(course: Course): CourseHealth {
   const findings: HealthFinding[] = [];
   const gaps = analyseCourseGaps(course);
+  // A finding whose cure is a kind the student chose not to have made is
+  // not reported (lib/makeKinds): a lecture of flashcards only lacks MCQs
+  // on purpose.
+  const make = kindsOf(course);
+  const questions = make.includes('mcq') || make.includes('flashcard');
   const items = course.sections.flatMap((s) => s.items);
 
   /* ---- structural faults ---- */
@@ -287,7 +293,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
 
     declaredTermCoverage = { covered: declared.length - missing.length, total: declared.length, missing };
 
-    if (missing.length) {
+    if (missing.length && make.includes('terms')) {
       findings.push({
         id: 'declared-terms-missing',
         // A gap, not a fault: nothing already in the course is wrong.
@@ -338,7 +344,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
   }
 
   /* ---- testability ---- */
-  if (gaps.untestedTerms.length) {
+  if (gaps.untestedTerms.length && questions) {
     findings.push({
       id: 'untested-terms',
       severity: 'warning',
@@ -349,7 +355,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     });
   }
 
-  if (items.length > 0 && gaps.gradableRatio < 0.4) {
+  if (items.length > 0 && gaps.gradableRatio < 0.4 && questions) {
     findings.push({
       id: 'low-gradable',
       severity: 'warning',
@@ -411,7 +417,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     });
   }
 
-  if (quality.recallOnlySections.length) {
+  if (quality.recallOnlySections.length && make.includes('mcq')) {
     const n = quality.recallOnlySections.length;
     findings.push({
       id: 'recall-only-sections',
@@ -421,7 +427,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
   }
 
   /* ---- what a sitting would ask (docs/proposals/content-quality.md) ---- */
-  if (gaps.thinKeyTerms.length) {
+  if (gaps.thinKeyTerms.length && questions) {
     const n = gaps.thinKeyTerms.length;
     findings.push({
       id: 'thin-key-terms',

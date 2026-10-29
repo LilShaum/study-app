@@ -2,6 +2,7 @@
 // the prompt this app hands out can never drift from the format the app
 // actually parses. Editing it updates both at once.
 import { generatorSpec, hasStudies } from './generatorSpec';
+import { kindsOf, makeOnlyBlock, type MakeKind } from './makeKinds';
 import { teacherNotesBlock } from './teacherNotes';
 import type { Course } from '@/schema/course';
 import { allItems } from '@/schema/fragment';
@@ -22,7 +23,12 @@ import { freshIdPrefix } from './idPrefix';
  * `planMerge` defends against all of that anyway; telling the model up front
  * just means it produces less that has to be thrown away.
  */
-export function buildAddPrompt(course: Course, notes = course.metadata.student_notes, studies = hasStudies(course)): string {
+export function buildAddPrompt(
+  course: Course,
+  notes = course.metadata.student_notes,
+  studies = hasStudies(course),
+  kinds: readonly MakeKind[] = kindsOf(course),
+): string {
   const sections = sortedSections(course);
   const items = allItems(course.sections);
 
@@ -100,7 +106,7 @@ ${covered || '(none yet)'}
 
 ${generatorSpec(studies)}
 
-${teacherNotesBlock(notes)}════════ MY SOURCE MATERIAL ════════
+${makeOnlyBlock(kinds)}${teacherNotesBlock(notes)}════════ MY SOURCE MATERIAL ════════
 
 <<< ATTACH YOUR SLIDES / PDF / NOTES TO THIS MESSAGE (NOT ONLY AS PROJECT FILES), OR PASTE THEM BELOW THIS LINE >>>
 `;

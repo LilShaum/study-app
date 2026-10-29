@@ -10,6 +10,9 @@ import { toast } from '@/store/toast';
 import { Icon } from './Icon';
 import { TeacherNotesField } from './TeacherNotesField';
 import { StudiesField } from './StudiesField';
+import { MakeKindsField } from './MakeKindsField';
+import { More, PromptStep } from './PromptStep';
+import { ALL_KINDS, storedKinds, type MakeKind } from '@/lib/makeKinds';
 import { cutMessage, readReply } from '@/lib/readReply';
 
 const STORAGE_FULL =
@@ -51,6 +54,8 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   const [pasted, setPasted] = useState('');
   const [notes, setNotes] = useState('');
   const [studies, setStudies] = useState(false);
+  // Everything, unless the student unticks a kind (lib/makeKinds).
+  const [kinds, setKinds] = useState<MakeKind[]>(ALL_KINDS);
   const [copied, setCopied] = useState(false);
   const lectures = useCoursesStore((s) => s.courses);
   // In a class, the lecture added last is the likeliest one this deck follows.
@@ -77,7 +82,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   const course = result && 'course' in result ? result.course : null;
 
   const copyPrompt = async () => {
-    const prompt = buildNewCoursePrompt(notes, after ? lectures[after] : undefined, studies);
+    const prompt = buildNewCoursePrompt(notes, after ? lectures[after] : undefined, studies, kinds);
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
@@ -116,6 +121,8 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
         ...(classCode ? { course_code: classCode } : {}),
         // Written before the prompt was copied; kept for every later prompt.
         ...(notes.trim() ? { student_notes: notes.trim() } : {}),
+        // What it was made with, so Add material, More practice and Fix keep to it.
+        ...(storedKinds(kinds) ? { make: storedKinds(kinds) } : {}),
       },
     };
     const { result: id, ok } = persisted(() => addCourse(placed));
@@ -129,9 +136,14 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
     beginWriteCheck();
     const imported = await importCourse(file);
     const ok = writesLanded();
-    if (imported.ok && classCode) {
+    const make = storedKinds(kinds);
+    if (imported.ok && (classCode || make)) {
       const added = useCoursesStore.getState().courses[imported.id];
-      if (added) useCoursesStore.getState().updateCourse(imported.id, { ...added, metadata: { ...added.metadata, course_code: classCode } });
+      if (added)
+        useCoursesStore.getState().updateCourse(imported.id, {
+          ...added,
+          metadata: { ...added.metadata, ...(classCode ? { course_code: classCode } : {}), ...(make ? { make } : {}) },
+        });
     }
     if (imported.ok) openCourse(imported.id, imported.course.metadata.title, ok);
     else toast(imported.error, { type: 'error' });
@@ -163,77 +175,76 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
           </button>
         </div>
 
-        <div className="space-y-5 px-5 py-4">
-          <section>
-            <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-text-3">
-              Step 1: generate
-            </div>
-            <p className="mb-2 text-sm text-text-2">
-              Copy this prompt into an AI chat, attach your slides, PDF or notes to the same message,
-              and it will return a lecture. Attach them even if they are already in a project: a
-              project&apos;s files often reach the AI as text only, without the diagrams. The prompt is the full generator spec. It tells the model to inventory
-              every term, objective and formula in your notes first, so the result covers the
-              material rather than skimming it.
-            </p>
-            <div className="mb-3">
-              <TeacherNotesField value={notes} onChange={setNotes} />
-            </div>
-            <div className="mb-3">
+        <div className="space-y-6 px-5 py-4">
+          <PromptStep n={1} title="What to make">
+            <MakeKindsField value={kinds} onChange={setKinds} />
+            <p className="mt-1 text-xs text-text-3">Untick what you don&rsquo;t want. Fewer kinds is a shorter reply.</p>
+            <div className="mt-3">
               <StudiesField checked={studies} onChange={setStudies} />
             </div>
-            {Object.keys(lectures).length > 0 && (
-              <label className="mb-3 block">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-3">
-                  Follows on from (optional)
-                </span>
-                <span className="mb-1.5 block text-sm text-text-2">
-                  If this deck starts with slides from the end of another lecture, pick it. The AI is told what that
-                  lecture already covers, so the repeated slides aren&rsquo;t made into cards twice.
-                </span>
-                <select value={after} onChange={(e) => setAfter(e.target.value)} className="field w-full text-sm">
-                  <option value="">None</option>
-                  {Object.entries(lectures).map(([id, c]) => (
-                    <option key={id} value={id}>
-                      {c.metadata.title}
-                      {c.metadata.course_code ? ` · ${c.metadata.course_code}` : ''}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-            <button
-              type="button"
-              onClick={copyPrompt}
-              className="press"
-            >
-              <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
-              {copied ? 'Prompt copied' : 'Copy generator prompt'}
-            </button>
-          </section>
+            <More label="More options">
+              <div className="space-y-3">
+                <TeacherNotesField value={notes} onChange={setNotes} />
+                {Object.keys(lectures).length > 0 && (
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-3">
+                      Follows on from
+                    </span>
+                    <span className="mb-1.5 block text-sm text-text-2">
+                      If this starts with slides from the end of another lecture, pick it, so they aren&rsquo;t made twice.
+                    </span>
+                    <select value={after} onChange={(e) => setAfter(e.target.value)} className="field w-full text-sm">
+                      <option value="">None</option>
+                      {Object.entries(lectures).map(([id, c]) => (
+                        <option key={id} value={id}>
+                          {c.metadata.title}
+                          {c.metadata.course_code ? ` · ${c.metadata.course_code}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </div>
+            </More>
+          </PromptStep>
 
-          <section>
+          <PromptStep n={2} title="Copy the prompt">
+            <p className="mb-3 text-sm text-text-2">
+              Paste it into Claude or another AI, and attach your slides, notes or PDF to the same message.
+            </p>
+            <button type="button" onClick={copyPrompt} disabled={!kinds.length} className="press">
+              <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
+              {copied ? 'Prompt copied' : 'Copy the prompt'}
+            </button>
+            <More label="Why attach them to the message?">
+              <p>
+                Files kept only in a project often reach the AI as text, without their diagrams, and the lecture then
+                misses what the diagrams show. The prompt has the AI list every term and idea in your material first, so
+                the lecture covers all of it rather than skimming.
+              </p>
+            </More>
+          </PromptStep>
+
+          <PromptStep n={3} title="Paste the reply">
             <label className="block">
-              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-3">
-                Step 2: paste the lecture back
-              </span>
+              <span className="sr-only">The AI&rsquo;s reply</span>
               <textarea
                 value={pasted}
                 onChange={(e) => setPasted(e.target.value)}
-                rows={8}
+                rows={6}
                 spellCheck={false}
-                placeholder={'{\n  "schema_version": "1.0",\n  "metadata": { … },\n  "sections": [ … ]\n}'}
+                placeholder="Paste the AI’s whole reply here"
                 className="field w-full font-mono text-xs"
               />
             </label>
             <div className="mt-2 text-sm text-text-3">
               …or{' '}
               <label className="cursor-pointer text-accent hover:underline">
-                open a .study.json file
+                upload a file instead
                 <input type="file" accept=".json,.study.json" className="hidden" onChange={handleFile} />
-              </label>{' '}
-              if you saved it.
+              </label>
             </div>
-          </section>
+          </PromptStep>
 
           {result && 'error' in result && (
             <div
@@ -290,3 +301,4 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
     </div>
   );
 }
+

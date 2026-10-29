@@ -23,10 +23,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   beneficial to put you on ultra code mode and maybe if you could suggest
   when I should do so before starting a task"). Standing: flag it before a
   task that needs it.
-- **Choose which item types a lecture gets** (2026-10-29: "in the add
-  lecture part, there should be check boxes for the user to check off
-  whether they want certain types of items made or not, that way if they
-  just want flash cards for example they will just get flash cards").
 - **A flashcards-only mode like Anki** (2026-10-29: "a flash cards only
   section that works similarly to how anki works with its spaced repetition
   and how their cards are structured and also their feature where you say
@@ -37,10 +33,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   multiple choice shit and not software development classes or math
   centered classes … maybe u could think of a good new item type to address
   these"; made by default for any problem that needs working out).
-- **The prompt screens, new lecture first, made clear for a new user**
-  (2026-10-29: "all the prompt screens, namely the generate lecture, need
-  some love and attention. They have massive blocks of text and are
-  confusing and not intuitive for new users").
 - **Answers in a new place from the very first showing** (2026-10-26: "I'm
   doing multiple choice problems for the first time and they all had the
   answer A. Make sure the answers are shuffled whenever the question is
@@ -98,6 +90,18 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-29 Choose which item types a lecture gets (2026-10-29: "if they
+  just want flash cards for example they will just get flash cards"): What
+  to make, a box per kind on New lecture, Add material and More practice;
+  the prompt makes only those, the lecture keeps the choice for later
+  prompts, and the lecture check does not ask for a kind left out.
+  (lib/makeKinds, MakeKindsField)
+- 2026-10-29 The prompt screens made clear for a new user (2026-10-29:
+  "massive blocks of text … confusing and not intuitive"): New lecture is
+  three steps (what to make, copy the prompt, paste the reply), one line
+  each, options and reasons folded; Add to a lecture the same, one line per
+  tab. (PromptStep, More)
 
 - 2026-10-29 Learn's opening not about slides (2026-10-29: "that's biased
   to me who generates with slides"): "Read this part of your own material

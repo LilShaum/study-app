@@ -16,6 +16,7 @@ import { CourseTree } from '@/components/CourseTree';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
 import { TreeDialog } from '@/components/TreeDialog';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
+import { kindsOf } from '@/lib/makeKinds';
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
 import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
 import { CATCH_UP_HOURS, isDueFor, missedThisSitting } from '@/lib/memory';
@@ -455,7 +456,7 @@ export function CourseRoute() {
             <ToolButton onClick={() => setAdding('material')}>Add material</ToolButton>
             <ToolButton onClick={() => setAdding('practice')}>More practice</ToolButton>
             {/* For a lecture made before explanations existed. */}
-            {counts.explain === 0 && <ToolButton onClick={() => setAdding('explain')}>Add explanations</ToolButton>}
+            {counts.explain === 0 && kindsOf(course).includes('explain') && <ToolButton onClick={() => setAdding('explain')}>Add explanations</ToolButton>}
             <ToolButton onClick={() => setEditingDetails(true)}>Edit details</ToolButton>
             <ToolButton
               onClick={async () => {

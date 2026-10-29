@@ -27,7 +27,7 @@ describe('AddToCourseDialog, explanations', () => {
         },
       ],
     };
-    fireEvent.change(screen.getByRole('textbox', { name: /paste the JSON back/i }), { target: { value: JSON.stringify(reply) } });
+    fireEvent.change(screen.getByRole('textbox', { name: /reply/i }), { target: { value: JSON.stringify(reply) } });
     expect(screen.getByText('Left out 1 item that is not an explanation.')).toBeTruthy();
     // One item, the explanation: the question in the reply is not added.
     fireEvent.click(screen.getByRole('button', { name: 'Add 1 item' }));
@@ -38,7 +38,7 @@ describe('AddToCourseDialog, explanations', () => {
   it('says so when a reply has no explanations at all', () => {
     render(<AddToCourseDialog courseId="bio" course={course} initialMode="explain" onClose={() => {}} />);
     const reply = { sections: [{ id: 's1', items: [{ id: 'x', type: 'flashcard', front: 'F', back: 'B' }] }] };
-    fireEvent.change(screen.getByRole('textbox', { name: /paste the JSON back/i }), { target: { value: JSON.stringify(reply) } });
+    fireEvent.change(screen.getByRole('textbox', { name: /reply/i }), { target: { value: JSON.stringify(reply) } });
     expect(screen.getByText(/no explanations in it/)).toBeTruthy();
   });
 });

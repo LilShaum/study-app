@@ -191,6 +191,8 @@ export const CourseMetadataSchema = z.looseObject({
   subject: z.string().optional(),
   /** What the student's teacher said matters, sent with every prompt for this lecture (lib/teacherNotes). */
   student_notes: z.string().max(4000).optional().catch(undefined),
+  /** The kinds of item the student chose to have made (lib/makeKinds); every kind when absent. */
+  make: z.array(z.string()).max(20).optional().catch(undefined),
   description: z.string().optional(),
   tags: z.array(z.string()).optional(),
   total_items: z.number().optional(),

@@ -10,11 +10,8 @@ export function StudiesField({ checked, onChange }: { checked: boolean; onChange
     <label className="flex items-start gap-2 text-sm text-text-2">
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-1" />
       <span>
-        <span className="text-text">My exams ask about the studies on the slides</span>
-        <span className="block">
-          Each study is then taught in full: what it asked, how, what it found and what that shows. Left off, a study
-          is only evidence for its point, which saves a lot of the AI&rsquo;s usage.
-        </span>
+        <span className="text-text">My exams ask about the studies in my material</span>
+        <span className="block text-text-3">Each study is then taught in full, which uses much more of the AI&rsquo;s usage.</span>
       </span>
     </label>
   );

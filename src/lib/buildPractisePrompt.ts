@@ -5,6 +5,7 @@ import { analyseCourseGaps } from './courseGaps';
 import { ITEM_TYPES_SPEC, QUALITY_BAR_SPEC } from './generatorSpec';
 import { sectionDensity } from './sectionDensity';
 import { teacherNotesBlock } from './teacherNotes';
+import { kindsOf, makeOnlyBlock, type MakeKind } from './makeKinds';
 
 /** Keeps a very large course's prompt inside a sane clipboard paste. */
 const MAX_EXCERPTS_PER_SECTION = 40;
@@ -52,7 +53,7 @@ function promptOf(item: StudyItem): string {
  * the app knows which defined terms are never tested and which sections have
  * nothing scorable, and names them as priorities.
  */
-export function buildPractisePrompt(course: Course, notes = course.metadata.student_notes): string {
+export function buildPractisePrompt(course: Course, notes = course.metadata.student_notes, kinds: readonly MakeKind[] = kindsOf(course)): string {
   const sections = sortedSections(course);
   const gaps = analyseCourseGaps(course);
 
@@ -181,7 +182,7 @@ ${ITEM_TYPES_SPEC}
 
 ${QUALITY_BAR_SPEC}
 
-${teacherNotesBlock(notes)}════════ THE COURSE ════════
+${makeOnlyBlock(kinds)}${teacherNotesBlock(notes)}════════ THE COURSE ════════
 
 Title: ${course.metadata.title}${course.metadata.course_code ? `\nCourse code: ${course.metadata.course_code}` : ''}
 ${gaps.totalItems} items across ${sections.length} sections${

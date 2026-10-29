@@ -83,8 +83,10 @@ const SECTIONS: HelpSection[] = [
         </p>
         <ol className="mt-2 list-decimal space-y-1 pl-5">
           <li>
-            On the library page, tap <strong>New lecture</strong>. Tick <strong>My exams ask about the studies
-            on the slides</strong> only if they do: each study is then taught in full, which uses a lot more of the
+            On the library page, tap <strong>New lecture</strong>. Under <strong>What to make</strong>, untick any
+            kind of card you don&rsquo;t want; only flashcards, say, gets you only flashcards, and the lecture keeps
+            that choice for everything added later. Tick <strong>My exams ask about the studies in my
+            material</strong> only if they do: each study is then taught in full, which uses a lot more of the
             AI&rsquo;s usage.
           </li>
           <li>
