@@ -44,7 +44,11 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   docs/proposals/understanding.md: a "Not sure" mark before the pick, on
   multiple choice only; a sure miss gets its explanation and comes back
   sooner (confident errors return: Butler, Fazio & Marsh 2011), an unsure
-  right answer counts as Hard. Simulator first.
+  right answer counts as Hard. Simulator first. Simulated 2026-11-03: both
+  schedule rules cost more than they gave (sim/FINDINGS.md), so built as
+  feedback: Not sure beside Check answer opens the why and the passage on
+  a right answer, every miss gets its why, the test's "?" is its Not sure
+  with a Right, but marked ? list; sureness logged for the real log.
 - **Teach understanding, not memorising: use the explanations, and
   questions that test application, everywhere** (2026-11-03: "perhaps you
   could use the new like explanation things that are part of the new

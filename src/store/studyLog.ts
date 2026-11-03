@@ -39,7 +39,9 @@ export interface AnswerEvent {
    * it and every other card. Kept to test, on real answers, whether Hard
    * cards do fade sooner (sim/FINDINGS.md, 2026-11-03).
    */
-  grade?: 'hard';
+  grade?: 'hard' | 'firm';
+  /** A multiple-choice answer: whether it was given as sure (Not sure left untapped). Absent elsewhere. */
+  sure?: boolean;
 }
 
 export interface CourseLog {

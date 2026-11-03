@@ -291,7 +291,13 @@ why, how it follows from the one before, as a tutor would say it) is also
 the why behind each question that rests on it, wherever the question is
 asked (Learn, Today, Review, Practice, the practice test): open under the
 answer after a miss, folded as "Why ▸" after a right one, before the
-passage from the notes. A question rests on the explanation in its section
+passage from the notes. **Not sure**, beside Check answer and tapped
+before it, opens the why and the passage after a right answer too, as a
+miss does (feedback doubled what was kept of right answers given unsure:
+Butler, Karpicke & Roediger 2008). In the practice test a question still
+marked "?" when handed in is the unsure one, listed under Right, but
+marked ? with its why. Sureness is logged, never scheduled on: both rules
+tried cost more than they gave (sim/FINDINGS.md, 2026-11-03). A question rests on the explanation in its section
 most of its words are in, or failing that one quoting the same passage;
 with none, nothing shows (lib/learnSteps explanationFor; the owner,
 2026-11-03: "use the new like explanation things … to help the user learn

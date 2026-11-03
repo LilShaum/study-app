@@ -27,7 +27,7 @@ describe('McqCard', () => {
     render(<McqCard item={item()} onAnswered={onAnswered} />);
     answer('beta');
     // The index in the file, whatever order the options were shown in.
-    expect(onAnswered).toHaveBeenCalledWith(true, 1);
+    expect(onAnswered).toHaveBeenCalledWith(true, 1, true);
     expect(screen.getByText('✓ Correct')).toBeTruthy();
     expect(screen.getByLabelText(/, the answer$/).closest('button')!.textContent).toContain('beta');
   });
@@ -36,7 +36,7 @@ describe('McqCard', () => {
     const onAnswered = vi.fn();
     render(<McqCard item={item()} onAnswered={onAnswered} />);
     answer('gamma');
-    expect(onAnswered).toHaveBeenCalledWith(false, 2);
+    expect(onAnswered).toHaveBeenCalledWith(false, 2, true);
     // The answer is marked in the list, and the verdict names its letter.
     const right = screen.getByLabelText(/, the answer$/);
     expect(right.closest('button')!.textContent).toContain('beta');
@@ -56,6 +56,21 @@ describe('McqCard', () => {
     answer('beta');
     expect(screen.getByText(/Beta follows/).closest('details')!.open).toBe(false);
     expect(screen.getByText('Why ▸')).toBeTruthy();
+  });
+
+  it('says whether the answer was sure, and opens the feedback on a right answer marked Not sure', () => {
+    const onAnswered = vi.fn();
+    const idea = { title: 'Why beta', text: 'Beta follows from alpha being blocked.' };
+    render(<McqCard item={item()} onAnswered={onAnswered} idea={idea} />);
+    fireEvent.click(screen.getByText('beta'));
+    fireEvent.click(screen.getByRole('button', { name: 'Not sure' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Check answer' }));
+    expect(onAnswered).toHaveBeenCalledWith(true, 1, false);
+    expect(screen.getByText(/Beta follows/).closest('details')!.open).toBe(true);
+    cleanup();
+    render(<McqCard item={item()} onAnswered={onAnswered} />);
+    answer('beta');
+    expect(onAnswered).toHaveBeenLastCalledWith(true, 1, true);
   });
 
   it('lets you say you do not know: a miss, the answer shown, nothing picked', () => {

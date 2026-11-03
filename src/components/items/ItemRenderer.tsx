@@ -15,7 +15,7 @@ import type { ItemFrame } from './frame';
 interface ItemRendererProps {
   /** A file item, or one the app derives from it for a session (see RecallItem). */
   item: AnyItem;
-  onAnswered?: (correct: boolean, picked?: number) => void;
+  onAnswered?: (correct: boolean, picked?: number, sure?: boolean) => void;
   onNext?: () => void;
   /** Right; `grade` 'hard' when a flip card was called Hard. */
   onGot?: (grade?: Grade) => void;

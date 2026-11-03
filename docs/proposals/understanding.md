@@ -110,6 +110,19 @@ as a lapse that returns. The one-tap price is not in the simulator; it is
 weighed above. Built only if the simulator finds a gain and the
 over-cautious student loses little, as with graded flips.
 
+**Decided after the simulator (2026-11-03, sim/FINDINGS.md).** Counting
+an unsure right answer as Hard cost up to 3 points and gained nothing, so
+**Not sure changes what is shown, not when**. An unsure right answer gets
+its why and its passage open, as a miss does: feedback doubled the
+retention of right answers given unsure (Butler, Karpicke & Roediger 2008,
+[10.1037/0278-7393.34.4.918](https://doi.org/10.1037/0278-7393.34.4.918)).
+A sure miss was to go back to the floor; across the whole suite that cost
+a point in 16 of 42 scenarios, every unmarked miss counting as sure, so it
+is dropped. Sure or unsure is logged with each answer, for the real log to
+test. In the practice test, the "?" a question
+still carries when it is handed in is its Not sure, as on paper: no third
+mark per question.
+
 ## 3. Explanations, used where they teach
 
 Ways to use them, each with its case:

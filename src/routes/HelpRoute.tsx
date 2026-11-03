@@ -198,7 +198,10 @@ const SECTIONS: HelpSection[] = [
         </p>
         <p className="mt-2">
           After a multiple-choice answer, <strong>Why</strong> is the idea the question rests on, from the
-          lecture&rsquo;s explanations: open when you got it wrong, a tap away when you got it right.
+          lecture&rsquo;s explanations: open when you got it wrong, a tap away when you got it right. Not
+          sure of your pick? Tap <strong>Not sure</strong> before Check answer: if it was right, the why
+          and the passage open anyway, so a lucky guess still teaches. In a practice test, a question
+          you leave marked ? counts as not sure.
         </p>
         <p className="mt-2">
           Don&rsquo;t know it? Tap <strong>I don&rsquo;t know</strong> rather than guess: you see the answer and the passage

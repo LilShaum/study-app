@@ -572,6 +572,22 @@ describe('session store: a class practised with its lectures mixed', () => {
     expect(useStudyLogStore.getState().byCourse.A?.answers.at(-1)?.grade).toBeUndefined();
   });
 
+  it('logs whether a multiple-choice answer was sure, and schedules a miss the same either way', async () => {
+    const { useStudyLogStore } = await import('./studyLog');
+    await start();
+    const mature = { got: 3, missed: 0, lastSeen: Date.now() - 86_400_000, stability: 20 };
+    useProgressStore.setState({ byCourse: { A: { a2: { ...mature }, a3: { ...mature } } } });
+    goTo('A', 'a2');
+    s().record(false, undefined, true);
+    expect(useProgressStore.getState().byCourse.A?.a2?.stability).toBe(10);
+    expect(useStudyLogStore.getState().byCourse.A?.answers.at(-1)).toMatchObject({ sure: true });
+    goTo('A', 'a3');
+    s().record(false, undefined, false);
+    expect(useProgressStore.getState().byCourse.A?.a3?.stability).toBe(10);
+    expect(useStudyLogStore.getState().byCourse.A?.answers.at(-1)).toMatchObject({ sure: false });
+    expect(useStudyLogStore.getState().byCourse.A?.answers.at(-1)?.grade).toBeUndefined();
+  });
+
   it("records each answer, and the card's time, in the card's own lecture", async () => {
     const { useStudyLogStore } = await import('./studyLog');
     let now = 1_000_000;

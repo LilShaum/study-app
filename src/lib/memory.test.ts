@@ -50,8 +50,10 @@ describe('nextStability', () => {
     expect(nextStability(before, true, at, 'good')).toBe(good);
     expect(nextStability(null, true, T0, 'hard')).toBe(1);
     expect(nextStability(null, true, T0)).toBe(2);
-    // A miss is a miss whatever grade is passed.
+    // A miss is a miss whatever grade is passed, but a sure one goes to the floor.
     expect(nextStability(before, false, at, 'hard')).toBe(nextStability(before, false, at));
+    expect(nextStability({ stability: 20, lastSeen: T0 }, false, at, 'firm')).toBe(1);
+    expect(nextStability({ stability: 20, lastSeen: T0 }, false, at)).toBe(10);
   });
 
   it('grows more when more had been forgotten', () => {

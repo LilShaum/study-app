@@ -294,7 +294,13 @@ function TestRun({ storageKey, pool, header, back, practiceTo }: { storageKey: s
           const ticks = marks[i];
           const when = answeredAt[i] ?? (answered[i] ? lastAnswer : 0);
           const seen = studied[i];
-          return answered[i] && seen < when ? [{ courseId: q.courseId, item: q.item, got: answeredRight(q.item, chose ?? '', ticks) }] : [];
+          if (!(answered[i] && seen < when)) return [];
+          const got = answeredRight(q.item, chose ?? '', ticks);
+          // A question still marked "?" when handed in was not sure, as on
+          // paper; any other answered multiple choice was. Logged, not
+          // scheduled on (docs/proposals/understanding.md).
+          const sure = q.item.type === 'mcq' && chose !== DONT_KNOW ? !flagged[i] : undefined;
+          return [{ courseId: q.courseId, item: q.item, got, sure }];
         }),
       );
       // On a test now, newer study or not: the next test asks the others first.
@@ -365,6 +371,7 @@ function TestRun({ storageKey, pool, header, back, practiceTo }: { storageKey: s
         test={test}
         answers={answers}
         marks={marks}
+        flagged={flagged}
         onRetakeMissed={(missed) => start(drawTest(missed))}
         onNew={() => setTest(null)}
       />
@@ -1172,6 +1179,7 @@ function Results({
   test,
   answers,
   marks,
+  flagged,
   onRetakeMissed,
   onNew,
 }: {
@@ -1179,6 +1187,8 @@ function Results({
   test: TestQuestion[];
   answers: TestAnswer[];
   marks: (boolean[] | null)[];
+  /** Still marked "?" when handed in: not sure. */
+  flagged: boolean[];
   onRetakeMissed: (missed: TestQuestion[]) => void;
   onNew: () => void;
 }) {
@@ -1189,6 +1199,7 @@ function Results({
     const ex = section ? explanationFor(q.item as SessionItem, section.items as SessionItem[]) : null;
     return ex ? { title: ex.title, text: ex.text } : null;
   };
+  const unsureRight = test.filter((q, n) => q.item.type === 'mcq' && flagged[n] && answers[n] === q.item.correct_index);
   const result = useMemo(() => scoreTest(test, answers, marks), [test, answers, marks]);
   const pct = result.total ? Math.round((result.got / result.total) * 100) : 0;
   const lectures = new Set(test.map((q) => q.courseId)).size;
@@ -1323,6 +1334,35 @@ function Results({
                 </li>
               );
             })}
+          </ol>
+        </section>
+      )}
+
+      {unsureRight.length > 0 && (
+        <section className="mt-8">
+          <h2 className="mark mb-1 text-text-3">Right, but marked ?</h2>
+          {/* Feedback on a right answer given unsure doubled what was kept of
+              it (Butler, Karpicke & Roediger 2008): the why, as for a miss. */}
+          <p className="mb-2 text-small text-text-3">You were not sure of these. Here is why each is right.</p>
+          <ol className="border-t border-border">
+            {unsureRight.map((q) => (
+              <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
+                <div className="text-xs text-text-3">{q.section}</div>
+                <div className="prose-set mt-1 text-body text-text">
+                  <RichText text={q.item.type === 'mcq' ? q.item.question : ''} />
+                </div>
+                {q.item.type === 'mcq' && (
+                  <div className="mt-2 text-small text-success">✓ {q.item.options[q.item.correct_index]}</div>
+                )}
+                {q.item.type === 'mcq' && q.item.explanation && (
+                  <div className="mt-1 text-small text-text-2">
+                    <RichText text={q.item.explanation} />
+                  </div>
+                )}
+                <IdeaNote idea={ideaOf(q)} open />
+                <SourceNote excerpt={q.item.source_excerpt} open />
+              </li>
+            ))}
           </ol>
         </section>
       )}

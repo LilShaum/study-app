@@ -12,7 +12,8 @@ import { RichText } from './RichText';
 interface McqCardProps {
   item: McqItem;
   /** `picked`: the chosen option's index in the lecture file, whatever order it was shown in. */
-  onAnswered?: (correct: boolean, picked?: number) => void;
+  /** `sure`: false when Not sure was tapped before checking; absent for I don't know. */
+  onAnswered?: (correct: boolean, picked?: number, sure?: boolean) => void;
   /** Shows an inline "Next →" link after the answer is revealed. */
   onNext?: () => void;
   /** Only true for the single card in a study session, never in Browse. */
@@ -33,6 +34,12 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
   const [revealed, setRevealed] = useState(false);
   /** Said "I don't know" rather than guess: shown the answer, counted as a miss. */
   const [dontKnow, setDontKnow] = useState(false);
+  /**
+   * Not sure, tapped before checking (docs/proposals/understanding.md). A
+   * right answer given unsure gets its feedback open, as a miss does: it
+   * doubled what was kept of such answers (Butler, Karpicke & Roediger 2008).
+   */
+  const [unsure, setUnsure] = useState(false);
   const options = item.options ?? [];
 
   /**
@@ -72,7 +79,7 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
   const check = () => {
     if (selected < 0 || revealed) return;
     setRevealed(true);
-    if (!keyBroken) onAnswered?.(selected === item.correct_index, order[selected] ?? selected);
+    if (!keyBroken) onAnswered?.(selected === item.correct_index, order[selected] ?? selected, !unsure);
   };
 
   // Rather than guess (the owner, 2026-10-26): the answer, every option's
@@ -200,6 +207,14 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
           </button>
           <button
             type="button"
+            aria-pressed={unsure}
+            onClick={() => setUnsure((u) => !u)}
+            className={`tap-safe text-small underline-offset-4 hover:underline ${unsure ? 'text-accent underline decoration-accent decoration-2' : 'text-text-3 hover:text-text'}`}
+          >
+            Not sure
+          </button>
+          <button
+            type="button"
             onClick={giveUp}
             className="tap-safe text-small text-text-3 underline-offset-4 hover:text-text hover:underline"
           >
@@ -236,8 +251,8 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
         </div>
       )}
       {/* After a miss the why is open, then the passage: the lesson again, not only the right option. */}
-      {revealed && !keyBroken && <IdeaNote idea={idea} open={!correct} />}
-      {revealed && <SourceNote excerpt={item.source_excerpt} open={(learning || !correct) && !keyBroken} />}
+      {revealed && !keyBroken && <IdeaNote idea={idea} open={!correct || unsure} />}
+      {revealed && <SourceNote excerpt={item.source_excerpt} open={(learning || !correct || unsure) && !keyBroken} />}
     </div>
   );
 }

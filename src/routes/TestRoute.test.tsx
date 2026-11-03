@@ -96,6 +96,21 @@ describe('practice test: a rehearsal, answers at the end', () => {
     expect(screen.getByText(/^Question 1 of 3/)).toBeTruthy();
   });
 
+  it('lists a right answer still marked ? with its why, as not sure', () => {
+    open();
+    fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
+    const radios = () => screen.getAllByRole('radio');
+    for (let n = 0; n < 3; n++) {
+      fireEvent.click(radios().find((b) => /right/.test(b.textContent ?? ''))!);
+      if (n === 0) fireEvent.click(screen.getByRole('button', { name: 'Mark to come back to' }));
+      fireEvent.click(screen.getByRole('button', { name: n < 2 ? 'Next' : 'See my score' }));
+    }
+    // Marked: looked over first, then handed in.
+    fireEvent.click(screen.getByRole('button', { name: 'End and see my score' }));
+    expect(screen.getByText('3 of 3')).toBeTruthy();
+    expect(screen.getByText('Right, but marked ?')).toBeTruthy();
+  });
+
   it('points to Practice for marking as you go', () => {
     open();
     expect(screen.getByRole('link', { name: 'That is Practice' }).getAttribute('href')).toBe('/study/c/practice');

@@ -110,15 +110,15 @@ export function isDue(r: ItemResult | undefined, at: number): boolean {
  * student who grades well nothing and cost one who grades kindly, so no
  * card offers it (sim/FINDINGS.md, 2026-11-03).
  */
-export type Grade = 'hard' | 'good' | 'easy';
+export type Grade = 'hard' | 'good' | 'easy' | 'firm';
 /**
  * What each grade does to the growth of a right answer, and to a first
  * right answer's stability. The shape of FSRS's hard penalty and easy bonus,
  * milder than its defaults (a first Easy there is five times a Good): there
  * is no fit to this app's students yet. Modelling choices, like the rest.
  */
-const GRADE_GROWTH: Record<Grade, number> = { hard: 0.5, good: 1, easy: 2 };
-const GRADE_FIRST: Record<Grade, number> = { hard: FLOOR_DAYS, good: FIRST_RIGHT_DAYS, easy: 2 * FIRST_RIGHT_DAYS };
+const GRADE_GROWTH: Record<Grade, number> = { hard: 0.5, good: 1, easy: 2, firm: 1 };
+const GRADE_FIRST: Record<Grade, number> = { hard: FLOOR_DAYS, good: FIRST_RIGHT_DAYS, easy: 2 * FIRST_RIGHT_DAYS, firm: FIRST_RIGHT_DAYS };
 
 /**
  * Stability after answering, from the stability before and when it was last
@@ -132,7 +132,10 @@ export function nextStability(
   grade: Grade = 'good',
 ): number {
   if (!before) return got ? GRADE_FIRST[grade] : FLOOR_DAYS;
-  if (!got) return clamp(before.stability * LAPSE_KEEPS);
+  // 'firm': a miss answered as sure, back to the floor rather than halved.
+  // Simulator only: across the suite it cost a point, every default miss
+  // counting as sure (sim/FINDINGS.md, 2026-11-03).
+  if (!got) return grade === 'firm' ? FLOOR_DAYS : clamp(before.stability * LAPSE_KEEPS);
   const days = Math.max(0, (at - before.lastSeen) / DAY_MS);
   const R = Math.exp(-days / (before.stability * personalScale));
   return clamp(before.stability * (1 + GROWTH * GRADE_GROWTH[grade] * (1 - R)));

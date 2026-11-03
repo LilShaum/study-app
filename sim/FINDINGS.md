@@ -10,6 +10,56 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-11-03 · Saying how sure: it should change what is shown, not when
+
+The owner asked for confidence on multiple choice, a confident wrong
+answer to come back sooner (docs/proposals/understanding.md). Two schedule
+rules were tried: an unsure right answer counted as Hard (a likely guess),
+and a sure miss sent to the floor (back the next day) instead of halved.
+
+**The student** (`SIM_CONFIDENCE`, `answerMcq` in engine.ts): each answer
+is knowing it or guessing among four, at the same overall chance as
+before. Calibrated marks a guess Not sure (10% slips); cautious also marks
+40% of what it knew; never never marks, so sure is its every answer.
+`SIM_CONFIDENCE_DOES` picks the rule. **Assumption changed, for this
+experiment only**: a lucky guess is not a retrieval; the truth treats it
+as an answer shown after a miss. Before that change a guess grew true
+memory as a recall would, and flattered every schedule (the control fell
+from 47% to 41% on steady-30 once guesses were honest).
+
+**Result** (5 seeds, exam score, honest guesses):
+
+| | control | calibrated, both | cautious, both | never marks, both | unsure-right as Hard | sure miss to floor |
+|---|---|---|---|---|---|---|
+| steady-30 | 41% | 40% | 40% | 41% | 41% | 41% |
+| busy-20 | 21% | 22% | 20% | 21% | 20% | 22% |
+| crammer | 60% | 58% | 57% | 60% | 58% | 59% |
+| steady-30-harsh | 15% | 15% | 16% | 15% | 15% | 16% |
+| crammer-harsh | 29% | 28% | 28% | 29% | 27% | 29% |
+| steady-30-slow | 68% | 68% | 67% | 68% | 68% | 68% |
+
+**Reading.** Counting a guess as Hard brings it back sooner and the time
+comes out of new material: up to 3 points lost, nothing gained. The floor
+for a sure miss is level everywhere, even for the student who never marks
+and so has every miss counted sure. This student has no beliefs, so it
+cannot show what the evidence does: confident errors are corrected more
+but return more after a week (Butler, Fazio & Marsh 2011), and feedback
+doubles the retention of right answers given unsure (Butler, Karpicke &
+Roediger 2008).
+
+**Then the whole suite** (3 seeds, every multiple-choice miss sure by
+default, as the app would send it): 16 of 42 scenarios fell 1 or 2
+points, 22 level, 4 rose; the extra reviews came out of new material. The
+six-scenario run was too small to show it. The evidence is about
+genuinely confident errors, and a default cannot tell those from a miss
+nobody marked.
+
+**Decision.** Not sure changes what is shown, not when: an unsure right
+answer gets its why and its passage open, as a miss does. No schedule
+rule: the floor is dropped too. Sure or unsure is logged with every
+multiple-choice answer, so a real log can test whether sure misses return
+more. The suite is level with the baseline (42 =); no re-baseline.
+
 ## 2026-11-03 · Graded flips: Hard helps, Easy does not
 
 The plan (docs/proposals/practice.md, section 5) was Anki's four buttons on

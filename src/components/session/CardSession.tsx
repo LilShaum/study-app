@@ -1003,8 +1003,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           item={current}
           courseId={lectureOf(current, courseId)}
           frame="sheet"
-          onAnswered={(got, picked) => {
-            record(got);
+          onAnswered={(got, picked, sure) => {
+            record(got, undefined, sure);
             // A wrong pick that is another term of the lecture is a mix-up,
             // kept so Review asks that term beside this question (lib/mixUps).
             if (got || picked == null || current.type !== 'mcq') return;

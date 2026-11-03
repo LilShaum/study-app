@@ -380,6 +380,29 @@ export function simulate(sc: Scenario, seed: number): RunResult {
     return { said: true, grade: buttons === 4 && felt > 0.9 ? 'easy' : 'good' };
   };
   let flashReviews = 0;
+  /**
+   * Saying how sure, on multiple choice (SIM_CONFIDENCE, docs/proposals/
+   * understanding.md). The answer is split into knowing it (at the chance
+   * that gives p overall) or guessing among four. 'calibrated' marks a guess
+   * Not sure, with 10% slips; 'cautious' also marks 40% of what it knew;
+   * 'never' never marks. SIM_CONFIDENCE_DOES: 'guess' (an unsure right
+   * answer counts as Hard), 'firm' (a sure miss goes to the floor), 'both'.
+   * 'none' as the student draws the same numbers and changes nothing.
+   */
+  const confidence = process.env.SIM_CONFIDENCE ?? '';
+  const does = process.env.SIM_CONFIDENCE_DOES ?? 'both';
+  const answerMcq = (p: number): { got: boolean; knew: boolean; said: boolean; grade?: Grade } => {
+    const knowsP = Math.max(0, (p - MCQ_GUESS) / (1 - MCQ_GUESS));
+    const knows = r() < knowsP;
+    const lucky = r() < MCQ_GUESS;
+    const slip = r();
+    const got = knows || lucky;
+    if (confidence === 'none') return { got, knew: knows, said: got };
+    const unsure = confidence === 'never' ? false : confidence === 'cautious' ? !knows || slip < 0.4 : knows ? slip < 0.1 : slip >= 0.1;
+    if (got && unsure && (does === 'guess' || does === 'both')) return { got, knew: knows, said: true, grade: 'hard' };
+    if (!got && !unsure && (does === 'firm' || does === 'both')) return { got, knew: knows, said: false, grade: 'firm' };
+    return { got, knew: knows, said: got };
+  };
   const truth = new Map<string, Truth>();
   const primed = new Map<string, number>();
   const recallAt = (id: string, t: number) => {
@@ -458,8 +481,9 @@ export function simulate(sc: Scenario, seed: number): RunResult {
         // Reading a flashcard never makes it harder than meeting it cold.
         if (item.type === 'flashcard') p = Math.max(p, FIRST_TIME.flashcard);
       } else p = item.type === 'mcq' ? FIRST_TIME.mcq : FIRST_TIME.flashcard;
-      const got = r() < p;
-      const { said, grade } = pressed(item, got, R ?? p);
+      const mcq = confidence && item.type === 'mcq' ? answerMcq(p) : null;
+      const got = mcq ? mcq.got : r() < p;
+      const { said, grade } = mcq ?? pressed(item, got, R ?? p);
       const e = easeOf(item.id);
       const T = truth.get(item.id);
       // A review is a review whichever door it came through: Today's sitting
@@ -487,16 +511,21 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       // memory of a few hours. Counted as equal to reading, no bonus.
       // SIM_OLD_FIRST_MISS restores the rule before 2026-10-12.
       const fromFirstMiss = !!T?.firstMiss && !process.env.SIM_OLD_FIRST_MISS;
+      // In the confidence experiment a lucky guess is not a retrieval: the
+      // answer was shown, as after a miss (sim/FINDINGS.md, 2026-11-03).
+      const retrieved = mcq ? mcq.knew : got;
       truth.set(item.id, {
-        s: got ? (T && !fromFirstMiss ? memory.grow(T.s, R ?? 0, e) : memory.first(e)) : memory.lapse(T?.s ?? null, e),
+        s: retrieved ? (T && !fromFirstMiss ? memory.grow(T.s, R ?? 0, e) : memory.first(e)) : memory.lapse(T?.s ?? null, e),
         last: now,
-        lapsed: !got,
+        lapsed: !retrieved,
         // A first right answer starts the count; a right review adds to it.
-        successes: got ? (T && !T.lapsed ? T.successes + 1 : 0) : 0,
-        firstMiss: !got && (T == null || !!T.firstMiss),
+        successes: retrieved ? (T && !T.lapsed ? T.successes + 1 : 0) : 0,
+        firstMiss: !retrieved && (T == null || !!T.firstMiss),
       });
       if (item.type === 'flashcard' && reviewing(item, mode) && T) flashReviews++;
-      store().record(said, grade);
+      // As the app: a multiple-choice answer is sure unless Not sure was
+      // tapped, and this student never taps it outside SIM_CONFIDENCE.
+      store().record(said, grade, item.type === 'mcq' && !mcq ? true : undefined);
     };
 
     const run = (mode: 'review' | 'learn' | 'today', capMs: number, sectionId?: string, resumeId?: string, items?: SessionItem[]) => {
