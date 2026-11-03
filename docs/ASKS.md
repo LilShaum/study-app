@@ -40,7 +40,11 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   happens. like something you are confidently wrong about gets retested
   or worked on sooner. maybe there would be a special in depth
   explanation"). To plan first (CLAUDE.md method); changes the memory
-  model, so the simulator first.
+  model, so the simulator first. Planned 2026-11-03 in
+  docs/proposals/understanding.md: a "Not sure" mark before the pick, on
+  multiple choice only; a sure miss gets its explanation and comes back
+  sooner (confident errors return: Butler, Fazio & Marsh 2011), an unsure
+  right answer counts as Hard. Simulator first.
 - **Teach understanding, not memorising: use the explanations, and
   questions that test application, everywhere** (2026-11-03: "perhaps you
   could use the new like explanation things that are part of the new
@@ -61,6 +65,11 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   everything but one little detail right in an answer … use it as a guide
   or inspiration to help make the app better at actually teaching").
   Standing direction as well as work: to plan first, with the ask above.
+  Planned 2026-11-03 (docs/proposals/understanding.md): the explanations
+  after a miss, in the test's review and folded behind a "Why?"; the
+  generator to name two more kinds of question (two ideas integrated,
+  right but for one detail); the lecture check to see a lecture of
+  recall only.
 - **A UI/UX and design-language audit, soon** (2026-11-03: "pretty soon we
   will need a big ui/ux audit and like design language audit because we
   haven't worked on that stuff in a long time … the main use of the app …
