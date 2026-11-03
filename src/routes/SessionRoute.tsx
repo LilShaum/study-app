@@ -5,6 +5,7 @@ import { useSessionStore } from '@/store/session';
 import { STUDY_MODES, type CardKind, type StudyMode } from '@/lib/buildSessionItems';
 import { BrowseSession } from '@/components/session/BrowseSession';
 import { CardSession } from '@/components/session/CardSession';
+import { decodeChoice } from '@/lib/practiceChoice';
 
 const KINDS: readonly CardKind[] = ['questions', 'flashcards', 'terms', 'problems'];
 
@@ -42,13 +43,16 @@ export function SessionRoute() {
   const kind = KINDS.find((k) => k === rawKind);
   // "?study=all|<key>": the Practice page's studies choice (lib/studies.ts).
   const study = search.get('study') || null;
+  // "?p=…": a Practice sitting as the student built it (lib/practiceChoice).
+  const rawPractice = search.get('p');
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
   // Handed to the session store before CardSession's effect starts the
   // session (layout effects run first), which reads it when it builds the list.
   useLayoutEffect(() => {
     useSessionStore.getState().setPendingKind(kind ?? null);
     useSessionStore.getState().setPendingStudy(study);
-  }, [kind, study]);
+    useSessionStore.getState().setPendingPractice(mode === 'practice' ? decodeChoice(rawPractice) : null);
+  }, [kind, study, mode, rawPractice]);
 
   if (!id || !isStudyMode(mode)) return <Navigate to="/" replace />;
 
@@ -72,7 +76,7 @@ export function SessionRoute() {
   ) : (
     // Keyed by kind, study and mixing, so a link that changes only those starts the session again.
     <CardSession
-      key={`${kind ?? 'all'}|${study ?? ''}|${mixed ? 'mix' : ''}`}
+      key={`${kind ?? 'all'}|${study ?? ''}|${mixed ? 'mix' : ''}|${rawPractice ?? ''}`}
       courseId={id}
       course={course}
       mode={mode}

@@ -135,13 +135,31 @@ export function ClassRoute() {
             )}
           </li>
         </ul>
-        {/* Today is the plan; Practice is choosing yourself, across the class. */}
-        <p className="mt-3 text-small text-text-2">
-          <Link to={`/class/${encodeURIComponent(code)}/practice`} className="text-accent underline-offset-4 hover:underline">
-            Practice
-          </Link>{' '}
-          the whole class your own way: any cards, any kind, one lecture or every study.
-        </p>
+        {/* Today is the plan; Practice is choosing yourself, the test is the
+            rehearsal. Each its own row with what it is for: Practice was a
+            link inside a sentence, and the owner called it hidden
+            (2026-11-03). */}
+        <ul>
+          {[
+            {
+              to: `/class/${encodeURIComponent(code)}/practice`,
+              label: 'Practice',
+              use: 'Study what you choose across the class: tick the kinds, the cards and the sections, each answer marked as you go.',
+            },
+            {
+              to: `/class/${encodeURIComponent(code)}/test`,
+              label: 'Practice test',
+              use: 'A rehearsal for the exam, over the whole class or one exam: answers held to the end, then your score.',
+            },
+          ].map((m) => (
+            <li key={m.label} className="border-b border-border pb-3">
+              <Link to={m.to} className="group tap-safe flex items-baseline gap-3 pt-3">
+                <span className="font-display text-body text-text group-hover:text-accent">{m.label}</span>
+              </Link>
+              <span className="mt-0.5 block text-small text-text-3">{m.use}</span>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="mt-8">

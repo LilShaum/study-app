@@ -673,3 +673,60 @@ describe('buildSessionItems — problems', () => {
     expect(due.map((i) => i.id).sort()).toEqual(['p1', 'p2']);
   });
 });
+
+describe('buildSessionItems — a Practice sitting built by ticks', () => {
+  const c = {
+    schema_version: '1.0',
+    metadata: { title: 'P' },
+    sections: [
+      {
+        id: 's1',
+        title: 'One',
+        items: [
+          { id: 'q1', type: 'mcq', question: 'q1?', options: ['a', 'b'], correct_index: 0 },
+          { id: 'q2', type: 'mcq', question: 'q2?', options: ['a', 'b'], correct_index: 0 },
+          { id: 'f1', type: 'flashcard', front: 'f', back: 'b' },
+          { id: 'w1', type: 'flashcard', front: 'w', back: '(1) One. (2) Two.' },
+          { id: 'd1', type: 'definition', term: 'Osmosis', definition: 'water crossing a membrane' },
+        ],
+      },
+      { id: 's2', title: 'Two', items: [{ id: 'p1', type: 'problem', question: '2 + 2?', answer: 4, steps: ['Add.'] }] },
+    ],
+  } as unknown as Course;
+  const DAY = 86_400_000;
+  const now = 50 * DAY;
+  const progress = {
+    q1: { got: 1, missed: 0, lastSeen: now - 30 * DAY, stability: 2 }, // due
+    q2: { got: 1, missed: 0, lastSeen: now - DAY, stability: 30 }, // strong
+    f1: { got: 0, missed: 1, lastSeen: now - DAY / 24, stability: 1, lastGot: false }, // a mistake, not yet due
+  };
+  const all = new Set(['questions', 'flashcards', 'written', 'terms', 'problems'] as const);
+  const build = (practice: Partial<NonNullable<Parameters<typeof buildSessionItems>[2]>['practice']>, missed = new Set(['f1'])) =>
+    buildSessionItems(c, 'practice', {
+      progress,
+      now,
+      missedIds: missed,
+      practice: { kinds: all, which: new Set(['due', 'missed', 'new', 'strong'] as const), order: 'inorder', ...practice },
+    }).map((i) => i.id);
+
+  it('keeps each kind it is given, a written answer apart from flashcards, a term asked typed', () => {
+    expect(build({})).toEqual(['q1', 'q2', 'f1', 'w1', 'd1~recall', 'p1']);
+    expect(build({ kinds: new Set(['written', 'terms']) })).toEqual(['w1', 'd1~recall']);
+  });
+
+  it('keeps the cards ticked by how they are known, any of them', () => {
+    expect(build({ which: new Set(['due']) })).toEqual(['q1']);
+    expect(build({ which: new Set(['missed', 'strong']) })).toEqual(['q2', 'f1']);
+    expect(build({ which: new Set(['new']) })).toEqual(['w1', 'd1~recall', 'p1']);
+  });
+
+  it('keeps only the sections ticked', () => {
+    expect(build({ sectionIds: new Set(['s2']) })).toEqual(['p1']);
+  });
+
+  it('weakest first puts the most faded first; mixed holds the same cards', () => {
+    const weakest = build({ order: 'weakest', which: new Set(['due', 'strong']) });
+    expect(weakest).toEqual(['q1', 'q2']);
+    expect(build({ order: 'mixed' }).sort()).toEqual(build({}).sort());
+  });
+});

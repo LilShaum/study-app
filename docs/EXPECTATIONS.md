@@ -332,55 +332,43 @@ unless Continue is pressed (store/resume resumesOnOpen).
 
 ### Practice
 
-**Goal.** Drill outside the plan: before a quiz, or on a section that feels
-shaky.
+**Goal.** Study what you choose, the way you choose, outside the plan:
+before a quiz, a part that feels shaky, only problems, only flashcards on a
+bus. Each answer is marked as it is given (docs/proposals/practice.md).
 
-**How it works.** One page: which cards (due now, weakest first,
-mistakes, everything) × which kind (questions, flashcards, typed terms,
-problems; a kind the lecture or class has none of is left out of the row) ×
-which part of the lecture: a section, or its studies (every card about an
-empirical study, or one study; `lib/studies.ts`). A class page has the same
-Practice across all its lectures, where the part is a lecture or a study.
-Over several lectures, Lectures chooses how: One at a time runs them in
-turn, each end offering the next; Mixed together puts them in one sitting,
-each lecture's cards in its own order spread through it
-(`lib/mixLectures.ts`), for telling apart ideas from different lectures.
-Mixed together is the default in the last week before one of the class's
-exams (the owner, 2026-10-19; `lecturesFor`, `examSoon`), and the line
-under Start says so ("Mixed because Midterm 2 is in 3 days"); One at a
-time otherwise, since the evidence favours mixing for alike material and
-not for unrelated material or words (`docs/evidence.md`). The simulator,
-whose student cannot confuse two ideas, finds mixing level over a finished
-sitting and reaching every lecture in a short one (`sim/FINDINGS.md`,
-2026-10-18). A pick holds in the situation it was made in: one made weeks
-before does not keep exam week one at a time, and one made in exam week
-does not outlast the exam.
-On the lecture page, Today, Learn and Practice each carry one line on what
-they are for, and under Practice, and under a section page's Practice this
-section, are direct links: Multiple choice, Flashcards, Terms, Problems
-(every card of that kind in the lecture or section, started at once; the
-problems as a problem set, in the lecture's order) and Practice test
-(the owner looked for "just flashcards" and "just multiple choice" for
-weeks; they were a Kind choice inside this page). Multiple choice chosen as
-the kind is always asked with its options; elsewhere a question answered
-right before comes back typed.
-Under the Cards row, a line says what the picked choice is for (`CARDS`
-use): each has one use the others lack. Due now is Today's review alone;
-Weakest first is every card, least known first, for extra time; Everything
-is every card shuffled, studied or not, for a student who reads the slides
-and then answers (a first miss counts like reading, sim/FINDINGS.md
-2026-10-12).
+**How it works.** One page for a lecture and one for a class, each a row
+on its page under Today (on the class page it was a link inside a
+sentence; the owner, 2026-11-03: "having it hidden is bad").
+
+- **Ready-made** sittings on top, one tap each, with their counts: Due
+  now (weakest first), Mistakes, Flashcards (due, mistakes and new), and
+  Problems when there are any.
+- **Choose it yourself**: ticks for the kinds (multiple choice, flashcards,
+  written answers, terms, problems; written answers apart from flashcards
+  and unticked by default), ticks for which cards (due now, mistakes,
+  new, already strong: any of them), ticks for the sections, and for a
+  class each lecture with its sections, behind one line ("3 of 12
+  sections"). Studies, when there are any: every card, every study's, or
+  one study's. Each tick shows how many cards it holds.
+- **Order**, one of: Mixed (shuffled, cards on one fact kept apart),
+  In order (as taught; a class's lectures one after another, each end
+  offering the next), Weakest first. A class mixes its lectures by default
+  in the last week before one of its exams and says why ("Mixed because
+  Midterm 2 is in 3 days"); a pick holds in the situation it was made in.
+- **Start** is pinned to the bottom with the number of cards the ticks
+  give, so every tick shows its effect.
+
+Under a lecture's and a section's Practice row are one-tap links per kind
+(Multiple choice, Flashcards, Written answers, Terms, Problems: every card
+of that kind, in order) and the practice test. A sitting carries its
+choice in its link (`?p=`), so Continue and a reload keep it. Choices are
+remembered per lecture and per class (`lib/practiceChoice`, the
+`practice` session mode).
 Mistakes holds a card from its miss until it is got right on a later day
 (`isMistake`): a right answer minutes after the miss used to clear it, and
 in the simulator such a retry kept nothing for a later day (sim/FINDINGS.md,
 2026-10-12). A miss is not asked again within a Practice sitting for the
 same reason; Review brings it back a few hours on.
-Choices are remembered per lecture and per class. It says plainly that
-cards not yet fading gain little. The count beside each choice is cards to
-answer; under Start, a line says what the sitting holds when that differs
-(cards to read along the way, such as worked examples, and Due now fitted
-to the daily time, the end offering the rest), worked out by the same call
-the session makes (`lib/practice.ts` sittingSize).
 
 **Working means.** A study is found by the generator's `study:` tag or, in
 older lectures, a citation in the card's question or answer (never the
@@ -388,7 +376,7 @@ slide excerpt, where image credits live). Progress stays on the lecture's
 own cards: in a mixed sitting every card carries its lecture, and its
 answer, time, set-aside, mix-up and bookmark go to that lecture; the end
 shows each lecture's tree and score. A sitting cut short has reached every
-lecture.
+lecture. The count on Start is the sitting Start opens.
 
 ### Practice test
 

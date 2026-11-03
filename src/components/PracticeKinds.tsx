@@ -1,50 +1,49 @@
 import { Link } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { isWrittenExample } from '@/lib/answerPoints';
-import { practiceLink, type Kind } from '@/lib/practice';
+import { choiceLink } from '@/lib/practice';
+import { kindOfItem, PRACTICE_KINDS, WHICH, type PracticeKind } from '@/lib/practiceChoice';
 import { recallId, scoredEntries } from '@/lib/scored';
 
 /**
  * One kind of card at a time, one tap from the lecture or section page:
- * every multiple-choice question, every flashcard, every term, or a
- * practice test. These were on the Practice page all along, as "Kind", and
- * the owner looked for them for weeks without finding them (2026-10-26:
- * "why is there not a mode to just practice flash cards or just do multiple
- * choice problems?"). Each starts straight away; the Practice page keeps
- * the finer choices.
+ * every multiple-choice question, every flashcard, every written answer,
+ * every term, every problem, or a practice test. The owner looked for these
+ * for weeks inside the Practice page (2026-10-26: "why is there not a mode
+ * to just practice flash cards or just do multiple choice problems?").
+ * Each starts at once, in the lecture's order; the Practice page builds
+ * anything else.
  */
 export function PracticeKinds({ courseId, course, sectionId }: { courseId: string; course: Course; sectionId?: string }) {
   const items = course.sections.filter((s) => !sectionId || s.id === sectionId).flatMap((s) => s.items);
   const scored = new Set(scoredEntries(items).map((e) => e.id));
-  const n: Record<Exclude<Kind, 'all'>, number> = {
-    questions: items.filter((i) => i.type === 'mcq' && scored.has(i.id)).length,
-    flashcards: items.filter((i) => (i.type === 'flashcard' || isWrittenExample(i)) && scored.has(i.id)).length,
-    terms: items.filter((i) => i.type === 'definition' && scored.has(recallId(i.id))).length,
-    problems: items.filter((i) => i.type === 'problem' && scored.has(i.id)).length,
-  };
-  const kinds = (
-    [
-      ['questions', 'Multiple choice'],
-      ['flashcards', 'Flashcards'],
-      ['terms', 'Terms'],
-      ['problems', 'Problems'],
-    ] as const
-  ).filter(([kind]) => n[kind] > 0);
+  const n = new Map<PracticeKind, number>();
+  for (const i of items) {
+    if (i.type === 'definition' ? !scored.has(recallId(i.id)) : !scored.has(i.id)) continue;
+    const k = isWrittenExample(i) ? 'written' : kindOfItem(i);
+    if (k) n.set(k, (n.get(k) ?? 0) + 1);
+  }
+  const kinds = PRACTICE_KINDS.filter((k) => (n.get(k.value) ?? 0) > 0);
   if (!kinds.length) return null;
   const test = `/study/${courseId}/test${sectionId ? `?section=${encodeURIComponent(sectionId)}` : ''}`;
 
   return (
     <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-small">
-      {kinds.map(([kind, label]) => (
+      {kinds.map((k) => (
         <Link
-          key={kind}
-          to={practiceLink(courseId, 'everything', kind, { sectionId })}
+          key={k.value}
+          to={choiceLink(courseId, {
+            kinds: [k.value],
+            which: WHICH.map((w) => w.value),
+            order: 'inorder',
+            ...(sectionId ? { where: { [courseId]: [sectionId] } } : {}),
+          })}
           className="tap-safe text-text-2 underline-offset-4 hover:text-text hover:underline"
         >
-          {label} <span className="text-xs tabular-nums text-text-3">{n[kind]}</span>
+          {k.label} <span className="text-xs tabular-nums text-text-3">{n.get(k.value)}</span>
         </Link>
       ))}
-      {n.questions + n.flashcards > 0 && (
+      {kinds.some((k) => k.value !== 'terms' && k.value !== 'flashcards') && (
         <Link to={test} className="tap-safe text-text-2 underline-offset-4 hover:text-text hover:underline">
           Practice test
         </Link>

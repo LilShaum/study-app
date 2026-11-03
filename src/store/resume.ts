@@ -13,6 +13,8 @@ export interface Bookmark {
   kind?: CardKind | null;
   /** The Practice page's studies choice, so Continue keeps it. */
   study?: string | null;
+  /** A Practice sitting's choice (lib/practiceChoice encodeChoice), so Continue keeps it. */
+  practice?: string | null;
   /** A class's Practice, so Continue still runs through the class (and `single` keeps it to this lecture). */
   classCode?: string | null;
   single?: boolean;

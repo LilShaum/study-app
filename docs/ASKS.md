@@ -18,6 +18,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
+- **Keep going until the list is clear, then check, then report**
+  (2026-11-03: "dont stop until you run out of limit or the to do list is
+  cleared. and even after its cleared, if there are any follow up checks or
+  tests … do those too and only then stop and give me a report on the state
+  of the app, what was changed/fixed, and what should be worked on next").
+  Standing for this run.
 - **Work through every ask, planning before building** (2026-11-03: "just
   work through the things i have asked you to do so far … if im asking you
   to reimagine something about the app or audit it or improve it, please

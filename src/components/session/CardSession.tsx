@@ -24,7 +24,8 @@ import { CATCH_UP_MINUTES, PART_GAP_HOURS } from '@/lib/today';
 import { sectionsToLearn } from '@/lib/nextToLearn';
 import { useLearnStore } from '@/store/learn';
 import { lectureName, lecturesOf } from '@/lib/classExams';
-import { choiceOf, countBasis, practiceCount, practiceLink } from '@/lib/practice';
+import { choiceCount, choiceLink, choiceOf, countBasis, practiceCount, practiceLink } from '@/lib/practice';
+import { encodeChoice } from '@/lib/practiceChoice';
 import { answerPoints } from '@/lib/answerPoints';
 import { answerKind } from '@/lib/problemAnswer';
 import { termPicked } from '@/lib/mixUps';
@@ -57,6 +58,7 @@ const MODE_LABELS: Record<CardMode, string> = {
   flashcards: 'Flashcards',
   definitions: 'Terms',
   problems: 'Problems',
+  practice: 'Practice',
   mixed: 'Everything',
   missed: 'Mistakes',
   review: 'Review',
@@ -100,6 +102,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
   ],
   definitions: [{ keys: ['Enter'], label: 'check / next' }, ...NAV_HINTS],
   problems: [{ keys: ['Enter'], label: 'check / next' }, ...NAV_HINTS],
+  practice: ALL_CARD_KEYS,
   mixed: [
     { keys: ['1', '–', '4'], label: 'select' },
     { keys: ['Space'], label: 'flip' },
@@ -151,6 +154,10 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
   definitions: {
     title: 'No terms',
     text: "This lecture doesn't have any definitions to ask you for yet. Try Browse or Mixed mode.",
+  },
+  practice: {
+    title: 'Nothing to practise',
+    text: 'No card matches what was ticked. Go back to Practice and tick more kinds, cards or sections.',
   },
   problems: {
     title: 'No problems',
@@ -269,6 +276,12 @@ function shortName(item: SessionItem): string {
 }
 
 /** Every mode except Browse — one item at a time. */
+/** A built Practice sitting's choice, as its bookmark keeps it. */
+function practiceKeyOf(mode: StudyMode): string | null {
+  const p = mode === 'practice' ? useSessionStore.getState().pendingPractice : null;
+  return p ? encodeChoice(p) : null;
+}
+
 export function CardSession({ courseId, course, mode, sectionId, resume = false, classCode, single = false, mixed = false }: CardSessionProps) {
   const navigate = useNavigate();
   // A practice session opened from a class's Practice runs through the class:
@@ -340,6 +353,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       (bookmark.sectionId ?? undefined) === sectionId &&
       (bookmark.kind ?? null) === useSessionStore.getState().pendingKind &&
       (bookmark.study ?? null) === useSessionStore.getState().pendingStudy &&
+      (bookmark.practice ?? null) === practiceKeyOf(mode) &&
       !!bookmark.mixed === !!mixedClass
         ? bookmark.itemId
         : undefined;
@@ -370,6 +384,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       sectionId: sectionId ?? null,
       kind: useSessionStore.getState().pendingKind,
       study: useSessionStore.getState().pendingStudy,
+      practice: practiceKeyOf(mode),
       classCode: practiceClass ?? null,
       single,
       ...(mixedClass ? { mixed: true, itemCourseId: lectureOf(current, courseId) } : {}),
@@ -409,6 +424,17 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   const nextPracticeFor = (): { title: string; to: string; count: number } | null => {
     // A mixed sitting already had every lecture in it.
     if (!practiceClass || single || mixedClass) return null;
+    const built = useSessionStore.getState().pendingPractice;
+    if (mode === 'practice') {
+      if (!built) return null;
+      const lectures = lecturesOf(useCoursesStore.getState().courses, practiceClass);
+      const now = Date.now();
+      for (const [id, c] of lectures.slice(lectures.findIndex(([lid]) => lid === courseId) + 1)) {
+        const count = choiceCount(c, id, built, useProgressStore.getState().getProgress(id), useProgressStore.getState().missedIds(id), now);
+        if (count > 0) return { title: lectureName(c.metadata.title, practiceClass), count, to: choiceLink(id, built, practiceClass) };
+      }
+      return null;
+    }
     const { pendingKind, pendingStudy } = useSessionStore.getState();
     const choice = choiceOf(mode, pendingKind);
     if (!choice) return null;

@@ -331,6 +331,8 @@ export function CourseRoute() {
             to={`/session/${id}/${resumable.mode}?resume=1${
               resumable.sectionId ? `&section=${encodeURIComponent(resumable.sectionId)}` : ''
             }${resumable.kind ? `&kind=${resumable.kind}` : ''}${resumable.study ? `&study=${encodeURIComponent(resumable.study)}` : ''}${
+              resumable.practice ? `&p=${encodeURIComponent(resumable.practice)}` : ''
+            }${
               resumable.classCode
                 ? `&class=${encodeURIComponent(resumable.classCode)}${resumable.single ? '&single=1' : resumable.mixed ? '&mix=1' : ''}`
                 : ''

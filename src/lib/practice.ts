@@ -5,6 +5,7 @@ import { examRule, PROTECT_FROM_DAYS, type ExamRule } from './exam';
 import { classExams } from './classExams';
 import { daysToExam } from './libraryToday';
 import { onlyStudies } from './studies';
+import { encodeChoice, sectionsFor, type PracticeChoice } from './practiceChoice';
 
 /**
  * The Practice page's choices, shared by a lecture's Practice, a class's
@@ -168,4 +169,44 @@ export function practiceLink(courseId: string, cards: Cards, kind: Kind, from: F
   else if (classCode && mixed) query.set('mix', '1');
   const qs = query.toString();
   return `/session/${courseId}/${go.mode}${qs ? `?${qs}` : ''}`;
+}
+
+/**
+ * The cards a built Practice choice gives in one lecture (lib/practiceChoice),
+ * by the call the session makes.
+ */
+export function choiceCount(
+  course: Course,
+  courseId: string,
+  choice: PracticeChoice,
+  progress: Record<string, ItemResult>,
+  missedIds: ReadonlySet<string>,
+  now: number,
+): number {
+  const sectionIds = sectionsFor(choice, courseId);
+  if (sectionIds && !sectionIds.size) return 0;
+  const onlyIds = onlyStudies(course, choice.study ?? null);
+  if (onlyIds?.size === 0) return 0;
+  return buildSessionItems(course, 'practice', {
+    progress,
+    now,
+    exam: examRule(course, progress, now),
+    missedIds,
+    onlyIds,
+    practice: { kinds: new Set(choice.kinds), which: new Set(choice.which), order: 'inorder', sectionIds },
+  }).length;
+}
+
+/**
+ * The link that starts a built Practice choice in one lecture. `classCode`:
+ * from a class's Practice, so its ways out lead back there and its end
+ * offers the class's next lecture; `mixed`: the class's lectures in one
+ * sitting (lib/mixLectures), opened in this one.
+ */
+export function choiceLink(courseId: string, choice: PracticeChoice, classCode?: string, mixed = false): string {
+  const query = new URLSearchParams();
+  query.set('p', encodeChoice(choice));
+  if (classCode) query.set('class', classCode);
+  if (classCode && mixed) query.set('mix', '1');
+  return `/session/${courseId}/practice?${query}`;
 }

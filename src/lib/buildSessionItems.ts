@@ -12,6 +12,7 @@ import { sectionsToLearn } from './nextToLearn';
 import { cardSeconds, DEFAULT_MINUTES, splitSitting } from './today';
 import type { ExamRule } from './exam';
 import { AGAIN_KEY, AGAIN_SHARE } from '@/store/studyLog';
+import { kindOfItem, whichOf, type Order, type PracticeKind, type Which } from './practiceChoice';
 
 export const STUDY_MODES = [
   'browse',
@@ -20,6 +21,7 @@ export const STUDY_MODES = [
   'flashcards',
   'definitions',
   'problems',
+  'practice',
   'mixed',
   'weakest',
   'missed',
@@ -206,6 +208,17 @@ export interface SessionOptions {
    * (store/learn.ts).
    */
   questionsFirst?: boolean;
+  /**
+   * Practice as the student builds it (lib/practiceChoice): the kinds, which
+   * cards, the order and the sections. 'practice' only.
+   */
+  practice?: {
+    kinds: ReadonlySet<PracticeKind>;
+    which: ReadonlySet<Which>;
+    order: Order;
+    /** The sections kept; all of them when absent. */
+    sectionIds?: ReadonlySet<string> | null;
+  };
 }
 
 export type CardKind = 'questions' | 'flashcards' | 'terms' | 'problems';
@@ -335,7 +348,7 @@ function withoutSecondLook(list: SessionItem[], recent: (sectionId: string) => b
 export function buildSessionItems(
   course: Course,
   mode: StudyMode,
-  { missedIds, sectionId, onlyIds, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES, pace, kind, questionsFirst }: SessionOptions = {},
+  { missedIds, sectionId, onlyIds, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES, pace, kind, questionsFirst, practice }: SessionOptions = {},
 ): SessionItem[] {
   const sections = sectionId
     ? sortedSections(course).filter((s) => s.id === sectionId)
@@ -528,6 +541,26 @@ export function buildSessionItems(
       // A problem set: every problem, in the lecture's order.
       items = items.filter((i) => i.type === 'problem');
       break;
+    case 'practice': {
+      // What the student ticked (lib/practiceChoice): each card asked as its
+      // own kind, a multiple-choice question with its options, and every
+      // answer marked as it is given.
+      if (!practice) {
+        items = [];
+        break;
+      }
+      const due = (id: string) => isDueFor(progress?.[id], now, exam?.forItem(id) ?? null);
+      const kept = asRecall(items).filter((i) => {
+        const k = kindOfItem(i);
+        if (!k || !practice.kinds.has(k) || !isGradable(i)) return false;
+        if (practice.sectionIds && !practice.sectionIds.has(i._sectionId)) return false;
+        for (const w of whichOf(i, progress, missedIds, due)) if (practice.which.has(w)) return true;
+        return false;
+      });
+      items =
+        practice.order === 'weakest' ? weakestFirst(kept, now, progress) : practice.order === 'mixed' ? spaced(shuffle(kept)) : kept;
+      break;
+    }
     case 'definitions':
       // Terms: type the word from its meaning. Reading the glossary is what
       // Browse is for.

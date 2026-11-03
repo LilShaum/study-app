@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Course } from '@/schema/course';
 import { buildSessionItems, recallId, type CardKind, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
+import { sectionsFor, type PracticeChoice } from '@/lib/practiceChoice';
 import { isMissed, useProgressStore, type ItemResult } from './progress';
 import { answerPoints } from '@/lib/answerPoints';
 import { examRule } from '@/lib/exam';
@@ -95,6 +96,9 @@ interface SessionState {
    */
   pendingStudy: string | null;
   setPendingStudy: (study: string | null) => void;
+  /** A Practice sitting as the student built it (lib/practiceChoice). Set and kept like pendingKind. */
+  pendingPractice: PracticeChoice | null;
+  setPendingPractice: (choice: PracticeChoice | null) => void;
   /** `fullDay`: Today planned at the full daily time, ignoring what was studied today ("Keep going"). */
   init: (courseId: string, course: Course, mode: StudyMode, sectionId?: string, resumeItemId?: string, fullDay?: boolean) => void;
   /**
@@ -233,10 +237,10 @@ function listFor(
   courseId: string,
   course: Course,
   mode: StudyMode,
-  { sectionId, resuming, kind, study }: { sectionId?: string; resuming: boolean; kind: CardKind | null; study: string | null },
+  { sectionId, resuming, kind, study, practice }: { sectionId?: string; resuming: boolean; kind: CardKind | null; study: string | null; practice?: PracticeChoice | null },
 ): { items: SessionItem[]; progress: Record<string, ItemResult> } {
   const progressStore = useProgressStore.getState();
-  const missedIds = mode === 'missed' ? progressStore.missedIds(courseId) : undefined;
+  const missedIds = mode === 'missed' || mode === 'practice' ? progressStore.missedIds(courseId) : undefined;
   // Weakest-first ranks by the student's own history, so it is the one mode
   // that needs the full per-item record rather than a set of ids.
   // Weakest and Review rank by history, Terms pairs mixed-up terms from it,
@@ -257,7 +261,17 @@ function listFor(
         : usePlanStore.getState().minutesFor(courseId),
     pace: measuredPace(useStudyLogStore.getState().byCourse),
     kind: kind ?? undefined,
-    onlyIds: onlyStudies(course, study),
+    onlyIds: onlyStudies(course, mode === 'practice' ? (practice?.study ?? null) : study),
+    ...(mode === 'practice' && practice
+      ? {
+          practice: {
+            kinds: new Set(practice.kinds),
+            which: new Set(practice.which),
+            order: practice.order,
+            sectionIds: sectionsFor(practice, courseId),
+          },
+        }
+      : {}),
     questionsFirst: useLearnStore.getState().questionsFirst,
   });
   return { items, progress };
@@ -282,6 +296,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   setPendingKind: (kind) => set({ pendingKind: kind }),
   pendingStudy: null,
   setPendingStudy: (study) => set({ pendingStudy: study }),
+  pendingPractice: null,
+  setPendingPractice: (choice) => set({ pendingPractice: choice }),
 
   init: (courseId, course, mode, sectionId, resumeItemId, fullDay = false) => {
     adoptLinkedTerms(courseId);
@@ -292,6 +308,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       resuming: fullDay || !!resumeItemId,
       kind: get().pendingKind,
       study: get().pendingStudy,
+      practice: get().pendingPractice,
     });
     shownAt = Date.now();
     // Resume by id, not position: Mixed and Review Missed reshuffle each start
@@ -335,7 +352,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     applyPersonalScale();
     const lists = lectures.map(([id, course]) => ({
       courseId: id,
-      ...listFor(id, course, mode, { resuming: false, kind: get().pendingKind, study: get().pendingStudy }),
+      ...listFor(id, course, mode, { resuming: false, kind: get().pendingKind, study: get().pendingStudy, practice: get().pendingPractice }),
     }));
     const items = mixLectures(lists);
     shownAt = Date.now();

@@ -40,24 +40,27 @@ afterEach(() => {
   useProgressStore.setState({ byCourse: {} });
 });
 
-describe("a class's Practice: one lecture at a time, or mixed", () => {
-  it('takes the lectures one at a time unless mixing is chosen, and remembers the choice', () => {
+const choiceIn = (href: string | null) => JSON.parse(new URLSearchParams(href!.split('?')[1]).get('p')!);
+
+describe("a class's Practice: built by ticks", () => {
+  it('takes the lectures one after another in order, mixes them when Mixed is picked, and remembers it', () => {
     useCoursesStore.setState({ courses: { a: lecture('MIX 1: Alpha', 'a'), b: lecture('MIX 1: Beta', 'b') } });
     renderAt('/class/MIX%201/practice');
-    expect(screen.getByRole('button', { name: 'One at a time' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'In order' }).getAttribute('aria-pressed')).toBe('true');
     expect(start()).not.toContain('mix=1');
-    expect(screen.getByText(/then carries on through 1 more lecture\./)).toBeTruthy();
+    expect(start()).toContain('/session/a/practice');
+    expect(screen.getByText(/4 cards, starting in Alpha\./)).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Mixed together' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Mixed' }));
     expect(start()).toContain('mix=1');
-    expect(screen.getByText(/Cards from 2 lectures in one sitting, mixed together/)).toBeTruthy();
+    expect(screen.getByText(/4 cards, from 2 lectures mixed\./)).toBeTruthy();
 
     cleanup();
     renderAt('/class/MIX%201/practice');
-    expect(screen.getByRole('button', { name: 'Mixed together' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'Mixed' }).getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('mixes by default in the last week before an exam, says why, and keeps a pick made then', () => {
+  it('mixes by default in the last week before an exam, and says why', () => {
     const inDays = (n: number) => {
       const d = new Date();
       d.setDate(d.getDate() + n);
@@ -66,42 +69,68 @@ describe("a class's Practice: one lecture at a time, or mixed", () => {
     const exams = [{ id: 'm2', name: 'Midterm 2', date: inDays(3) }];
     const withExam = (c: Course) => ({ ...c, metadata: { ...c.metadata, exams } }) as Course;
     useCoursesStore.setState({ courses: { a: withExam(lecture('MIX 1: Alpha', 'a')), b: withExam(lecture('MIX 1: Beta', 'b')) } });
-    // What the page saved before picks were kept apart: the old default, not a pick.
-    localStorage.setItem('arborous:practice:class:MIX 1', JSON.stringify({ cards: null, kind: 'all', from: '', lectures: 'in-turn' }));
     renderAt('/class/MIX%201/practice');
-    expect(screen.getByRole('button', { name: 'Mixed together' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'Mixed' }).getAttribute('aria-pressed')).toBe('true');
     expect(start()).toContain('mix=1');
     expect(screen.getByText(/Mixed because Midterm 2 is in 3 days\./)).toBeTruthy();
-
-    fireEvent.click(screen.getByRole('button', { name: 'One at a time' }));
-    expect(start()).not.toContain('mix=1');
-    cleanup();
-    renderAt('/class/MIX%201/practice');
-    expect(screen.getByRole('button', { name: 'One at a time' }).getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('offers no mixing for one lecture of the class, or on a lecture\'s own Practice', () => {
+  it('ticks whole lectures and single sections in and out, and the count follows', () => {
     useCoursesStore.setState({ courses: { a: lecture('MIX 1: Alpha', 'a'), b: lecture('MIX 1: Beta', 'b') } });
-    renderAt('/study/a/practice');
-    expect(screen.queryByRole('button', { name: 'Mixed together' })).toBeNull();
-    cleanup();
-
     renderAt('/class/MIX%201/practice');
-    fireEvent.click(screen.getByRole('button', { name: 'Mixed together' }));
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'lecture:b' } });
-    expect(screen.queryByRole('button', { name: 'Mixed together' })).toBeNull();
-    expect(start()).not.toContain('mix=1');
+    fireEvent.click(screen.getByRole('checkbox', { name: /Alpha/ }));
+    expect(screen.getByText('2 cards.')).toBeTruthy();
+    expect(start()).toContain('/session/b/practice');
+    expect(choiceIn(start()).where).toEqual({ a: [], b: 'all' });
+    fireEvent.click(screen.getByRole('button', { name: 'Untick all' }));
+    expect(screen.getByText('No card matches these ticks.')).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Start' })).toBeNull();
+  });
+});
+
+describe("a lecture's Practice", () => {
+  const mixed = {
+    schema_version: '1.0',
+    metadata: { title: 'Kinds' },
+    sections: [
+      {
+        id: 's1',
+        title: 'One',
+        items: [
+          { id: 'q1', type: 'mcq', question: 'Q?', options: ['a', 'b'], correct_index: 0 },
+          { id: 'f1', type: 'flashcard', front: 'F?', back: 'b' },
+          { id: 'w1', type: 'flashcard', front: 'Write it.', back: '(1) One. (2) Two.' },
+        ],
+      },
+      { id: 's2', title: 'Two', items: [{ id: 'p1', type: 'problem', question: '2 + 2?', answer: 4, steps: ['Add.'] }] },
+    ],
+  } as unknown as Course;
+
+  it('ticks every kind but written answers by default, and the ticks go to the session', () => {
+    useCoursesStore.setState({ courses: { k: mixed } });
+    renderAt('/study/k/practice');
+    const box = (name: RegExp) => screen.getByRole('checkbox', { name }) as HTMLInputElement;
+    expect(box(/^Multiple choice/).checked).toBe(true);
+    expect(box(/^Written answers/).checked).toBe(false);
+    expect(screen.getByText('3 cards.')).toBeTruthy();
+    fireEvent.click(box(/^Written answers/));
+    fireEvent.click(box(/^Multiple choice/));
+    expect(choiceIn(start()).kinds.sort()).toEqual(['flashcards', 'problems', 'written']);
   });
 
-  it('offers mixing only when the cards chosen are in more than one lecture', () => {
-    useCoursesStore.setState({ courses: { a: lecture('MIX 1: Alpha', 'a'), b: lecture('MIX 1: Beta', 'b') } });
-    // Only Alpha has a card due.
-    useProgressStore.setState({ byCourse: { a: { a1: { got: 1, missed: 0, lastSeen: Date.now() - 20 * 864e5 } } } });
-    renderAt('/class/MIX%201/practice');
-    expect(screen.getByRole('button', { name: /^Due now/ }).getAttribute('aria-pressed')).toBe('true');
-    expect(screen.queryByRole('button', { name: 'Mixed together' })).toBeNull();
-    expect(start()).toContain('single=1');
-    fireEvent.click(screen.getByRole('button', { name: /^Everything/ }));
-    expect(screen.getByRole('button', { name: 'Mixed together' })).toBeTruthy();
+  it('starts on one section when opened from it', () => {
+    useCoursesStore.setState({ courses: { k: mixed } });
+    renderAt('/study/k/practice?section=s2');
+    expect(screen.getByText('1 card.')).toBeTruthy();
+    expect(choiceIn(start()).where).toEqual({ k: ['s2'] });
+  });
+
+  it('offers ready-made sittings that start at once', () => {
+    useCoursesStore.setState({ courses: { k: mixed } });
+    useProgressStore.setState({ byCourse: { k: { q1: { got: 0, missed: 1, lastSeen: 1, stability: 1, lastGot: false } } } });
+    renderAt('/study/k/practice');
+    const problems = screen.getByRole('link', { name: /^Problems/ }).getAttribute('href');
+    expect(choiceIn(problems).kinds).toEqual(['problems']);
+    expect(screen.getByRole('link', { name: /^Due now/ })).toBeTruthy();
   });
 });
