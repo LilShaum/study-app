@@ -30,25 +30,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
 
-- **Say how sure you are, and let it change what happens** (2026-11-03:
-  "for certain question times that it applies to, and in my mind the
-  perfect example are multiple choice questions, you should be able to
-  note how confident you are in your answer before locking it in or maybe
-  it should be after u answered u say how hard the question was or
-  something (maybe it should depend on the question type idk) and based
-  on if u get it right or wrong and based on ur confidence something
-  happens. like something you are confidently wrong about gets retested
-  or worked on sooner. maybe there would be a special in depth
-  explanation"). To plan first (CLAUDE.md method); changes the memory
-  model, so the simulator first. Planned 2026-11-03 in
-  docs/proposals/understanding.md: a "Not sure" mark before the pick, on
-  multiple choice only; a sure miss gets its explanation and comes back
-  sooner (confident errors return: Butler, Fazio & Marsh 2011), an unsure
-  right answer counts as Hard. Simulator first. Simulated 2026-11-03: both
-  schedule rules cost more than they gave (sim/FINDINGS.md), so built as
-  feedback: Not sure beside Check answer opens the why and the passage on
-  a right answer, every miss gets its why, the test's "?" is its Not sure
-  with a Right, but marked ? list; sureness logged for the real log.
 - **Teach understanding, not memorising: use the explanations, and
   questions that test application, everywhere** (2026-11-03: "perhaps you
   could use the new like explanation things that are part of the new
@@ -73,9 +54,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   after a miss, in the test's review and folded behind a "Why?"; the
   generator to name two more kinds of question (two ideas integrated,
   right but for one detail); the lecture check to see a lecture of
-  recall only. Step 1 built 2026-11-03: each question's explanation as
-  its Why, open after a miss, folded after a right answer, in every mode
-  and the test's review.
+  recall only. Built 2026-11-03, live: each question's explanation as its
+  Why, open after a miss, folded after a right answer, in every mode and
+  the test's review; the generator's two new kinds (two ideas together,
+  the one detail off). Next: the lecture check for a lecture of recall
+  only, after reading a real one; explanations of how each section
+  follows from the last.
 - **A UI/UX and design-language audit, soon** (2026-11-03: "pretty soon we
   will need a big ui/ux audit and like design language audit because we
   haven't worked on that stuff in a long time … the main use of the app …
@@ -155,6 +139,31 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-11-03 Saying how sure: built as feedback, live. Not sure beside
+  Check answer opens a right answer's why and passage; every miss shows its
+  why; the test's "?" is its Not sure. "Retested sooner" was simulated and
+  not built: it cost a point in 16 of 42 scenarios (sim/FINDINGS.md).
+  Sureness is logged, so the owner's real log can reopen it.
+  - **Say how sure you are, and let it change what happens** (2026-11-03:
+    "for certain question times that it applies to, and in my mind the
+    perfect example are multiple choice questions, you should be able to
+    note how confident you are in your answer before locking it in or maybe
+    it should be after u answered u say how hard the question was or
+    something (maybe it should depend on the question type idk) and based
+    on if u get it right or wrong and based on ur confidence something
+    happens. like something you are confidently wrong about gets retested
+    or worked on sooner. maybe there would be a special in depth
+    explanation"). To plan first (CLAUDE.md method); changes the memory
+    model, so the simulator first. Planned 2026-11-03 in
+    docs/proposals/understanding.md: a "Not sure" mark before the pick, on
+    multiple choice only; a sure miss gets its explanation and comes back
+    sooner (confident errors return: Butler, Fazio & Marsh 2011), an unsure
+    right answer counts as Hard. Simulator first. Simulated 2026-11-03: both
+    schedule rules cost more than they gave (sim/FINDINGS.md), so built as
+    feedback: Not sure beside Check answer opens the why and the passage on
+    a right answer, every miss gets its why, the test's "?" is its Not sure
+    with a Right, but marked ? list; sureness logged for the real log.
 
 - 2026-11-03 The practice test turns like a paper test: the question count
   opens every question by number, Mark to come back to puts a "?" beside
