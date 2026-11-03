@@ -101,6 +101,15 @@ this is the intent it serves.
 - **Working with the owner:** usage is limited, so ask before expensive
   work and run one agent at a time. "What's next?" means work you can do
   without them. Done means tested and live.
+- **Plans for reimagining, auditing or improving something** (2026-11-03:
+  "make well thought out plans, and plan the plans. dont make them in one
+  go, debate with urself what is better or worse between certain options
+  … and argue to yourself why a certain way to do something is the best
+  and only then is there a plan"). First plan how to decide (what the
+  feature is for, who meets it, what evidence and code bear on it), then
+  lay out the real options, argue each for and against, pick one with the
+  reason it wins, and only then write the build plan. Written down in
+  `docs/proposals/`, so the reasoning outlives the session.
 
 ## Working on the app
 

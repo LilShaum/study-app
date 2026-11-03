@@ -1,7 +1,7 @@
 import type { Section } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import type { ExamRule } from './exam';
-import { isDueFor, retrievability } from './memory';
+import { DUE_BELOW, isDueFor, retrievability } from './memory';
 import { scoredEntries } from './scored';
 import { sectionStats } from './sectionStats';
 
@@ -21,18 +21,29 @@ export function learnedShare(studied: number, gradable: number, accuracy: number
 }
 
 /**
- * How much of what a section learned would still be recalled now: the mean
- * recall chance (lib/memory.ts) over the items studied in it. 1 straight
- * after studying, falling as they fade, rising again when they are reviewed.
- * Items never studied are not counted — unseen is not forgotten.
+ * How much of what a section learned is still held: over the items ever
+ * answered right, each counts in full until it fades to the point where
+ * Review asks it again (DUE_BELOW), and in part below that. 1 after
+ * studying, falling as cards come due, rising again when they are reviewed.
+ *
+ * Two things are not forgetting, and are left out. A card never studied:
+ * unseen is not forgotten. A card never yet got right: it was never learned,
+ * and it already thins the branch through the section's accuracy
+ * (learnedShare). Counted here, every miss in a sitting read as a leaf lost
+ * a few hours later, and the owner swiped a section studied that day and
+ * watched it drop its leaves (2026-11-03). And a card still above the review
+ * point is not lost either: a leaf falls when its card is due, the same
+ * signal Today acts on.
  */
 export function heldShare(section: Section, progress: Record<string, ItemResult>, now: number): number {
   let sum = 0;
   let n = 0;
   for (const { id } of scoredEntries(section.items)) {
-    const R = retrievability(progress[id], now);
+    const r = progress[id];
+    if (!r || r.got <= 0) continue;
+    const R = retrievability(r, now);
     if (R == null) continue;
-    sum += R;
+    sum += Math.min(1, R / DUE_BELOW);
     n++;
   }
   return n ? sum / n : 1;

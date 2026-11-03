@@ -18,6 +18,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
+- **Work through every ask, planning before building** (2026-11-03: "just
+  work through the things i have asked you to do so far … if im asking you
+  to reimagine something about the app or audit it or improve it, please
+  make well thought out plans, and plan the plans"). Standing; the method
+  is in CLAUDE.md, the plans in docs/proposals/.
+
 - **Practice: choose several of a kind at once, tick the sections, easy to
   find, and a clear use beside the practice test** (2026-11-03, on the
   class Practice page: "Rather than choosing between one option or
@@ -33,17 +39,13 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   question types you want … and if they are mixed or not. I'm not 100%
   sure about my suggestions so think and through"). To design, with the
   flashcards-only mode below: the two are one question (which way to
-  study is for what). The test's default (as you go since 2026-10-26)
-  is the owner's call.
+  study is for what). The test's default: the owner left it to the
+  design (2026-11-03: "i think the answer to the decision for me depends
+  how you pull all this off").
 - **A UI/UX and design-language audit, soon** (2026-11-03: "pretty soon we
   will need a big ui/ux audit and like design language audit because we
   haven't worked on that stuff in a long time … the main use of the app …
   is good and should continue"). After the study work in hand.
-- **The tree: leaves fall on a section just studied, and fall again on
-  every swipe** (2026-11-03: "the tree definetly needs updating like I
-  tested the leaves on a section I had just studied and they immediately
-  fell and like the animation would repeat if I kept swiping the branches").
-  A bug: a section just studied should hold its leaves.
 
 - **Say when a higher effort setting is worth it, before starting a task**
   (2026-10-29: "I'm wondering if there is a certain time it would be
@@ -113,6 +115,17 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-11-03 The tree: a section just studied keeps its leaves (2026-11-03:
+  "I tested the leaves on a section I had just studied and they immediately
+  fell and like the animation would repeat if I kept swiping the
+  branches"). Reproduced: six hours after studying three sections with 2 in
+  5 missed, one swipe dropped 48 leaves from all three. A missed card
+  counted as forgotten though it was never learned. Now a leaf falls only
+  for a card once got right that has faded to where Review asks it, so the
+  tree and Today give the same signal; a swipe drops each branch's lost
+  leaves once, as before. The rest of "the tree needs updating" goes in the
+  design audit. (lib/sectionMemory heldShare)
 
 - 2026-10-29 Problems to work out, for math, code and the like (2026-10-29:
   "my friend who is in computer science said he wouldn't find much use from
