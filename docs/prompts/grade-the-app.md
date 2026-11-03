@@ -138,8 +138,8 @@ repo's rules say.
 
 - **Never put course content in the repo** (CLAUDE.md). The attached slides,
   files and backup stay in the scratchpad.
-- **Usage is limited.** One agent at a time unless the owner says
-  otherwise in that session. Say before starting anything expensive.
+- **Use agents** (CLAUDE.md): grade parts in parallel where they split,
+  each agent well scoped. Usage is limited, so say before a large fan-out.
 - **Every new ask goes in `docs/ASKS.md`** the moment the owner makes it.
 - **Grades come from evidence.** Where a grade rests on a guess (no real
   lecture, no real log), say so beside it.

@@ -167,6 +167,14 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-11-03 Use agents: the "one agent at a time" rule was never the
+  owner's (2026-11-03: "Since when is my rule here one agent at a time? I
+  swear I have said repeatedly to use agents"). It was a session's reading
+  of 2026-10-21's "woah you like used all my session usage in like 10
+  minutes" after five parallel agents; the owner had said on 2026-10-18
+  "feel free to start paralell tasks with new agents". Corrected in
+  CLAUDE.md and the grading prompt: use agents, in parallel where work
+  splits, each well scoped; say before a large fan-out.
 - 2026-11-03 Saying how sure: built as feedback, live. Not sure beside
   Check answer opens a right answer's why and passage; every miss shows its
   why; the test's "?" is its Not sure. "Retested sooner" was simulated and

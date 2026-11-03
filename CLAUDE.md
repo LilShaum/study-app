@@ -119,8 +119,16 @@ this is the intent it serves.
   nothing for weeks (2026-10-26). Use it the way a student does before
   calling it done.
 - **Working with the owner:** usage is limited, so ask before expensive
-  work and run one agent at a time. "What's next?" means work you can do
-  without them. Done means tested and live.
+  work. "What's next?" means work you can do without them. Done means
+  tested and live.
+- **Use agents** (2026-10-18: "feel free to start paralell tasks with new
+  agents"; 2026-11-03: "I swear I have said repeatedly to use agents").
+  Split work that splits, in parallel, each agent well scoped and on a
+  cheaper model where that is enough; read its diff and run the checks
+  before anything ships. Mind the cost: five at once used a session's
+  usage in ten minutes (2026-10-21), so say before a large fan-out. An
+  earlier session wrote that complaint down as "one agent at a time"; the
+  owner never said that.
 - **Plans for reimagining, auditing or improving something** (2026-11-03:
   "make well thought out plans, and plan the plans. dont make them in one
   go, debate with urself what is better or worse between certain options
