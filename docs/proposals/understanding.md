@@ -161,7 +161,11 @@ What the app can do, in order of how sure the gain is:
    serves both asks. Built 2026-11-03: after a miss, folded after a right
    answer, in the test's review; a made-up lecture with explanations
    (`scripts/__fixtures__/explained.study.json`) so the checks see them.
-2. **The generator's two kinds** (4: 1), checked on a made-up lecture.
+2. **The generator's two kinds** (4: 1). Written 2026-11-03 into
+   generator.md section 3: "Two ideas together" as a seventh kind of
+   question, where the material builds one idea on another, and "the one
+   detail off" among the wrong options. To check on the next real
+   generation.
 3. **Confidence**: simulator first, then C on multiple choice in every
    mode, if it holds.
 4. **The lecture check** (4: 2), after reading a real lecture.

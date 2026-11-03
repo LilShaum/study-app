@@ -595,6 +595,12 @@ because the definition leaves it out or buries it in a clause:
    falls, which lasts longer, when the source says so.
 6. **A misconception.** The wrong belief the source warns about, or the one
    a half-reader would form, as the most tempting distractor.
+7. **Two ideas together.** Where the material builds one idea on another
+   (this section on an earlier one, a mechanism on its parts), a question
+   only answerable by joining them: what happens when both apply, or how
+   one explains the other. A student who learned each idea alone, by its
+   words, cannot answer it; one who understood them can. Write it in the
+   later section, once both have been taught.
 
 **Nuance, not trivia.** Tell apart what the lecture **teaches** from how
 it **illustrated** it.
@@ -710,7 +716,11 @@ wrong thing. For every MCQ:
   - the **half-truth**: the right mechanism in the wrong place, or a true
     statement that does not answer this question;
   - the **misconception** the source warns about, or the everyday-sense
-    answer someone who skipped the lecture would give.
+    answer someone who skipped the lecture would give;
+  - the **one detail off**: the right answer with a single detail changed
+    (a step, a direction, a place, an amount) and everything else exactly
+    right, so only a student who knows the whole idea, not its gist, rules
+    it out. The changed detail must make it false by the source.
 - Build distractors from this lecture's own terms and facts, so a student
   who only recognises words from the slides cannot strike them out. Each
   must be wrong for a reason the source gives, not wrong by being invented,
