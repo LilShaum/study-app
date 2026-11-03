@@ -412,6 +412,14 @@ problem, 5 a written answer, rounded to 5) and changeable. The time left
 shows beside the count, red in the last minute; at zero the test ends and
 is marked, as an exam is collected. A timed test left and reopened keeps
 its time running, and is marked on return if it ran out.
+Like a paper test (the owner, 2026-11-03: "mark questions to go back to and
+let u swap between questions … with pages u can flip between irl"): the
+question count ("Question 5 of 20 ▸") opens every question by number,
+answered in ink, the rest faint, and any can be turned to; Mark to come
+back to puts a "?" beside one, kept if the test is left. Ending with any
+blank or marked shows them first (Before you hand it in: "2 not answered ·
+1 marked"), to go back to one or end; time running out hands it in as it
+is.
 Answers are given at the end, always: nothing is marked while it is taken,
 and an answer can be changed (feedback held to the end of a test teaches
 as well as or better than feedback after each answer, and any feedback

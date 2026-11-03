@@ -60,9 +60,40 @@ describe('practice test: a rehearsal, answers at the end', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     fireEvent.click(radios().find((b) => /wrong/.test(b.textContent ?? ''))!);
     fireEvent.click(screen.getByRole('button', { name: 'End and see my score' }));
+    // One left blank: looked over before it is handed in.
+    expect(screen.getByText('1 not answered.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'End and see my score' }));
     expect(screen.getByText('1 of 3')).toBeTruthy();
     expect(screen.getByText('What you missed')).toBeTruthy();
     expect(screen.getAllByText(/^not \d[abc]$/).length).toBeGreaterThan(0);
+  });
+
+  it('turns to any question, marks one to come back to, and shows what is open before handing in', () => {
+    open();
+    fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
+    const radios = () => screen.getAllByRole('radio');
+    const shownQuestion = () => Number(screen.getByText(/^Question \d\?$/).textContent!.match(/\d/)![0]);
+    // Answer the first, mark it, then turn straight to the third.
+    const first = shownQuestion();
+    fireEvent.click(radios()[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Mark to come back to' }));
+    expect(screen.getByRole('button', { name: 'Marked to come back to' }).getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: /^Question 1 of 3/ }));
+    expect(screen.getByRole('button', { name: 'Question 1, answered, marked to come back to' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Question 3, not answered' }));
+    expect(screen.getByText(/^Question 3 of 3/)).toBeTruthy();
+    expect(shownQuestion()).not.toBe(first);
+    // Ending: what is still open, and a way back to it.
+    fireEvent.click(screen.getByRole('button', { name: 'End and see my score' }));
+    expect(screen.getByText('2 not answered · 1 marked to come back to.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Question 1, answered, marked to come back to' }));
+    expect(screen.getByText(/^Question 1 of 3/)).toBeTruthy();
+    expect(shownQuestion()).toBe(first);
+    fireEvent.click(screen.getByRole('button', { name: 'Marked to come back to' }));
+    fireEvent.click(screen.getByRole('button', { name: 'End and see my score' }));
+    expect(screen.getByText('2 not answered.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Back to the test' }));
+    expect(screen.getByText(/^Question 1 of 3/)).toBeTruthy();
   });
 
   it('points to Practice for marking as you go', () => {

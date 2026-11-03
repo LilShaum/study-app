@@ -30,10 +30,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
 
-- **Practice test like a paper test: mark questions to come back to, and
-  move freely between them** (2026-11-03: "the practice test then should
-  also let you mark questions to go back to and let u swap between
-  questions to simulate a real test with pages u can flip between irl").
 - **Say how sure you are, and let it change what happens** (2026-11-03:
   "for certain question times that it applies to, and in my mind the
   perfect example are multiple choice questions, you should be able to
@@ -144,6 +140,14 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-11-03 The practice test turns like a paper test: the question count
+  opens every question by number, Mark to come back to puts a "?" beside
+  one, and ending with any blank or marked shows them first.
+  - **Practice test like a paper test: mark questions to come back to, and
+    move freely between them** (2026-11-03: "the practice test then should
+    also let you mark questions to go back to and let u swap between
+    questions to simulate a real test with pages u can flip between irl").
 
 - 2026-11-03 Practice and the practice test, one job each, and flashcards
   the Anki way (the two asks below, planned together in

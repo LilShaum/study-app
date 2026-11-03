@@ -119,6 +119,8 @@ interface SavedTest {
   seed?: string;
   /** A timed test's end, as a time: leaving does not stop the clock, as an exam's does not. */
   endsAt?: number | null;
+  /** Questions marked to come back to, as a pencilled "?" beside one on paper. */
+  flagged?: boolean[];
   at: number;
   done: boolean;
   recorded: boolean;
@@ -140,6 +142,7 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
     const answeredAt: (number | null)[] = [];
     const marks: (boolean[] | null)[] = [];
     const checked: boolean[] = [];
+    const flagged: boolean[] = [];
     saved.refs.forEach((r, i) => {
       const q = byRef.get(`${r.courseId}/${r.itemId}`);
       if (q) {
@@ -154,6 +157,7 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
         const points = isWritten(q.item) ? answerPoints(q.item)?.points.length : undefined;
         marks.push(Array.isArray(m) && m.length === points ? m.map(Boolean) : null);
         checked.push(ok && !!saved.checked?.[i]);
+        flagged.push(!!saved.flagged?.[i]);
       }
     });
     if (!test.length) return null;
@@ -163,6 +167,7 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
       answeredAt,
       marks,
       checked,
+      flagged,
       atEnd: !!saved.atEnd,
       endsAt: typeof saved.endsAt === 'number' ? saved.endsAt : null,
       marking: !!saved.marking,
@@ -186,6 +191,9 @@ function TestRun({ storageKey, pool, header, back, practiceTo }: { storageKey: s
   const [answeredAt, setAnsweredAt] = useState<(number | null)[]>(saved?.answeredAt ?? []);
   const [marks, setMarks] = useState<(boolean[] | null)[]>(saved?.marks ?? []);
   const [checked, setChecked] = useState<boolean[]>(saved?.checked ?? []);
+  const [flagged, setFlagged] = useState<boolean[]>(saved?.flagged ?? []);
+  /** Ending with questions blank or marked: looked over first, as a paper is before it is handed in. */
+  const [review, setReview] = useState(false);
   const [atEnd, setAtEnd] = useState(saved?.atEnd ?? false);
   const [endsAt, setEndsAt] = useState<number | null>(saved?.endsAt ?? null);
   /** A timed test's time left, in ms, read by the tick below (rendering does not read the clock). */
@@ -210,13 +218,13 @@ function TestRun({ storageKey, pool, header, back, practiceTo }: { storageKey: s
       if (!test) localStorage.removeItem(storageKey);
       else {
         const refs = test.map((q) => ({ courseId: q.courseId, itemId: q.item.id }));
-        const record: SavedTest = { refs, answers, answeredAt, marks, checked, atEnd, endsAt, marking, seed, at, done, recorded: recorded.current, savedAt: Date.now() };
+        const record: SavedTest = { refs, answers, answeredAt, marks, checked, flagged, atEnd, endsAt, marking, seed, at, done, recorded: recorded.current, savedAt: Date.now() };
         localStorage.setItem(storageKey, JSON.stringify(record));
       }
     } catch {
       // Storage full or blocked: the test still works, it just won't survive a reload.
     }
-  }, [storageKey, test, answers, answeredAt, marks, checked, atEnd, endsAt, marking, seed, at, done]);
+  }, [storageKey, test, answers, answeredAt, marks, checked, flagged, atEnd, endsAt, marking, seed, at, done]);
 
   // A timed test counts down while it is being taken; at zero it ends and is
   // marked, as an exam is collected when time is called.
@@ -243,6 +251,8 @@ function TestRun({ storageKey, pool, header, back, practiceTo }: { storageKey: s
     setAnsweredAt(questions.map(() => null));
     setMarks(questions.map(() => null));
     setChecked(questions.map(() => false));
+    setFlagged(questions.map(() => false));
+    setReview(false);
     setMarking(false);
     setSeed(Math.random().toString(36));
     setAt(0);
@@ -370,11 +380,39 @@ function TestRun({ storageKey, pool, header, back, practiceTo }: { storageKey: s
       />
     );
   }
+  /** Ending: blank or marked questions are looked over first; time running out hands it in as it is. */
+  const handIn = () => {
+    const open = test.some((_, n) => !isAnswered(answers[n]) || flagged[n]);
+    if (open && !review) setReview(true);
+    else {
+      setReview(false);
+      end();
+    }
+  };
+  if (review) {
+    return (
+      <HandIn
+        test={test}
+        answers={answers}
+        flagged={flagged}
+        left={endsAt != null ? left : null}
+        onJump={(n) => {
+          setAt(n);
+          setReview(false);
+        }}
+        onBack={() => setReview(false)}
+        onEnd={handIn}
+      />
+    );
+  }
   return (
     <Taking
       test={test}
       at={at}
       answers={answers}
+      flagged={flagged}
+      onFlag={() => setFlagged((f) => test.map((_, n) => (n === at ? !f[n] : !!f[n])))}
+      onJump={setAt}
       marks={marks}
       shown={!!checked[at]}
       instant={!atEnd}
@@ -390,8 +428,8 @@ function TestRun({ storageKey, pool, header, back, practiceTo }: { storageKey: s
       onCheck={check}
       onTick={(k) => tick(at, k)}
       onBack={() => setAt((n) => Math.max(0, n - 1))}
-      onNext={() => (at + 1 < test.length ? setAt(at + 1) : end())}
-      onEnd={end}
+      onNext={() => (at + 1 < test.length ? setAt(at + 1) : handIn())}
+      onEnd={handIn}
       backTo={back}
     />
   );
@@ -614,6 +652,9 @@ function Taking({
   test,
   at,
   answers,
+  flagged,
+  onFlag,
+  onJump,
   marks,
   shown,
   instant,
@@ -633,6 +674,11 @@ function Taking({
   test: TestQuestion[];
   at: number;
   answers: TestAnswer[];
+  /** Marked to come back to. */
+  flagged: boolean[];
+  onFlag: () => void;
+  /** Go to a question, as a page of a paper test is turned to. */
+  onJump: (n: number) => void;
   marks: (boolean[] | null)[];
   /** This question is marked: right or wrong shown, the answer kept. */
   shown: boolean;
@@ -653,7 +699,9 @@ function Taking({
   const q = test[at];
   const chosen = answers[at];
   const last = at + 1 === test.length;
-  const answered = answers.filter((a) => (typeof a === 'string' ? a.trim() : a != null)).length;
+  const answered = answers.filter(isAnswered).length;
+  /** Every question's number, to turn to any of them. */
+  const [pages, setPages] = useState(false);
   const blank = typeof chosen === 'string' ? !chosen.trim() : chosen == null;
   // Shown in the test's own order; answers are kept by the file's index.
   const options = useMemo(() => (q.item.type === 'mcq' ? q.item.options : []), [q]);
@@ -696,9 +744,14 @@ function Taking({
         </button>
       </div>
       <div className="mt-4 flex items-baseline justify-between gap-3 border-b border-border pb-2">
-        <span className="mark text-text-3">
-          Question {at + 1} of {test.length}
-        </span>
+        <button
+          type="button"
+          aria-expanded={pages}
+          onClick={() => setPages((p) => !p)}
+          className="tap-safe mark text-text-3 hover:text-text"
+        >
+          Question {at + 1} of {test.length} {pages ? '▾' : '▸'}
+        </button>
         <span className="text-xs tabular-nums text-text-3">
           {answered} answered
           {left != null && (
@@ -708,6 +761,18 @@ function Taking({
           )}
         </span>
       </div>
+      {pages && (
+        <QuestionGrid
+          test={test}
+          answers={answers}
+          flagged={flagged}
+          at={at}
+          onJump={(n) => {
+            onJump(n);
+            setPages(false);
+          }}
+        />
+      )}
       {isProblem(q.item) ? (
         <ProblemAsk
           // Its own box per question, so a half-typed answer is never carried to the next.
@@ -793,16 +858,26 @@ function Taking({
           {shown && <McqMarked item={q.item} chosen={chosen} order={order} />}
         </>
       )}
-      {!shown && (
+      <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-4">
+        {!shown && (
+          <button
+            type="button"
+            aria-pressed={chosen === DONT_KNOW}
+            onClick={() => onPick(DONT_KNOW, true)}
+            className={`tap-safe block text-small underline-offset-4 hover:underline ${chosen === DONT_KNOW ? 'text-accent underline decoration-accent decoration-2' : 'text-text-3 hover:text-text'}`}
+          >
+            I don&rsquo;t know
+          </button>
+        )}
         <button
           type="button"
-          aria-pressed={chosen === DONT_KNOW}
-          onClick={() => onPick(DONT_KNOW, true)}
-          className={`tap-safe mt-3 block text-small underline-offset-4 hover:underline ${chosen === DONT_KNOW ? 'text-accent underline decoration-accent decoration-2' : 'text-text-3 hover:text-text'}`}
+          aria-pressed={!!flagged[at]}
+          onClick={onFlag}
+          className={`tap-safe ml-auto block text-small underline-offset-4 hover:underline ${flagged[at] ? 'text-accent underline decoration-accent decoration-2' : 'text-text-3 hover:text-text'}`}
         >
-          I don&rsquo;t know
+          {flagged[at] ? 'Marked to come back to' : 'Mark to come back to'}
         </button>
-      )}
+      </div>
       <div className="mt-6 flex items-center gap-3">
         <button type="button" onClick={onBack} disabled={at === 0} className="press tap-safe disabled:opacity-40">
           Back
@@ -828,6 +903,109 @@ function Taking({
 }
 
 const PROBLEM_FORM = 'test-problem';
+
+/** Answered: an option, I don't know, or something written. */
+function isAnswered(a: TestAnswer | undefined): boolean {
+  return typeof a === 'string' ? !!a.trim() : a != null;
+}
+
+/**
+ * Every question by number, to turn to any of them as the pages of a paper
+ * test (the owner, 2026-11-03): answered ones in ink, the rest faint, a
+ * question marked to come back to with a "?", as pencilled beside it.
+ */
+function QuestionGrid({
+  test,
+  answers,
+  flagged,
+  at,
+  onJump,
+}: {
+  test: TestQuestion[];
+  answers: TestAnswer[];
+  flagged: boolean[];
+  at: number | null;
+  onJump: (n: number) => void;
+}) {
+  return (
+    <div className="mt-3 border-b border-border pb-3">
+      <ol aria-label="Questions" className="flex flex-wrap gap-x-1">
+        {test.map((q, n) => {
+          const done = isAnswered(answers[n]);
+          const here = n === at;
+          return (
+            <li key={`${q.courseId}/${q.item.id}`}>
+              <button
+                type="button"
+                onClick={() => onJump(n)}
+                aria-current={here ? 'step' : undefined}
+                aria-label={`Question ${n + 1}, ${done ? 'answered' : 'not answered'}${flagged[n] ? ', marked to come back to' : ''}`}
+                className={`tap-safe min-w-[2.25rem] px-1 py-1 text-center text-small tabular-nums ${
+                  here
+                    ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
+                    : done
+                      ? 'font-semibold text-text hover:text-accent'
+                      : 'text-text-3 hover:text-text'
+                }`}
+              >
+                {n + 1}
+                {flagged[n] && <sup className="ml-px text-accent">?</sup>}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="mt-1 text-xs text-text-3">Faint: not answered yet. ?: marked to come back to.</p>
+    </div>
+  );
+}
+
+/**
+ * Before a test is handed in with questions blank or marked: every question
+ * by number, what is still open, and the choice to go back or end. A timed
+ * test that runs out is handed in as it is, without this.
+ */
+function HandIn({
+  test,
+  answers,
+  flagged,
+  left,
+  onJump,
+  onBack,
+  onEnd,
+}: {
+  test: TestQuestion[];
+  answers: TestAnswer[];
+  flagged: boolean[];
+  left: number | null;
+  onJump: (n: number) => void;
+  onBack: () => void;
+  onEnd: () => void;
+}) {
+  const blank = test.filter((_, n) => !isAnswered(answers[n])).length;
+  const marked = test.filter((_, n) => flagged[n]).length;
+  const open = [blank ? `${blank} not answered` : '', marked ? `${marked} marked to come back to` : ''].filter(Boolean).join(' · ');
+  return (
+    <div>
+      <p className="mark text-text-3">Before you hand it in</p>
+      <p className="mt-2 font-display text-heading text-text">{open}.</p>
+      {left != null && (
+        <p className={`mt-1 text-small tabular-nums ${left <= 60_000 ? 'text-error' : 'text-text-3'}`} role="timer" aria-live="off">
+          {Math.floor(left / 60_000)}:{String(Math.floor((left % 60_000) / 1000)).padStart(2, '0')} left
+        </p>
+      )}
+      <QuestionGrid test={test} answers={answers} flagged={flagged} at={null} onJump={onJump} />
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <button type="button" onClick={onBack} className="press tap-safe">
+          Back to the test
+        </button>
+        <button type="button" onClick={onEnd} className="press press-ink tap-safe">
+          End and see my score
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /**
  * A problem whose answer the app checks, asked in a test: worked out, the
