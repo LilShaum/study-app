@@ -380,35 +380,43 @@ lecture. The count on Start is the sitting Start opens.
 
 ### Practice test
 
-**Goal.** Check understanding the way an exam does.
+**Goal.** Rehearse the exam: find out whether you are ready, the way the
+exam will ask, with nothing marked until it ends. Studying with each answer
+marked as you give it is Practice's job (docs/proposals/practice.md: one
+use each; the owner, 2026-11-03: "a practice test that doesn't show u
+answers right after and maybe it has u timed or smth but u can still
+customize what shows on it").
 
 **How it works.** Only medium and hard MCQs (a question with no
-difficulty counts as medium); written questions and problems too only when
-chosen on the setup ("Multiple choice and written answers", "… and
-problems", "Multiple choice, problems and written answers", by what the
-lecture has; the owner, 2026-10-26: "BY DEFAULT ONLY MULTIPLE CHOICE"). A
-problem of any difficulty: an easy one is still worked, never recognised.
-A problem whose answer the app checks is typed, its unit beside the box,
-and marked by the checker (Check asks for a number it can read first); one
-checked against its steps is asked as a written question, its steps the
-points to tick. No steps as hints in a test. Drawn at random from a lecture, a section, a lecture's
-or a class's studies, everything an exam covers, or a whole class; 20, 40
-or all. Over several lectures, 20 or 40 are shared by each lecture's size,
-or equally if the student picks Each the same. Answers: As you go (the
-default) or At the end, as an exam gives them (the owner, 2026-10-26:
-"CHOOSE IF U GET ANSWERS AT THE END OR AT START"); at the end, nothing is
-marked until the test ends and an answer can be changed. As you go, each
-answer is marked as it is given ("TELL YOU IF THE QUESTION IS CORRECT OR
-WRONG RIGHT AWAY"): a pick or I don't know shows right, or the right
-answer, as a study session shows it (McqCard): every wrong option's
-reason, the pick's set to be read, the explanation, and the passage from
-the notes open after a miss; the answer is kept;
-a written answer's Check shows the model answer's points to tick (right
-only with the points needed). The end gives the score, each section
-weakest first, and every miss; a written answer not checked is ticked
-there first, and a missed one shows each point ✓ or ✗. A written question left blank
+difficulty counts as medium); problems and written questions too only when
+ticked under On it, which lists the kinds the lecture or class has
+(Multiple choice ticked alone by default; the owner, 2026-10-26: "BY
+DEFAULT ONLY MULTIPLE CHOICE"). A problem of any difficulty: an easy one
+is still worked, never recognised. A problem whose answer the app checks
+is typed, its unit beside the box (it asks for a number it can read before
+moving on); one checked against its steps is asked as a written question,
+its steps the points to tick. No steps as hints in a test. From: the
+sections of a lecture, or the lectures of a class, ticked (folded, all by
+default); also a lecture's or a class's studies, everything an exam
+covers, or a whole class, from the links that open it. 20, 40 or all. Over
+several lectures, 20 or 40 are shared by each lecture's size, or equally if
+the student picks Each the same. Timer: None (the default) or Timed, with
+the minutes suggested from what is on it (1¼ a multiple choice, 3 a
+problem, 5 a written answer, rounded to 5) and changeable. The time left
+shows beside the count, red in the last minute; at zero the test ends and
+is marked, as an exam is collected. A timed test left and reopened keeps
+its time running, and is marked on return if it ran out.
+Answers are given at the end, always: nothing is marked while it is taken,
+and an answer can be changed (feedback held to the end of a test teaches
+as well as or better than feedback after each answer, and any feedback
+beats none: docs/evidence.md). The setup says where marking as you go is:
+"Want each answer marked as you give it? That is Practice." The end gives
+the score, each section weakest first, and every miss with its reasons and
+the passage; a written answer is ticked point by point there first, and a
+missed one shows each point ✓ or ✗; a missed problem names the mistake
+behind the answer when the lecture knows it. A written question left blank
 with nothing ticked is not recorded, like a blank MCQ. Retake the missed
-ones.
+ones (untimed).
 A new test asks first what was last got wrong (a miss or I don't know, in
 a test or anywhere: "Remember, ADAPTIVE", the owner, 2026-10-26), then the
 questions never answered in a test, then those answered in one longest ago (`ItemResult.testedAt`, kept across devices by

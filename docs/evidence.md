@@ -376,6 +376,67 @@ promise for every subject.
 
 ---
 
+### Feedback at the end of a test teaches as well as after each answer
+
+Butler, A. C., Karpicke, J. D., & Roediger, H. L. (2007). *The effect of
+type and timing of feedback on learning from multiple-choice tests.*
+Journal of Experimental Psychology: Applied.
+[10.1037/1076-898X.13.4.273](https://doi.org/10.1037/1076-898X.13.4.273)
+
+> "The results indicated that delayed feedback led to superior final test
+> performance relative to immediate feedback. … This research suggests that
+> delaying the presentation of feedback after a test is beneficial to
+> learning because of the spaced presentation of information."
+
+Metcalfe, J., Kornell, N., & Finn, B. (2009). *Delayed versus immediate
+feedback in children's and adults' vocabulary learning.* Memory &
+Cognition.
+[10.3758/MC.37.8.1077](https://doi.org/10.3758/MC.37.8.1077)
+
+> "With college students learning GRE-level words, however, delayed
+> feedback produced better performance than did immediate feedback (and
+> both were better than no feedback) when lag to test was uncontrolled, but
+> there was no difference between the delayed and immediate feedback
+> conditions when the lag to test was controlled."
+
+Butler, A. C., & Roediger, H. L. (2008). *Feedback enhances the positive
+effects and reduces the negative effects of multiple-choice testing.*
+Memory & Cognition.
+[10.3758/mc.36.3.604](https://doi.org/10.3758/mc.36.3.604)
+
+> "In comparison with the no-feedback condition, both immediate and delayed
+> feedback increased the proportion of correct responses and reduced the
+> proportion of intrusions (i.e., lure responses from the initial
+> multiple-choice test) on a delayed cued recall test."
+
+Carpenter, S. K., Haynes, C. L., Corral, D., & Yeung, K. L. (2018).
+*Hypercorrection of high-confidence errors in the classroom.* Memory.
+[10.1080/09658211.2018.1477164](https://doi.org/10.1080/09658211.2018.1477164)
+
+> "college students in an introductory horticulture class answered
+> questions about the course content, rated their confidence in their
+> answers, received feedback of the correct answers, and then later
+> completed a posttest. Results revealed a significant hypercorrection
+> effect"
+
+**What it licenses in the app.** The practice test holds every answer to
+the end, as an exam does, at no cost to what it teaches: for adults the
+delay was as good as feedback after each answer once the gap to the final
+test was equal, and better when it was not. Feedback of some kind, never
+none: the end shows every miss with the right answer, its reasons and the
+passage, which also undoes the wrong options a multiple-choice test plants
+(Butler & Roediger). A confident wrong answer is the one most worth
+showing (Carpenter et al.), so the end lists every miss, not a score
+alone.
+
+**What it does not license.** That holding answers back is better for
+studying in general: these are single tests followed by a later test, and
+Practice, where a student is still learning the material, marks each
+answer as it is given. Nothing here about timing a test; the timer is
+there because the exam is timed, not because the evidence asks for it.
+
+---
+
 ## Attributed but not verified
 
 These are claims I have seen stated confidently, and could not confirm from

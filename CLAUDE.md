@@ -58,16 +58,21 @@ this is the intent it serves.
   (2026-10-26). Never read and then name straight away: it "accomplish[es]
   no teaching and slows shit down" (2026-10-26).
 - **Practice:** mixed lectures, closer to an exam, as the exam gets near
-  (2026-10-19).
+  (2026-10-19). Study whatever you want however you want: boxes to tick
+  for kinds and sections, not one-of choices, and easy to find ("having
+  it hidden is bad", 2026-11-03).
 - **Practice test and written questions:** what you practise should look
   like what the exam asks. Where a class's exam is calculations, short and
   long answers, the app should have you write them (2026-10-21). The
   practice test is multiple choice unless written answers are chosen on
-  its setup ("I NEVER TOLD YOU TO ADD WRITTEN ANSWERS", 2026-10-26). Right
-  or wrong is shown as each is answered, with the same reasons and passage
-  as the other modes, and what was missed comes back first in the next
-  test: "Remember, ADAPTIVE" (2026-10-26). Answers as you go by default, or
-  at the end if chosen (2026-10-26).
+  its setup ("I NEVER TOLD YOU TO ADD WRITTEN ANSWERS", 2026-10-26), and
+  what was missed comes back first in the next test: "Remember, ADAPTIVE"
+  (2026-10-26). Practice studies and the test rehearses (2026-11-03: "a
+  practice test that doesn't show u answers right after and maybe it has
+  u timed … but u can still customize what shows on it"; the default left
+  to the design): the test marks at the end, timed if wanted, with the
+  same reasons and passage as the other modes; Practice marks as you go,
+  which the test did from 2026-10-26.
 - **Making a lecture:** the student ticks which kinds of item to make and
   gets only those ("if they just want flash cards for example they will
   just get flash cards"); prompt screens are a few short steps, details

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { recordAnswers } from '@/store/session';
@@ -22,13 +22,13 @@ import { SolutionSteps } from '@/components/items/ProblemCard';
  * "/class/:code/test" (`?exam=` for what one exam covers, else the whole
  * class): a practice test.
  *
- * A question, its options, Back and Next, each answer marked as it is given:
- * right, or the right answer, why the pick was wrong and the explanation
- * (the owner, 2026-10-26: "MAKE IT TELL YOU IF THE QUESTION IS CORRECT OR
- * WRONG RIGHT AWAY"; it used to wait until the end, as an exam does). A
- * written answer is checked against its points. The end shows the score,
- * each section's share, and every miss. The answers count as practice
- * like any other (recordAnswer), so Today knows what the test found.
+ * The exam rehearsal (docs/proposals/practice.md): a question, its options,
+ * Back and Next, nothing marked until the test ends, timed if the student
+ * sets a time. Marking each answer as it is given is Practice's job; the
+ * test was that way from 2026-10-26 until Practice took it on (2026-11-03).
+ * The end shows the score, each section's share, and every miss with why,
+ * the right answer and the passage from the notes. The answers count as
+ * practice like any other (recordAnswer), so Today knows what the test found.
  */
 export function TestRoute() {
   const { id, code } = useParams<{ id?: string; code?: string }>();
@@ -83,7 +83,16 @@ export function TestRoute() {
 
   // Keyed by what the test covers, so a different lecture, section or exam
   // starts from its own saved test, never from another's.
-  return <TestRun key={scopeKey} storageKey={`arborous:test:${scopeKey}`} pool={pool} header={header} back={back} />;
+  return (
+    <TestRun
+      key={scopeKey}
+      storageKey={`arborous:test:${scopeKey}`}
+      pool={pool}
+      header={header}
+      back={back}
+      practiceTo={id ? `/study/${id}/practice` : `/class/${encodeURIComponent(code ?? '')}/practice`}
+    />
+  );
 }
 
 /**
@@ -108,6 +117,8 @@ interface SavedTest {
   atEnd?: boolean;
   /** Orders this test's options (lib/optionOrder), so a reload shows them as before. */
   seed?: string;
+  /** A timed test's end, as a time: leaving does not stop the clock, as an exam's does not. */
+  endsAt?: number | null;
   at: number;
   done: boolean;
   recorded: boolean;
@@ -153,6 +164,7 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
       marks,
       checked,
       atEnd: !!saved.atEnd,
+      endsAt: typeof saved.endsAt === 'number' ? saved.endsAt : null,
       marking: !!saved.marking,
       seed: typeof saved.seed === 'string' ? saved.seed : String(saved.savedAt),
       at: Math.min(Math.max(0, saved.at | 0), test.length - 1),
@@ -165,7 +177,7 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
   }
 }
 
-function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool: TestQuestion[]; header: ReactNode; back: string }) {
+function TestRun({ storageKey, pool, header, back, practiceTo }: { storageKey: string; pool: TestQuestion[]; header: ReactNode; back: string; practiceTo: string }) {
   // Read once: re-reading the store as answers are recorded must not
   // reshuffle the questions under the student.
   const [saved] = useState(() => loadTest(storageKey, pool));
@@ -175,6 +187,9 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
   const [marks, setMarks] = useState<(boolean[] | null)[]>(saved?.marks ?? []);
   const [checked, setChecked] = useState<boolean[]>(saved?.checked ?? []);
   const [atEnd, setAtEnd] = useState(saved?.atEnd ?? false);
+  const [endsAt, setEndsAt] = useState<number | null>(saved?.endsAt ?? null);
+  /** A timed test's time left, in ms, read by the tick below (rendering does not read the clock). */
+  const [left, setLeft] = useState<number | null>(null);
   const [marking, setMarking] = useState(saved?.marking ?? false);
   const [seed, setSeed] = useState(saved?.seed ?? '');
   const [at, setAt] = useState(saved?.at ?? 0);
@@ -195,17 +210,35 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       if (!test) localStorage.removeItem(storageKey);
       else {
         const refs = test.map((q) => ({ courseId: q.courseId, itemId: q.item.id }));
-        const record: SavedTest = { refs, answers, answeredAt, marks, checked, atEnd, marking, seed, at, done, recorded: recorded.current, savedAt: Date.now() };
+        const record: SavedTest = { refs, answers, answeredAt, marks, checked, atEnd, endsAt, marking, seed, at, done, recorded: recorded.current, savedAt: Date.now() };
         localStorage.setItem(storageKey, JSON.stringify(record));
       }
     } catch {
       // Storage full or blocked: the test still works, it just won't survive a reload.
     }
-  }, [storageKey, test, answers, answeredAt, marks, checked, atEnd, marking, seed, at, done]);
+  }, [storageKey, test, answers, answeredAt, marks, checked, atEnd, endsAt, marking, seed, at, done]);
 
-  const start = (questions: TestQuestion[], answersAtEnd = atEnd) => {
+  // A timed test counts down while it is being taken; at zero it ends and is
+  // marked, as an exam is collected when time is called.
+  const running = !!test && !done && !marking && endsAt != null;
+  const endRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    if (!running) return;
+    const tick = () => {
+      const ms = endsAt! - Date.now();
+      setLeft(Math.max(0, ms));
+      if (ms <= 0) endRef.current();
+    };
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, [running, endsAt]);
+
+  /** A new test: answers at the end; `minutes` when timed. A retake of the missed keeps no timer. */
+  const start = (questions: TestQuestion[], minutes?: number) => {
     setTest(questions);
-    setAtEnd(answersAtEnd);
+    setAtEnd(true);
+    setEndsAt(minutes ? Date.now() + minutes * 60_000 : null);
     setAnswers(questions.map(() => null));
     setAnsweredAt(questions.map(() => null));
     setMarks(questions.map(() => null));
@@ -216,16 +249,6 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
     setDone(false);
     recorded.current = false;
     window.scrollTo(0, 0);
-  };
-
-  // Written answers not yet checked are ticked at the end, then the score.
-  const unmarked = (test ?? []).some((q, i) => isWritten(q.item) && !checked[i] && answers[i] != null && answers[i] !== '');
-  const end = () => {
-    if (!test) return;
-    if (unmarked && !marking) {
-      setMarking(true);
-      window.scrollTo(0, 0);
-    } else finish();
   };
 
   const finish = () => {
@@ -285,6 +308,21 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
     window.scrollTo(0, 0);
   };
 
+  // Written answers not yet checked are ticked at the end, then the score.
+  const unmarked = (test ?? []).some((q, i) => isWritten(q.item) && !checked[i] && answers[i] != null && answers[i] !== '');
+  const end = () => {
+    if (!test) return;
+    if (unmarked && !marking) {
+      setMarking(true);
+      window.scrollTo(0, 0);
+    } else finish();
+  };
+
+  // The clock calls the latest end(), kept here after each render.
+  useLayoutEffect(() => {
+    endRef.current = end;
+  });
+
   const tick = (i: number, k: number) =>
     setMarks((m) => {
       if (!test) return m;
@@ -303,7 +341,8 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
         pool={pool}
         missedLast={missedLast}
         fresh={(q) => !missedLast(q) && !recordOf(q)?.testedAt}
-        onStart={(chosen, n, even, answersAtEnd) => start(drawTest(chosen, n, even, firstBy), answersAtEnd)}
+        practiceTo={practiceTo}
+        onStart={(chosen, n, even, minutes) => start(drawTest(chosen, n, even, firstBy), minutes)}
       />
     );
   if (done) {
@@ -339,6 +378,7 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       marks={marks}
       shown={!!checked[at]}
       instant={!atEnd}
+      left={endsAt != null ? left : null}
       unmarked={unmarked}
       seed={seed}
       onPick={(a, andCheck) => {
@@ -369,156 +409,199 @@ function firstLine(total: number, missed: number, fresh: number): string {
     : ' You have had every question here on a test; a new one asks first those you had longest ago.';
 }
 
+/** The kinds a test can hold, as the setup ticks them. */
+type TestKind = 'mcq' | 'problem' | 'written';
+const TEST_KINDS: { value: TestKind; label: string }[] = [
+  { value: 'mcq', label: 'Multiple choice' },
+  { value: 'problem', label: 'Problems' },
+  { value: 'written', label: 'Written answers' },
+];
+const kindOfQuestion = (q: TestQuestion): TestKind => (q.item.type === 'mcq' ? 'mcq' : q.problem ? 'problem' : 'written');
+/** Exam pace, as a suggestion only: a multiple-choice question, a problem, an answer to write. */
+const PACE_SECONDS: Record<TestKind, number> = { mcq: 75, problem: 180, written: 300 };
+
+/**
+ * The test's setup (docs/proposals/practice.md): a rehearsal for the exam.
+ * Answers are held to the end, as an exam holds them: feedback after a test
+ * taught as well as feedback after each answer, or better (docs/evidence.md),
+ * and marking as you go is what Practice is for, so the test is the one door
+ * that behaves like the exam. What goes on it is ticked: the kinds (multiple
+ * choice alone by default, as the owner set on 2026-10-26) and the sections
+ * or lectures. A timer is the student's choice, suggested from the questions.
+ */
 function Setup({
   header,
   pool: all,
+  practiceTo,
   missedLast,
   fresh: isFresh,
   onStart,
 }: {
   header: ReactNode;
   pool: TestQuestion[];
+  practiceTo: string;
   missedLast: (q: TestQuestion) => boolean;
   fresh: (q: TestQuestion) => boolean;
-  onStart: (chosen: TestQuestion[], n?: number, even?: boolean, answersAtEnd?: boolean) => void;
+  onStart: (chosen: TestQuestion[], n?: number, even?: boolean, minutes?: number) => void;
 }) {
-  // As you go by default (the owner, 2026-10-26: "TELL YOU IF THE QUESTION
-  // IS CORRECT OR WRONG RIGHT AWAY"), or at the end, as an exam does
-  // ("MAKE IT SO U CAN CHOOSE IF U GET ANSWERS AT THE END OR AT START").
-  const [answersAtEnd, setAnswersAtEnd] = useState(false);
-  // Multiple choice only, unless written answers are asked for too (the
-  // owner, 2026-10-26: "BY DEFAULT ONLY MULTIPLE CHOICE BUT YOU CAN CHOOSE
-  // WHAT GOES ON IT BEFORE").
-  const [written, setWritten] = useState(false);
-  const hasWritten = all.some((q) => q.item.type !== 'mcq');
-  const hasProblems = all.some((q) => q.problem);
-  const hasLong = all.some((q) => isWritten(q.item) && !q.problem);
-  const pool = written ? all : all.filter((q) => q.item.type === 'mcq');
+  const present = TEST_KINDS.filter((k) => all.some((q) => kindOfQuestion(q) === k.value));
+  const [kinds, setKinds] = useState<TestKind[]>(() => (present.some((k) => k.value === 'mcq') ? ['mcq'] : present.map((k) => k.value)));
+  // Where: a lecture's sections, or a class's lectures, ticked.
+  const byLecture = lecturesIn(all) > 1;
+  const placeOf = (q: TestQuestion) => (byLecture ? q.courseId : q.sectionId);
+  const places = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const q of all) if (!seen.has(placeOf(q))) seen.set(placeOf(q), byLecture ? q.lecture : q.section);
+    return [...seen];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [all, byLecture]);
+  const [off, setOff] = useState<string[]>([]);
+  const pool = all.filter((q) => kinds.includes(kindOfQuestion(q)) && !off.includes(placeOf(q)));
   const missed = pool.filter(missedLast).length;
   const fresh = pool.filter(isFresh).length;
   const lengths = TEST_LENGTHS.filter((n) => n < pool.length);
   const [picked, setLength] = useState<number | undefined>(lengths[0]);
-  // A length the other choice offered may be past this one's questions.
+  // A length another choice offered may be past this one's questions.
   const length = picked != null && picked >= pool.length ? lengths[0] : picked;
   const [even, setEven] = useState(false);
   const lectures = lecturesIn(pool);
+  const asked = length ?? pool.length;
+  const suggested = pool.length
+    ? Math.max(5, Math.ceil(((pool.reduce((a, q) => a + PACE_SECONDS[kindOfQuestion(q)], 0) / pool.length) * asked) / 60 / 5) * 5)
+    : 0;
+  const [timed, setTimed] = useState(false);
+  const [minutes, setMinutes] = useState<number | null>(null);
+  const limit = minutes ?? suggested;
+  const toggle = <T,>(list: T[], v: T): T[] => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
+
+  const row = 'flex flex-col gap-y-1 border-b border-border py-5 sm:flex-row sm:items-baseline sm:gap-x-3';
+  const oneOf = <T,>(choices: { value: T; label: string }[], value: T, set: (v: T) => void) => (
+    <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
+      {choices.map((c, i) => (
+        <span key={c.label} className="flex items-baseline">
+          <button
+            type="button"
+            aria-pressed={value === c.value}
+            onClick={() => set(c.value)}
+            className={`tap-safe px-0.5 text-small transition-colors ${value === c.value ? 'text-accent' : 'text-text-2 hover:text-text'}`}
+          >
+            <span className={value === c.value ? 'underline decoration-accent decoration-2 underline-offset-4' : ''}>{c.label}</span>
+          </button>
+          {i < choices.length - 1 && <span className="ml-1 text-text-3">·</span>}
+        </span>
+      ))}
+    </div>
+  );
+
   return (
     <div>
       {header}
       <p className="mt-4 max-w-prose text-small text-text-2">
-        The medium and hard questions, the ones that ask you to use what you know rather than recognise it.
-        {answersAtEnd
-          ? ' Answers wait until the end, as in an exam; then your score and every question you missed, with why.'
-          : ' Each answer is marked as you give it, right or wrong with why; at the end, your score and every question you missed.'}
-        {written &&
-          hasLong &&
-          ' Short and long answers are written, as the exam has you write them; then you tick each point of the model answer you made.'}
-        {written && hasProblems && ' Problems are worked out: a number or a short answer is checked, anything else you check against the steps.'}
+        A rehearsal for the exam: the questions that ask you to use what you know, answers held to the end as an exam holds them,
+        then your score, each section, and every question you missed with why.
+        {kinds.includes('written') && ' Short and long answers are written, then you tick each point of the model answer you made.'}
+        {kinds.includes('problem') && ' Problems are worked out: a number or a short answer is checked, anything else you check against the steps.'}
         {firstLine(pool.length, missed, fresh)}
       </p>
-      {hasWritten && (
-        <div className="mt-6 flex flex-col gap-y-1 border-t border-border py-5 sm:flex-row sm:items-baseline sm:gap-x-3">
-          <span className="mark shrink-0 text-text-3 sm:w-20">On it</span>
-          <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
-            {[
-              { value: false, label: 'Multiple choice' },
-              {
-                value: true,
-                label: hasProblems && hasLong ? 'Multiple choice, problems and written answers' : hasProblems ? 'Multiple choice and problems' : 'Multiple choice and written answers',
-              },
-            ].map((c, i) => (
-              <span key={c.label} className="flex items-baseline">
-                <button
-                  type="button"
-                  aria-pressed={written === c.value}
-                  onClick={() => setWritten(c.value)}
-                  className={`tap-safe px-0.5 text-small transition-colors ${written === c.value ? 'text-accent' : 'text-text-2 hover:text-text'}`}
-                >
-                  <span className={written === c.value ? 'underline decoration-accent decoration-2 underline-offset-4' : ''}>{c.label}</span>
-                </button>
-                {i === 0 && <span className="ml-1 text-text-3">·</span>}
-              </span>
-            ))}
+      <p className="mt-2 max-w-prose text-small text-text-3">
+        Want each answer marked as you give it?{' '}
+        <Link to={practiceTo} className="text-accent underline-offset-4 hover:underline">
+          That is Practice
+        </Link>
+        .
+      </p>
+      <div className="mt-6 border-t border-border">
+        {present.length > 1 && (
+          <fieldset className={row}>
+            <legend className="mark float-left shrink-0 text-text-3 sm:w-20">On it</legend>
+            <div className="clear-left flex flex-wrap gap-x-4 sm:clear-none">
+              {present.map((k) => (
+                <label key={k.value} className="tap-safe flex cursor-pointer items-baseline gap-2 py-1 text-small text-text">
+                  <input type="checkbox" checked={kinds.includes(k.value)} onChange={() => setKinds((ks) => toggle(ks, k.value))} className="accent-accent" />
+                  {k.label}
+                  <span className="text-xs tabular-nums text-text-3">{all.filter((q) => kindOfQuestion(q) === k.value).length}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
+        {places.length > 1 && (
+          <div className={row}>
+            <span className="mark shrink-0 text-text-3 sm:w-20">From</span>
+            <details className="min-w-0 flex-1">
+              <summary className="tap-safe cursor-pointer text-small text-text-2 hover:text-text">
+                {off.length ? `${places.length - off.length} of ${places.length}` : `All ${places.length}`} {byLecture ? 'lectures' : 'sections'}
+              </summary>
+              <div className="mt-2">
+                {places.map(([key, name], i) => (
+                  <label key={key} className="tap-safe flex cursor-pointer items-baseline gap-2 py-1 text-small text-text">
+                    <input type="checkbox" checked={!off.includes(key)} onChange={() => setOff((o) => toggle(o, key))} className="accent-accent" />
+                    <span className="min-w-0 flex-1">
+                      {byLecture ? '' : `${i + 1}. `}
+                      {name}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </details>
           </div>
-        </div>
-      )}
+        )}
+      </div>
       {pool.length === 0 ? (
-        <p className="mt-6 border-y border-border py-3 text-small text-text-2">
-          There are no medium or hard {written ? 'questions' : 'multiple choice questions'} here yet. More practice, on the lecture page, can write some.
+        <p className="border-b border-border py-3 text-small text-text-2">
+          {kinds.length && off.length < places.length
+            ? 'There are no medium or hard questions of those kinds here yet. More practice, on the lecture page, can write some.'
+            : 'Tick at least one kind and one part.'}
         </p>
       ) : (
         <>
-          <div className={`flex flex-col gap-y-1 border-y border-border py-5 sm:flex-row sm:items-baseline sm:gap-x-3 ${hasWritten ? '' : 'mt-6'}`}>
+          <div className={row}>
             <span className="mark shrink-0 text-text-3 sm:w-20">Questions</span>
-            <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
-              {[...lengths, undefined].map((n, i, all) => {
-                const active = n === length;
-                return (
-                  <span key={n ?? 'all'} className="flex items-baseline">
-                    <button
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() => setLength(n)}
-                      className={`tap-safe px-0.5 text-small transition-colors ${active ? 'text-accent' : 'text-text-2 hover:text-text'}`}
-                    >
-                      <span className={active ? 'underline decoration-accent decoration-2 underline-offset-4' : ''}>
-                        {n ?? `All ${pool.length}`}
-                      </span>
-                    </button>
-                    {i < all.length - 1 && <span className="ml-1 text-text-3">·</span>}
-                  </span>
-                );
-              })}
-            </div>
+            {oneOf([...lengths, undefined].map((n) => ({ value: n, label: n == null ? `All ${pool.length}` : String(n) })), length, setLength)}
           </div>
           {/* A drawn test shares itself by how many questions each lecture
-              has; an exam often gives each lecture a similar share instead.
-              Asking for all of them, there is nothing to share. */}
+              has; an exam often gives each lecture a similar share instead. */}
           {lectures > 1 && length != null && (
-            <div className="flex flex-col gap-y-1 border-b border-border py-5 sm:flex-row sm:items-baseline sm:gap-x-3">
+            <div className={row}>
               <span className="mark shrink-0 text-text-3 sm:w-20">Lectures</span>
-              <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
-                {[
+              {oneOf(
+                [
                   { value: false, label: 'Each by its size' },
                   { value: true, label: 'Each the same' },
-                ].map((c, i) => (
-                  <span key={c.label} className="flex items-baseline">
-                    <button
-                      type="button"
-                      aria-pressed={even === c.value}
-                      onClick={() => setEven(c.value)}
-                      className={`tap-safe px-0.5 text-small transition-colors ${even === c.value ? 'text-accent' : 'text-text-2 hover:text-text'}`}
-                    >
-                      <span className={even === c.value ? 'underline decoration-accent decoration-2 underline-offset-4' : ''}>{c.label}</span>
-                    </button>
-                    {i === 0 && <span className="ml-1 text-text-3">·</span>}
-                  </span>
-                ))}
-              </div>
+                ],
+                even,
+                setEven,
+              )}
             </div>
           )}
-          <div className="flex flex-col gap-y-1 border-b border-border py-5 sm:flex-row sm:items-baseline sm:gap-x-3">
-            <span className="mark shrink-0 text-text-3 sm:w-20">Answers</span>
-            <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
-              {[
-                { value: false, label: 'As you go' },
-                { value: true, label: 'At the end' },
-              ].map((c, i) => (
-                <span key={c.label} className="flex items-baseline">
-                  <button
-                    type="button"
-                    aria-pressed={answersAtEnd === c.value}
-                    onClick={() => setAnswersAtEnd(c.value)}
-                    className={`tap-safe px-0.5 text-small transition-colors ${answersAtEnd === c.value ? 'text-accent' : 'text-text-2 hover:text-text'}`}
-                  >
-                    <span className={answersAtEnd === c.value ? 'underline decoration-accent decoration-2 underline-offset-4' : ''}>{c.label}</span>
-                  </button>
-                  {i === 0 && <span className="ml-1 text-text-3">·</span>}
-                </span>
-              ))}
+          <div className={row}>
+            <span className="mark shrink-0 text-text-3 sm:w-20">Timer</span>
+            <div className="min-w-0">
+              {oneOf(
+                [
+                  { value: false, label: 'None' },
+                  { value: true, label: 'Timed' },
+                ],
+                timed,
+                setTimed,
+              )}
+              {timed && (
+                <label className="mt-2 flex items-baseline gap-2 text-small text-text-2">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    max={300}
+                    value={limit}
+                    onChange={(e) => setMinutes(Math.max(1, Math.min(300, Number(e.target.value) || 1)))}
+                    className="field w-20 text-small"
+                  />
+                  minutes. Suggested from the questions at about exam pace; when time is up the test ends and is marked.
+                </label>
+              )}
             </div>
           </div>
-          <button type="button" onClick={() => onStart(pool, length, even, answersAtEnd)} className="press press-ink tap-safe mt-6">
+          <button type="button" onClick={() => onStart(pool, length, even, timed ? limit : undefined)} className="press press-ink tap-safe mt-6">
             Start the test
           </button>
         </>
@@ -543,7 +626,10 @@ function Taking({
   onNext,
   onEnd,
   backTo,
+  left,
 }: {
+  /** A timed test's time left, in ms; null when untimed. */
+  left: number | null;
   test: TestQuestion[];
   at: number;
   answers: TestAnswer[];
@@ -613,7 +699,14 @@ function Taking({
         <span className="mark text-text-3">
           Question {at + 1} of {test.length}
         </span>
-        <span className="text-xs tabular-nums text-text-3">{answered} answered</span>
+        <span className="text-xs tabular-nums text-text-3">
+          {answered} answered
+          {left != null && (
+            <span className={`ml-2 ${left <= 60_000 ? 'text-error' : ''}`} role="timer" aria-live="off">
+              · {Math.floor(left / 60_000)}:{String(Math.floor((left % 60_000) / 1000)).padStart(2, '0')} left
+            </span>
+          )}
+        </span>
       </div>
       {isProblem(q.item) ? (
         <ProblemAsk
@@ -995,6 +1088,7 @@ function Results({
                         </li>
                       ))}
                     </ul>
+                    <SourceNote excerpt={q.item.source_excerpt} open />
                   </li>
                 );
               }
@@ -1016,6 +1110,7 @@ function Results({
                     )}
                     <div className="mt-2 text-small text-success">✓ {shownAnswer(q.item)}</div>
                     <SolutionSteps steps={q.item.steps ?? []} />
+                    <SourceNote excerpt={q.item.source_excerpt} open />
                   </li>
                 );
               }
@@ -1034,6 +1129,7 @@ function Results({
                       <RichText text={q.item.explanation} />
                     </div>
                   )}
+                  <SourceNote excerpt={q.item.source_excerpt} open />
                 </li>
               );
             })}

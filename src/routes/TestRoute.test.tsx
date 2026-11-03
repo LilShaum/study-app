@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
@@ -47,30 +47,45 @@ afterEach(() => {
   useProgressStore.setState({ byCourse: {} });
 });
 
-describe('practice test: marked as you answer', () => {
-  it('says right or wrong as soon as an option is picked, with why, and keeps the answer', () => {
+describe('practice test: a rehearsal, answers at the end', () => {
+  it('marks nothing until the end, lets an answer be changed, then gives the score and why', () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
-    const wrong = screen.getAllByRole('radio').find((b) => /wrong/.test(b.textContent ?? ''))!;
-    const picked = wrong.textContent!.replace(/^./, '').trim();
-    fireEvent.click(wrong);
-    expect(screen.getByText(/Not this time: the answer is/)).toBeTruthy();
-    expect(screen.getByText(new RegExp(`not ${picked.split(' ')[1]}`))).toBeTruthy();
-    expect(screen.getAllByRole('radio').every((b) => (b as HTMLButtonElement).disabled)).toBe(true);
-    // As in the other modes: a reason under every wrong option, and the passage after a miss.
-    expect(screen.getAllByText(/^Why not:$/).length).toBe(2);
-    expect(screen.getByText(/^passage \d$/)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'I don’t know' })).toBeNull();
+    const radios = () => screen.getAllByRole('radio');
+    fireEvent.click(radios().find((b) => /wrong/.test(b.textContent ?? ''))!);
+    expect(screen.queryByText(/Not this time|Correct/)).toBeNull();
+    fireEvent.click(radios().find((b) => /right/.test(b.textContent ?? ''))!);
+    expect(radios().find((b) => /right/.test(b.textContent ?? ''))!.getAttribute('aria-checked')).toBe('true');
+    expect(screen.queryByText(/Correct/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    fireEvent.click(radios().find((b) => /wrong/.test(b.textContent ?? ''))!);
+    fireEvent.click(screen.getByRole('button', { name: 'End and see my score' }));
+    expect(screen.getByText('1 of 3')).toBeTruthy();
+    expect(screen.getByText('What you missed')).toBeTruthy();
+    expect(screen.getAllByText(/^not \d[abc]$/).length).toBeGreaterThan(0);
   });
 
-  it('shows the answer on I don’t know, and a right pick as right', () => {
+  it('points to Practice for marking as you go', () => {
     open();
-    fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
-    fireEvent.click(screen.getByRole('button', { name: 'I don’t know' }));
-    expect(screen.getByText(/^The answer is [ABCD]\.$/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-    fireEvent.click(screen.getAllByRole('radio').find((b) => /right/.test(b.textContent ?? ''))!);
-    expect(screen.getByText('✓ Correct')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'That is Practice' }).getAttribute('href')).toBe('/study/c/practice');
+    expect(screen.queryByRole('button', { name: 'As you go' })).toBeNull();
+  });
+
+  it('ends and is marked when the time set runs out', () => {
+    vi.useFakeTimers();
+    try {
+      open();
+      fireEvent.click(screen.getByRole('button', { name: 'Timed' }));
+      fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '1' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
+      expect(screen.getByRole('timer').textContent).toMatch(/1:00 left|0:5\d left/);
+      act(() => {
+        vi.advanceTimersByTime(61_000);
+      });
+      expect(screen.getByText('0 of 3')).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
@@ -88,8 +103,11 @@ describe('practice test: what goes on it', () => {
     sections: [{ ...lecture.sections[0], items: [...lecture.sections[0].items, { id: 'w', type: 'flashcard', front: 'Explain it.', back: '(1) One. (2) Two.', difficulty: 'medium' }] }],
   } as unknown as Course;
 
-  it('is multiple choice only unless written answers are chosen', () => {
+  it('is multiple choice alone unless written answers are ticked', () => {
     useCoursesStore.setState({ courses: { c: withWritten } });
+    open();
+    useCoursesStore.setState({ courses: { c: withWritten } });
+    cleanup();
     render(
       <MemoryRouter initialEntries={['/study/c/test']}>
         <Routes>
@@ -97,27 +115,10 @@ describe('practice test: what goes on it', () => {
         </Routes>
       </MemoryRouter>,
     );
-    expect(screen.getByRole('button', { name: 'Multiple choice' }).getAttribute('aria-pressed')).toBe('true');
+    expect((screen.getByRole('checkbox', { name: /Multiple choice/ }) as HTMLInputElement).checked).toBe(true);
     expect(screen.getByRole('button', { name: 'All 3' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Multiple choice and written answers' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Written answers/ }));
     expect(screen.getByRole('button', { name: 'All 4' })).toBeTruthy();
-  });
-});
-
-describe('practice test: answers at the end, if chosen', () => {
-  it('marks nothing until the end, and lets an answer be changed', () => {
-    open();
-    fireEvent.click(screen.getByRole('button', { name: 'At the end' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
-    const radios = () => screen.getAllByRole('radio');
-    fireEvent.click(radios().find((b) => /wrong/.test(b.textContent ?? ''))!);
-    expect(screen.queryByText(/Not this time|Correct/)).toBeNull();
-    // Changed to the right one: still nothing said.
-    fireEvent.click(radios().find((b) => /right/.test(b.textContent ?? ''))!);
-    expect(radios().find((b) => /right/.test(b.textContent ?? ''))!.getAttribute('aria-checked')).toBe('true');
-    expect(screen.queryByText(/Correct/)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'End and see my score' }));
-    expect(screen.getByText(/1 of 3|1\/3/)).toBeTruthy();
   });
 });
 
@@ -130,7 +131,6 @@ describe('practice test: problems to work out', () => {
         items: [
           ...lecture.sections[0].items,
           { id: 'p1', type: 'problem', question: 'A 2 kg cart accelerates at 3 m/s². What force acts on it?', answer: 6, unit: 'N', steps: ['F = ma.', '2 × 3 = 6 N.'], mistakes: [{ answer: 1.5, why: 'Divided instead of multiplied.' }], difficulty: 'easy', source_excerpt: 'F = ma' },
-          { id: 'p2', type: 'problem', question: 'Show the sum of two even numbers is even.', steps: ['Write them 2a and 2b.', 'Their sum is 2(a + b), even.'] },
         ],
       },
     ],
@@ -147,47 +147,25 @@ describe('practice test: problems to work out', () => {
     );
   }
 
-  /** On to the checked problem: questions answered "I don't know" until it shows. */
+  /** On to the problem: the other questions skipped. */
   function toProblem() {
-    for (let n = 0; n < 6 && !screen.queryByLabelText('Your answer, in N'); n++) {
-      if (screen.queryByText(/Show the sum of two even numbers/)) {
-        fireEvent.click(screen.getByRole('button', { name: /Skip|Next/ }));
-        continue;
-      }
-      fireEvent.click(screen.getByRole('button', { name: 'I don’t know' }));
-      fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-    }
+    for (let n = 0; n < 5 && !screen.queryByLabelText('Your answer, in N'); n++) fireEvent.click(screen.getByRole('button', { name: /Skip|Next/ }));
   }
 
-  it('is multiple choice only unless problems are chosen', () => {
+  it('takes problems when ticked, asks for a number it can read, and marks it at the end with the mistake behind it', () => {
     openWith();
-    fireEvent.click(screen.getByRole('button', { name: 'Multiple choice and problems' }));
-    expect(screen.getByText(/Problems are worked out/)).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'All 5' })).toBeTruthy();
-  });
-
-  it('checks a typed answer as it is given, and names the mistake behind a wrong one', () => {
-    openWith();
-    fireEvent.click(screen.getByRole('button', { name: 'Multiple choice and problems' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Problems/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Multiple choice/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
     toProblem();
-    fireEvent.change(screen.getByLabelText('Your answer, in N'), { target: { value: '1.5' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Check' }));
-    expect(screen.getByText('✗ Not this time: the answer is 6 N.')).toBeTruthy();
-    expect(screen.getByText(/Divided instead of multiplied/)).toBeTruthy();
-    expect(screen.getByText('2 × 3 = 6 N.')).toBeTruthy();
-  });
-
-  it('asks for a number it can read before marking it', () => {
-    openWith();
-    fireEvent.click(screen.getByRole('button', { name: 'Multiple choice and problems' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
-    toProblem();
-    fireEvent.change(screen.getByLabelText('Your answer, in N'), { target: { value: 'six' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Check' }));
+    const box = screen.getByLabelText('Your answer, in N');
+    fireEvent.change(box, { target: { value: 'six' } });
+    fireEvent.submit(box.closest('form')!);
     expect(screen.getByText('Type the answer as a number, in N.')).toBeTruthy();
-    fireEvent.change(screen.getByLabelText('Your answer, in N'), { target: { value: '6.0' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Check' }));
-    expect(screen.getByText('✓ Right: 6 N.')).toBeTruthy();
+    fireEvent.change(box, { target: { value: '1.5' } });
+    fireEvent.click(screen.getByRole('button', { name: /See my score|Finish/ }));
+    expect(screen.getByText('0 of 1')).toBeTruthy();
+    expect(screen.getByText(/Divided instead of multiplied/)).toBeTruthy();
+    expect(screen.getByText('✓ 6 N')).toBeTruthy();
   });
 });

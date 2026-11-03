@@ -48,6 +48,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   study is for what). The test's default: the owner left it to the
   design (2026-11-03: "i think the answer to the decision for me depends
   how you pull all this off").
+  Planned in docs/proposals/practice.md (Practice studies, the test
+  rehearses). Built: Practice by ticks (kinds, which cards, sections),
+  ready-made sittings, Start pinned with its count, rows on the class page
+  (7f297db); the test marks at the end, timed if wanted, ticks for kinds
+  and where, and points to Practice for marking as you go. Next, from the
+  same plan: graded flips (simulator first), then the flashcards sitting.
 - **A UI/UX and design-language audit, soon** (2026-11-03: "pretty soon we
   will need a big ui/ux audit and like design language audit because we
   haven't worked on that stuff in a long time … the main use of the app …
