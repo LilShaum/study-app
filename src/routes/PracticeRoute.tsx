@@ -54,7 +54,16 @@ function loadSaved(scope: string): Saved | null {
       which,
       order,
       nearExam: !!v.nearExam,
-      where: v.where && typeof v.where === 'object' ? v.where : undefined,
+      // Checked as a link's is (lib/practiceChoice decodeChoice): a lecture
+      // mapped to anything but 'all' or a list of ids would break the page.
+      where:
+        v.where && typeof v.where === 'object'
+          ? Object.fromEntries(
+              Object.entries(v.where).flatMap(([lid, w]): [string, string[] | 'all'][] =>
+                w === 'all' ? [[lid, 'all']] : Array.isArray(w) ? [[lid, w.filter((x): x is string => typeof x === 'string')]] : [],
+              ),
+            )
+          : undefined,
       study: typeof v.study === 'string' ? v.study : null,
     };
   } catch {

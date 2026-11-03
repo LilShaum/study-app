@@ -60,6 +60,18 @@ describe("a class's Practice: built by ticks", () => {
     expect(screen.getByRole('button', { name: 'Mixed' }).getAttribute('aria-pressed')).toBe('true');
   });
 
+  it('opens on a saved choice whose sections are malformed, keeping what it can', () => {
+    useCoursesStore.setState({ courses: { a: lecture('MIX 1: Alpha', 'a'), b: lecture('MIX 1: Beta', 'b') } });
+    localStorage.setItem(
+      'arborous:practice-built:class:MIX 1',
+      JSON.stringify({ kinds: ['questions'], which: ['new'], order: 'inorder', where: { a: 5, b: ['s1', 7] } }),
+    );
+    renderAt('/class/MIX%201/practice');
+    // Alpha's broken entry is dropped (left out), Beta keeps its one section.
+    expect(start()).toContain('/session/b/practice');
+    expect(choiceIn(start()).where).toEqual({ b: ['s1'] });
+  });
+
   it('mixes by default in the last week before an exam, and says why', () => {
     const inDays = (n: number) => {
       const d = new Date();
