@@ -167,6 +167,18 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-11-03 Reading slides, two corrections to the prompt (2026-11-03:
+  "whether a list is there to learn or to compare … I'm not quite sure of
+  its wording, it seems off. For the second bullet point, a good way for
+  example in my bio class is that if a pathway is shown in a diagram and
+  then there are bullet points about it, that's one good way to tell that
+  that complex pathway or at least those bullet points about it are things
+  I need to know"). The list rule contradicted itself (comparing is
+  learning); now a list of examples, which shows a category's range, or a
+  list whose members are each to be known. And a diagram the slide's text
+  talks about is content: the pathway, cycle or structure is to be known,
+  every part the bullets name and its order, unnamed steps included; a
+  diagram no text refers to is more often there to paint the picture.
 - 2026-11-03 Use agents: the "one agent at a time" rule was never the
   owner's (2026-11-03: "Since when is my rule here one agent at a time? I
   swear I have said repeatedly to use agents"). It was a session's reading

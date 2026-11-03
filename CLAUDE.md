@@ -106,7 +106,10 @@ this is the intent it serves.
   learn from, or only to paint the picture; the teacher's talk joined
   them into something bigger, a mechanism or a comparison. The file and
   the app must supply that narration for a student who never heard it,
-  for any kind of source, slides first.
+  for any kind of source, slides first. A diagram the slide's text talks
+  about is the point, to be known (2026-11-03: "if a pathway is shown in a
+  diagram and then there are bullet points about it … things I need to
+  know").
 - **How the owner studies:** reads the slides or notes, then answers from
   memory; Learn section by section alongside the notes.
 - **Studying is the app's main job:** keep improving how it teaches,

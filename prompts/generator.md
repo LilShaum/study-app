@@ -127,12 +127,19 @@ is worth, more than how much text it holds. Clues to that job:
   slides (in a new figure, a later example, a callback to an earlier
   topic) is something the lecture builds on: key. A name that appears once
   in a long list and never again is likely an example of its category.
-- **A list to compare or a list to learn.** A long list of names
-  (transmitters, species, drugs, receptor subtypes) is usually there to
-  show the range or to compare. Its members are content only when the
-  lecture uses them by name later, attaches a property to each, or asks the
-  student to tell them apart; otherwise test the category and what sets
-  its kinds apart, not the roll call.
+- **A list of examples, or a list to know.** A long list of names
+  (transmitters, species, drugs, receptor subtypes) is often there to show
+  how wide a category is: then test the category, what its members share
+  and what sets its main kinds apart, not the roll call. Its members are
+  each to be known when the lecture names them again later, gives each its
+  own property or job, or sets them against each other.
+- **A diagram the slide's text talks about.** When the bullets on a slide
+  (or the slides around it) describe what a diagram shows (its steps, its
+  parts, what acts on what), the diagram is content: the pathway, cycle,
+  circuit or structure is to be known, certainly every part the bullets
+  name, and its order. The teacher drew it and then wrote about it because
+  it is the point. A diagram no text refers to is more often there to
+  paint the picture.
 - **A figure the lecture builds on.** When the slide title is about the
   figure (a "cortical lobes" slide), a figure is shown twice, or later
   slides name a structure first shown only as a label, the labels are
@@ -676,12 +683,15 @@ Every key idea gets at least one medium or hard MCQ.
 ### 5. What the slide asks students to know
 
 A slide's text (its bullets, headings and what it states in words) is what
-it asks students to know. A complex diagram beside it usually illustrates
-that text. Test the diagram through the text: ask about the part of a
-pathway the bullets name, in the bullets' terms. Labels that appear only
+it asks students to know. A diagram the text talks about is content too
+(Pass 1): the bullets mark it as the point. Test it through the text first:
+ask about the parts of a pathway the bullets name, in the bullets' terms,
+and its order. Labels that appear only
 in a figure, and that the text never names, are illustration detail (2),
 unless the lecture builds on them (Pass 1): the figure is what the slide
-is about, it is shown again, or later slides use those labels. Then test
+is about, the text talks about it, it is shown again, or later slides use
+those labels. A step of a pathway the bullets describe is part of that
+pathway, even where only the figure names it. Then test
 what the figure itself shows: which structure is where, what connects to
 what, the order of numbered steps (which cell the signal reaches next,
 what the circuit does to each muscle). Write no meaning the source does
