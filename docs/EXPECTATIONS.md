@@ -634,3 +634,42 @@ wrong ones to the AI to rewrite.
   wins, a deletion counts as an edit; per card the latest answer wins.
 - **Share links** hand a lecture to someone else; anything from someone
   else is untrusted (diagrams are cleaned, files are checked on the way in).
+
+## Goals to confirm
+
+Drafted 2026-11-03 for the grading session (docs/prompts/grade-the-app.md),
+from CLAUDE.md and the owner's words in docs/ASKS.md. These parts have no
+**Goal** line above. Each is a draft until the owner confirms or corrects
+it; then it moves into its entry. A grade is only as good as the goal it is
+measured against.
+
+- **The library**: open the app and start today's studying in one tap,
+  every lecture and class in view as a contents page; no choosing what to
+  study unless the student wants to.
+- **A lecture's page**: one place to start studying a lecture the right way
+  (Today first, then Learn and Practice, each with one clear use) and to
+  find everything else about it, without the rest crowding the first
+  screen.
+- **A class's page**: the lectures of one class, its exams and what each
+  covers, and the ways to study across them.
+- **The tree**: the reason to come back, made visible: what is held, what
+  is fading, which part, at a glance, never guilt.
+- **Progress**: what needs the student now (what is fading, where the
+  mistakes are) and the way to it, before figures about the past.
+- **Browse**: the whole lecture to read straight through and to correct any
+  card.
+- **Glossary**: any term of the lecture, found in a second, with its
+  neighbours to tell it apart from.
+- **Diagrams**: the lecture's figures to look at in one place, each with
+  what it shows.
+- **Help**: the answer to what a student wonders while studying, short,
+  found without reading the rest.
+- **The first run**: from opening the app for the first time to studying a
+  first lecture, with no confusion and nothing to learn about the app.
+- **Sync**: the same library, progress and log on every device, nothing
+  ever lost or overwritten unseen.
+- **Backup and export**: a student's work is theirs and can never be lost,
+  even without sync.
+- **Share links**: a lecture passed to a classmate in one step, safely.
+- **Studies**: where a class's exams ask about empirical studies, every
+  card on them found together; where they do not, out of the way.

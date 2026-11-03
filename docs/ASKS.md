@@ -30,6 +30,33 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
 
+- **A fresh ultracode session that grades the whole app against its goals**
+  (2026-11-03: "I want to eventually start a fresh ultra code session for
+  this project that will go through and grade the app and every component
+  of it relative to the goals of the app and each of those components and
+  how much we are hitting those marks or missing them … It would then go
+  through and suggest changes/fixes/improvements that would help bridge
+  the gaps, even to the point of suggesting overhauling certain things if
+  necessary. Idk how I should do this tho. If I just need you to make me a
+  prompt and that's enough or if there is more prep required"). Prepared
+  2026-11-03: the prompt in docs/prompts/grade-the-app.md, drafted goals
+  for the components EXPECTATIONS lacked (to confirm). Waits on the owner
+  to start it, with a real lecture's slides and file and a backup.
+- **Slides are the skeleton of a narrated lecture: the file and the app
+  must fill in the narration** (2026-11-03: "the format of slides forces
+  the info to be brief and in bullet points or complex diagrams with no
+  explanations. The teacher and lecture fill these gaps by narrating it
+  for the students and helping guide the thought process … the ai needs to
+  be able to think why certain diagrams were shown, as examples to help
+  paint the picture, sometimes to learn/memorize and other times just as
+  an example … the bullet points give pieces of the picture, but the
+  picture is only really painted when these various details are used
+  together to describe something bigger or something complex or maybe
+  even the differences/to compare different things … we want the app to
+  be universal"). What exists: the generator maps every slide's purpose
+  and where runs of slides build to, but "the map is not part of the
+  output"; only explanations and questions carry it. To plan, and the
+  grading session's main lens for the generator.
 - **Teach understanding, not memorising: use the explanations, and
   questions that test application, everywhere** (2026-11-03: "perhaps you
   could use the new like explanation things that are part of the new

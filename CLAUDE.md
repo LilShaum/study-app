@@ -101,6 +101,12 @@ this is the intent it serves.
   explanations the generator writes are there to be used for this, across
   the app. Saying how sure you were should matter: a confident wrong
   answer is worth more attention.
+- **Slides are a narrated lecture with the narration missing**
+  (2026-11-03). Bullets are pieces of a picture; a diagram is there to
+  learn from, or only to paint the picture; the teacher's talk joined
+  them into something bigger, a mechanism or a comparison. The file and
+  the app must supply that narration for a student who never heard it,
+  for any kind of source, slides first.
 - **How the owner studies:** reads the slides or notes, then answers from
   memory; Learn section by section alongside the notes.
 - **Studying is the app's main job:** keep improving how it teaches,
