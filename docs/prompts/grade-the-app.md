@@ -8,7 +8,7 @@ docs/prompts/grade-the-app.md and do it."*
 - one or two real lectures: the **slides as a PDF** and the **`.study.json`**
   made from them. This is the only way to grade the lecture files against
   what a teacher would have said;
-- a **backup** from the app (Library → Backup), with progress and the study
+- a **backup** from the app (Help → Back up everything), with progress and the study
   log, so Today and the schedule are judged on real use, not only simulated.
 
 Without them the session grades on the made-up test lectures in
