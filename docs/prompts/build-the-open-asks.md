@@ -4,9 +4,12 @@
 ultracode), attach what is listed below if you have it, and say: *"Read
 docs/prompts/build-the-open-asks.md and do it."*
 
-**Attach, if you can** (kept out of the repo, which is public): one real
-lecture, its **slides as a PDF** and the **`.study.json`** made from them.
-Step 1 is judged against it and step 3 needs it.
+**Attach, if you can**: the **slides** (PDF) of one real lecture, nothing
+else. The session makes the lecture's file from them itself, with the
+prompt as it is then, and again after changing the prompt, to compare the
+two. Steps 1 and 3 are judged against it. The slides stay out of the repo,
+which is public. Not the owner's study data: they use the app too little
+for it to say anything (see `grade-the-app.md`).
 
 ---
 
@@ -42,7 +45,9 @@ names. Load the skills each step needs when it starts (`working-method`,
    lecture file, the prompt and Learn. Learn's order is set ("no drastic
    changes to how it teaches"; Read, Recall, Apply), so the narration joins
    it rather than reshaping it. Check the prompt change on the real lecture
-   attached: would a student who never heard the lecture get what the
+   attached (make its file before and after the change, following
+   `prompts/generator.md` into the scratchpad): would a student who never
+   heard the lecture get what the
    teacher said? Anything Learn does differently goes through the
    simulator, and a real sitting is read (`sessionAudit`).
 2. **The design audit's changes** (`docs/proposals/design-audit.md`,
@@ -77,7 +82,7 @@ names. Load the skills each step needs when it starts (`working-method`,
   `npx eslint src`, `npx vitest run`, the simulator where it applies,
   screenshots, pushed as the repo's rules say, and the live site checked.
 - **Every new ask goes in `docs/ASKS.md`** the moment the owner makes it.
-- **Never put course content in the repo.** The attached slides and file
+- **Never put course content in the repo.** The attached slides and the files made from them
   stay in the scratchpad.
 
 ## At the end

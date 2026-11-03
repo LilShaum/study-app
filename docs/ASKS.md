@@ -43,8 +43,8 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   for the components EXPECTATIONS lacked (to confirm). Not yet: the owner
   will run it after the open changes are built (2026-11-03: "I want to do
   it after you have finished doing a bunch of the changes I've asked you
-  for"). Then it waits on the owner to start it, with a real lecture's
-  slides and file and a backup.
+  for"). Then it waits on the owner to start it, with the slides of one
+  or two real lectures; the session makes their files itself.
 - **Slides are the skeleton of a narrated lecture: the file and the app
   must fill in the narration** (2026-11-03: "the format of slides forces
   the info to be brief and in bullet points or complex diagrams with no
@@ -170,6 +170,13 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-11-03 No conclusions from the owner's own study data (2026-11-03:
+  "i dont use the app enough, and im afraid you will make false
+  conclusions off my one off shitty data"). Both session briefs now ask
+  for slides only; the sessions make the lecture files themselves with
+  the current prompt (the owner: "how am i supposed to attach one real
+  lecture when u just updated the prompt?"), and judge learning with the
+  simulator, never the owner's log.
 - 2026-11-03 Reading slides, two corrections to the prompt (2026-11-03:
   "whether a list is there to learn or to compare … I'm not quite sure of
   its wording, it seems off. For the second bullet point, a good way for

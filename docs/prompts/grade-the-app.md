@@ -7,15 +7,16 @@
 highest effort setting, attach the material below, and say: *"Read
 docs/prompts/grade-the-app.md and do it."*
 
-**Attach, if you can** (kept out of the repo, which is public):
-- one or two real lectures: the **slides as a PDF** and the **`.study.json`**
-  made from them. This is the only way to grade the lecture files against
-  what a teacher would have said;
-- a **backup** from the app (Help → Back up everything), with progress and the study
-  log, so Today and the schedule are judged on real use, not only simulated.
+**Attach**: the **slides** (PDF) of one or two real lectures, nothing else.
+The session makes each lecture's file itself with the current prompt, so
+the file it grades is what the app makes today. Slides stay out of the
+repo, which is public. Without them it grades on the made-up test
+lectures in `scripts/__fixtures__/` and marks those grades provisional.
 
-Without them the session grades on the made-up test lectures in
-`scripts/__fixtures__/` and marks those grades provisional.
+**Not the owner's study data.** They use the app too little for their log
+to say anything (2026-11-03: "im afraid you will make false conclusions
+off my one off shitty data"). Judge learning and scheduling with the
+simulator, never from the owner's own answers.
 
 ---
 
@@ -111,8 +112,6 @@ as a whole. Add any part you find that this list misses.
   policies where a proposal needs one), its findings in direction and size
   only, holding under more than one simulated student.
 - **Read the code** where what happens matters and a screen cannot show it.
-- **The real backup**, if attached: what the student studied, missed and
-  let fade, against what the app planned.
 
 **The scale**, in words, each grade with its evidence and one sentence of
 why: *Hits it* · *Mostly* · *Partly* · *Misses* · *Works against it*.
@@ -139,10 +138,10 @@ repo's rules say.
 
 ## Rules
 
-- **Never put course content in the repo** (CLAUDE.md). The attached slides,
-  files and backup stay in the scratchpad.
+- **Never put course content in the repo** (CLAUDE.md). The slides and the
+  files made from them stay in the scratchpad.
 - **Use agents** (CLAUDE.md): grade parts in parallel where they split,
   each agent well scoped. Usage is limited, so say before a large fan-out.
 - **Every new ask goes in `docs/ASKS.md`** the moment the owner makes it.
 - **Grades come from evidence.** Where a grade rests on a guess (no real
-  lecture, no real log), say so beside it.
+  slides), say so beside it.
