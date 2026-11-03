@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
 import { buildSessionItems, recallId, type SessionItem } from './buildSessionItems';
-import { MIN_GAP, phaseOf, phaseOfItem, PROBLEMS_PER_STEP, STEP_CARDS, STEP_TERMS, TERM_BUDGET } from './learnSteps';
+import { explanationFor, MIN_GAP, phaseOf, phaseOfItem, PROBLEMS_PER_STEP, STEP_CARDS, STEP_TERMS, TERM_BUDGET } from './learnSteps';
 
 const TERMS = ['Adenylyl cyclase', 'Gs protein', 'Protein kinase A', 'Phosphodiesterase', 'Calmodulin', 'Inositol trisphosphate', 'Diacylglycerol', 'Protein kinase C'];
 
@@ -516,5 +516,29 @@ describe('Learn: problems to work out', () => {
     const qs = [1, 2, 3, 4].map((n) => mcq(`q${n}`, `Question ${n} on what Adenylyl cyclase does?`));
     const items = learn([defs[0], ...qs, problem('p', 'Adenylyl cyclase makes 40 cAMP a second: how many in a minute?')]);
     expect(items.find((i) => i.id === 'p')?._second).toBeFalsy();
+  });
+});
+
+describe('explanationFor: the idea a question rests on', () => {
+  const explain = (id: string, title: string, text: string, source_excerpt?: string) =>
+    ({ id, type: 'explain', title, text, ...(source_excerpt ? { source_excerpt } : {}) }) as unknown as SessionItem;
+  const q = (question: string, extra = {}) =>
+    ({ id: 'q', type: 'mcq', question, options: ['Calcium release stops', 'x', 'y', 'z'], correct_index: 0, ...extra }) as unknown as SessionItem;
+  const calcium = explain('e1', 'Why calcium matters', 'Inositol trisphosphate opens channels that release calcium from internal stores, and calcium then switches on kinases.');
+  const cyclic = explain('e2', 'Second messengers', 'Adenylyl cyclase makes cyclic AMP, which spreads the signal through the cell.');
+
+  it('picks the explanation most of the question’s words are in', () => {
+    const question = q('What happens to calcium release from internal stores when inositol trisphosphate channels are blocked?');
+    expect(explanationFor(question, [cyclic, calcium])?.id).toBe('e1');
+  });
+
+  it('falls back to one that quotes the same passage', () => {
+    const passage = 'The receptor couples to a G protein that activates the enzyme downstream of the hormone signal';
+    const quoting = explain('e3', 'Coupling', 'Short text with nothing in common.', passage);
+    expect(explanationFor(q('Unrelated wording entirely here?', { source_excerpt: passage }), [cyclic, quoting])?.id).toBe('e3');
+  });
+
+  it('gives none rather than a wrong one', () => {
+    expect(explanationFor(q('Which ion channel carries sodium in neurons during spikes?'), [cyclic, calcium])).toBeNull();
   });
 });

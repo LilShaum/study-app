@@ -179,6 +179,27 @@ function contentWords(item: SessionItem): Set<string> {
   return new Set([...termTokens(textOf(item))].filter((w) => w.length >= 4));
 }
 
+/**
+ * The explanation a card rests on, from its own section: the one most of the
+ * card's words are in (as Learn places a card after it), or failing that one
+ * quoting the same passage. Null when none fits: a wrong "why" misleads more
+ * than none (docs/proposals/understanding.md).
+ */
+export function explanationFor(item: SessionItem, section: readonly SessionItem[]): (SessionItem & { type: 'explain' }) | null {
+  const own = contentWords(item);
+  const passage = excerptWords(item);
+  let best: { ex: SessionItem & { type: 'explain' }; score: number } | null = null;
+  for (const ex of section) {
+    if (ex.type !== 'explain' || ex.id === item.id) continue;
+    const words = contentWords(ex);
+    const shared = own.size >= 3 ? [...own].filter((w) => words.has(w)).length / own.size : 0;
+    const quoted = overlap(passage, excerptWords(ex));
+    const score = shared >= PRACTISES ? shared : quoted >= MIN_OVERLAP ? quoted / 2 : 0;
+    if (score > 0 && (!best || score > best.score)) best = { ex: ex as SessionItem & { type: 'explain' }, score };
+  }
+  return best?.ex ?? null;
+}
+
 /** Answered at least once: past its first meeting. */
 const answeredBefore = (item: SessionItem, progress?: Record<string, ItemResult>): boolean => {
   const r = progress?.[item.id];

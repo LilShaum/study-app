@@ -6,6 +6,7 @@ import { inOrder, orderForShowing } from '@/lib/optionOrder';
 import { DifficultyBadge } from './DifficultyBadge';
 import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
+import { IdeaNote } from './IdeaNote';
 import { RichText } from './RichText';
 
 interface McqCardProps {
@@ -19,9 +20,11 @@ interface McqCardProps {
   frame?: ItemFrame;
   /** Learn: the passage opens after every answer, right or wrong (see SourceNote). */
   learning?: boolean;
+  /** The explanation the question rests on: open after a miss, folded after a right answer (IdeaNote). */
+  idea?: { title: string; text: string } | null;
 }
 
-export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = false, frame = 'card', learning = false }: McqCardProps) {
+export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = false, frame = 'card', learning = false, idea }: McqCardProps) {
   // A new order at every showing, the key and notes following (lib/optionOrder).
   const [seed] = useState(() => Math.random().toString(36));
   const order = useMemo(() => orderForShowing(written.id, written.options ?? [], written.correct_index, seed), [written, seed]);
@@ -232,7 +235,8 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
           )}
         </div>
       )}
-      {/* After a miss the passage is open: the lesson again, not only the right option. */}
+      {/* After a miss the why is open, then the passage: the lesson again, not only the right option. */}
+      {revealed && !keyBroken && <IdeaNote idea={idea} open={!correct} />}
       {revealed && <SourceNote excerpt={item.source_excerpt} open={(learning || !correct) && !keyBroken} />}
     </div>
   );

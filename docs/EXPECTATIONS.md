@@ -287,7 +287,15 @@ everything is asked first. "Skip the reading" asks every card first, for
 material already met in class. At the end Learn offers the next section.
 
 An explanation (`explain`: a key idea in 2 to 4 sentences, what it is,
-why, how it follows from the one before, as a tutor would say it) is read
+why, how it follows from the one before, as a tutor would say it) is also
+the why behind each question that rests on it, wherever the question is
+asked (Learn, Today, Review, Practice, the practice test): open under the
+answer after a miss, folded as "Why ▸" after a right one, before the
+passage from the notes. A question rests on the explanation in its section
+most of its words are in, or failing that one quoting the same passage;
+with none, nothing shows (lib/learnSteps explanationFor; the owner,
+2026-11-03: "use the new like explanation things … to help the user learn
+and understand better"). It is read
 in the step of the terms it uses, before that step's worked examples and
 questions, and a card on it (most of its words in the explanation) never
 comes a step before it. One that names no term is read with the first card

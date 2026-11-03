@@ -45,6 +45,19 @@ describe('McqCard', () => {
     expect(screen.getByLabelText(/, your answer$/).closest('button')!.textContent).toContain('gamma');
   });
 
+  it('opens the idea the question rests on after a miss, and folds it as Why after a right answer', () => {
+    const idea = { title: 'Why beta', text: 'Beta follows from alpha being blocked.' };
+    render(<McqCard item={item()} idea={idea} />);
+    expect(screen.queryByText(/Beta follows/)).toBeNull();
+    answer('gamma');
+    expect(screen.getByText(/Beta follows/).closest('details')!.open).toBe(true);
+    cleanup();
+    render(<McqCard item={item()} idea={idea} />);
+    answer('beta');
+    expect(screen.getByText(/Beta follows/).closest('details')!.open).toBe(false);
+    expect(screen.getByText('Why ▸')).toBeTruthy();
+  });
+
   it('lets you say you do not know: a miss, the answer shown, nothing picked', () => {
     const onAnswered = vi.fn();
     render(<McqCard item={item()} onAnswered={onAnswered} />);

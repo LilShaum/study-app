@@ -69,7 +69,9 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   after a miss, in the test's review and folded behind a "Why?"; the
   generator to name two more kinds of question (two ideas integrated,
   right but for one detail); the lecture check to see a lecture of
-  recall only.
+  recall only. Step 1 built 2026-11-03: each question's explanation as
+  its Why, open after a miss, folded after a right answer, in every mode
+  and the test's review.
 - **A UI/UX and design-language audit, soon** (2026-11-03: "pretty soon we
   will need a big ui/ux audit and like design language audit because we
   haven't worked on that stuff in a long time … the main use of the app …

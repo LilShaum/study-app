@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "title": "Signals across the membrane (made up)",
+    "course_code": "TEST 102",
+    "description": "A made-up lecture with explanations, for the app's checks.",
+    "inventory": { "terms": ["second messenger", "cyclic AMP", "phosphodiesterase", "calmodulin", "inositol trisphosphate"] }
+  },
+  "sections": [
+    {
+      "id": "camp",
+      "title": "Cyclic AMP as a second messenger",
+      "order": 1,
+      "items": [
+        { "id": "d1", "type": "definition", "term": "Second messenger", "definition": "A small molecule made inside the cell in response to a signal outside it, carrying that signal onward.", "source_excerpt": "A second messenger is a small molecule made inside the cell when a hormone binds outside; it carries the signal on." },
+        { "id": "d2", "type": "definition", "term": "Cyclic AMP", "definition": "A second messenger made from ATP by adenylyl cyclase, which activates protein kinase A.", "source_excerpt": "Adenylyl cyclase converts ATP to cyclic AMP, which activates protein kinase A." },
+        { "id": "d3", "type": "definition", "term": "Phosphodiesterase", "definition": "The enzyme that breaks cyclic AMP down to AMP, ending its signal.", "source_excerpt": "Phosphodiesterase breaks cyclic AMP down to AMP, which ends the signal." },
+        { "id": "e1", "type": "explain", "title": "Why the signal stops", "text": "Cyclic AMP is made only while the hormone keeps adenylyl cyclase switched on, and phosphodiesterase breaks it down all the time. So the signal lasts only as long as making outpaces breaking: block phosphodiesterase and cyclic AMP builds up, and the signal outlasts the hormone.", "difficulty": "medium", "source_excerpt": "Phosphodiesterase breaks cyclic AMP down to AMP, which ends the signal; caffeine blocks it." },
+        { "id": "q1", "type": "mcq", "question": "A drug blocks phosphodiesterase. What happens to the cyclic AMP signal after the hormone is removed?", "options": ["It outlasts the hormone, because cyclic AMP is no longer broken down", "It stops at once, because adenylyl cyclase is switched off", "It never starts, because cyclic AMP cannot be made", "It is unchanged, because phosphodiesterase only acts on ATP"], "correct_index": 0, "distractor_rationale": ["", "Switching off the maker does not remove what is already there", "The maker is untouched; only the breaker is blocked", "Phosphodiesterase breaks down cyclic AMP, not ATP"], "explanation": "Cyclic AMP stays until something breaks it down.", "difficulty": "hard", "source_excerpt": "Phosphodiesterase breaks cyclic AMP down to AMP, which ends the signal; caffeine blocks it." },
+        { "id": "q2", "type": "mcq", "question": "Which enzyme makes cyclic AMP from ATP?", "options": ["Adenylyl cyclase", "Phosphodiesterase", "Protein kinase A", "Calmodulin"], "correct_index": 0, "distractor_rationale": ["", "It breaks cyclic AMP down", "It is what cyclic AMP activates", "It binds calcium, another messenger"], "explanation": "Adenylyl cyclase converts ATP to cyclic AMP.", "difficulty": "easy", "source_excerpt": "Adenylyl cyclase converts ATP to cyclic AMP, which activates protein kinase A." }
+      ]
+    },
+    {
+      "id": "calcium",
+      "title": "Calcium as a second messenger",
+      "order": 2,
+      "items": [
+        { "id": "d4", "type": "definition", "term": "Inositol trisphosphate", "definition": "A second messenger that opens channels in internal stores, releasing calcium into the cytoplasm.", "source_excerpt": "Inositol trisphosphate opens channels in the endoplasmic reticulum, releasing calcium." },
+        { "id": "d5", "type": "definition", "term": "Calmodulin", "definition": "A protein that binds calcium and, once bound, switches on enzymes such as kinases.", "source_excerpt": "Calcium binds calmodulin, which then switches on kinases." },
+        { "id": "e2", "type": "explain", "title": "Calcium needs a partner", "text": "Calcium released from internal stores does little on its own: it acts by binding calmodulin, and calmodulin with calcium bound is what switches on the kinases. Unlike cyclic AMP, the messenger here is an ion, so the cell ends the signal by pumping it back into the stores rather than breaking it down.", "difficulty": "medium", "source_excerpt": "Calcium released from stores binds calmodulin, which then switches on kinases; pumps return calcium to the stores." },
+        { "id": "q3", "type": "mcq", "question": "Calcium is released from internal stores, but calmodulin is missing. What happens to the kinases calmodulin switches on?", "options": ["They stay off, because calcium acts through calmodulin", "They switch on, because calcium binds kinases directly", "They switch on, because inositol trisphosphate activates them", "They stay off, because calcium is broken down at once"], "correct_index": 0, "distractor_rationale": ["", "Calcium acts through calmodulin, not on kinases directly", "Inositol trisphosphate only opens the calcium channels", "Calcium is an ion: it is pumped back, not broken down"], "explanation": "Without calmodulin, calcium has nothing to act through.", "difficulty": "hard", "source_excerpt": "Calcium released from stores binds calmodulin, which then switches on kinases; pumps return calcium to the stores." }
+      ]
+    }
+  ]
+}

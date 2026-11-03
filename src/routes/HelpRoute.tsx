@@ -197,6 +197,10 @@ const SECTIONS: HelpSection[] = [
           card would come back. Be strict with Got it: a near miss called Got it waits too long and fades.
         </p>
         <p className="mt-2">
+          After a multiple-choice answer, <strong>Why</strong> is the idea the question rests on, from the
+          lecture&rsquo;s explanations: open when you got it wrong, a tap away when you got it right.
+        </p>
+        <p className="mt-2">
           Don&rsquo;t know it? Tap <strong>I don&rsquo;t know</strong> rather than guess: you see the answer and the passage
           from your notes, and it counts as a miss, so it comes back sooner. A lucky guess would have counted as known.
         </p>

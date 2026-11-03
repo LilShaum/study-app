@@ -14,6 +14,9 @@ import type { Course } from '@/schema/course';
 import { normalisedRationale } from '@/lib/mcqRationale';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { SourceNote } from '@/components/items/SourceNote';
+import { IdeaNote } from '@/components/items/IdeaNote';
+import { explanationFor } from '@/lib/learnSteps';
+import type { SessionItem } from '@/lib/buildSessionItems';
 import { CodeBlock, RichText } from '@/components/items/RichText';
 import { SolutionSteps } from '@/components/items/ProblemCard';
 
@@ -1179,6 +1182,13 @@ function Results({
   onRetakeMissed: (missed: TestQuestion[]) => void;
   onNew: () => void;
 }) {
+  const courses = useCoursesStore((st) => st.courses);
+  /** The explanation each missed question rests on, from its section (lib/learnSteps explanationFor). */
+  const ideaOf = (q: TestQuestion) => {
+    const section = courses[q.courseId]?.sections.find((sec) => sec.items.some((it) => it.id === q.item.id));
+    const ex = section ? explanationFor(q.item as SessionItem, section.items as SessionItem[]) : null;
+    return ex ? { title: ex.title, text: ex.text } : null;
+  };
   const result = useMemo(() => scoreTest(test, answers, marks), [test, answers, marks]);
   const pct = result.total ? Math.round((result.got / result.total) * 100) : 0;
   const lectures = new Set(test.map((q) => q.courseId)).size;
@@ -1266,6 +1276,7 @@ function Results({
                         </li>
                       ))}
                     </ul>
+                    <IdeaNote idea={ideaOf(q)} open />
                     <SourceNote excerpt={q.item.source_excerpt} open />
                   </li>
                 );
@@ -1307,6 +1318,7 @@ function Results({
                       <RichText text={q.item.explanation} />
                     </div>
                   )}
+                  <IdeaNote idea={ideaOf(q)} open />
                   <SourceNote excerpt={q.item.source_excerpt} open />
                 </li>
               );

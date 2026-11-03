@@ -22,6 +22,8 @@ interface ItemRendererProps {
   onMissed?: () => void;
   /** A flip card: when it comes back after each grade. */
   comesBack?: ComesBack;
+  /** A question: the explanation it rests on (lib/learnSteps explanationFor). */
+  idea?: { title: string; text: string } | null;
   /** The student overruling a typed answer's verdict. */
   onOverride?: (correct: boolean) => void;
   /** A typed answer named a different term; its definition's id. */
@@ -46,6 +48,7 @@ export function ItemRenderer({
   onGot,
   onMissed,
   comesBack,
+  idea,
   onOverride,
   onConfused,
   keyboardEnabled,
@@ -68,7 +71,7 @@ export function ItemRenderer({
       );
     case 'mcq':
       return (
-        <McqCard item={item} onAnswered={onAnswered} onNext={onNext} keyboardEnabled={keyboardEnabled} frame={frame} learning={learning} />
+        <McqCard item={item} onAnswered={onAnswered} onNext={onNext} keyboardEnabled={keyboardEnabled} frame={frame} learning={learning} idea={idea} />
       );
     case 'flashcard':
       return (

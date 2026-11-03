@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
 import { buildSessionItems, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
-import { phaseOfItem, type LearnPhase } from '@/lib/learnSteps';
+import { explanationFor, phaseOfItem, type LearnPhase } from '@/lib/learnSteps';
 import { useSessionStore, restartCardTimer, fileItemOf, lectureOf, cardKey, AGAIN_MAX } from '@/store/session';
 import { onlyStudies } from '@/lib/studies';
 import { toast } from '@/store/toast';
@@ -105,6 +105,14 @@ function comesBackFor(item: SessionItem, lectureId: string, lecture: Course | un
   };
   const requeues = (mode === 'learn' || (mode === 'today' && item._step !== undefined)) && (item._again ?? 0) < AGAIN_MAX;
   return { got: when(true), hard: when(true, 'hard'), missed: requeues ? 'again this sitting' : when(false) };
+}
+
+/** A question's explanation, from its section of its own lecture (lib/learnSteps explanationFor). */
+function ideaFor(item: SessionItem, lecture: Course | undefined): { title: string; text: string } | null {
+  if (item.type !== 'mcq' || !lecture) return null;
+  const section = lecture.sections.find((s) => s.id === item._sectionId);
+  const ex = section ? explanationFor(item, section.items as SessionItem[]) : null;
+  return ex ? { title: ex.title, text: ex.text } : null;
 }
 
 const KEY_HINTS: Record<CardMode, KeyHint[]> = {
@@ -1012,6 +1020,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
             handleNext();
           }}
           comesBack={comesBackFor(current, lectureOf(current, courseId), lectureFor(current)?.course, mode)}
+          idea={ideaFor(current, lectureFor(current)?.course)}
           onMissed={() => {
             record(false);
             handleNext();
