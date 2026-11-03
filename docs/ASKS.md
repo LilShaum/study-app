@@ -40,8 +40,11 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   necessary. Idk how I should do this tho. If I just need you to make me a
   prompt and that's enough or if there is more prep required"). Prepared
   2026-11-03: the prompt in docs/prompts/grade-the-app.md, drafted goals
-  for the components EXPECTATIONS lacked (to confirm). Waits on the owner
-  to start it, with a real lecture's slides and file and a backup.
+  for the components EXPECTATIONS lacked (to confirm). Not yet: the owner
+  will run it after the open changes are built (2026-11-03: "I want to do
+  it after you have finished doing a bunch of the changes I've asked you
+  for"). Then it waits on the owner to start it, with a real lecture's
+  slides and file and a backup.
 - **Slides are the skeleton of a narrated lecture: the file and the app
   must fill in the narration** (2026-11-03: "the format of slides forces
   the info to be brief and in bullet points or complex diagrams with no

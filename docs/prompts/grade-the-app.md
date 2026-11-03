@@ -1,5 +1,8 @@
 # Grade Arborous against its goals
 
+**When**: after the open changes in `docs/ASKS.md` are built (the owner,
+2026-11-03), so it grades the app they asked for, not one half-way there.
+
 **To start it** (the owner): open a fresh session on this repo at the
 highest effort setting, attach the material below, and say: *"Read
 docs/prompts/grade-the-app.md and do it."*
