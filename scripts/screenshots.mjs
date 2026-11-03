@@ -182,8 +182,13 @@ for (const size of ['desktop', 'phone']) {
     ['diagrams', `#/study/${id}/diagrams`],
     ['section', `#/study/${id}/section/${encodeURIComponent(sectionId)}`],
     ['learn', `#/session/${id}/learn`],
+    ['today', `#/session/${id}/today`],
     ['quiz', `#/session/${id}/quiz`],
     ['flashcards', `#/session/${id}/flashcards`],
+    ['practice', `#/study/${id}/practice`],
+    ['test', `#/study/${id}/test`],
+    ['class', `#/class/${encodeURIComponent(course.metadata.course_code ?? '')}`],
+    ['glossary', `#/study/${id}/glossary`],
     ['browse', `#/session/${id}/browse`],
     ['help', '#/help'],
   ]) {

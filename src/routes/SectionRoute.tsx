@@ -137,7 +137,7 @@ export function SectionRoute() {
         // Six greyed-out "none here" tiles told an empty section's story six
         // times over; one line says it once.
         <p className="mt-6 border-y border-border py-5 text-center text-sm text-text-2">
-          This section is empty. The generator created it but put no items in it. &ldquo;More practice&rdquo; on the
+          This section is empty. The generator created it but put no items in it. &ldquo;Add questions&rdquo; on the
           lecture page can fill it, or you can add items yourself in Browse.
         </p>
       ) : (

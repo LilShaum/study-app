@@ -104,7 +104,7 @@ all ticked; untick one
 and the prompt says to make only the rest and where their content goes
 instead (`lib/makeKinds`, "if they just want flash cards … they will just
 get flash cards"). The choice is kept on the lecture (`metadata.make`):
-Add material, More practice and Fix keep to it, Add explanations is not
+Add material, Add questions and Fix keep to it, Add explanations is not
 offered without explanations, and the lecture check does not ask for a
 kind left out. The app hands out `prompts/generator.md` plus the
 student's notes on what their teacher stressed and, optionally, the lecture
@@ -159,7 +159,7 @@ the same depth. A known topic taught in more depth (steps explained, a
 mechanism, exceptions, new parts) is new content and gets the items the
 spec asks for. New items join the right existing section.
 
-### More practice
+### Add questions (once called More practice)
 
 **Goal.** New questions on material the student already has, when the
 existing ones are known.

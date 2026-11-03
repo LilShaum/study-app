@@ -225,7 +225,7 @@ const SECTIONS: HelpSection[] = [
             gives you a prompt to turn them into new items.
           </li>
           <li>
-            <strong>More practice</strong> is for more questions on the notes you already have. It
+            <strong>Add questions</strong> is for more questions on the notes you already have. It
             does not need the notes again.
           </li>
           <li>

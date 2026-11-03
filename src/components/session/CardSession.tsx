@@ -186,7 +186,7 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
   },
   problems: {
     title: 'No problems',
-    text: "This lecture doesn't have any problems to work out yet. More practice, on the lecture page, can write some.",
+    text: "This lecture doesn't have any problems to work out yet. Add questions, on the lecture page, can write some.",
   },
   review: {
     title: 'Nothing is due',
@@ -546,15 +546,25 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     const after = all[at + 1];
     if ((mode !== 'learn' && mode !== 'today') || !here?._block || !after || after._block === here._block) return null;
     const inStep = all.map((item, n) => ({ item, n })).filter(({ item }) => item._block === here._block);
-    const first = inStep.filter(({ item, n }) => !item._again && results.has(n));
     const owner = inStep.find(({ item }) => !item._again)?.item ?? here;
+    const sectionDone = after._sectionId !== here._sectionId;
+    // At a section's end, the section's steps in this sitting: under "End of
+    // <section>", the last step's score alone read as the section's.
+    const covered =
+      sectionDone && here._block !== 'review'
+        ? all
+            .slice(0, at + 1)
+            .map((item, n) => ({ item, n }))
+            .filter(({ item }) => item._sectionId === here._sectionId && item._block !== 'review')
+        : inStep;
+    const first = covered.filter(({ item, n }) => !item._again && results.has(n));
     return {
       reviewDone: here._block === 'review',
       step: owner._step ?? 0,
       steps: owner._steps ?? 1,
       section: owner._sectionTitle,
-      sectionDone: after._sectionId !== here._sectionId,
-      terms: inStep.flatMap(({ item }) =>
+      sectionDone,
+      terms: covered.flatMap(({ item }) =>
         item.type === 'definition' || (item.type === 'recall' && !item.question && !item._again)
           ? [item.type === 'definition' ? item.term : item.target.term]
           : [],
@@ -941,7 +951,10 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
               ) : null;
             })()}
           {!pause.reviewDone && pause.terms.length > 0 && (
-            <p className="mx-auto mt-2 max-w-prose text-small text-text-2">{pause.terms.join(' · ')}</p>
+            <p className="mx-auto mt-2 max-w-prose text-small text-text-2">
+              <span className="text-text-3">Covered: </span>
+              {pause.terms.length > 6 ? `${pause.terms.slice(0, 5).join(' · ')} and ${pause.terms.length - 5} more` : pause.terms.join(' · ')}
+            </p>
           )}
           {/* What did not settle, by name, and when it comes back: the
               catch-up a few hours on (lib/memory.ts, catchUpDue). */}

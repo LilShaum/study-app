@@ -79,7 +79,7 @@ your new notes and paste the returned JSON straight back. The paste is
 previewed (what gets added, where, what's skipped as a duplicate, which ids
 are renamed) before anything is committed.
 
-"More practice" is the second mode of the same dialog, for when you already
+"Add questions" is the second mode of the same dialog, for when you already
 know the existing questions. It needs no notes at all: every item recorded a
 `source_excerpt` from the original source, so the prompt hands those back,
 grouped by section, as the material to write new questions from. That

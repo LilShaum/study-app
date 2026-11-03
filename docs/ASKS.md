@@ -34,7 +34,15 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   will need a big ui/ux audit and like design language audit because we
   haven't worked on that stuff in a long time … the main use of the app …
   is good and should continue"). After the study work in hand.
-
+  First pass done 2026-11-03 (docs/proposals/design-audit.md): the book
+  language kept, the structure tightened. Faults fixed and live: a
+  section's end scored the last step alone; "More practice" read as
+  studying (now Add questions); class rows that looked like text; a
+  repeated link; a centred back link; the screenshot check missing three
+  weeks of screens. Waiting on the owner's eye, each argued there: one
+  Start for the day on the library, the lecture page's first screen,
+  Progress leading with what is fading, a lighter first reading card, and
+  versions of the tree. Worth the highest effort setting.
 - **Say when a higher effort setting is worth it, before starting a task**
   (2026-10-29: "I'm wondering if there is a certain time it would be
   beneficial to put you on ultra code mode and maybe if you could suggest

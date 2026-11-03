@@ -550,7 +550,7 @@ function Setup({
       {pool.length === 0 ? (
         <p className="border-b border-border py-3 text-small text-text-2">
           {kinds.length && off.length < places.length
-            ? 'There are no medium or hard questions of those kinds here yet. More practice, on the lecture page, can write some.'
+            ? 'There are no medium or hard questions of those kinds here yet. Add questions, on the lecture page, can write some.'
             : 'Tick at least one kind and one part.'}
         </p>
       ) : (

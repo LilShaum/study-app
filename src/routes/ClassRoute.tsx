@@ -66,6 +66,7 @@ export function ClassRoute() {
   const [now] = useState(Date.now);
   const lectures = useMemo(() => lecturesOf(courses, code), [courses, code]);
   const exams = useMemo(() => classExams(lectures, now), [lectures, now]);
+  const upcoming = exams.filter((e) => (examTime(e.date) ?? 0) > now);
   const total = usePlanStore((s) => s.total);
   const logs = useStudyLogStore((s) => s.byCourse);
   const pace = useMemo(() => measuredPace(logs), [logs]);
@@ -155,6 +156,10 @@ export function ClassRoute() {
             <li key={m.label} className="border-b border-border pb-3">
               <Link to={m.to} className="group tap-safe flex items-baseline gap-3 pt-3">
                 <span className="font-display text-body text-text group-hover:text-accent">{m.label}</span>
+                {/* The library's mark for a page to go to: these rows read as text without it. */}
+                <span aria-hidden="true" className="mark ml-auto text-text-3 group-hover:text-accent">
+                  ▸
+                </span>
               </Link>
               <span className="mt-0.5 block text-small text-text-3">{m.use}</span>
             </li>
@@ -197,27 +202,24 @@ export function ClassRoute() {
           <Icon name="plus" size={13} />
           Add an exam
         </button>
-        {/* The test an exam covers, from every lecture on it; past exams are
-            left out, the whole class is always there. */}
-        <p className="mt-4 text-small text-text-2">
-          <span className="mark mr-2 text-text-3">Practice test</span>
-          {exams
-            .filter((e) => (examTime(e.date) ?? 0) > now)
-            .map((e) => (
+        {/* The test each coming exam covers, from every lecture on it; past
+            exams are left out. The whole class's is the row above. */}
+        {upcoming.length > 0 && (
+          <p className="mt-4 text-small text-text-2">
+            <span className="mark mr-2 text-text-3">Practice test</span>
+            {upcoming.map((e, k) => (
               <span key={e.id}>
+                {k > 0 && <span className="mx-1.5 text-text-3">·</span>}
                 <Link
                   to={`/class/${encodeURIComponent(code)}/test?exam=${encodeURIComponent(e.id)}`}
                   className="text-accent underline-offset-4 hover:underline"
                 >
                   {e.name}
                 </Link>
-                <span className="mx-1.5 text-text-3">·</span>
               </span>
             ))}
-          <Link to={`/class/${encodeURIComponent(code)}/test`} className="text-accent underline-offset-4 hover:underline">
-            the whole class
-          </Link>
-        </p>
+          </p>
+        )}
       </section>
 
       <section className="mt-8">

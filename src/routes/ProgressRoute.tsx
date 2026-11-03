@@ -119,21 +119,24 @@ export function ProgressRoute() {
 
   if (stats.studiedCount === 0) {
     return (
-      <div className="py-10 text-center">
+      <div>
+        {/* Top left, as on every page (it sat centred above the message). */}
         <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
           ← Back
         </Link>
-        <h1 className="mt-4 font-display text-title font-semibold text-text">No progress yet</h1>
-        <p className="mt-2 text-text-2">
-          Answer some questions, flashcards or terms in &ldquo;{course.metadata.title}&rdquo; and
-          they will show up here.
-        </p>
-        <Link
-          to={`/study/${id}`}
-          className="press press-ink mt-4"
-        >
-          Back to lecture
-        </Link>
+        <div className="py-10 text-center">
+          <h1 className="font-display text-title font-semibold text-text">No progress yet</h1>
+          <p className="mt-2 text-text-2">
+            Answer some questions, flashcards or terms in &ldquo;{course.metadata.title}&rdquo; and
+            they will show up here.
+          </p>
+          <Link
+            to={`/study/${id}`}
+            className="press press-ink mt-4"
+          >
+            Back to lecture
+          </Link>
+        </div>
       </div>
     );
   }

@@ -235,7 +235,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
   const MODE_TITLES: Record<AddMode, string> = {
     material: 'Add material to this lecture',
-    practice: 'More practice on this lecture',
+    practice: 'Add questions to this lecture',
     explain: 'Add explanations',
     fix: 'Fix what the check found',
     options: 'Even out the answers',
@@ -265,7 +265,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
           {(
             [
               ['material', 'New material'],
-              ['practice', 'More practice'],
+              ['practice', 'Add questions'],
               ['explain', 'Explanations'],
               ['fix', 'Fix gaps'],
               ['options', 'Even out answers'],

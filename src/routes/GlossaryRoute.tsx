@@ -103,7 +103,7 @@ export function GlossaryRoute() {
         <div className="mt-6 border-y border-border py-8 text-center">
           <p className="text-text-2">This lecture has no terms yet.</p>
           <p className="mx-auto mt-1 max-w-md text-sm text-text-3">
-            Terms come from the definitions in a lecture. &ldquo;More practice&rdquo; on the lecture
+            Terms come from the definitions in a lecture. &ldquo;Add questions&rdquo; on the lecture
             page can ask for them.
           </p>
         </div>

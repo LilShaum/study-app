@@ -410,7 +410,7 @@ export function CourseRoute() {
               to: null,
               label: 'Practice',
               unit: counts.due > 0 ? `${counts.due} due` : 'any part',
-              use: 'Drill what you choose: one kind of card, one part of the lecture, or a test.',
+              use: 'Study what you choose, each answer marked as you go: tick the kinds of card and the parts. Or rehearse the exam with a practice test.',
             },
           ].map((m) => (
             <li key={m.label} className="border-b border-border pb-3">
@@ -456,7 +456,7 @@ export function CourseRoute() {
           <span className="mark shrink-0 text-text-3 sm:w-16">Lecture</span>
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 sm:gap-x-5">
             <ToolButton onClick={() => setAdding('material')}>Add material</ToolButton>
-            <ToolButton onClick={() => setAdding('practice')}>More practice</ToolButton>
+            <ToolButton onClick={() => setAdding('practice')}>Add questions</ToolButton>
             {/* For a lecture made before explanations existed. */}
             {counts.explain === 0 && kindsOf(course).includes('explain') && <ToolButton onClick={() => setAdding('explain')}>Add explanations</ToolButton>}
             <ToolButton onClick={() => setEditingDetails(true)}>Edit details</ToolButton>

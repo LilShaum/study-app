@@ -334,7 +334,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     findings.push({
       id: 'sparse-sections',
       severity: 'warning',
-      message: `${n === 1 ? 'One section has' : `${n} sections have`} few items for the slides ${n === 1 ? 'it covers' : 'they cover'}, against about ${per(density.typical)} a slide elsewhere in this lecture: ${names(density.sparse)}. If those slides matter, More practice writes new questions on them first.`,
+      message: `${n === 1 ? 'One section has' : `${n} sections have`} few items for the slides ${n === 1 ? 'it covers' : 'they cover'}, against about ${per(density.typical)} a slide elsewhere in this lecture: ${names(density.sparse)}. If those slides matter, Add questions writes new questions on them first.`,
     });
   }
   if (density?.dense.length) {
@@ -437,7 +437,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       severity: 'warning',
       message: `${n} key term${n === 1 ? ' is' : 's are'} asked by one question or flashcard at most (${gaps.thinKeyTerms
         .slice(0, 3)
-        .join(', ')}${n > 3 ? ', …' : ''}), so ${n === 1 ? 'it' : 'each'} can be learned as that card rather than understood. Fix or More practice asks ${n === 1 ? 'it' : 'them'} from other sides.`,
+        .join(', ')}${n > 3 ? ', …' : ''}), so ${n === 1 ? 'it' : 'each'} can be learned as that card rather than understood. Fix or Add questions asks ${n === 1 ? 'it' : 'them'} from other sides.`,
     });
   }
 
