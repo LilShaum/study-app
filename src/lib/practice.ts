@@ -193,7 +193,7 @@ export function choiceCount(
     exam: examRule(course, progress, now),
     missedIds,
     onlyIds,
-    practice: { kinds: new Set(choice.kinds), which: new Set(choice.which), order: 'inorder', sectionIds },
+    practice: { kinds: new Set(choice.kinds), which: new Set(choice.which), order: 'inorder', sectionIds, newCap: choice.newCap },
   }).length;
 }
 

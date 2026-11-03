@@ -104,19 +104,38 @@ export function isDue(r: ItemResult | undefined, at: number): boolean {
 }
 
 /**
+ * How well a right answer was known, when the student says so: a flip
+ * card's Hard or Got it (docs/proposals/practice.md). Every other right
+ * answer is 'good'. 'easy' is modelled for the simulator only: it gave a
+ * student who grades well nothing and cost one who grades kindly, so no
+ * card offers it (sim/FINDINGS.md, 2026-11-03).
+ */
+export type Grade = 'hard' | 'good' | 'easy';
+/**
+ * What each grade does to the growth of a right answer, and to a first
+ * right answer's stability. The shape of FSRS's hard penalty and easy bonus,
+ * milder than its defaults (a first Easy there is five times a Good): there
+ * is no fit to this app's students yet. Modelling choices, like the rest.
+ */
+const GRADE_GROWTH: Record<Grade, number> = { hard: 0.5, good: 1, easy: 2 };
+const GRADE_FIRST: Record<Grade, number> = { hard: FLOOR_DAYS, good: FIRST_RIGHT_DAYS, easy: 2 * FIRST_RIGHT_DAYS };
+
+/**
  * Stability after answering, from the stability before and when it was last
- * answered. `before` of null means this is the first attempt.
+ * answered. `before` of null means this is the first attempt. `grade` is
+ * how well a right answer was known, when the student said.
  */
 export function nextStability(
   before: { stability: number; lastSeen: number } | null,
   got: boolean,
   at: number,
+  grade: Grade = 'good',
 ): number {
-  if (!before) return got ? FIRST_RIGHT_DAYS : FLOOR_DAYS;
+  if (!before) return got ? GRADE_FIRST[grade] : FLOOR_DAYS;
   if (!got) return clamp(before.stability * LAPSE_KEEPS);
   const days = Math.max(0, (at - before.lastSeen) / DAY_MS);
   const R = Math.exp(-days / (before.stability * personalScale));
-  return clamp(before.stability * (1 + GROWTH * (1 - R)));
+  return clamp(before.stability * (1 + GROWTH * GRADE_GROWTH[grade] * (1 - R)));
 }
 
 /** The pre-answer state nextStability needs, read from a stored record. */
@@ -250,6 +269,23 @@ export function nextDueAt(r: ItemResult | undefined, now: number, examAt: number
   if (missedThisSitting(r)) normal = Math.min(normal, r!.lastSeen! + CATCH_UP_HOURS * 3_600_000);
   const latest = examReviewFrom(r, s * personalScale, now, examAt);
   return latest == null ? normal : Math.min(normal, latest);
+}
+
+/**
+ * "in 7 hours", "in 3 days", "in 2 weeks": how long from now, as Anki shows
+ * under its buttons. Under a flip card's grades, where "later today" would
+ * name Got it, Hard and Missed it alike on a first answer (14, 7 and a few
+ * hours).
+ */
+export function inWords(ms: number): string {
+  const hours = ms / 3_600_000;
+  if (hours < 1.5) return 'within the hour';
+  if (hours < 20) return `in ${Math.round(hours)} hours`;
+  const days = Math.max(1, Math.round(hours / 24));
+  if (days === 1) return 'in a day';
+  if (days < 14) return `in ${days} days`;
+  if (days < 60) return `in ${Math.round(days / 7)} weeks`;
+  return `in ${Math.round(days / 30)} months`;
 }
 
 /**

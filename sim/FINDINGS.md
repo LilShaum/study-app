@@ -10,6 +10,52 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-11-03 · Graded flips: Hard helps, Easy does not
+
+The plan (docs/proposals/practice.md, section 5) was Anki's four buttons on
+every flip card, Missed · Hard · Got it · Easy, built only if a student who
+grades well gains and one who calls a shaky recall Easy loses little. A
+grade scales the growth of a right answer in the app's model (Hard ×0.5,
+Easy ×2; a first right answer holds 1, 2 or 4 days): FSRS's shape, milder.
+
+**The student who grades** (`SIM_GRADING`, `pressed` in engine.ts): feels
+true recall plus noise (sd 0.15) plus a bias; Hard below 0.6, Easy above
+0.9. Calibrated, over-confident (+0.2), under-confident (−0.2). And a
+lenient one: a near miss (recall at least 0.3) called Got it half the time
+with two buttons ("Got it is the kindest grade", docs/ASKS.md), Hard with
+more. The app is told what was pressed; the truth follows what happened.
+Every mode draws the same random numbers. All of it assumed, nothing fitted.
+
+**Result** (flashcards' own exam score, 8 seeds; whole-course scores move
+by 2 points at most):
+
+| | two | three | three, over-confident | lenient, two | lenient, three |
+|---|---|---|---|---|---|
+| steady-30 | 41% | 43% | 41% | 39% | 40% |
+| busy-20 | 18% | 19% | 17% | 15% | 16% |
+| crammer | 61% | 65% | 63% | 52% | 58% |
+| steady-30-harsh | 7% | 8% | 7% | 8% | 7% |
+| crammer-harsh | 23% | 24% | 23% | 20% | 23% |
+| steady-30-slow | 69% | 69% | 68% | 67% | 68% |
+
+With four buttons (5 seeds) a calibrated student did no better than two
+(steady-30 40%, crammer 65%, busy-20 16%), and an over-confident one lost
+up to 3 points (crammer 59%, crammer-harsh 21%).
+
+**Reading.** Easy carries nothing the model lacks: a card known cold is
+reviewed late anyway, since growth is scaled by how much had faded. Hard
+does carry something: a shaky recall comes back sooner. Leniency costs most
+(the crammer 9 points of flashcards) and Hard wins back two thirds of it,
+if a lenient student presses Hard where they would have pressed Got it
+(an assumption about people, the one this rests on). Without Easy,
+over-confidence lands on Got it, which is the app before. Direction holds
+under fsrs, harsh and slow. Cost: about 8% more flashcard reviews.
+
+**Decision.** Three buttons on flip cards: Missed it · Hard · Got it. No
+Easy (the plan's own fallback). The grade is logged with the answer, so a
+real log can test the assumption later. No re-baseline: without a grade
+the app is as before, and the standard suite never grades.
+
 ## 2026-10-29 · Problems to work out: nothing moves, as expected
 
 A `problem` item (a calculation, code, a proof) joined Learn, Today, Review

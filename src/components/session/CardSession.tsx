@@ -4,17 +4,18 @@ import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
 import { buildSessionItems, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { phaseOfItem, type LearnPhase } from '@/lib/learnSteps';
-import { useSessionStore, restartCardTimer, fileItemOf, lectureOf, cardKey } from '@/store/session';
+import { useSessionStore, restartCardTimer, fileItemOf, lectureOf, cardKey, AGAIN_MAX } from '@/store/session';
 import { onlyStudies } from '@/lib/studies';
 import { toast } from '@/store/toast';
 import { resumesOnOpen, useResumeStore } from '@/store/resume';
 import { CourseTree } from '@/components/CourseTree';
-import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
+import { answered, EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
+import type { ComesBack } from '@/components/items/FlashcardCard';
 import { SectionJump } from './SectionJump';
 import { SessionRail } from './SessionRail';
 import { MixedLectures } from './MixedLectures';
-import { CATCH_UP_HOURS, missedThisSitting, nextDueAt, whenLabel } from '@/lib/memory';
+import { CATCH_UP_HOURS, inWords, missedThisSitting, nextDueAt, whenLabel, type Grade } from '@/lib/memory';
 import { examRule } from '@/lib/exam';
 import { useCoursesStore } from '@/store/courses';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
@@ -80,9 +81,31 @@ const ALL_CARD_KEYS: KeyHint[] = [
   { keys: ['Space'], label: 'flip' },
   { keys: ['Enter'], label: 'check / next' },
   { keys: ['G'], label: 'got' },
+  { keys: ['H'], label: 'hard' },
   { keys: ['M'], label: 'missed' },
   ...NAV_HINTS,
 ];
+
+/**
+ * When a flip card comes back after each grade, for the words under its
+ * buttons: the progress store's own after-answer rule, then when that
+ * record is next due (an exam near included). A miss in Learn comes back
+ * in the same sitting (store/session requeue), and says so. Undefined for
+ * any other card.
+ */
+function comesBackFor(item: SessionItem, lectureId: string, lecture: Course | undefined, mode: StudyMode): ComesBack | undefined {
+  if (item.type !== 'flashcard' || answerPoints(item)) return undefined;
+  const now = Date.now();
+  const progress = useProgressStore.getState().getProgress(lectureId);
+  const was = progress[item.id];
+  const examAt = lecture ? examRule(lecture, progress, now).covering(item.id) : null;
+  const when = (got: boolean, grade?: Grade) => {
+    const at = nextDueAt(answered(was, got, now, grade), now, examAt);
+    return at == null ? '' : inWords(at - now);
+  };
+  const requeues = (mode === 'learn' || (mode === 'today' && item._step !== undefined)) && (item._again ?? 0) < AGAIN_MAX;
+  return { got: when(true), hard: when(true, 'hard'), missed: requeues ? 'again this sitting' : when(false) };
+}
 
 const KEY_HINTS: Record<CardMode, KeyHint[]> = {
   learn: ALL_CARD_KEYS,
@@ -97,6 +120,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
   flashcards: [
     { keys: ['Space'], label: 'flip' },
     { keys: ['G'], label: 'got it' },
+    { keys: ['H'], label: 'hard' },
     { keys: ['M'], label: 'missed it' },
     ...NAV_HINTS,
   ],
@@ -108,6 +132,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
     { keys: ['Space'], label: 'flip' },
     { keys: ['Enter'], label: 'check / next' },
     { keys: ['G'], label: 'got' },
+    { keys: ['H'], label: 'hard' },
     { keys: ['M'], label: 'missed' },
     ...NAV_HINTS,
   ],
@@ -969,10 +994,11 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           }}
           // Grading a flashcard also advances it, as the vanilla app did —
           // otherwise the card just flips back and looks like nothing happened.
-          onGot={() => {
-            record(true);
+          onGot={(grade) => {
+            record(true, grade);
             handleNext();
           }}
+          comesBack={comesBackFor(current, lectureOf(current, courseId), lectureFor(current)?.course, mode)}
           onMissed={() => {
             record(false);
             handleNext();

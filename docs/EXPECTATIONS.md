@@ -341,8 +341,10 @@ on its page under Today (on the class page it was a link inside a
 sentence; the owner, 2026-11-03: "having it hidden is bad").
 
 - **Ready-made** sittings on top, one tap each, with their counts: Due
-  now (weakest first), Mistakes, Flashcards (due, mistakes and new), and
-  Problems when there are any.
+  now (weakest first), Mistakes, Flashcards (Anki's way: every flashcard
+  already met that is due or a mistake, weakest first, then up to ten new
+  in the lecture's order; `PracticeChoice.newCap`), and Problems when
+  there are any.
 - **Choose it yourself**: ticks for the kinds (multiple choice, flashcards,
   written answers, terms, problems; written answers apart from flashcards
   and unticked by default), ticks for which cards (due now, mistakes,
@@ -429,6 +431,30 @@ reloads the app after switching away) until the student starts a new one.
 Answers count as practice once, when the test is marked, so Today knows
 what the test found.
 
+### Flip cards
+
+**Goal.** A flashcard you check yourself, graded as honestly as the student
+can: knowing it cold, only just, or not at all are three different things
+to schedule (the owner, 2026-10-29: Anki's "say how sure you were about ur
+answer").
+
+**How it works.** The question, Flip (or Space), the answer under the
+question, then Got it · Hard · Missed it (G, H, M), Got it and Missed it
+where they always were. Hard is right but shaky: it grows the card's
+memory half as much as Got it, and a first Hard holds a day where a first
+Got it holds two (`lib/memory` Grade). Under each button, when the card
+would come back ("in 14 hours", "in 4 days", worked out from the same
+rule that schedules it, an exam near included; in Learn a miss says
+"again this sitting"). No Easy: the simulator found it gave a student who
+grades well nothing and cost one who grades kindly, while Hard won back
+most of what a near miss called Got it costs (sim/FINDINGS.md,
+2026-11-03). A Hard is logged with the answer, to check on real answers.
+I don't know shows the answer and counts as a miss.
+
+**Working means.** In Learn, Today, Review and Practice alike; a card with
+numbered points is a written answer, not a flip card; the three labels
+differ on a card's first answer.
+
 ### Written answers
 
 **Goal.** Practise the questions an exam asks you to write (short and long
@@ -496,8 +522,9 @@ so. A lecture with code in its strings reads, pasted or uploaded.
 **Goal.** Bring each card back when it is about to be forgotten.
 
 **How it works.** Each card's memory is R = exp(−t/S); it is due below
-0.75. A miss resets to the strength of first learning and is due again
-after about 3 hours. The forgetting rate is fitted to the student's own
+0.75. A right answer grows S more the more had faded; a flip card's Hard
+grows it half as much (Flip cards). A miss resets to the strength of first
+learning and is due again after about 3 hours. The forgetting rate is fitted to the student's own
 answers as they build up, starting from the default (`lib/personalScale.ts`),
 and card times are measured on the device.
 

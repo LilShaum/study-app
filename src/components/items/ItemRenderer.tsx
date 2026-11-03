@@ -1,6 +1,7 @@
 import type { AnyItem } from '@/lib/buildSessionItems';
+import type { Grade } from '@/lib/memory';
 import { McqCard } from './McqCard';
-import { FlashcardCard } from './FlashcardCard';
+import { FlashcardCard, type ComesBack } from './FlashcardCard';
 import { DefinitionCard } from './DefinitionCard';
 import { ExampleCard } from './ExampleCard';
 import { ExplainCard } from './ExplainCard';
@@ -16,8 +17,11 @@ interface ItemRendererProps {
   item: AnyItem;
   onAnswered?: (correct: boolean, picked?: number) => void;
   onNext?: () => void;
-  onGot?: () => void;
+  /** Right; `grade` 'hard' when a flip card was called Hard. */
+  onGot?: (grade?: Grade) => void;
   onMissed?: () => void;
+  /** A flip card: when it comes back after each grade. */
+  comesBack?: ComesBack;
   /** The student overruling a typed answer's verdict. */
   onOverride?: (correct: boolean) => void;
   /** A typed answer named a different term; its definition's id. */
@@ -41,6 +45,7 @@ export function ItemRenderer({
   onNext,
   onGot,
   onMissed,
+  comesBack,
   onOverride,
   onConfused,
   keyboardEnabled,
@@ -67,7 +72,7 @@ export function ItemRenderer({
       );
     case 'flashcard':
       return (
-        <FlashcardCard item={item} onGot={onGot} onMissed={onMissed} keyboardEnabled={keyboardEnabled} learning={learning} />
+        <FlashcardCard item={item} onGot={onGot} onMissed={onMissed} comesBack={comesBack} keyboardEnabled={keyboardEnabled} learning={learning} />
       );
     case 'definition':
       return (

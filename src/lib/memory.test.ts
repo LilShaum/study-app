@@ -9,6 +9,7 @@ import {
   memoryBefore,
   nextDueAt,
   whenLabel,
+  inWords,
   nextStability,
   retrievability,
   stabilityOf,
@@ -39,6 +40,20 @@ describe('retrievability', () => {
 });
 
 describe('nextStability', () => {
+  it('grows a Hard right answer less than Got it, and a first Hard holds a day', () => {
+    const before = { stability: 4, lastSeen: T0 };
+    const at = T0 + 2 * DAY;
+    const good = nextStability(before, true, at);
+    const hard = nextStability(before, true, at, 'hard');
+    expect(hard).toBeGreaterThan(before.stability);
+    expect(hard).toBeLessThan(good);
+    expect(nextStability(before, true, at, 'good')).toBe(good);
+    expect(nextStability(null, true, T0, 'hard')).toBe(1);
+    expect(nextStability(null, true, T0)).toBe(2);
+    // A miss is a miss whatever grade is passed.
+    expect(nextStability(before, false, at, 'hard')).toBe(nextStability(before, false, at));
+  });
+
   it('grows more when more had been forgotten', () => {
     const before = { stability: 2, lastSeen: T0 };
     const soon = nextStability(before, true, T0 + 0.1 * DAY);
@@ -127,6 +142,19 @@ describe('nextDueAt', () => {
 
   it('is null for an item never answered', () => {
     expect(nextDueAt(undefined, T0, null)).toBeNull();
+  });
+});
+
+describe('inWords', () => {
+  it('names the gap the way Anki does, short and telling the grades apart', () => {
+    const H = 3_600_000;
+    expect(inWords(0.5 * H)).toBe('within the hour');
+    expect(inWords(4 * H)).toBe('in 4 hours');
+    expect(inWords(13.8 * H)).toBe('in 14 hours');
+    expect(inWords(26 * H)).toBe('in a day');
+    expect(inWords(4.2 * 24 * H)).toBe('in 4 days');
+    expect(inWords(20 * 24 * H)).toBe('in 3 weeks');
+    expect(inWords(90 * 24 * H)).toBe('in 3 months');
   });
 });
 

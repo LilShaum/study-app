@@ -218,6 +218,8 @@ export interface SessionOptions {
     order: Order;
     /** The sections kept; all of them when absent. */
     sectionIds?: ReadonlySet<string> | null;
+    /** At most this many never answered, after all the rest (PracticeChoice.newCap). */
+    newCap?: number;
   };
 }
 
@@ -557,8 +559,19 @@ export function buildSessionItems(
         for (const w of whichOf(i, progress, missedIds, due)) if (practice.which.has(w)) return true;
         return false;
       });
-      items =
-        practice.order === 'weakest' ? weakestFirst(kept, now, progress) : practice.order === 'mixed' ? spaced(shuffle(kept)) : kept;
+      const ordered = (list: SessionItem[]) =>
+        practice.order === 'weakest' ? weakestFirst(list, now, progress) : practice.order === 'mixed' ? spaced(shuffle(list)) : list;
+      if (practice.newCap == null) items = ordered(kept);
+      else {
+        // Every card already met first, in the order chosen; then new ones in
+        // the lecture's order, as many as the cap. Weakest first alone would
+        // put a fresh lecture's new cards ahead of the ones fading.
+        const isNew = (i: SessionItem) => {
+          const r = progress?.[i.id];
+          return !r || r.got + r.missed === 0;
+        };
+        items = [...ordered(kept.filter((i) => !isNew(i))), ...kept.filter(isNew).slice(0, practice.newCap)];
+      }
       break;
     }
     case 'definitions':

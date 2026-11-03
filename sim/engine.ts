@@ -4,7 +4,7 @@ import { examRule } from '@/lib/exam';
 import { partMinutes, PART_GAP_HOURS, splitSitting } from '@/lib/today';
 import { daysToExam } from '@/lib/libraryToday';
 import { forecast } from './experiments/forecast';
-import { examTime, isDueFor, retrievability, setPersonalScale, stabilityOf } from '@/lib/memory';
+import { examTime, isDueFor, retrievability, setPersonalScale, stabilityOf, type Grade } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
 import { scoredEntries } from '@/lib/scored';
 import { sortedSections } from '@/lib/sortedSections';
@@ -66,6 +66,10 @@ export interface DayRow {
 export interface Metrics {
   /** Expected exam score on the scope, 0-1: MCQs get the guessing floor, the rest do not. */
   expectedScore: number;
+  /** Expected exam score on the flashcards in scope alone: where a flip's grade acts. */
+  flashScore: number;
+  /** Review answers given on flashcards. */
+  flashReviews: number;
   /** Share of scope items still held at R >= 0.8 on exam morning. */
   held: number;
   /** Share of scope items never answered once. */
@@ -345,6 +349,37 @@ export function simulate(sc: Scenario, seed: number): RunResult {
   // How easy each item is for this student, 0.5-1.5.
   const ease = new Map<string, number>();
   const easeOf = (id: string) => ease.get(id) ?? (ease.set(id, 0.5 + r()), ease.get(id)!);
+  /**
+   * What a student presses on a flip card, when SIM_GRADING is set
+   * (docs/proposals/practice.md, graded flips). They feel how well they
+   * knew it: true recall plus noise (sd 0.15) plus a bias. A right answer is
+   * Hard below 0.6, Easy above 0.9, Got it between. Every mode draws the same
+   * random numbers, so they differ only in what is pressed.
+   * - 'two': Got it or Missed, honestly. The control.
+   * - 'calibrated' / 'overconfident' (+0.2) / 'underconfident' (−0.2): four
+   *   buttons, honest about right and wrong.
+   * - 'lenient-two': a near miss (recall at least 0.3) is called Got it half
+   *   the time: "Got it is the kindest grade" (docs/ASKS.md).
+   * - 'lenient-four': the same near misses are called Hard instead, and right
+   *   answers are graded as 'calibrated'.
+   * The app is told what was pressed; the truth follows what happened.
+   * Assumptions, not a fit.
+   */
+  const grading = process.env.SIM_GRADING ?? '';
+  const lenient = grading.includes('lenient');
+  const buttons = grading.includes('two') ? 2 : grading.includes('three') ? 3 : 4;
+  const bias = grading.includes('over') ? 0.2 : grading.includes('under') ? -0.2 : 0;
+  const pressed = (item: SessionItem, got: boolean, recall: number): { said: boolean; grade?: Grade } => {
+    if (!grading || item.type !== 'flashcard') return { said: got };
+    const noise = Math.sqrt(-2 * Math.log(1 - r())) * Math.cos(2 * Math.PI * r()) * 0.15;
+    const kind = r() < 0.5;
+    if (!got) return lenient && kind && recall >= 0.3 ? { said: true, grade: buttons === 2 ? 'good' : 'hard' } : { said: false };
+    if (buttons === 2) return { said: true, grade: 'good' };
+    const felt = recall + bias + noise;
+    if (felt < 0.6) return { said: true, grade: 'hard' };
+    return { said: true, grade: buttons === 4 && felt > 0.9 ? 'easy' : 'good' };
+  };
+  let flashReviews = 0;
   const truth = new Map<string, Truth>();
   const primed = new Map<string, number>();
   const recallAt = (id: string, t: number) => {
@@ -424,6 +459,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
         if (item.type === 'flashcard') p = Math.max(p, FIRST_TIME.flashcard);
       } else p = item.type === 'mcq' ? FIRST_TIME.mcq : FIRST_TIME.flashcard;
       const got = r() < p;
+      const { said, grade } = pressed(item, got, R ?? p);
       const e = easeOf(item.id);
       const T = truth.get(item.id);
       // A review is a review whichever door it came through: Today's sitting
@@ -443,8 +479,8 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       else if (reviewing(item, mode)) reviewed++;
       const before = useProgressStore.getState().getProgress(COURSE_ID)[item.id];
       const appS = stabilityOf(before);
-      if (appS != null) seenByApp.push({ days: (now - before!.lastSeen!) / DAY, s: appS, mcq: item.type === 'mcq', got });
-      if (!got) missedToday.set(item.id, { ...item, _again: undefined, _block: 'review' });
+      if (appS != null) seenByApp.push({ days: (now - before!.lastSeen!) / DAY, s: appS, mcq: item.type === 'mcq', got: said });
+      if (!said) missedToday.set(item.id, { ...item, _again: undefined, _block: 'review' });
       // A wrong first try with the answer shown after teaches at least as
       // well as reading it (Kornell, Hays & Bjork 2009, docs/evidence.md):
       // the next right answer counts as the first, not as a review of a
@@ -459,7 +495,8 @@ export function simulate(sc: Scenario, seed: number): RunResult {
         successes: got ? (T && !T.lapsed ? T.successes + 1 : 0) : 0,
         firstMiss: !got && (T == null || !!T.firstMiss),
       });
-      store().record(got);
+      if (item.type === 'flashcard' && reviewing(item, mode) && T) flashReviews++;
+      store().record(said, grade);
     };
 
     const run = (mode: 'review' | 'learn' | 'today', capMs: number, sectionId?: string, resumeId?: string, items?: SessionItem[]) => {
@@ -551,12 +588,18 @@ export function simulate(sc: Scenario, seed: number): RunResult {
   const score = (id: string, R: number) => (typeOf.get(id) === 'mcq' ? R + (1 - R) * 0.25 : R);
   const prog = useProgressStore.getState().getProgress(COURSE_ID);
   let expected = 0;
+  let flash = 0;
+  let flashN = 0;
   let held = 0;
   let never = 0;
   let app = 0;
   for (const id of scopeIds) {
     const R = recallAt(id, examAt) ?? 0;
     expected += score(id, R);
+    if (typeOf.get(id) === 'flashcard') {
+      flash += R;
+      flashN++;
+    }
     if (R >= 0.8) held++;
     if (!truth.has(id)) never++;
     app += score(id, retrievability(prog[id], examAt) ?? 0);
@@ -582,6 +625,8 @@ export function simulate(sc: Scenario, seed: number): RunResult {
     days: rows,
     metrics: {
       expectedScore: expected / n,
+      flashScore: flashN ? flash / flashN : 0,
+      flashReviews,
       held: held / n,
       neverStudied: never / n,
       appEstimate: app / n,

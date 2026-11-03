@@ -158,6 +158,15 @@ card would be due by two schedules, and Today would plan around a review
 the deck had already done. Today already is spaced repetition across every
 kind of card.
 
+**Decided after the simulator (2026-11-03, sim/FINDINGS.md): three
+buttons, Missed it · Hard · Got it.** Easy gave a student who grades well
+nothing (a card known cold is reviewed late anyway: growth is scaled by
+how much had faded) and cost one who grades kindly up to 3 points of
+flashcards. Hard gave a little to an honest student and won back two
+thirds of what a lenient one loses by calling a near miss Got it, and
+without Easy an over-confident student lands on Got it, which is the app
+before. The reasoning below is what was tested.
+
 **The four buttons everywhere a card is flipped.** Got it now covers
 "knew it cold" and "got there in the end", the kindest grade in the app
 (docs/ASKS.md). Missed it · Hard · Got it · Easy, each with when the card
@@ -194,9 +203,10 @@ Each phase ships on its own, tested and live:
    kinds under a lecture).
 2. **The test**: answers at the end; the timer; ticks for where and kinds;
    the line pointing to Practice.
-3. **Graded flips**: simulator first; then the four buttons and the memory
-   model.
-4. **The flashcards sitting** as a ready-made Practice.
+3. **Graded flips**: simulator first (done: three buttons, no Easy); then
+   the buttons and the memory model.
+4. **The flashcards sitting** as a ready-made Practice (built with
+   phase 3: the cards already met first, then up to ten new).
 
 ## 7. What would change this plan
 

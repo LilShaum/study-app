@@ -63,6 +63,9 @@ function loadSaved(scope: string): Saved | null {
 }
 
 /** One lecture's cards for a choice, by the call the session makes. */
+/** New cards a ready-made Flashcards sitting takes, after the ones already met: Anki's default a day, here a sitting. */
+const FLASHCARDS_NEW = 10;
+
 function itemsFor(
   courseId: string,
   course: Course,
@@ -81,7 +84,7 @@ function itemsFor(
     exam: examRule(course, progress, now),
     missedIds,
     onlyIds,
-    practice: { kinds: new Set(choice.kinds), which: new Set(choice.which), order: 'inorder', sectionIds },
+    practice: { kinds: new Set(choice.kinds), which: new Set(choice.which), order: 'inorder', sectionIds, newCap: choice.newCap },
   });
 }
 
@@ -213,7 +216,7 @@ function PracticePage() {
   const nothingStudied = lectures.every(([lid]) => Object.keys(byCourse[lid] ?? {}).length === 0);
 
   /** A ready-made sitting: these ticks over the whole lecture or class. */
-  const ready = (label: string, preset: Pick<PracticeChoice, 'kinds' | 'which' | 'order'>) => {
+  const ready = (label: string, preset: Pick<PracticeChoice, 'kinds' | 'which' | 'order' | 'newCap'>) => {
     const c: PracticeChoice = { ...preset };
     const per = lectures.map(([lid, l]) => ({
       lid,
@@ -227,7 +230,8 @@ function PracticePage() {
   const presets = [
     ready('Due now', { kinds: everyKind.length ? everyKind : present, which: ['due'], order: 'weakest' }),
     ready('Mistakes', { kinds: present, which: ['missed'], order: 'mixed' }),
-    ...(present.includes('flashcards') ? [ready('Flashcards', { kinds: ['flashcards'], which: ['due', 'missed', 'new'], order: 'weakest' })] : []),
+    // Anki's way: what is fading first, then up to ten new (docs/proposals/practice.md).
+    ...(present.includes('flashcards') ? [ready('Flashcards', { kinds: ['flashcards'], which: ['due', 'missed', 'new'], order: 'weakest', newCap: FLASHCARDS_NEW })] : []),
     ...(present.includes('problems') ? [ready('Problems', { kinds: ['problems'], which: ALL_WHICH, order: 'mixed' })] : []),
   ].filter((p) => p.total > 0);
 

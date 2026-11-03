@@ -9,7 +9,7 @@ import { usePlanStore } from './plan';
 import { useLearnStore } from './learn';
 import { todaySitting } from '@/lib/todaySitting';
 import { measuredPace, useStudyLogStore, type AnswerEvent } from './studyLog';
-import { getPersonalScale, retrievability } from '@/lib/memory';
+import { getPersonalScale, retrievability, type Grade } from '@/lib/memory';
 import { applyPersonalScale } from '@/lib/personalScale';
 import { twinsOf } from '@/lib/linkedTerms';
 import { useCoursesStore } from './courses';
@@ -120,7 +120,8 @@ interface SessionState {
   next: () => boolean;
   prev: () => boolean;
   /** Records the current item's result exactly once per index, mirroring Session.record. */
-  record: (got: boolean) => void;
+  /** `grade`: how well a right answer was known, when the student said (a flip card's Hard or Easy). */
+  record: (got: boolean, grade?: Grade) => void;
   /** Learn only: put a missed card back a few cards on. */
   requeue: (index: number) => void;
   /** Take back a requeued copy that has not been reached, when a miss is overruled. */
@@ -269,6 +270,7 @@ function listFor(
             which: new Set(practice.which),
             order: practice.order,
             sectionIds: sectionsFor(practice, courseId),
+            newCap: practice.newCap,
           },
         }
       : {}),
@@ -403,7 +405,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     return true;
   },
 
-  record: (got) => {
+  record: (got, grade) => {
     const state = get();
     const item = state.current();
     const { courseId, index } = state;
@@ -419,7 +421,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
         ? { got: s.score.got + (got ? 1 : 0), missed: s.score.missed + (got ? 0 : 1) }
         : s.score,
     }));
-    recordAnswer(lectureOf(item, courseId), item, got);
+    recordAnswer(lectureOf(item, courseId), item, got, got ? grade : undefined);
     if (!got) get().requeue(index);
   },
 
@@ -588,8 +590,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
  * the student's other lectures. Every way of answering a card goes through
  * here: a study session (record, above) and a practice test (TestRoute).
  */
-export function recordAnswer(courseId: string, item: { id: string; type: string }, got: boolean): void {
-  recordAnswers([{ courseId, item, got }]);
+export function recordAnswer(courseId: string, item: { id: string; type: string }, got: boolean, grade?: Grade): void {
+  recordAnswers([{ courseId, item, got, grade }]);
 }
 
 /**
@@ -597,14 +599,14 @@ export function recordAnswer(courseId: string, item: { id: string; type: string 
  * lecture to each store, rather than two for every card, which on a big
  * library froze a phone for a moment when a 40-question test was marked.
  */
-export function recordAnswers(answers: { courseId: string; item: { id: string; type: string }; got: boolean }[]): void {
+export function recordAnswers(answers: { courseId: string; item: { id: string; type: string }; got: boolean; grade?: Grade }[]): void {
   const now = Date.now();
   const scale = getPersonalScale();
   const courses = useCoursesStore.getState().courses;
   const events = new Map<string, AnswerEvent[]>();
-  const results = new Map<string, { itemId: string; got: boolean }[]>();
+  const results = new Map<string, { itemId: string; got: boolean; grade?: Grade }[]>();
   const add = <T,>(m: Map<string, T[]>, k: string, v: T) => m.set(k, [...(m.get(k) ?? []), v]);
-  for (const { courseId, item, got } of answers) {
+  for (const { courseId, item, got, grade } of answers) {
     const before = useProgressStore.getState().getProgress(courseId)[item.id];
     add(events, courseId, {
       at: now,
@@ -616,10 +618,11 @@ export function recordAnswers(answers: { courseId: string; item: { id: string; t
       afterMiss: isMissed(before),
       predicted: retrievability(before, now),
       scale,
+      ...(got && grade === 'hard' ? { grade: 'hard' as const } : {}),
     });
-    add(results, courseId, { itemId: item.id, got });
+    add(results, courseId, { itemId: item.id, got, ...(grade ? { grade } : {}) });
     // The same term in the student's other lectures (lib/linkedTerms).
-    for (const twin of twinsOf(courses, courseId, item.id)) add(results, twin.courseId, { itemId: twin.id, got });
+    for (const twin of twinsOf(courses, courseId, item.id)) add(results, twin.courseId, { itemId: twin.id, got, ...(grade ? { grade } : {}) });
   }
   for (const [courseId, list] of events) useStudyLogStore.getState().logAnswers(courseId, list);
   for (const [courseId, list] of results) useProgressStore.getState().recordResults(courseId, list);

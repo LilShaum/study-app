@@ -34,6 +34,12 @@ export interface AnswerEvent {
   predicted: number | null;
   /** The personal scale `predicted` was read with (lib/personalScale); 1 when absent. */
   scale?: number;
+  /**
+   * A flip card got right and called Hard (lib/memory Grade); absent for Got
+   * it and every other card. Kept to test, on real answers, whether Hard
+   * cards do fade sooner (sim/FINDINGS.md, 2026-11-03).
+   */
+  grade?: 'hard';
 }
 
 export interface CourseLog {

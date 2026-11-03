@@ -30,30 +30,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
 
-- **Practice: choose several of a kind at once, tick the sections, easy to
-  find, and a clear use beside the practice test** (2026-11-03, on the
-  class Practice page: "Rather than choosing between one option or
-  another, for certain parameters, there should be like boxes to tick or
-  something so multiple different things can be selected … being able to
-  tick off specifically which sections to do or not. I think it's so
-  useful that having it hidden is bad. I think it needs to be repositioned
-  in terms of use case relative to the practice test. Maybe the practice
-  test is more specifically a practice test that doesn't show u answers
-  right after and maybe it has u timed … but u can still customize what
-  shows on it … the other mode would be just like most to study whatever
-  you want however you want from the full course, like choosing which
-  question types you want … and if they are mixed or not. I'm not 100%
-  sure about my suggestions so think and through"). To design, with the
-  flashcards-only mode below: the two are one question (which way to
-  study is for what). The test's default: the owner left it to the
-  design (2026-11-03: "i think the answer to the decision for me depends
-  how you pull all this off").
-  Planned in docs/proposals/practice.md (Practice studies, the test
-  rehearses). Built: Practice by ticks (kinds, which cards, sections),
-  ready-made sittings, Start pinned with its count, rows on the class page
-  (7f297db); the test marks at the end, timed if wanted, ticks for kinds
-  and where, and points to Practice for marking as you go. Next, from the
-  same plan: graded flips (simulator first), then the flashcards sitting.
 - **A UI/UX and design-language audit, soon** (2026-11-03: "pretty soon we
   will need a big ui/ux audit and like design language audit because we
   haven't worked on that stuff in a long time … the main use of the app …
@@ -66,10 +42,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   task that needs it. The settings, low to high: high, extra, max,
   ultracode (2026-10-29: "max … is only one step higher than extra and
   it's one step below ultracode"). Worked problems started on max.
-- **A flashcards-only mode like Anki** (2026-10-29: "a flash cards only
-  section that works similarly to how anki works with its spaced repetition
-  and how their cards are structured and also their feature where you say
-  how sure you were about ur answer or how fast u got it").
 - **Answers in a new place from the very first showing** (2026-10-26: "I'm
   doing multiple choice problems for the first time and they all had the
   answer A. Make sure the answers are shuffled whenever the question is
@@ -114,8 +86,9 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   term is named after the questions on it, not straight after reading it);
   an MCQ can
   still land before the idea it needs when it names only an earlier term
-  (a decay-chain question in step 1); a plain flashcard's "Got it" is
-  still the kindest grade in the app (type or write the short ones?).
+  (a decay-chain question in step 1). (Done 2026-11-03: a plain
+  flashcard's "Got it" was the kindest grade in the app; Hard now sits
+  between it and Missed it, see Done.)
 - **Nutrition lectures (EPHE 155)** (2026-10-20: "let me know if … i
   should regenerate"). Answered: yes, regenerate per lecture with the
   current prompt. Waits on the owner; do not upload the old EPHE 155
@@ -127,6 +100,39 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-11-03 Practice and the practice test, one job each, and flashcards
+  the Anki way (the two asks below, planned together in
+  docs/proposals/practice.md). Practice studies: ticks for kinds, which
+  cards and sections, an order, ready-made sittings, Start pinned with its
+  count, a row on the class page. The test rehearses: answers at the end,
+  a timer if wanted, ticks for what is on it, every miss with its passage.
+  Flip cards are graded Got it · Hard · Missed it, each with when the card
+  comes back; the simulator found Hard helps and Easy does not (no Easy,
+  sim/FINDINGS.md). The ready-made Flashcards sitting takes the cards
+  already met first, then up to ten new. Not built: a typed cloze card
+  (no sign yet that flip cards fall short there), and using answer time
+  to temper the grade (waits on the study log).
+  - **Practice: choose several of a kind at once, tick the sections, easy to
+    find, and a clear use beside the practice test** (2026-11-03, on the
+    class Practice page: "Rather than choosing between one option or
+    another, for certain parameters, there should be like boxes to tick or
+    something so multiple different things can be selected … being able to
+    tick off specifically which sections to do or not. I think it's so
+    useful that having it hidden is bad. I think it needs to be repositioned
+    in terms of use case relative to the practice test. Maybe the practice
+    test is more specifically a practice test that doesn't show u answers
+    right after and maybe it has u timed … but u can still customize what
+    shows on it … the other mode would be just like most to study whatever
+    you want however you want from the full course, like choosing which
+    question types you want … and if they are mixed or not. I'm not 100%
+    sure about my suggestions so think and through"). The test's default
+    was left to the design (2026-11-03: "i think the answer to the
+    decision for me depends how you pull all this off"): at the end.
+  - **A flashcards-only mode like Anki** (2026-10-29: "a flash cards only
+    section that works similarly to how anki works with its spaced repetition
+    and how their cards are structured and also their feature where you say
+    how sure you were about ur answer or how fast u got it").
 
 - 2026-11-03 The tree: a section just studied keeps its leaves (2026-11-03:
   "I tested the leaves on a section I had just studied and they immediately

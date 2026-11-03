@@ -729,4 +729,11 @@ describe('buildSessionItems — a Practice sitting built by ticks', () => {
     expect(weakest).toEqual(['q1', 'q2']);
     expect(build({ order: 'mixed' }).sort()).toEqual(build({}).sort());
   });
+
+  it('with a cap on new cards, puts every card met first, then that many new in the lecture’s order', () => {
+    // Without it, weakest first puts the new cards (read as half held) before a strong card.
+    expect(build({ order: 'weakest', newCap: 2 })).toEqual(['q1', 'f1', 'q2', 'w1', 'd1~recall']);
+    expect(build({ order: 'weakest', newCap: 0 })).toEqual(['q1', 'f1', 'q2']);
+    expect(build({ order: 'weakest' }).indexOf('w1')).toBeLessThan(build({ order: 'weakest' }).indexOf('q2'));
+  });
 });

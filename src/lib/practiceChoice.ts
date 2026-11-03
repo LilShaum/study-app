@@ -47,6 +47,12 @@ export interface PracticeChoice {
   where?: Record<string, string[] | 'all'>;
   /** Only the cards on empirical studies: 'all', or one study's key (lib/studies). */
   study?: string | null;
+  /**
+   * At most this many cards never answered, after every card already met:
+   * the ready-made Flashcards sitting, Anki's way (due first, then a few
+   * new; docs/proposals/practice.md). No limit when absent.
+   */
+  newCap?: number;
 }
 
 const KIND_SET = new Set<string>(PRACTICE_KINDS.map((k) => k.value));
@@ -121,7 +127,8 @@ export function decodeChoice(raw: string | null): PracticeChoice | null {
       }
     }
     const study = typeof v.study === 'string' ? v.study : null;
-    return { kinds, which, order, ...(where ? { where } : {}), ...(study ? { study } : {}) };
+    const newCap = Number.isInteger(v.newCap) && v.newCap! > 0 && v.newCap! <= 100 ? v.newCap : undefined;
+    return { kinds, which, order, ...(where ? { where } : {}), ...(study ? { study } : {}), ...(newCap ? { newCap } : {}) };
   } catch {
     return null;
   }

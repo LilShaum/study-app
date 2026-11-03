@@ -559,6 +559,19 @@ describe('session store: a class practised with its lectures mixed', () => {
     expect(Object.keys(s().startByCourse).sort()).toEqual(['A', 'B']);
   });
 
+  it('carries a Hard grade to the record and the log, and only on a right answer', async () => {
+    const { useStudyLogStore } = await import('./studyLog');
+    await start();
+    goTo('A', 'a2');
+    s().record(true, 'hard');
+    expect(useProgressStore.getState().byCourse.A?.a2?.stability).toBe(1);
+    expect(useStudyLogStore.getState().byCourse.A?.answers.at(-1)?.grade).toBe('hard');
+    goTo('A', 'a3');
+    s().record(true);
+    expect(useProgressStore.getState().byCourse.A?.a3?.stability).toBe(2);
+    expect(useStudyLogStore.getState().byCourse.A?.answers.at(-1)?.grade).toBeUndefined();
+  });
+
   it("records each answer, and the card's time, in the card's own lecture", async () => {
     const { useStudyLogStore } = await import('./studyLog');
     let now = 1_000_000;

@@ -45,6 +45,43 @@ describe('FlashcardCard, written', () => {
   });
 });
 
+describe('FlashcardCard, flip grades', () => {
+  const flip = () => fireEvent.click(screen.getByRole('button', { name: 'Flip card' }));
+
+  it('offers Got it, Hard and Missed it in that order, each saying when the card comes back', () => {
+    render(<FlashcardCard item={card({ back: 'Mitochondria.' })} comesBack={{ got: 'on Friday', hard: 'tomorrow', missed: 'later today' }} />);
+    flip();
+    const names = screen.getAllByRole('button').map((b) => b.textContent).filter((t) => /^(Got it|Hard|Missed it)$/.test(t ?? ''));
+    expect(names).toEqual(['Got it', 'Hard', 'Missed it']);
+    expect(screen.getByRole('button', { name: 'Hard' }).getAttribute('aria-describedby')).toBeTruthy();
+    expect(screen.getByText('tomorrow')).toBeTruthy();
+    expect(screen.getByText('on Friday')).toBeTruthy();
+  });
+
+  it('counts Hard as right, said as hard; Got it with no grade', () => {
+    const onGot = vi.fn();
+    const onMissed = vi.fn();
+    render(<FlashcardCard item={card({ back: 'Mitochondria.' })} onGot={onGot} onMissed={onMissed} />);
+    flip();
+    fireEvent.click(screen.getByRole('button', { name: 'Hard' }));
+    expect(onGot).toHaveBeenLastCalledWith('hard');
+    flip();
+    fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+    expect(onGot).toHaveBeenLastCalledWith(undefined);
+    expect(onMissed).not.toHaveBeenCalled();
+  });
+
+  it('grades Hard with H once the answer shows, never blind', () => {
+    const onGot = vi.fn();
+    render(<FlashcardCard item={card({ back: 'Mitochondria.' })} onGot={onGot} keyboardEnabled />);
+    fireEvent.keyDown(window, { key: 'h' });
+    expect(onGot).not.toHaveBeenCalled();
+    fireEvent.keyDown(window, { key: ' ', code: 'Space' });
+    fireEvent.keyDown(window, { key: 'h' });
+    expect(onGot).toHaveBeenCalledWith('hard');
+  });
+});
+
 describe('FlashcardCard, moving between cards', () => {
   it('starts the next written card unwritten, with its own points', () => {
     const { rerender } = render(<FlashcardCard item={card()} />);

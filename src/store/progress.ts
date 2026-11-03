@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { safeJSONStorage } from '@/lib/safeStorage';
-import { memoryBefore, nextStability } from '@/lib/memory';
+import { memoryBefore, nextStability, type Grade } from '@/lib/memory';
 
 export interface ItemResult {
   got: number;
@@ -83,7 +83,8 @@ interface ProgressState {
   missedIds: (courseId: string) => Set<string>;
   recordResult: (courseId: string, itemId: string, got: boolean) => void;
   /** Several answers in one write (a practice test's whole batch), each as recordResult would. */
-  recordResults: (courseId: string, results: { itemId: string; got: boolean }[]) => void;
+  /** `grade`: how well a right answer was known, when the student said (lib/memory Grade). */
+  recordResults: (courseId: string, results: { itemId: string; got: boolean; grade?: Grade }[]) => void;
   /**
    * Correct an attempt already recorded, rather than record another one.
    *
@@ -103,15 +104,15 @@ interface ProgressState {
   _hydrateFromLegacy: (byCourse: Record<string, CourseProgress>) => void;
 }
 
-/** A card's record after one more answer. */
-function answered(was: ItemResult | undefined, got: boolean, now: number): ItemResult {
+/** A card's record after one more answer (also what a flip card shows under each button: when it comes back). */
+export function answered(was: ItemResult | undefined, got: boolean, now: number, grade?: Grade): ItemResult {
   const prev = was ?? { got: 0, missed: 0, lastSeen: null };
   const before = memoryBefore(prev);
   return {
     got: prev.got + (got ? 1 : 0),
     missed: prev.missed + (got ? 0 : 1),
     lastSeen: now,
-    stability: nextStability(before, got, now),
+    stability: nextStability(before, got, now, grade),
     before,
     lastGot: got,
     ...(got ? (prev.missedAt != null ? { missedAt: prev.missedAt } : {}) : { missedAt: now }),
@@ -149,7 +150,7 @@ export const useProgressStore = create<ProgressState>()(
         set((state) => {
           const course = { ...(state.byCourse[courseId] ?? {}) };
           const now = Date.now();
-          for (const { itemId, got } of results) course[itemId] = answered(course[itemId], got, now);
+          for (const { itemId, got, grade } of results) course[itemId] = answered(course[itemId], got, now, grade);
           return { byCourse: { ...state.byCourse, [courseId]: course } };
         });
       },

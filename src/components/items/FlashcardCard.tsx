@@ -3,14 +3,25 @@ import type { FlashcardItem } from '@/schema/course';
 import { Icon } from '@/components/Icon';
 import { answerPoints, type AnswerPoints } from '@/lib/answerPoints';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
+import type { Grade } from '@/lib/memory';
 import { DifficultyBadge } from './DifficultyBadge';
 import { SourceNote } from './SourceNote';
 import { RichText } from './RichText';
 
+/** When the card comes back after each answer ("in 7 hours", "in 4 days"): lib/memory inWords. */
+export interface ComesBack {
+  got: string;
+  hard: string;
+  missed: string;
+}
+
 interface FlashcardCardProps {
   item: FlashcardItem;
-  onGot?: () => void;
+  /** Right; `grade` 'hard' when it was Hard (lib/memory Grade). */
+  onGot?: (grade?: Grade) => void;
   onMissed?: () => void;
+  /** Shown under each grade on a flip card, as Anki does, so Hard is an informed choice. */
+  comesBack?: ComesBack;
   /** Only true for the single card in a study session, never in Browse. */
   keyboardEnabled?: boolean;
   /** Learn: the passage opens after every answer, right or wrong (see SourceNote). */
@@ -25,21 +36,30 @@ export function FlashcardCard(props: FlashcardCardProps) {
   return points ? <WrittenCard key={props.item.id} {...props} answer={points} /> : <FlipCard key={props.item.id} {...props} />;
 }
 
-function FlipCard({ item, onGot, onMissed, keyboardEnabled = false, learning = false }: FlashcardCardProps) {
+/**
+ * A flip card: the question, then the answer, then how well it was known.
+ * Got it · Hard · Missed it (docs/proposals/practice.md): Hard is right but
+ * shaky, and comes back sooner than Got it. Before it, a near miss had only
+ * Got it to go to, the kindest grade in the app; the simulator found Hard
+ * wins back most of what that costs, and Anki's Easy nothing
+ * (sim/FINDINGS.md, 2026-11-03). Got it and Missed it keep their places.
+ */
+function FlipCard({ item, onGot, onMissed, comesBack, keyboardEnabled = false, learning = false }: FlashcardCardProps) {
   const [flipped, setFlipped] = useState(false);
   const [hintShown, setHintShown] = useState(false);
   /** Said "I don't know": the answer shown, and it is a miss (the owner, 2026-10-26). */
   const [dontKnow, setDontKnow] = useState(false);
+  const whenId = useId();
 
-  const grade = (got: boolean) => {
+  const grade = (got: boolean, how?: Grade) => {
     setFlipped(false);
     setHintShown(false);
     setDontKnow(false);
-    if (got) onGot?.();
+    if (got) onGot?.(how);
     else onMissed?.();
   };
 
-  // Space flips; G/M grade once the answer is showing (grading blind would
+  // Space flips; G/H/M grade once the answer is showing (grading blind would
   // record a result the user never actually checked).
   useKeyboardShortcuts((e) => {
     if (e.code === 'Space') {
@@ -58,11 +78,20 @@ function FlipCard({ item, onGot, onMissed, keyboardEnabled = false, learning = f
     if (e.key === 'g' || e.key === 'G') {
       e.preventDefault();
       grade(true);
+    } else if (e.key === 'h' || e.key === 'H') {
+      e.preventDefault();
+      grade(true, 'hard');
     } else if (e.key === 'm' || e.key === 'M') {
       e.preventDefault();
       grade(false);
     }
   }, keyboardEnabled);
+
+  const grades = [
+    { label: 'Got it', tone: 'press-yes', when: comesBack?.got, act: () => grade(true) },
+    { label: 'Hard', tone: '', when: comesBack?.hard, act: () => grade(true, 'hard') },
+    { label: 'Missed it', tone: 'press-no', when: comesBack?.missed, act: () => grade(false) },
+  ];
 
   return (
     <div className="rounded-sm border border-border-light border-t-text-3 border-t-2 bg-surface p-5 shadow sm:p-6">
@@ -139,23 +168,25 @@ function FlipCard({ item, onGot, onMissed, keyboardEnabled = false, learning = f
                 </button>
               </div>
             ) : (
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  tabIndex={flipped ? 0 : -1}
-                  onClick={() => grade(true)}
-                  className="press press-yes tap-safe"
-                >
-                  Got it
-                </button>
-                <button
-                  type="button"
-                  tabIndex={flipped ? 0 : -1}
-                  onClick={() => grade(false)}
-                  className="press press-no tap-safe"
-                >
-                  Missed it
-                </button>
+              <div className="flex items-start justify-center gap-2">
+                {grades.map((g, k) => (
+                  <div key={g.label} className="flex flex-col items-center gap-1">
+                    <button
+                      type="button"
+                      tabIndex={flipped ? 0 : -1}
+                      onClick={g.act}
+                      aria-describedby={g.when ? `${whenId}-${k}` : undefined}
+                      className={`press tap-safe ${g.tone}`}
+                    >
+                      {g.label}
+                    </button>
+                    {g.when && (
+                      <span id={`${whenId}-${k}`} className="text-xs text-text-3">
+                        {g.when}
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
