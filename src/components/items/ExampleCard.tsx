@@ -3,6 +3,7 @@ import { Icon } from '@/components/Icon';
 import { DifficultyBadge } from './DifficultyBadge';
 import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
+import { RichText } from './RichText';
 
 export function ExampleCard({ item, frame = 'card', notesOpen = false }: { item: ExampleItem; frame?: ItemFrame; notesOpen?: boolean }) {
   return (
@@ -13,7 +14,7 @@ export function ExampleCard({ item, frame = 'card', notesOpen = false }: { item:
         <DifficultyBadge difficulty={item.difficulty} />
       </div>
       <div className="font-display text-heading font-semibold text-text">{item.title}</div>
-      {item.context && <div className="mt-1 text-sm text-text-2">{item.context}</div>}
+      {item.context && <div className="mt-1 text-sm text-text-2"><RichText text={item.context} /></div>}
 
       {item.steps && item.steps.length > 0 && (
         <ol className="mt-3 space-y-2">
@@ -22,7 +23,7 @@ export function ExampleCard({ item, frame = 'card', notesOpen = false }: { item:
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border-strong text-xs font-semibold text-text-2">
                 {i + 1}
               </span>
-              <span>{step}</span>
+              <span><RichText text={step} /></span>
             </li>
           ))}
         </ol>
@@ -32,7 +33,7 @@ export function ExampleCard({ item, frame = 'card', notesOpen = false }: { item:
         <div className="mt-3 flex items-start gap-1.5 rounded border-l-2 border-border-strong bg-surface-sunken px-3 py-2 text-sm text-text">
           <Icon name="bulb" size={13} className="mt-0.5 shrink-0" />
           <span>
-            <span className="font-medium">Key Takeaway</span>: {item.takeaway}
+            <span className="font-medium">Key Takeaway</span>: <RichText text={item.takeaway} />
           </span>
         </div>
       )}

@@ -45,6 +45,8 @@ const CARD_SECONDS: Record<string, number> = {
   flashcard: 13,
   recall: 25,
   mcq: 40,
+  // Worked on paper, then checked: a guess, as sim/student.ts has it.
+  problem: 120,
   preview: 5,
 };
 

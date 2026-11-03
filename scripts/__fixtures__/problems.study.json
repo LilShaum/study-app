@@ -1,0 +1,291 @@
+{
+ "schema_version": "1.0",
+ "metadata": {
+  "title": "Motion and loops (made up)",
+  "course_code": "TEST 101",
+  "subject": "Physics and programming",
+  "inventory": {
+   "terms": [
+    "Velocity",
+    "Acceleration",
+    "Displacement",
+    "Accumulator",
+    "Iteration"
+   ],
+   "objectives": [
+    "Solve constant-acceleration problems",
+    "Trace and write loops that accumulate a result"
+   ]
+  }
+ },
+ "sections": [
+  {
+   "id": "motion",
+   "title": "Constant acceleration",
+   "order": 1,
+   "source_range": "slides 3–8",
+   "items": [
+    {
+     "id": "d_vel",
+     "type": "definition",
+     "term": "Velocity",
+     "definition": "How fast an object's position changes, with the direction it moves in",
+     "difficulty": "easy",
+     "source_excerpt": "Slide 3: velocity is speed with a direction; it changes when either the speed or the direction does"
+    },
+    {
+     "id": "d_acc",
+     "type": "definition",
+     "term": "Acceleration",
+     "definition": "How fast an object's velocity changes each second",
+     "difficulty": "easy",
+     "source_excerpt": "Slide 4: acceleration is the change in velocity per second, measured in m/s²"
+    },
+    {
+     "id": "d_disp",
+     "type": "definition",
+     "term": "Displacement",
+     "definition": "The straight-line change in position from start to end, with its direction",
+     "difficulty": "easy",
+     "source_excerpt": "Slide 4: displacement is the change in position from start to end, with its direction, not the path travelled"
+    },
+    {
+     "id": "ex_car",
+     "type": "example",
+     "title": "A car speeding up from rest",
+     "context": "A car starts from rest and speeds up at 2.0 m/s² for 5.0 s. How far does it go?",
+     "steps": [
+      "Known: v₀ = 0, a = 2.0 m/s², t = 5.0 s; wanted: the displacement d.",
+      "With no final velocity given, use d = v₀t + ½at².",
+      "d = 0 + ½ × 2.0 m/s² × (5.0 s)² = 25 m."
+     ],
+     "takeaway": "Pick the equation that holds the three quantities you know and the one you want.",
+     "difficulty": "medium",
+     "source_excerpt": "Slide 6: worked example, a car from rest at 2.0 m/s² for 5.0 s goes d = v₀t + ½at² = 25 m"
+    },
+    {
+     "id": "q_top",
+     "type": "mcq",
+     "question": "A ball is thrown straight up. At the top of its path, what is its acceleration?",
+     "options": [
+      "9.8 m/s² downward, the same as on the way up",
+      "Zero, because the ball has stopped for an instant",
+      "9.8 m/s² upward, until it starts to fall",
+      "It has none until gravity turns it around"
+     ],
+     "correct_index": 0,
+     "explanation": "Gravity acts the whole time, so the acceleration stays 9.8 m/s² downward; only the velocity is zero at the top.",
+     "distractor_rationale": [
+      "",
+      "Velocity is zero at the top, not acceleration.",
+      "Gravity always pulls down, never up.",
+      "Gravity acts throughout, not only once it turns around."
+     ],
+     "difficulty": "medium",
+     "source_excerpt": "Slide 7: gravity acts throughout the flight, so a = 9.8 m/s² downward even at the top, where v = 0"
+    },
+    {
+     "id": "q_two",
+     "type": "mcq",
+     "question": "Two carts start from rest at the same moment. Cart B has twice cart A's acceleration. After the same time, how do their displacements compare?",
+     "options": [
+      "B has gone twice as far as A",
+      "B has gone four times as far as A",
+      "B has gone √2 times as far as A",
+      "They have gone the same distance"
+     ],
+     "correct_index": 0,
+     "explanation": "From rest d = ½at², so with the same t the displacement is proportional to the acceleration.",
+     "distractor_rationale": [
+      "",
+      "Four times is what doubling the time does, since t is squared.",
+      "A square root comes in when solving for the time, not here.",
+      "Equal times do not mean equal distances when accelerations differ."
+     ],
+     "difficulty": "hard",
+     "source_excerpt": "Slide 6: from rest d = ½at², so at equal times the displacement is proportional to the acceleration"
+    },
+    {
+     "id": "f_square",
+     "type": "flashcard",
+     "front": "Why does doubling the time of a start from rest give four times the distance?",
+     "back": "From rest the distance grows with the square of the time (d = ½at²), so twice the time gives four times the distance.",
+     "difficulty": "medium",
+     "source_excerpt": "Slide 6: from rest, d = ½at², so the distance covered grows with the square of the time"
+    },
+    {
+     "id": "p_cyclist",
+     "type": "problem",
+     "question": "A cyclist starts from rest and accelerates at 1.5 m/s² for 8.0 s. How far does she travel?",
+     "answer": 48,
+     "unit": "m",
+     "steps": [
+      "Known: v₀ = 0, a = 1.5 m/s², t = 8.0 s; wanted: the displacement d.",
+      "No final velocity is given, so use d = v₀t + ½at².",
+      "d = ½ × 1.5 m/s² × (8.0 s)² = 0.75 × 64 = 48 m."
+     ],
+     "takeaway": "From rest, d = ½at²: square the time before multiplying.",
+     "mistakes": [
+      {
+       "answer": 6,
+       "why": "The time was not squared: ½ × 1.5 × 8.0 = 6."
+      },
+      {
+       "answer": 96,
+       "why": "The ½ was left out: 1.5 × 64 = 96."
+      }
+     ],
+     "difficulty": "medium",
+     "source_excerpt": "Slide 6: from rest, d = ½at²; square the time first"
+    },
+    {
+     "id": "p_train",
+     "type": "problem",
+     "question": "A train slows steadily from 30 m/s to 10 m/s in 4.0 s. What is its acceleration?",
+     "answer": -5,
+     "unit": "m/s²",
+     "steps": [
+      "Acceleration is the change in velocity over the time taken: a = (v − v₀) / t.",
+      "a = (10 m/s − 30 m/s) / 4.0 s = −5.0 m/s², negative because it slows."
+     ],
+     "takeaway": "Final minus initial, over the time: slowing down gives a negative acceleration.",
+     "mistakes": [
+      {
+       "answer": 5,
+       "why": "The sign was lost: slowing down is a negative acceleration."
+      },
+      {
+       "answer": 10,
+       "why": "The speeds were added before dividing: (30 + 10) / 4.0 = 10."
+      }
+     ],
+     "difficulty": "easy",
+     "source_excerpt": "Slide 5: a = (v − v₀) / t; slowing down gives a negative acceleration"
+    },
+    {
+     "id": "p_cliff",
+     "type": "problem",
+     "question": "A stone is dropped from a 45 m cliff. How long does it take to reach the ground? Take g = 9.8 m/s².",
+     "answer": 3.03,
+     "unit": "s",
+     "steps": [
+      "Dropped means v₀ = 0, and it falls with a = g = 9.8 m/s²; wanted: the time t.",
+      "From d = ½gt², t = √(2d / g).",
+      "t = √(2 × 45 m / 9.8 m/s²) = √9.18 s² ≈ 3.03 s."
+     ],
+     "takeaway": "Solve d = ½at² for t before putting numbers in: t = √(2d / a).",
+     "mistakes": [
+      {
+       "answer": 2.14,
+       "why": "The 2 was left out: √(45 / 9.8) ≈ 2.14."
+      },
+      {
+       "answer": 9.18,
+       "why": "The square root was not taken: 2 × 45 / 9.8 ≈ 9.18."
+      }
+     ],
+     "difficulty": "hard",
+     "source_excerpt": "Slide 8: a dropped object starts at rest and falls with a = g = 9.8 m/s²"
+    }
+   ]
+  },
+  {
+   "id": "loops",
+   "title": "Loops that add things up",
+   "order": 2,
+   "source_range": "slides 9–14",
+   "items": [
+    {
+     "id": "d_accum",
+     "type": "definition",
+     "term": "Accumulator",
+     "definition": "A variable set before a loop and updated on every pass, so it holds the running result",
+     "difficulty": "easy",
+     "source_excerpt": "Slide 10: an accumulator is set before the loop and updated on each pass, holding the running result"
+    },
+    {
+     "id": "d_iter",
+     "type": "definition",
+     "term": "Iteration",
+     "definition": "One pass through the body of a loop",
+     "difficulty": "easy",
+     "source_excerpt": "Slide 9: each iteration is one pass through the body of the loop"
+    },
+    {
+     "id": "ex_sum",
+     "type": "example",
+     "title": "Adding up a list with a for loop",
+     "context": "```python\ntotal = 0\nfor x in [3, 5, 2]:\n    total += x\nprint(total)\n```",
+     "steps": [
+      "`total` starts at 0, before the loop.",
+      "Each pass adds the next item: 0 + 3 = 3, then 3 + 5 = 8, then 8 + 2 = 10.",
+      "After the last pass the loop ends, and `print` shows 10."
+     ],
+     "takeaway": "Set the accumulator before the loop, update it inside, read it after.",
+     "difficulty": "easy",
+     "source_excerpt": "Slide 11: total = 0, then for x in xs: total += x, then print(total) after the loop"
+    },
+    {
+     "id": "q_inside",
+     "type": "mcq",
+     "question": "What goes wrong if `total = 0` is moved inside the `for` loop of a running total?",
+     "options": [
+      "total is reset on every pass, so it ends as only the last item",
+      "Python stops with an error because total is set twice",
+      "The loop runs one more time than the list has items",
+      "Nothing changes, and total still ends as the sum"
+     ],
+     "correct_index": 0,
+     "explanation": "Inside the loop the reset runs on every pass, so each pass starts from 0 again.",
+     "distractor_rationale": [
+      "",
+      "Setting a variable again is allowed; nothing raises an error.",
+      "Where total is set does not change how many passes there are.",
+      "The reset wipes the running total on every pass."
+     ],
+     "difficulty": "medium",
+     "source_excerpt": "Slide 12: set the accumulator before the loop, or every pass resets it"
+    },
+    {
+     "id": "p_squares",
+     "type": "problem",
+     "question": "What does this code print?",
+     "code": "squares = []\nfor n in range(4):\n    squares.append(n * n)\nprint(squares)",
+     "answer": "[0, 1, 4, 9]",
+     "steps": [
+      "`range(4)` gives 0, 1, 2 and 3: it starts at 0 and stops before 4.",
+      "Each iteration appends n × n: 0, then 1, then 4, then 9.",
+      "`print` shows the list: [0, 1, 4, 9]."
+     ],
+     "takeaway": "`range(k)` runs k times, from 0 to k − 1.",
+     "mistakes": [
+      {
+       "answer": "[1, 4, 9, 16]",
+       "why": "range(4) was read as 1 to 4; it starts at 0 and stops before 4."
+      },
+      {
+       "answer": "[0, 1, 4]",
+       "why": "The last pass was dropped: range(4) includes 3."
+      }
+     ],
+     "difficulty": "medium",
+     "source_excerpt": "Slide 13: range(k) gives 0 up to k − 1, so the loop runs k iterations"
+    },
+    {
+     "id": "p_count",
+     "type": "problem",
+     "question": "Write a function `count_long(words, n)` that returns how many words in a list are longer than n letters.",
+     "steps": [
+      "Start an accumulator at 0, before the loop: `count = 0`.",
+      "Loop over the list: `for w in words:`.",
+      "Inside, add one when the word is long enough: `if len(w) > n: count += 1`.",
+      "After the loop, `return count`."
+     ],
+     "takeaway": "Counting is an accumulator that adds one when a condition holds.",
+     "difficulty": "hard",
+     "source_excerpt": "Slide 14: to count, add one to the accumulator when the condition holds"
+    }
+   ]
+  }
+ ]
+}

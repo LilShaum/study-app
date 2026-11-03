@@ -1,5 +1,6 @@
-import type { Course, FlashcardItem, McqItem } from '@/schema/course';
+import type { Course, FlashcardItem, McqItem, ProblemItem } from '@/schema/course';
 import { answerPoints, isWrittenExample, writtenFromExample } from './answerPoints';
+import { answerKind, checkAnswer, writtenFromProblem } from './problemAnswer';
 import type { Coverage } from './classExams';
 import { shuffle } from './shuffle';
 import { sortedSections } from './sortedSections';
@@ -19,11 +20,18 @@ import { sortedSections } from './sortedSections';
  * question carried one.
  */
 
-/** A written question: a flashcard asked as a short or long answer. */
+/** A written question: a flashcard asked as a short or long answer, or a problem checked against its steps. */
 export type WrittenItem = FlashcardItem;
-export type TestItem = McqItem | WrittenItem;
+/**
+ * A problem whose answer the app checks: a number, or a short exact answer
+ * (lib/problemAnswer). An exam that sets calculations is practised by
+ * working them (the owner, 2026-10-21).
+ */
+export type CheckedProblem = ProblemItem;
+export type TestItem = McqItem | WrittenItem | CheckedProblem;
 
 export const isWritten = (item: TestItem): item is WrittenItem => item.type === 'flashcard';
+export const isProblem = (item: TestItem): item is CheckedProblem => item.type === 'problem';
 
 /**
  * An answer: the option picked, the text written (a written question), or
@@ -41,6 +49,8 @@ export interface TestQuestion {
   sectionId: string;
   section: string;
   item: TestItem;
+  /** A problem to work out, checked or asked as a written question. */
+  problem?: boolean;
 }
 
 export interface TestScope {
@@ -72,6 +82,12 @@ export function testPool(scopes: TestScope[]): TestQuestion[] {
       if (covers !== 'all' && !covers.includes(section.id)) continue;
       for (const item of section.items) {
         if (item.set_aside || (only && !only.has(item.id))) continue;
+        // A problem of any difficulty: an easy one is still worked, never recognised.
+        if (item.type === 'problem') {
+          const asked = answerKind(item) === 'self' ? writtenFromProblem(item) : item;
+          out.push({ courseId, lecture: course.metadata.title, sectionId: section.id, section: section.title, item: asked, problem: true });
+          continue;
+        }
         const card = isWrittenExample(item) ? writtenFromExample(item) : item;
         const asked: TestItem | null =
           card.type === 'mcq'
@@ -147,6 +163,7 @@ export interface TestResult {
  * ticked, as full marks; until it is marked it is not.
  */
 export function answeredRight(item: TestItem, answer: TestAnswer, ticks?: boolean[] | null): boolean {
+  if (isProblem(item)) return typeof answer === 'string' && !!checkAnswer(item, answer)?.right;
   if (!isWritten(item)) return answer === item.correct_index;
   const need = answerPoints(item)?.need ?? ticks?.length ?? 1;
   return answer != null && !!ticks?.length && ticks.filter(Boolean).length >= need;

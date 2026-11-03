@@ -478,7 +478,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
         // term just read (2026-10-11). SIM_NO_PREVIEW_PRIMING counts only its
         // cost in time, the conservative case.
         if (item.type === 'preview' && !process.env.SIM_NO_PREVIEW_PRIMING) primed.set(item.target.id, now);
-        if (item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall') answer(item, mode);
+        if (item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall' || item.type === 'problem') answer(item, mode);
         if (!store().next()) return 'done' as const;
       }
     };

@@ -26,6 +26,7 @@ import { useLearnStore } from '@/store/learn';
 import { lectureName, lecturesOf } from '@/lib/classExams';
 import { choiceOf, countBasis, practiceCount, practiceLink } from '@/lib/practice';
 import { answerPoints } from '@/lib/answerPoints';
+import { answerKind } from '@/lib/problemAnswer';
 import { termPicked } from '@/lib/mixUps';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
@@ -55,6 +56,7 @@ const MODE_LABELS: Record<CardMode, string> = {
   quiz: 'Multiple choice',
   flashcards: 'Flashcards',
   definitions: 'Terms',
+  problems: 'Problems',
   mixed: 'Everything',
   missed: 'Mistakes',
   review: 'Review',
@@ -97,6 +99,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
     ...NAV_HINTS,
   ],
   definitions: [{ keys: ['Enter'], label: 'check / next' }, ...NAV_HINTS],
+  problems: [{ keys: ['Enter'], label: 'check / next' }, ...NAV_HINTS],
   mixed: [
     { keys: ['1', '–', '4'], label: 'select' },
     { keys: ['Space'], label: 'flip' },
@@ -117,6 +120,13 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
 const WRITTEN_HINTS: KeyHint[] = [
   { keys: ['Space'], label: 'show the answer' },
   { keys: ['1', '–', '9'], label: 'tick a point' },
+  { keys: ['Enter'], label: 'done' },
+  ...NAV_HINTS,
+];
+/** A problem checked against its steps (lib/problemAnswer, 'self'). */
+const STEPS_HINTS: KeyHint[] = [
+  { keys: ['Space'], label: 'show the solution' },
+  { keys: ['1', '–', '9'], label: 'tick a step' },
   { keys: ['Enter'], label: 'done' },
   ...NAV_HINTS,
 ];
@@ -141,6 +151,10 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
   definitions: {
     title: 'No terms',
     text: "This lecture doesn't have any definitions to ask you for yet. Try Browse or Mixed mode.",
+  },
+  problems: {
+    title: 'No problems',
+    text: "This lecture doesn't have any problems to work out yet. More practice, on the lecture page, can write some.",
   },
   review: {
     title: 'Nothing is due',
@@ -283,7 +297,15 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   const score = useSessionStore((s) => s.score);
   const current = useSessionStore((s) => s.current());
   const written = current?.type === 'flashcard' ? answerPoints(current) : null;
-  const hints = written ? (written.points.length === 1 ? ONE_POINT_HINTS : WRITTEN_HINTS) : KEY_HINTS[mode];
+  const hints = written
+    ? written.points.length === 1
+      ? ONE_POINT_HINTS
+      : WRITTEN_HINTS
+    : current?.type === 'problem'
+      ? answerKind(current) === 'self'
+        ? STEPS_HINTS
+        : [{ keys: ['Enter'], label: 'check / next' }, ...NAV_HINTS]
+      : KEY_HINTS[mode];
   const total = useSessionStore((s) => s.total());
   const hasNext = useSessionStore((s) => s.hasNext());
   const hasPrev = useSessionStore((s) => s.hasPrev());

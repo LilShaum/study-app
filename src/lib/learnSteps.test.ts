@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
 import { buildSessionItems, recallId, type SessionItem } from './buildSessionItems';
-import { MIN_GAP, phaseOf, phaseOfItem, STEP_CARDS, STEP_TERMS, TERM_BUDGET } from './learnSteps';
+import { MIN_GAP, phaseOf, phaseOfItem, PROBLEMS_PER_STEP, STEP_CARDS, STEP_TERMS, TERM_BUDGET } from './learnSteps';
 
 const TERMS = ['Adenylyl cyclase', 'Gs protein', 'Protein kinase A', 'Phosphodiesterase', 'Calmodulin', 'Inositol trisphosphate', 'Diacylglycerol', 'Protein kinase C'];
 
@@ -450,5 +450,54 @@ describe('Learn: explanations, placed and spaced', () => {
       expect(stepOf(items, 'c1')).toBe(stepOf(items, 'd4'));
       expect(stepOf(items, 'c2')).toBe(stepOf(items, 'd4'));
     }
+  });
+});
+
+describe('Learn: problems to work out', () => {
+  const problem = (id: string, question: string, steps: string[] = ['Work it.', 'Answer.']): StudyItem =>
+    ({ id, type: 'problem', question, steps, answer: 1 }) as StudyItem;
+  const example = (id: string, title: string, steps: string[]): StudyItem => ({ id, type: 'example', title, steps }) as StudyItem;
+
+  it('works a problem in Apply, after the questions and the terms named', () => {
+    const items = learn([defs[0], problem('p', 'Adenylyl cyclase makes 40 cAMP a second: how many in a minute?'), { ...mcq('q', 'Why does blocking Adenylyl cyclase stop the signal?'), difficulty: 'hard' } as StudyItem]);
+    const at = (id: string) => items.findIndex((i) => i.id === id);
+    expect(items.find((i) => i.id === 'p')?._phase).toBe('apply');
+    expect(at('p')).toBeGreaterThan(at('q'));
+    expect(at('p')).toBeGreaterThan(at(recallId('d0')));
+    expect(at('p')).toBe(items.length - 1);
+  });
+
+  it('works a problem after the worked example it practises, wherever its terms are taught', () => {
+    const ex = example('ex', 'Dating basalt from uranium decay with the logarithm', [
+      'Protein kinase C fraction remaining 0.70 of uranium',
+      'logarithm ratio divided by halving gives fraction of halflife',
+    ]);
+    const p = problem('p', 'Adenylyl cyclase: granite keeps 0.40 uranium; using the logarithm ratio, give its halflife fraction', [
+      'fraction remaining 0.40 of uranium',
+      'logarithm ratio divided by halving gives fraction of halflife',
+    ]);
+    const items = whole([...defs, ex, p]);
+    expect(items.findIndex((i) => i.id === 'p')).toBeGreaterThan(items.findIndex((i) => i.id === 'ex'));
+  });
+
+  it(`works at most ${PROBLEMS_PER_STEP} a step at the first meeting, the one on its example first; the rest open the next sitting`, () => {
+    const ex = example('ex', 'Converting cAMP per second to per minute', ['cAMP per second times sixty', 'gives cAMP per minute']);
+    const ps = [
+      problem('p1', 'Adenylyl cyclase: 5 a second, how many an hour?'),
+      problem('p2', 'Adenylyl cyclase: 7 a second, how many a day?'),
+      problem('p3', 'Adenylyl cyclase makes cAMP per second: 40 a second times sixty, how many cAMP per minute?', ['cAMP per second times sixty', 'gives cAMP per minute']),
+    ];
+    const first = learn([defs[0], ex, ...ps]);
+    const asked = first.filter((i) => i.type === 'problem' && !i._second).map((i) => i.id);
+    expect(asked).toHaveLength(PROBLEMS_PER_STEP);
+    expect(asked).toContain('p3');
+    const later = whole([defs[0], ex, ...ps]).filter((i) => i._second).map((i) => i.id);
+    expect(later).toEqual(expect.arrayContaining(ps.map((p) => p.id).filter((id) => !asked.includes(id))));
+  });
+
+  it(`is not held back by the ${TERM_BUDGET} cards a term gets at its first meeting`, () => {
+    const qs = [1, 2, 3, 4].map((n) => mcq(`q${n}`, `Question ${n} on what Adenylyl cyclase does?`));
+    const items = learn([defs[0], ...qs, problem('p', 'Adenylyl cyclase makes 40 cAMP a second: how many in a minute?')]);
+    expect(items.find((i) => i.id === 'p')?._second).toBeFalsy();
   });
 });

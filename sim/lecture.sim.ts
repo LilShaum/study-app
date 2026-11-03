@@ -266,7 +266,7 @@ it('lecture', () => {
           spent += sec;
           n++;
           if (item.type === 'definition') primed.set(recallId(item.id), now);
-          if (item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall') {
+          if (item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall' || item.type === 'problem') {
             const T = truth.get(item.id);
             const R = T ? memory.recall((now - T.last) / DAY, T.s) : null;
             let p: number;
@@ -298,7 +298,7 @@ it('lecture', () => {
         const review = seen.filter((i) => i._block === 'review');
         const fresh = seen.filter((i) => i._block !== 'review');
         const reading = seen.filter((i) => ['definition', 'explain', 'example', 'graphic', 'preview', 'slides'].includes(i.type));
-        const asks: SessionItem[] = seen.filter((i) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall');
+        const asks: SessionItem[] = seen.filter((i) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall' || i.type === 'problem');
         const servedOld = fresh.filter((i) => asks.includes(i) && !i._again && (before[i.id]?.got ?? 0) + (before[i.id]?.missed ?? 0) > 0).length;
         const firstAsks = asks.filter((i) => !i._again);
         const twice = firstAsks.length - new Set(firstAsks.map((i) => i.id)).size;

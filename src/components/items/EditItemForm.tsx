@@ -223,6 +223,34 @@ function TypeFields({
           </Field>
         </>
       );
+    case 'problem':
+      return (
+        <>
+          <Field label="Problem">
+            <textarea name="question" defaultValue={item.question} rows={3} className={inputClass} />
+          </Field>
+          <Field label="Code, a matrix or a table (kept as written)">
+            <textarea name="code" defaultValue={item.code ?? ''} rows={3} className={`${inputClass} font-mono text-xs`} />
+          </Field>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Answer (blank: checked against the steps)">
+              <input name="answer" defaultValue={item.answer == null ? '' : String(item.answer)} className={inputClass} />
+            </Field>
+            <Field label="Unit">
+              <input name="unit" defaultValue={item.unit ?? ''} className={inputClass} />
+            </Field>
+          </div>
+          <Field label="Other ways to write the answer (comma-separated)">
+            <input name="accept" defaultValue={(item.accept ?? []).join(', ')} className={inputClass} />
+          </Field>
+          <Field label="Steps of the solution (one per line)">
+            <textarea name="steps" defaultValue={(item.steps ?? []).join('\n')} rows={4} className={inputClass} />
+          </Field>
+          <Field label="The method">
+            <textarea name="takeaway" defaultValue={item.takeaway ?? ''} rows={2} className={inputClass} />
+          </Field>
+        </>
+      );
     case 'explain':
       return (
         <>
@@ -313,6 +341,22 @@ export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
       case 'explain':
         updated = { ...item, title: str('title'), text: str('text') };
         break;
+      case 'problem': {
+        const answer = str('answer');
+        const steps = str('steps').split('\n').map((s) => s.trim()).filter(Boolean);
+        updated = {
+          ...item,
+          question: str('question'),
+          code: str('code') || undefined,
+          // A plain number stays a number; anything else is the answer as written.
+          answer: !answer ? undefined : /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/.test(answer) ? Number(answer) : answer,
+          unit: str('unit') || undefined,
+          accept: splitList(data.get('accept')),
+          steps: steps.length ? steps : item.steps,
+          takeaway: str('takeaway') || undefined,
+        };
+        break;
+      }
       case 'graphic':
         updated = {
           ...item,

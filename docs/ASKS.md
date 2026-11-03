@@ -18,21 +18,44 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
+- **Practice: choose several of a kind at once, tick the sections, easy to
+  find, and a clear use beside the practice test** (2026-11-03, on the
+  class Practice page: "Rather than choosing between one option or
+  another, for certain parameters, there should be like boxes to tick or
+  something so multiple different things can be selected … being able to
+  tick off specifically which sections to do or not. I think it's so
+  useful that having it hidden is bad. I think it needs to be repositioned
+  in terms of use case relative to the practice test. Maybe the practice
+  test is more specifically a practice test that doesn't show u answers
+  right after and maybe it has u timed … but u can still customize what
+  shows on it … the other mode would be just like most to study whatever
+  you want however you want from the full course, like choosing which
+  question types you want … and if they are mixed or not. I'm not 100%
+  sure about my suggestions so think and through"). To design, with the
+  flashcards-only mode below: the two are one question (which way to
+  study is for what). The test's default (as you go since 2026-10-26)
+  is the owner's call.
+- **A UI/UX and design-language audit, soon** (2026-11-03: "pretty soon we
+  will need a big ui/ux audit and like design language audit because we
+  haven't worked on that stuff in a long time … the main use of the app …
+  is good and should continue"). After the study work in hand.
+- **The tree: leaves fall on a section just studied, and fall again on
+  every swipe** (2026-11-03: "the tree definetly needs updating like I
+  tested the leaves on a section I had just studied and they immediately
+  fell and like the animation would repeat if I kept swiping the branches").
+  A bug: a section just studied should hold its leaves.
+
 - **Say when a higher effort setting is worth it, before starting a task**
   (2026-10-29: "I'm wondering if there is a certain time it would be
   beneficial to put you on ultra code mode and maybe if you could suggest
   when I should do so before starting a task"). Standing: flag it before a
-  task that needs it.
+  task that needs it. The settings, low to high: high, extra, max,
+  ultracode (2026-10-29: "max … is only one step higher than extra and
+  it's one step below ultracode"). Worked problems started on max.
 - **A flashcards-only mode like Anki** (2026-10-29: "a flash cards only
   section that works similarly to how anki works with its spaced repetition
   and how their cards are structured and also their feature where you say
   how sure you were about ur answer or how fast u got it").
-- **Item types for problems to work out: math, code, organic chemistry**
-  (2026-10-29: "my friend who is in computer science said he wouldn't find
-  much use from this app because it seems to him to mainly be good for
-  multiple choice shit and not software development classes or math
-  centered classes … maybe u could think of a good new item type to address
-  these"; made by default for any problem that needs working out).
 - **Answers in a new place from the very first showing** (2026-10-26: "I'm
   doing multiple choice problems for the first time and they all had the
   answer A. Make sure the answers are shuffled whenever the question is
@@ -90,6 +113,21 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-10-29 Problems to work out, for math, code and the like (2026-10-29:
+  "my friend who is in computer science said he wouldn't find much use from
+  this app … not software development classes or math centered classes …
+  maybe u could think of a good new item type"; made by default for any
+  problem that needs working out): a `problem` item, made wherever the
+  material has a method to carry out. A number is checked however it is
+  typed (unit beside the box, 1% or rounding to the figures given), a short
+  answer (what code prints) matched, anything else (a proof, code to write)
+  ticked step by step against the worked solution. Stuck, the steps come
+  one at a time and help counts as not yet; a wrong answer a known mistake
+  leads to says which. In Learn after the worked example on its method, at
+  most two a step; a Problems choice in Practice; on the practice test when
+  chosen; code set as code in every card. The lecture check flags an answer
+  its own steps never reach. (ProblemCard, lib/problemAnswer, RichText)
 
 - 2026-10-29 Choose which item types a lecture gets (2026-10-29: "if they
   just want flash cards for example they will just get flash cards"): What

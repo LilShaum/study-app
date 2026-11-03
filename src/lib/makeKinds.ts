@@ -7,7 +7,7 @@ import type { Course } from '@/schema/course';
  * just want flash cards for example they will just get flash cards").
  * Fewer kinds is also a shorter reply, so less of the AI's usage.
  */
-export type MakeKind = 'mcq' | 'flashcard' | 'terms' | 'written' | 'explain' | 'example' | 'graphic';
+export type MakeKind = 'mcq' | 'flashcard' | 'terms' | 'written' | 'explain' | 'example' | 'problem' | 'graphic';
 
 export const MAKE_KINDS: { value: MakeKind; label: string }[] = [
   { value: 'mcq', label: 'Multiple choice' },
@@ -16,6 +16,7 @@ export const MAKE_KINDS: { value: MakeKind; label: string }[] = [
   { value: 'written', label: 'Written answers' },
   { value: 'explain', label: 'Explanations' },
   { value: 'example', label: 'Worked examples' },
+  { value: 'problem', label: 'Problems to work out' },
   { value: 'graphic', label: 'Diagrams' },
 ];
 
@@ -40,6 +41,7 @@ const AS_FILE: Record<MakeKind, string> = {
   written: 'written-answer flashcards (a back of numbered points, or tagged short-answer or long-answer)',
   explain: '`explain` items',
   example: '`example` items (worked examples)',
+  problem: '`problem` items (problems to work out)',
   graphic: '`graphic` items (diagrams)',
 };
 
@@ -52,6 +54,7 @@ const INSTEAD: Record<MakeKind, string> = {
   written: 'a key idea is asked by the kinds kept, never as an answer to write',
   explain: 'the connection an explanation would give goes in the explanations of the questions on it',
   example: 'a worked method is asked as a question to work through, in the kinds kept',
+  problem: 'a method to carry out (a calculation, code, a mechanism) is asked by the kinds kept, a multiple-choice question that applies it where there is one',
   graphic: 'what a diagram shows is asked about in words, in the kinds kept',
 };
 

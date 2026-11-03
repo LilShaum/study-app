@@ -5,6 +5,7 @@ import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
 import { RelatedTerms } from './RelatedTerms';
 import { useGlossary } from '@/lib/useGlossary';
+import { RichText } from './RichText';
 
 interface DefinitionCardProps {
   item: DefinitionItem;
@@ -43,10 +44,10 @@ export function DefinitionCard({ item, keyboardEnabled = false, onNext, frame = 
       <div>
         <p className="prose-set text-body text-text">
           <span className="mr-1.5 text-small font-semibold uppercase tracking-wider text-text">{item.term}.</span>
-          {item.definition}
+          <RichText text={item.definition} />
         </p>
         {item.example_sentence && (
-          <div className="mt-2 text-sm italic text-text-2">&ldquo;{item.example_sentence}&rdquo;</div>
+          <div className="mt-2 text-sm italic text-text-2">&ldquo;<RichText text={item.example_sentence} />&rdquo;</div>
         )}
         <RelatedTerms names={item.related_terms} glossary={glossary} self={item} />
         {item.also_known_as && item.also_known_as.length > 0 && (

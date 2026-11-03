@@ -1,5 +1,6 @@
-import type { Course, StudyItem } from '@/schema/course';
+import type { Course } from '@/schema/course';
 import { sortedSections } from './sortedSections';
+import { itemPrompt } from '@/schema/fragment';
 import { freshIdPrefix } from './idPrefix';
 import { analyseCourseGaps } from './courseGaps';
 import { ITEM_TYPES_SPEC, QUALITY_BAR_SPEC } from './generatorSpec';
@@ -17,18 +18,7 @@ const MAX_EXCERPTS_PER_SECTION = 40;
  */
 const MAX_PROMPTS_PER_SECTION = 120;
 
-function promptOf(item: StudyItem): string {
-  switch (item.type) {
-    case 'mcq':
-      return item.question;
-    case 'flashcard':
-      return item.front;
-    case 'definition':
-      return item.term;
-    default:
-      return item.title;
-  }
-}
+const promptOf = itemPrompt;
 
 /**
  * Builds the prompt for generating MORE practice on material the course
@@ -127,7 +117,7 @@ export function buildPractisePrompt(course: Course, notes = course.metadata.stud
   }
   if (gaps.gradableRatio < 0.5) {
     priorities.push(
-      `- Only ${gaps.gradableItems} of ${gaps.totalItems} items (${Math.round(gaps.gradableRatio * 100)}%) are MCQs or flashcards. Everything else is read but never scored, so weight this round heavily toward those two types.`,
+      `- Only ${gaps.gradableItems} of ${gaps.totalItems} items (${Math.round(gaps.gradableRatio * 100)}%) are MCQs, flashcards or problems. Everything else is read but never scored, so weight this round heavily toward those types.`,
     );
   }
 
@@ -149,7 +139,9 @@ What I want back:
   ask for the case that separates two things the notes contrast; apply a
   formula the course only states.
 - Harder than what is already there. The existing items are the floor.
-- Mostly \`mcq\` and \`flashcard\`. The app already quizzes every definition
+- Mostly \`mcq\` and \`flashcard\`, and \`problem\` wherever the course
+  has a method to carry out (a formula, code, a worked example): a new case
+  to work, never one already here. The app already quizzes every definition
   by name, so another definition is only another name to recall; what I am
   short of is questions that make me use what the definitions say.
 - Nothing that duplicates an existing item. The existing prompts are listed

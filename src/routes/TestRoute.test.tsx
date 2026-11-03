@@ -120,3 +120,74 @@ describe('practice test: answers at the end, if chosen', () => {
     expect(screen.getByText(/1 of 3|1\/3/)).toBeTruthy();
   });
 });
+
+describe('practice test: problems to work out', () => {
+  const withProblems = {
+    ...lecture,
+    sections: [
+      {
+        ...lecture.sections[0],
+        items: [
+          ...lecture.sections[0].items,
+          { id: 'p1', type: 'problem', question: 'A 2 kg cart accelerates at 3 m/s². What force acts on it?', answer: 6, unit: 'N', steps: ['F = ma.', '2 × 3 = 6 N.'], mistakes: [{ answer: 1.5, why: 'Divided instead of multiplied.' }], difficulty: 'easy', source_excerpt: 'F = ma' },
+          { id: 'p2', type: 'problem', question: 'Show the sum of two even numbers is even.', steps: ['Write them 2a and 2b.', 'Their sum is 2(a + b), even.'] },
+        ],
+      },
+    ],
+  } as unknown as Course;
+
+  function openWith() {
+    useCoursesStore.setState({ courses: { c: withProblems } });
+    return render(
+      <MemoryRouter initialEntries={['/study/c/test']}>
+        <Routes>
+          <Route path="/study/:id/test" element={<TestRoute />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+  }
+
+  /** On to the checked problem: questions answered "I don't know" until it shows. */
+  function toProblem() {
+    for (let n = 0; n < 6 && !screen.queryByLabelText('Your answer, in N'); n++) {
+      if (screen.queryByText(/Show the sum of two even numbers/)) {
+        fireEvent.click(screen.getByRole('button', { name: /Skip|Next/ }));
+        continue;
+      }
+      fireEvent.click(screen.getByRole('button', { name: 'I don’t know' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    }
+  }
+
+  it('is multiple choice only unless problems are chosen', () => {
+    openWith();
+    fireEvent.click(screen.getByRole('button', { name: 'Multiple choice and problems' }));
+    expect(screen.getByText(/Problems are worked out/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'All 5' })).toBeTruthy();
+  });
+
+  it('checks a typed answer as it is given, and names the mistake behind a wrong one', () => {
+    openWith();
+    fireEvent.click(screen.getByRole('button', { name: 'Multiple choice and problems' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
+    toProblem();
+    fireEvent.change(screen.getByLabelText('Your answer, in N'), { target: { value: '1.5' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Check' }));
+    expect(screen.getByText('✗ Not this time: the answer is 6 N.')).toBeTruthy();
+    expect(screen.getByText(/Divided instead of multiplied/)).toBeTruthy();
+    expect(screen.getByText('2 × 3 = 6 N.')).toBeTruthy();
+  });
+
+  it('asks for a number it can read before marking it', () => {
+    openWith();
+    fireEvent.click(screen.getByRole('button', { name: 'Multiple choice and problems' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
+    toProblem();
+    fireEvent.change(screen.getByLabelText('Your answer, in N'), { target: { value: 'six' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Check' }));
+    expect(screen.getByText('Type the answer as a number, in N.')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Your answer, in N'), { target: { value: '6.0' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Check' }));
+    expect(screen.getByText('✓ Right: 6 N.')).toBeTruthy();
+  });
+});

@@ -180,7 +180,7 @@ export function fileItemOf(item: SessionItem): string {
 }
 
 const isGradable = (item: SessionItem) =>
-  item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall';
+  item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall' || item.type === 'problem';
 
 /** Ephemeral, in-memory only — an active study session is not persisted. */
 /**
@@ -416,6 +416,9 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     // 2026-10-26). Review brings it back on a later day, which is what held
     // in the simulator (sim/FINDINGS.md, 2026-10-12).
     if (item.type === 'flashcard' && (answerPoints(item)?.points.length ?? 0) >= 2) return;
+    // Nor a problem: its whole solution was just shown, so minutes later it
+    // would be worked from memory of that, not from the method.
+    if (item.type === 'problem') return;
     // Until it is right once, and no more: a higher bar in the first sitting
     // buys nothing that lasts once it is relearned on a later day (Vaughn,
     // Dunlosky & Rawson 2016, in docs/evidence.md). Review is that later day.
@@ -428,7 +431,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     // Before the step's question to write, which is asked last as the
     // thorough test (lib/learnSteps): a retry after it read as the order
     // going wrong (the owner, 2026-10-26). Unless that is straight after itself.
-    const writing = items.findIndex((i, n) => n > index + 1 && n < at && i.type === 'flashcard' && !!answerPoints(i));
+    const writing = items.findIndex((i, n) => n > index + 1 && n < at && ((i.type === 'flashcard' && !!answerPoints(i)) || i.type === 'problem'));
     if (writing > 0) at = writing;
     // Never straight after itself: with nothing in between it is only the
     // answer just seen, clicked again. Left to the catch-up and Review.

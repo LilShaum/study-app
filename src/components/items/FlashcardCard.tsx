@@ -5,6 +5,7 @@ import { answerPoints, type AnswerPoints } from '@/lib/answerPoints';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { DifficultyBadge } from './DifficultyBadge';
 import { SourceNote } from './SourceNote';
+import { RichText } from './RichText';
 
 interface FlashcardCardProps {
   item: FlashcardItem;
@@ -83,7 +84,7 @@ function FlipCard({ item, onGot, onMissed, keyboardEnabled = false, learning = f
         <div className={`flip-card min-h-[220px] ${flipped ? 'is-flipped' : ''}`}>
           {/* Front */}
           <div className={FACE} aria-hidden={flipped}>
-            <p className="font-display text-heading text-text">{item.front}</p>
+            <p className="font-display text-heading text-text"><RichText text={item.front} /></p>
             {/* A hint helps only before the answer is seen: offered here, on
                 the front, for the student to ask for. It used to be printed
                 on the back, under the answer it was meant to lead to. */}
@@ -91,7 +92,7 @@ function FlipCard({ item, onGot, onMissed, keyboardEnabled = false, learning = f
               (hintShown ? (
                 <p className="flex items-center gap-1.5 text-sm text-text-2">
                   <Icon name="bulb" size={13} />
-                  {item.hint}
+                  <RichText text={item.hint} />
                 </p>
               ) : (
                 <button
@@ -128,8 +129,8 @@ function FlipCard({ item, onGot, onMissed, keyboardEnabled = false, learning = f
           <div className={`${FACE} flip-face--back`} aria-hidden={!flipped}>
             {/* The question stays in view above its answer, to check the one
                 against the other before saying whether you got it. */}
-            <p className="text-small text-text-3">{item.front}</p>
-            <p className="font-display text-heading text-text">{item.back}</p>
+            <p className="text-small text-text-3"><RichText text={item.front} /></p>
+            <p className="font-display text-heading text-text"><RichText text={item.back} /></p>
             {dontKnow ? (
               <div className="flex flex-col items-center gap-2">
                 <p className="text-small text-text-3">Counted as missed, so it comes back sooner.</p>
@@ -244,12 +245,12 @@ function WrittenCard({
 
       {!shown ? (
         <div>
-          <p className="font-display text-heading text-text">{item.front}</p>
+          <p className="font-display text-heading text-text"><RichText text={item.front} /></p>
           {item.hint &&
             (hintShown ? (
               <p className="mt-3 flex items-center gap-1.5 text-sm text-text-2">
                 <Icon name="bulb" size={13} />
-                {item.hint}
+                <RichText text={item.hint} />
               </p>
             ) : (
               <button
@@ -295,18 +296,18 @@ function WrittenCard({
         </div>
       ) : (
         <div>
-          <p className="text-small text-text-3">{item.front}</p>
+          <p className="text-small text-text-3"><RichText text={item.front} /></p>
           {written.trim() && (
             <div className="mt-3 border-l-2 border-border-strong pl-3">
               <p className="mark text-text-3">You wrote</p>
               <p className="mt-1 whitespace-pre-wrap text-small text-text-2">{written.trim()}</p>
             </div>
           )}
-          {answer.lead && <p className="mt-4 text-body text-text">{answer.lead}</p>}
+          {answer.lead && <p className="mt-4 text-body text-text"><RichText text={answer.lead} /></p>}
           {dontKnow ? (
             <>
               {one ? (
-                <p className="mt-4 font-display text-heading text-text">{answer.points[0]}</p>
+                <p className="mt-4 font-display text-heading text-text"><RichText text={answer.points[0]} /></p>
               ) : (
                 <>
                   <p className="mark mt-4 text-text-3">
@@ -316,7 +317,7 @@ function WrittenCard({
                     {answer.points.map((point, k) => (
                       <li key={k} className="flex gap-3 border-b border-border py-2.5 text-body text-text last:border-b-0">
                         <span className="shrink-0 tabular-nums text-text-3">{k + 1}.</span>
-                        <span>{point}</span>
+                        <span><RichText text={point} /></span>
                       </li>
                     ))}
                   </ol>
@@ -331,7 +332,7 @@ function WrittenCard({
             </>
           ) : one ? (
             <>
-              <p className="mt-4 font-display text-heading text-text">{answer.points[0]}</p>
+              <p className="mt-4 font-display text-heading text-text"><RichText text={answer.points[0]} /></p>
               <div className="mt-5 flex gap-2">
                 <button type="button" onClick={() => grade(true)} className="press press-yes tap-safe">
                   Got it
@@ -357,7 +358,7 @@ function WrittenCard({
                         onChange={() => toggle(k)}
                         className="tap-safe mt-1.5 shrink-0 accent-accent"
                       />
-                      <span>{point}</span>
+                      <span><RichText text={point} /></span>
                     </label>
                   </li>
                 ))}

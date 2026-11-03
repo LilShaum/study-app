@@ -231,6 +231,22 @@ describe('session store: Learn brings a missed card back', () => {
     expect(s().items).toHaveLength(before);
   });
 
+  it('never puts back a problem: its solution was just shown', () => {
+    const qs = s().items.filter((i) => i.type === 'mcq').slice(0, 3);
+    const p = { id: 'p', type: 'problem', question: 'Alpha is 3 and Beta 4: what is their sum?', answer: 7, steps: ['Add them: 3 + 4 = 7.'] };
+    useSessionStore.setState({ items: [p, ...qs].map((i) => ({ ...i, _block: 's1#0' })) as SessionItem[], index: 0 });
+    s().record(false);
+    expect(s().items.map((i) => i.id)).toEqual(['p', ...qs.map((q) => q.id)]);
+  });
+
+  it('puts a missed question back before the step’s problem, which stays near the end', () => {
+    const qs = s().items.filter((i) => i.type === 'mcq').slice(0, 3);
+    const p = { id: 'p', type: 'problem', question: 'Alpha is 3 and Beta 4: what is their sum?', answer: 7, steps: ['Add them: 3 + 4 = 7.'] };
+    useSessionStore.setState({ items: [...qs, p].map((i) => ({ ...i, _block: 's1#0' })) as SessionItem[], index: 0 });
+    s().record(false);
+    expect(s().items.map((i) => `${i.id}${i._again ? '+' : ''}`)).toEqual([qs[0].id, qs[1].id, qs[2].id, `${qs[0].id}+`, 'p']);
+  });
+
   it('puts it back before the step’s question to write, which stays last', () => {
     const qs = s().items.filter((i) => i.type === 'mcq').slice(0, 3);
     const w = { id: 'w', type: 'flashcard', front: 'How do Alpha and Theta differ?', back: '(1) Alpha is first. (2) Theta is last.' };

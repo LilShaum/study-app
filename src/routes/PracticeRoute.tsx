@@ -308,7 +308,11 @@ function PracticePage() {
         />
         <Choices
           label="Kind"
-          choices={KINDS.map((k) => ({ ...k, count: sum(counts[cards][k.value]) }))}
+          // A kind the lecture has none of at all (problems, in most classes) is left out, not shown at 0.
+          choices={KINDS.filter((k) => k.value === 'all' || k.value === kind || sum(counts.everything[k.value]) > 0).map((k) => ({
+            ...k,
+            count: sum(counts[cards][k.value]),
+          }))}
           value={kind}
           onPick={(v) => setPickedKind(v)}
         />

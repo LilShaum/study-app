@@ -31,7 +31,7 @@ export function scoredEntries(items: readonly StudyItem[]): { id: string; item: 
   for (const item of items) {
     // Set aside by the student: out of every count, as it is out of every session.
     if (item.set_aside) continue;
-    if (item.type === 'mcq' || item.type === 'flashcard') out.push({ id: item.id, item });
+    if (item.type === 'mcq' || item.type === 'flashcard' || item.type === 'problem') out.push({ id: item.id, item });
     // A long answer laid out as an example is asked as a written question
     // (lib/answerPoints isWrittenExample), so it is scored like one.
     else if (isWrittenExample(item)) out.push({ id: item.id, item });

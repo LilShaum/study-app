@@ -10,7 +10,7 @@ import { auditSession, formatAudit, formatWalk } from './sessionAudit';
  * found in one real sitting that screenshots of single cards had missed.
  */
 const load = (name: string): Course => CourseSchema.parse(JSON.parse(readFileSync(`scripts/__fixtures__/${name}.study.json`, 'utf8')));
-const COURSES = ['biochem', 'clean'] as const;
+const COURSES = ['biochem', 'clean', 'problems'] as const;
 const NOW = Date.UTC(2026, 9, 13, 9);
 
 describe.each(COURSES)('a sitting of %s', (name) => {

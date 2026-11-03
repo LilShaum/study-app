@@ -16,6 +16,7 @@ const TYPE_LABELS: Record<string, string> = {
   definition: 'definition',
   example: 'example',
   explain: 'explanation',
+  problem: 'problem',
   graphic: 'diagram',
 };
 

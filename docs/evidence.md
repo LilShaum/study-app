@@ -314,6 +314,66 @@ an exam-aware scheduler and a cram mode are for.
 **What it does not license.** Causation. Students who use Anki daily may
 simply be the diligent ones.
 
+### Problems: worked examples first, then practice spread out and mixed
+
+Ngu, B. H., & Phan, H. P. (2022). *Developing Problem-Solving Expertise for
+Word Problems.* Frontiers in Psychology (a review of five studies).
+[10.3389/fpsyg.2022.725280](https://doi.org/10.3389/fpsyg.2022.725280)
+
+> "It is well-documented that worked examples are effective in facilitating
+> the acquisition of problem-solving skills … a diagram portrays the
+> problem structure, coupled with either study worked examples or complete
+> multiple example-problem pairs, facilitates the formation of an equation
+> to solve words problems efficiently."
+
+Hartwig, M. K., Rohrer, D., & Dedrick, R. F. (2022). *Scheduling math
+practice: Students' underappreciation of spacing and interleaving.* J Exp
+Psychol Appl. [10.1037/xap0000391](https://doi.org/10.1037/xap0000391)
+
+> "Many randomized controlled experiments in the classroom have found that
+> mathematics learning is improved dramatically when practice problems of
+> one kind are distributed across multiple assignments (spaced) and mixed
+> with other kinds of problems (interleaved)."
+
+Rohrer, D., Dedrick, R. F., & Burgess, K. (2014). *The benefit of
+interleaved mathematics practice is not limited to superficially similar
+kinds of problems.* Psychon Bull Rev.
+[10.3758/s13423-014-0588-3](https://doi.org/10.3758/s13423-014-0588-3)
+
+> "students know the appropriate strategy before they read each problem
+> [in a block of one kind] … In an alternative approach, different kinds of
+> problems appear in an interleaved order, which requires students to
+> choose the strategy on the basis of the problem itself … The mean test
+> scores were greater for material learned by interleaved practice rather
+> than by blocked practice (72 % vs. 38 %, d = 1.05)." (Grade 7, n = 140,
+> an unannounced test two weeks later.)
+
+And against: Huang, X., Zheng, S., Yu, Z., & Chen, S. (2023). *Retrieval
+practice may not benefit mathematical word-problem solving.* Frontiers in
+Psychology. [10.3389/fpsyg.2023.1093653](https://doi.org/10.3389/fpsyg.2023.1093653)
+
+> "compared with restudying examples (SSSS), the example-problem pairs
+> (STST) did not promote delayed test performance … there may be no
+> retrieval practice effect on acquiring problem-solving skills from
+> worked examples."
+
+**What it licenses in the app.** The `problem` item and where Learn puts
+it: the worked example of a method is read first, and the problem on it
+comes after (the example-problem pair). A step works at most two problems
+at its first meeting and the rest come the next sitting, and Review brings
+each back on its own schedule mixed with the rest of the lecture: problems
+of one kind spread over sittings and mixed with other kinds. The generator
+does not name the method in a problem's question, so the student chooses
+it, as interleaved practice asks.
+
+**What it does not license.** That working a problem beats studying its
+worked example: Huang et al. found it did not, on a delayed test of word
+problems. So the app never trades the worked example for problems, and
+every problem shows its whole worked solution after the answer, right or
+wrong, and step by step to a student who is stuck. The size of the
+interleaving effect (d = 1.05) is one classroom's on maths, not a
+promise for every subject.
+
 ---
 
 ## Attributed but not verified

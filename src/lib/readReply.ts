@@ -19,9 +19,15 @@ export type ReadReply =
   | { ok: true; json: unknown; cut: { lastSection: string | null } }
   | { ok: false; error: string };
 
-/** The text most likely to be the JSON: a fenced block if there is one, else from the first bracket. */
+/**
+ * The text most likely to be the JSON: a fenced block if there is one, else
+ * from the first bracket. A fence opens at the start of a line: a lecture's
+ * own code (a problem's, an MCQ's, lib/RichText) sits inside its JSON
+ * strings, where a line break is written \n, so it never starts a line, and
+ * reading it as the reply's fence lost the whole lecture.
+ */
 function jsonText(reply: string): string {
-  const fenced = [...reply.matchAll(/```(?:json)?\s*\n?([\s\S]*?)(?:```|$)/gi)].map((m) => m[1]);
+  const fenced = [...reply.matchAll(/^```(?:json)?[ \t]*\n?([\s\S]*?)(?:^```|(?![\s\S]))/gim)].map((m) => m[1].replace(/```\s*$/, ''));
   const block = fenced.sort((a, b) => b.length - a.length)[0];
   const text = block && /[[{]/.test(block) ? block : reply;
   const start = text.search(/[[{]/);

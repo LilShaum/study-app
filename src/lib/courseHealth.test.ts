@@ -334,3 +334,17 @@ describe('analyseCourseHealth — a question that asks two things', () => {
     expect(find(h, 'rationale-cites-source')).toBeUndefined();
   });
 });
+
+describe('analyseCourseHealth — problems', () => {
+  const problem = (id: string, answer: number, steps: string[]): StudyItem => ({ id, type: 'problem', question: 'Q?', answer, steps }) as StudyItem;
+
+  it('flags a problem whose answer its steps never reach, for Fix', () => {
+    const h = analyseCourseHealth(course([problem('ok', 6, ['F = 2 × 3 = 6 N']), problem('bad', 7, ['F = 2 × 3 = 6 N'])]));
+    expect(find(h, 'problem-answer-mismatch')).toMatchObject({ severity: 'warning', items: ['bad'] });
+  });
+
+  it('counts problems as questions, so a lecture of problems is not called thin', () => {
+    const h = analyseCourseHealth(course([problem('a', 6, ['= 6']), problem('b', 4, ['= 4']), problem('c', 2, ['= 2'])]));
+    expect(find(h, 'low-gradable')).toBeUndefined();
+  });
+});

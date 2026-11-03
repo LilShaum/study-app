@@ -41,6 +41,7 @@ function namesOf(d: Extract<StudyItem, { type: 'definition' }>): string[] {
 function askedText(item: StudyItem): string {
   if (item.type === 'mcq') return [item.question, item.options?.[item.correct_index] ?? ''].join(' ');
   if (item.type === 'flashcard') return [item.front, item.back].join(' ');
+  if (item.type === 'problem') return item.question;
   return '';
 }
 
@@ -51,6 +52,7 @@ function gradableText(item: StudyItem): string {
   if (item.type === 'flashcard') {
     return [item.front, item.back, item.hint ?? ''].join(' ');
   }
+  if (item.type === 'problem') return [item.question, ...(item.steps ?? [])].join(' ');
   return '';
 }
 
@@ -80,7 +82,7 @@ export function analyseCourseGaps(course: Course): CourseGaps {
   const byType: Record<string, number> = {};
   for (const item of items) byType[item.type] = (byType[item.type] ?? 0) + 1;
 
-  const gradable = items.filter((i) => i.type === 'mcq' || i.type === 'flashcard');
+  const gradable = items.filter((i) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'problem');
   const gradableTexts = gradable.map(gradableText);
 
   // Never tested: no question names it by any of its names (so a section's
@@ -111,7 +113,7 @@ export function analyseCourseGaps(course: Course): CourseGaps {
       id: s.id,
       title: s.title,
       total: s.items.length,
-      gradable: s.items.filter((i) => i.type === 'mcq' || i.type === 'flashcard').length,
+      gradable: s.items.filter((i) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'problem').length,
     }))
     // A section is thin when it can barely be practised: nothing scorable at
     // all, or fewer than a third of its items scorable.

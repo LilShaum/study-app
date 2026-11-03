@@ -83,3 +83,15 @@ describe('a compact reply, one item per line (prompts/generator.md asks for it)'
     }
   });
 });
+
+describe('readReply: code inside the lecture', () => {
+  const lecture = { sections: [{ id: 's', items: [{ id: 'p', type: 'problem', question: 'What does it print?', code: 'x', steps: ['```python\nprint([1, 2])\n```'] }] }] };
+
+  it('reads a lecture whose strings hold code fences, bare or fenced itself', () => {
+    const raw = JSON.stringify(lecture);
+    for (const reply of [raw, JSON.stringify(lecture, null, 2), `Here it is:\n\`\`\`json\n${raw}\n\`\`\`\nDone.`, `\`\`\`json ${raw}\`\`\``]) {
+      const r = readReply(reply);
+      expect(r.ok && r.json).toEqual(lecture);
+    }
+  });
+});

@@ -6,7 +6,7 @@ import { STUDY_MODES, type CardKind, type StudyMode } from '@/lib/buildSessionIt
 import { BrowseSession } from '@/components/session/BrowseSession';
 import { CardSession } from '@/components/session/CardSession';
 
-const KINDS: readonly CardKind[] = ['questions', 'flashcards', 'terms'];
+const KINDS: readonly CardKind[] = ['questions', 'flashcards', 'terms', 'problems'];
 
 function isStudyMode(mode: string | undefined): mode is StudyMode {
   return !!mode && (STUDY_MODES as readonly string[]).includes(mode);

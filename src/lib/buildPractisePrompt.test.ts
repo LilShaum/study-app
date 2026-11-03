@@ -113,7 +113,7 @@ describe('buildPractisePrompt', () => {
   });
 
   it('flags a low gradable ratio', () => {
-    expect(prompt).toMatch(/20%\) are MCQs or flashcards/);
+    expect(prompt).toMatch(/20%\) are MCQs, flashcards or problems/);
   });
 
   it('lists what is already tested so it is not rewritten', () => {

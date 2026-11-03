@@ -108,6 +108,8 @@ export function itemPrompt(item: StudyItem): string {
       return item.front;
     case 'definition':
       return item.term;
+    case 'problem':
+      return item.question;
     default:
       return item.title;
   }

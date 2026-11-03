@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
-import { DONT_KNOW, drawTest, lecturesIn, scoreTest, testPool } from './practiceTest';
+import { answeredRight, DONT_KNOW, drawTest, lecturesIn, scoreTest, testPool } from './practiceTest';
 
 const mcq = (id: string, extra: Record<string, unknown> = {}): StudyItem =>
   ({
@@ -172,5 +172,41 @@ describe('drawTest: a miss first', () => {
     const pool = testPool([{ courseId: 'c', course: course([{ id: 's1', items: Array.from({ length: 30 }, (_, n) => mcq(`q${n}`)) }]), covers: 'all' }]);
     const test = drawTest(pool, 5, false, (q) => (q.item.id === 'q29' ? -1 : 0));
     expect(test.map((q) => q.item.id)).toContain('q29');
+  });
+});
+
+describe('practice test: problems', () => {
+  const lecture = {
+    schema_version: '1.0',
+    metadata: { title: 'P' },
+    sections: [
+      {
+        id: 's',
+        title: 'S',
+        items: [
+          { id: 'p1', type: 'problem', question: 'What is 2 + 2?', answer: 4, steps: ['Add.'], difficulty: 'easy' },
+          { id: 'p2', type: 'problem', question: 'Prove it.', code: 'x = 1', steps: ['First.', 'Second.'] },
+        ],
+      },
+    ],
+  } as unknown as Course;
+
+  it('asks every problem: a checked one as itself, one checked against its steps as a written question', () => {
+    const pool = testPool([{ courseId: 'c', course: lecture, covers: 'all' }]);
+    expect(pool.map((q) => [q.item.id, q.item.type, q.problem])).toEqual([
+      ['p1', 'problem', true],
+      ['p2', 'flashcard', true],
+    ]);
+    const written = pool[1].item as { front: string; back: string };
+    expect(written.front).toBe('Prove it.\n```\nx = 1\n```');
+    expect(written.back).toBe('(1) First. (2) Second.');
+  });
+
+  it('a checked problem is right when the checker says so', () => {
+    const p = testPool([{ courseId: 'c', course: lecture, covers: 'all' }])[0].item;
+    expect(answeredRight(p, '4')).toBe(true);
+    expect(answeredRight(p, '4.0')).toBe(true);
+    expect(answeredRight(p, '5')).toBe(false);
+    expect(answeredRight(p, null)).toBe(false);
   });
 });

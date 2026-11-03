@@ -29,6 +29,20 @@ export const STEP_TERMS = 4;
 /** Cards to write that a section asks in its first sitting; the rest wait for the next. */
 export const WRITTEN_PER_SITTING = 2;
 
+/**
+ * Problems a step asks at the first meeting, one after each worked example
+ * first; the rest wait for the next sitting: classroom experiments find
+ * maths learned far better when problems of one kind are spread over
+ * several assignments and mixed with other kinds (docs/evidence.md).
+ */
+export const PROBLEMS_PER_STEP = 2;
+
+/** A problem takes the time of a few cards: it counts as this many in a step's size. */
+const PROBLEM_WEIGHT = 3;
+
+/** A step's size in cards, a problem counting as several. */
+const sizeOf = (step: readonly SessionItem[]) => step.reduce((n, i) => n + (i.type === 'problem' ? PROBLEM_WEIGHT : 1), 0);
+
 /** Cards asked on one term at its first meeting, its typed name included; the rest wait a sitting. */
 export const TERM_BUDGET = 3;
 
@@ -45,7 +59,7 @@ export type LearnPhase = 'read' | 'recall' | 'apply';
 export function phaseOf(type: AnyItem['type']): LearnPhase | null {
   if (type === 'definition' || type === 'explain' || type === 'example' || type === 'graphic' || type === 'preview' || type === 'slides') return 'read';
   if (type === 'flashcard' || type === 'recall') return 'recall';
-  if (type === 'mcq') return 'apply';
+  if (type === 'mcq' || type === 'problem') return 'apply';
   return null;
 }
 
@@ -69,9 +83,10 @@ const ORDER: Record<AnyItem['type'], number> = {
   // "accomplishing no teaching and slows shit down").
   flashcard: 5,
   recall: 6,
-  // Apply: the medium and hard questions, which use the ideas; a card to
-  // write comes after them (rankOf).
+  // Apply: the medium and hard questions, which use the ideas; then a
+  // problem to work out, and a card to write after them (rankOf).
   mcq: 7,
+  problem: 8.5,
 };
 
 /**
@@ -134,6 +149,8 @@ function textOf(item: SessionItem): string {
       return [item.title, item.text].join(' ');
     case 'graphic':
       return [item.title, item.caption ?? '', item.alt_text].join(' ');
+    case 'problem':
+      return [item.question, item.code ?? '', ...(item.steps ?? []), item.takeaway ?? ''].join(' ');
     default:
       return '';
   }
@@ -389,7 +406,7 @@ const inOrder = (step: SessionItem[]): SessionItem[] => {
  * nothing to apply them in first.
  */
 function withQuestions(steps: SessionItem[][], termsIn: (item: SessionItem) => readonly number[]): SessionItem[][] {
-  const isAsk = (i: SessionItem) => i.type === 'mcq' || i.type === 'flashcard';
+  const isAsk = (i: SessionItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'problem';
   const out: SessionItem[][] = [];
   let carry: SessionItem[] = [];
   steps.forEach((step, s) => {
@@ -445,7 +462,7 @@ function joinSmall(steps: SessionItem[][]): SessionItem[][] {
     if (
       prev &&
       !!prev[0]._second === !!step[0]._second &&
-      joined!.length <= STEP_CARDS &&
+      sizeOf(joined!) <= STEP_CARDS &&
       Math.min(prev.length, step.length) <= SMALL &&
       !tooClose([...before, ...joined!, ...after])
     )
@@ -512,8 +529,10 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   const readAt = new Map(defs.map((d, k) => [d.id, k]));
   // An explanation teaches as a worked example does: a card on it comes after it.
   const exampleWords = new Map(others.filter((i) => i.type === 'example' || i.type === 'explain').map((ex) => [ex, contentWords(ex)]));
-  const cardWords = new Map<SessionItem, Set<string>>(others.filter((i) => i.type === 'flashcard' || i.type === 'mcq').map((i) => [i, contentWords(i)]));
-  /** A question or flashcard most of whose words are in this example or explanation. */
+  const cardWords = new Map<SessionItem, Set<string>>(
+    others.filter((i) => i.type === 'flashcard' || i.type === 'mcq' || i.type === 'problem').map((i) => [i, contentWords(i)]),
+  );
+  /** A question, flashcard or problem most of whose words are in this example or explanation. */
   const practises = (item: SessionItem, words: Set<string>) => {
     const own = cardWords.get(item);
     return !!own && own.size >= 3 && [...own].filter((w) => words.has(w)).length / own.size >= PRACTISES;
@@ -555,7 +574,7 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       for (const item of rest) stepOf.set(item, defSteps);
       steps = defSteps + 1;
     } else {
-      for (const type of ['example', 'graphic', 'flashcard', 'mcq'] as const) {
+      for (const type of ['example', 'graphic', 'flashcard', 'mcq', 'problem'] as const) {
         const ofType = rest.filter((i) => i.type === type);
         ofType.forEach((item, k) => stepOf.set(item, Math.floor((k * defSteps) / ofType.length)));
       }
@@ -618,7 +637,7 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   let defSteps = defs.length ? Math.ceil(defs.length / STEP_TERMS) : Math.max(1, Math.ceil(others.length / (STEP_TERMS * 2.5)));
   let built = place(defSteps);
   // Fewer terms a step while a step runs long, down to one term each.
-  while (defs.length && defSteps < defs.length && Math.max(...built.map((s) => s.length)) > STEP_CARDS) {
+  while (defs.length && defSteps < defs.length && Math.max(...built.map(sizeOf)) > STEP_CARDS) {
     built = place(++defSteps);
   }
   // A first meeting asks at most TERM_BUDGET cards on one term (in step
@@ -647,9 +666,25 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       return false;
     }),
   );
+  // At most PROBLEMS_PER_STEP problems a step, the first that practises each
+  // worked example in it before any other. The rest wait for the second look.
+  built = built.map((step) => {
+    const problems = step.filter((i) => i.type === 'problem');
+    if (problems.length <= PROBLEMS_PER_STEP) return step;
+    const keep = new Set<SessionItem>();
+    for (const ex of step) {
+      const words = ex.type === 'example' ? exampleWords.get(ex) : undefined;
+      const first = words && problems.find((p) => !keep.has(p) && practises(p, words));
+      if (first && keep.size < PROBLEMS_PER_STEP) keep.add(first);
+    }
+    for (const p of problems) if (keep.size < PROBLEMS_PER_STEP) keep.add(p);
+    held.push(...problems.filter((p) => !keep.has(p)));
+    return step.filter((i) => i.type !== 'problem' || keep.has(i));
+  });
   built = built.map((step) =>
     step.filter((item) => {
-      if (phaseOf(item.type) === 'read') return true;
+      // A problem is not a term's question in another format: it has its own limit, above.
+      if (phaseOf(item.type) === 'read' || item.type === 'problem') return true;
       const k = item.type === 'recall' ? readAt.get(item.target.id) : termsOf.get(item)?.at(-1);
       if (k === undefined) return true;
       const n = (perTerm.get(k) ?? 0) + 1;
@@ -666,7 +701,7 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   // so nothing is asked before it is shown.
   const cut: SessionItem[][] = [];
   for (const step of built) {
-    if (step.length <= STEP_CARDS) {
+    if (sizeOf(step) <= STEP_CARDS) {
       cut.push(step);
       continue;
     }
@@ -675,13 +710,14 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
     let part = { asks: [] as SessionItem[], size: reads.length };
     const parts = [part];
     for (const ask of asks) {
+      const size = sizeOf([ask]);
       // Every part asks at least one thing, however much it has to read.
-      if (part.asks.length && part.size + 1 > STEP_CARDS) {
+      if (part.asks.length && part.size + size > STEP_CARDS) {
         part = { asks: [], size: 0 };
         parts.push(part);
       }
       part.asks.push(ask);
-      part.size += 1;
+      part.size += size;
     }
     parts.forEach((p, k) => cut.push([...(k === 0 ? reads : []), ...p.asks]));
   }

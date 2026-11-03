@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import type { StudyItem } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
 import { sortedSections } from '@/lib/sortedSections';
+import { itemPrompt } from '@/schema/fragment';
 import { AddToCourseDialog } from '@/components/AddToCourseDialog';
 
 type Reason = 'not-needed' | 'wrong';
@@ -26,22 +27,12 @@ const TYPE_LABEL: Record<StudyItem['type'], string> = {
   definition: 'Term',
   example: 'Example',
   explain: 'Explanation',
+  problem: 'Problem',
   graphic: 'Diagram',
 };
 
 /** The card in a line: what it asks or names. */
-function headline(item: StudyItem): string {
-  switch (item.type) {
-    case 'mcq':
-      return item.question;
-    case 'flashcard':
-      return item.front;
-    case 'definition':
-      return item.term;
-    default:
-      return item.title;
-  }
-}
+const headline = itemPrompt;
 
 /**
  * "/study/:id/set-aside": every card the student set aside while studying,

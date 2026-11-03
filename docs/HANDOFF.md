@@ -19,6 +19,28 @@ Start here. Make each step a task, keep one in progress, and only mark it
 done when it is tested and live (see §7). Load `working-method`,
 `arborous-design` and `app-making` at the start; `simulate` before Learn.
 
+**Done 2026-10-29, problems to work out (live):** a `problem` item for
+classes built on methods (math, physics, chemistry, code): the question,
+code in a fixed-width block, the worked steps, and an answer the app checks
+when it is a number or a short exact text (`lib/problemAnswer`: any
+reasonable way of typing a number, 1% or rounding to the figures given),
+otherwise ticked step by step. Steps one at a time when stuck (help counts
+as not yet), the mistake behind a known wrong answer named, the method
+after. Learn works it after the worked example on its method, at most two a
+step (`PROBLEMS_PER_STEP`, the rest the next sitting), never re-asked in the
+sitting; a Problems choice in Practice; on the practice test when chosen;
+the generator makes them wherever the material has a method and works each
+itself before replying; the lecture check flags an answer its steps never
+reach (`problem-answer-mismatch`). Code anywhere in a card is set as code
+(`RichText`), and the reply reader no longer mistakes a lecture's own code
+fences for the chat's (`readReply`). Test lecture:
+`scripts/__fixtures__/problems.study.json` (made up). Not done: maths set
+as maths (fractions, integrals, matrices): Unicode carries most intro
+courses, and LaTeX would mean a renderer and backslashes the AI often
+escapes wrongly in JSON; an expression answer checked by value (3x² + 2
+against 2 + 3x²) rather than by eye. **Next:** the Anki-style flashcards
+mode (docs/ASKS.md).
+
 **Done 2026-10-26, teach before testing (live):** an `explain` item type
 (schema, ExplainCard, the editor), placed by Learn in the step of the terms
 it uses and before the cards that share its words (learnSteps

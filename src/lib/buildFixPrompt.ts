@@ -20,6 +20,7 @@ const CORRECTABLE = [
   // The student's own verdict while studying comes first: they met it.
   'student-flagged',
   'correct-index-out-of-range',
+  'problem-answer-mismatch',
   'option-count',
   'rationale-misaligned',
   'rationale-missing',
@@ -42,6 +43,8 @@ const FAULT_LABELS: Record<string, string> = {
   'student-flagged':
     'I marked it as wrong or badly written while studying: check it against my notes and rewrite it, or tell me it should go',
   'correct-index-out-of-range': 'the answer key points outside the options, so no option can be marked correct',
+  'problem-answer-mismatch':
+    'its answer is a number that none of its worked steps reaches, so the answer or the working is wrong. Work it again from the question alone, as a student would, and correct whichever is wrong, keeping the id; check its `mistakes` still follow from their mistakes',
   'rationale-misaligned': "the distractor_rationale array isn't index-aligned with the options",
   'rationale-missing':
     'a wrong option has no reason in distractor_rationale. For each, write in one short phrase why a student might pick it and why it is wrong, from my notes. If there is no real reason, the option is filler: replace it with a mistake a student who studied would really make (the neighbouring term, the fact turned round, the one word that limits it swapped) and give its reason',

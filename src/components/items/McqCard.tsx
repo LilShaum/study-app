@@ -6,6 +6,7 @@ import { inOrder, orderForShowing } from '@/lib/optionOrder';
 import { DifficultyBadge } from './DifficultyBadge';
 import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
+import { RichText } from './RichText';
 
 interface McqCardProps {
   item: McqItem;
@@ -116,7 +117,7 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
         Multiple Choice
         <DifficultyBadge difficulty={item.difficulty} />
       </div>
-      <div className="prose-set mb-4 text-heading text-text">{item.question}</div>
+      <div className="prose-set mb-4 text-heading text-text"><RichText text={item.question} /></div>
 
       <div
         role="radiogroup"
@@ -162,7 +163,7 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
                 >
                   {mark}
                 </span>
-                <span>{opt}</span>
+                <span><RichText text={opt} /></span>
               </button>
               {rationale && (
                 /* The rationale under the option the student actually chose
@@ -181,7 +182,7 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
                   <span className={chosenWrong ? 'text-error' : 'text-text-2'}>
                     {chosenWrong ? 'Why that is wrong: ' : 'Why not: '}
                   </span>
-                  {rationale}
+                  <RichText text={rationale} />
                 </div>
               )}
             </div>
@@ -220,7 +221,7 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
                   : `✗ Not this time: the answer is ${'ABCD'[item.correct_index] ?? item.correct_index + 1}.`}
             </div>
           )}
-          {item.explanation && <div className="mt-1 text-sm text-text-2">{item.explanation}</div>}
+          {item.explanation && <div className="mt-1 text-sm text-text-2"><RichText text={item.explanation} /></div>}
           {onNext && (
             // Desktop only. On a phone the Prev/Next bar sits just below and
             // two Next buttons one above the other read as a mistake; on a

@@ -119,7 +119,9 @@ export function formatWalk(items: readonly SessionItem[]): string {
         ? `${item.term}: ${item.definition.slice(0, 80)}`
         : item.type === 'example' || item.type === 'explain' || item.type === 'graphic'
           ? item.title
-          : '';
+          : item.type === 'problem'
+            ? item.question.slice(0, 90)
+            : '';
     lines.push(`${String(n + 1).padStart(4)} ${close.has(n + 1) ? '!' : ' '} ${item.type.padEnd(10)} ${what}`);
   });
   return lines.join('\n');

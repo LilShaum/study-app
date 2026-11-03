@@ -20,12 +20,14 @@ export function PracticeKinds({ courseId, course, sectionId }: { courseId: strin
     questions: items.filter((i) => i.type === 'mcq' && scored.has(i.id)).length,
     flashcards: items.filter((i) => (i.type === 'flashcard' || isWrittenExample(i)) && scored.has(i.id)).length,
     terms: items.filter((i) => i.type === 'definition' && scored.has(recallId(i.id))).length,
+    problems: items.filter((i) => i.type === 'problem' && scored.has(i.id)).length,
   };
   const kinds = (
     [
       ['questions', 'Multiple choice'],
       ['flashcards', 'Flashcards'],
       ['terms', 'Terms'],
+      ['problems', 'Problems'],
     ] as const
   ).filter(([kind]) => n[kind] > 0);
   if (!kinds.length) return null;

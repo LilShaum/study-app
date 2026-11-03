@@ -642,3 +642,34 @@ describe('buildSessionItems — Today plans for the misses that come back', () =
     expect(count(0.6)).toBeLessThan(count(0));
   });
 });
+
+describe('buildSessionItems — problems', () => {
+  const withProblems = {
+    schema_version: '1.0',
+    metadata: { title: 'P' },
+    sections: [
+      {
+        id: 's1',
+        title: 'One',
+        items: [
+          { id: 'q1', type: 'mcq', question: 'q', options: ['a', 'b'], correct_index: 0 },
+          { id: 'p1', type: 'problem', question: 'What is 2 + 2?', answer: 4, steps: ['Add.'] },
+          { id: 'ex', type: 'example', title: 'Adding', steps: ['Add.'] },
+        ],
+      },
+      { id: 's2', title: 'Two', items: [{ id: 'p2', type: 'problem', question: 'Prove it.', steps: ['Show it.'] }] },
+    ],
+  } as unknown as Course;
+
+  it('a problem set: every problem in the lecture’s order', () => {
+    expect(buildSessionItems(withProblems, 'problems').map((i) => i.id)).toEqual(['p1', 'p2']);
+  });
+
+  it('is scored, and kept to with the Problems kind', () => {
+    expect(scoredEntries(withProblems.sections.flatMap((s) => s.items)).map((e) => e.id)).toEqual(['q1', 'p1', 'p2']);
+    const DAY = 86_400_000;
+    const old = { got: 1, missed: 0, lastSeen: 0, stability: 1 };
+    const due = buildSessionItems(withProblems, 'review', { kind: 'problems', progress: { q1: old, p1: old, p2: old }, now: 30 * DAY });
+    expect(due.map((i) => i.id).sort()).toEqual(['p1', 'p2']);
+  });
+});

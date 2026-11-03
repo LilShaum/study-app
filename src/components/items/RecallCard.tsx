@@ -5,6 +5,7 @@ import { DifficultyBadge } from './DifficultyBadge';
 import { SourceNote } from './SourceNote';
 import { RelatedTerms } from './RelatedTerms';
 import { FRAME, type ItemFrame } from './frame';
+import { RichText } from './RichText';
 
 interface RecallCardProps {
   item: RecallItem;
@@ -134,8 +135,7 @@ export function RecallCard({
 
       {/* Blanked where it names its own term, until answered: then shown whole. */}
       <p className="font-display text-heading text-text">
-        {item.question ??
-          (verdict ? item.target.definition : maskTerm(item.target.definition, item.target))}
+        <RichText text={item.question ?? (verdict ? item.target.definition : maskTerm(item.target.definition, item.target))} />
       </p>
 
       <form onSubmit={check} className="mt-5 flex items-baseline gap-3">
@@ -176,7 +176,7 @@ export function RecallCard({
           <p className={`font-medium ${dontKnow ? 'text-text' : verdict.correct ? 'text-success' : 'text-error'}`}>
             {dontKnow ? `The answer is ${answer}.` : verdictLine(verdict, answer, asked)}
           </p>
-          {verdict && item.explanation && <p className="mt-2 text-small text-text-2">{item.explanation}</p>}
+          {verdict && item.explanation && <p className="mt-2 text-small text-text-2"><RichText text={item.explanation} /></p>}
           {mixedUp && (
             <p className="mt-2 border-l-2 border-border-strong pl-3 text-small text-text-2">
               <span className="mr-1.5 font-semibold uppercase tracking-wider text-text">{mixedUp.term}.</span>

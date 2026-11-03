@@ -4,6 +4,7 @@ import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
 import { answerPoints } from '@/lib/answerPoints';
+import { RichText } from './RichText';
 
 interface PreviewCardProps {
   item: PreviewItem;
@@ -32,13 +33,13 @@ export function PreviewCard({ item, keyboardEnabled = false, onNext, frame = 'sh
     return (
       <div className={FRAME[frame]}>
         <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-3">This section builds to this answer</div>
-        <p className="font-display text-heading text-text">{card.front}</p>
-        {points.lead && <p className="mt-3 text-body text-text">{points.lead}</p>}
+        <p className="font-display text-heading text-text"><RichText text={card.front} /></p>
+        {points.lead && <p className="mt-3 text-body text-text"><RichText text={points.lead} /></p>}
         <ol className="mt-3 border-y border-border">
           {points.points.map((point, k) => (
             <li key={k} className="flex gap-3 border-b border-border py-2.5 text-body text-text last:border-b-0">
               <span className="shrink-0 tabular-nums text-text-3">{k + 1}.</span>
-              <span>{point}</span>
+              <span><RichText text={point} /></span>
             </li>
           ))}
         </ol>
@@ -53,8 +54,8 @@ export function PreviewCard({ item, keyboardEnabled = false, onNext, frame = 'sh
   return (
     <div className={FRAME[frame]}>
       <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-3">Read first, asked in a moment</div>
-      <p className="font-display text-heading text-text">{card.front}</p>
-      <p className="prose-set mt-3 border-l-2 border-border-strong pl-3 text-body text-text">{card.back}</p>
+      <p className="font-display text-heading text-text"><RichText text={card.front} /></p>
+      <p className="prose-set mt-3 border-l-2 border-border-strong pl-3 text-body text-text"><RichText text={card.back} /></p>
       {card.hint && (
         <p className="mt-2 flex items-center gap-1.5 text-sm text-text-3">
           <Icon name="bulb" size={13} />

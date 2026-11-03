@@ -10,6 +10,24 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-10-29 · Problems to work out: nothing moves, as expected
+
+A `problem` item (a calculation, code, a proof) joined Learn, Today, Review
+and Practice. The suite's synthetic lectures have none, so every scenario
+is level with the baseline (=), which is the check that lectures without
+problems study exactly as before: Learn's step size now counts a problem as
+three cards and caps two a step, and neither touches a lecture without
+them. No re-baseline.
+
+In the simulator a problem is answered like a cold flashcard and takes 120
+seconds (`SECONDS.problem`, Today's `CARD_SECONDS` the same guess). Its
+student has no notion of a method shared by several problems, so it cannot
+say whether two problems a step at the first meeting, the rest the next
+sitting, beats more at once; that rule rests on the evidence (classroom
+experiments on spaced and interleaved maths practice, docs/evidence.md).
+Open: a course shape with problems, and a student whose method
+carries from one problem to the next.
+
 ## 2026-10-26 — Learn: Read, Recall easy to hard, Apply: most of the loss back
 
 The owner's next order (2026-10-26): "easy multiple choice … before writing

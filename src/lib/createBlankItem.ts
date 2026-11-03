@@ -13,6 +13,8 @@ export function createBlankItem(type: ItemType, id: string): StudyItem {
       return { id, type, title: '', steps: [] };
     case 'explain':
       return { id, type, title: '', text: '' };
+    case 'problem':
+      return { id, type, question: '', steps: [''] };
     case 'graphic':
       return { id, type, title: '' };
   }

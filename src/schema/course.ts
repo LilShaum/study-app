@@ -80,6 +80,42 @@ export const ExplainItemSchema = z.looseObject({
   text: z.string(),
 });
 
+/**
+ * A problem to work out, as an exam sets it: a calculation, code to trace or
+ * write, a reaction to predict, a proof (the owner, 2026-10-29: a computer
+ * science student found the app "mainly good for multiple choice", not for
+ * "software development classes or math centered classes"). The student
+ * works it, then checks: a number or a short exact answer is checked by the
+ * app (lib/problemAnswer), anything else against the worked steps.
+ */
+export const ProblemItemSchema = z.looseObject({
+  ...itemBase,
+  type: z.literal('problem'),
+  question: z.string(),
+  /** Shown exactly as written, in a fixed-width font: the code it asks about, a matrix, a table of data. */
+  code: z.string().optional(),
+  /**
+   * The final answer, when it can be typed and checked: a number (its unit
+   * apart) or a short exact text. None for an expression, a structure, a
+   * proof or code to write: the student checks their work against the steps.
+   */
+  answer: z.union([z.number(), z.string()]).optional().catch(undefined),
+  unit: z.string().optional(),
+  /** Other ways a text answer can be written. */
+  accept: z.array(z.string()).optional().catch(undefined),
+  /** How far a number may be off, as a share of it (0.01 is 1%, the default). */
+  tolerance: z.number().positive().max(1).optional().catch(undefined),
+  /** The worked solution, a move and its reason each; the app shows them one at a time as hints. */
+  steps: z.array(z.string()).min(1),
+  /** The method in a sentence, to use next time. */
+  takeaway: z.string().optional(),
+  /** Answers a specific mistake leads to, each with what went wrong. */
+  mistakes: z
+    .array(z.looseObject({ answer: z.union([z.number(), z.string()]), why: z.string() }))
+    .optional()
+    .catch(undefined),
+});
+
 export const GraphicItemSchema = z.looseObject({
   ...itemBase,
   type: z.literal('graphic'),
@@ -95,6 +131,7 @@ export const StudyItemSchema = z.discriminatedUnion('type', [
   DefinitionItemSchema,
   ExampleItemSchema,
   ExplainItemSchema,
+  ProblemItemSchema,
   GraphicItemSchema,
 ]);
 
@@ -118,6 +155,7 @@ export const ItemCountsSchema = z
     flashcard: z.number(),
     definition: z.number(),
     example: z.number(),
+    problem: z.number(),
     graphic: z.number(),
   })
   .partial();
@@ -218,5 +256,6 @@ export type McqItem = z.infer<typeof McqItemSchema>;
 export type FlashcardItem = z.infer<typeof FlashcardItemSchema>;
 export type DefinitionItem = z.infer<typeof DefinitionItemSchema>;
 export type ExampleItem = z.infer<typeof ExampleItemSchema>;
+export type ProblemItem = z.infer<typeof ProblemItemSchema>;
 export type GraphicItem = z.infer<typeof GraphicItemSchema>;
 export type Course = z.infer<typeof CourseSchema>;

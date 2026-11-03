@@ -26,7 +26,7 @@ describe('NewCourseDialog: what to make', () => {
     fireEvent.change(screen.getByRole('textbox', { name: /reply/i }), { target: { value: reply } });
     fireEvent.click(screen.getByRole('button', { name: 'Add lecture' }));
     const [added] = Object.values(useCoursesStore.getState().courses);
-    expect(added.metadata.make).toEqual(['flashcard', 'terms', 'written', 'explain', 'example', 'graphic']);
+    expect(added.metadata.make).toEqual(['flashcard', 'terms', 'written', 'explain', 'example', 'problem', 'graphic']);
   });
 
   it('keeps nothing when every kind is left ticked', () => {

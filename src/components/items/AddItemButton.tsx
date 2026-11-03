@@ -13,6 +13,7 @@ const TYPES: { value: ItemType; label: string }[] = [
   { value: 'definition', label: 'Definition' },
   { value: 'explain', label: 'Explanation' },
   { value: 'example', label: 'Worked Example' },
+  { value: 'problem', label: 'Problem' },
   { value: 'graphic', label: 'Diagram' },
 ];
 

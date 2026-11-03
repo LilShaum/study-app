@@ -200,8 +200,9 @@ suggestions:
 | Each technical term the source explains | a `definition` item, if it is a name a student could be asked to produce (see below) |
 | Each stated learning objective | at least one `mcq` or `flashcard` that would demonstrate it is met |
 | Each flagged key concept | at least one `mcq` or `flashcard` |
-| Each formula | a `definition` (what it computes, what the symbols mean) **and** an `mcq` applying it |
-| Each worked example in the source | an `example` item reproducing the reasoning |
+| Each formula | a `definition` (what it computes, what the symbols mean) **and** a `problem` that computes with it, or an `mcq` applying it where nothing is computed |
+| Each worked example in the source | an `example` item reproducing the reasoning **and** a `problem` that works the same method on a new case |
+| Each method the student is expected to carry out (an algorithm, code to read or write, a reaction type, a proof technique) | a `problem` |
 | Each multi-step mechanism | an `example` item **and** a gradable item on the order or the purpose of a step — on the order only where the source gives one (numbered steps, arrows, a time axis); a bulleted list is not an order |
 | Each comparison | an `mcq` that forces the student to discriminate between the two |
 | Each caveat or flagged misconception | an `mcq` whose distractors encode that specific misconception |
@@ -340,7 +341,7 @@ come from. Leave it out when the source has no numbers; never guess one.
 Every item, of any type, carries these common fields:
 
 - `id` (string, required) — unique within the file, slug-like (e.g. `"q_km_1"`)
-- `type` (required) — one of `mcq` | `flashcard` | `definition` | `explain` | `example` | `graphic`
+- `type` (required) — one of `mcq` | `flashcard` | `definition` | `explain` | `example` | `problem` | `graphic`
 - `source_excerpt` (string, **required**) — see obligation 1
 - `difficulty` (`"easy" | "medium" | "hard"`, optional but strongly encouraged)
 - `tags` (string[], optional) — consistent keywords for later filtering; reuse
@@ -358,7 +359,8 @@ Every item, of any type, carries these common fields:
 | name a term from its meaning | `definition` (the app asks it typed) |
 | recall one fact, or say in a sentence what something does or why | `flashcard` |
 | tell close things apart, apply an idea to a case, predict, catch a qualifier | `mcq` |
-| follow a process or a calculation step by step | `example` to read, then an `mcq` or `flashcard` that uses it |
+| follow a process or a calculation step by step | `example` to read, then a `problem` on the same method |
+| work something out as the exam does: a calculation, code to trace or write, a reaction to predict, a proof | `problem` (below) |
 | see a structure, cycle or pathway | `graphic` |
 | explain a mechanism, comparison or argument in several connected points | a written `flashcard` (below), rarely |
 
@@ -441,6 +443,48 @@ source never uses does not belong in it.
   "takeaway"?, "difficulty", "tags", "source_excerpt" }
 ```
 
+**`problem`** — a problem to work out, set as the exam sets it: a
+calculation, code to trace or write, a reaction to predict, a proof. The
+student works it on paper or in their head, then types the answer.
+```
+{ "id", "type": "problem", "question", "code"?, "answer"?, "unit"?,
+  "accept"?: string[], "tolerance"?, "steps": string[], "takeaway"?,
+  "mistakes"?: [{ "answer", "why" }], "difficulty", "tags", "source_excerpt" }
+```
+Write one wherever the source teaches a method the student is expected to
+carry out: a formula to compute with, a worked example, an algorithm, code
+to read or write, a reaction or mechanism, a proof technique. Each worked
+example gets at least one problem on its method with a new case (other
+numbers, another situation), never the example's own numbers. A lecture
+with no method to carry out gets no problems.
+
+- `question` sets the problem with every value it needs, units included.
+  It does not name the method when choosing it is part of the skill: an
+  exam never says which formula to use.
+- `code` is the code the problem asks about, exactly as printed, line
+  breaks and indents kept; also a matrix or a table of data. The app sets
+  it in a fixed-width font.
+- `answer`, when the final answer fits on one line and can be checked: a
+  number as a JSON number with its unit apart in `unit` ("m/s²", "kJ/mol",
+  "%"), or a short exact text (what the code prints, a name, a letter,
+  "O(n log n)") with its other spellings in `accept`. A number is right
+  within 1%, or rounded to two or more significant figures; set
+  `tolerance` (a share, 0.05 for 5%) for an estimate. Leave `answer` out
+  when the answer is an expression, a structure, a mechanism, a proof or
+  code to write: the student then checks their working against the steps.
+- `steps` is the worked solution, 2 to 6 entries, each one move and its
+  reason ("No friction acts, so energy is conserved: mgh = ½mv²"), the last
+  giving the answer. The app gives a stuck student one step at a time, so
+  each step leads to the next and the first never gives the rest away.
+- `takeaway` is the method in one sentence, as the student should carry it
+  to the next problem of this kind.
+- `mistakes`, for a checked answer: one to three answers that a specific
+  mistake leads to (a unit not converted, a sign lost, the wrong formula),
+  each with what went wrong in a short sentence. The app names the mistake
+  when a student's answer matches one.
+- `difficulty`: easy is one formula used once; medium chains two or three
+  steps; hard needs the method chosen, or one result carried into another.
+
 **`graphic`** — a diagram, only when a picture genuinely clarifies a
 spatial/structural/process relationship the source describes (e.g. anatomy,
 a cycle, a flowchart). Don't manufacture a diagram for content that's just as
@@ -496,6 +540,9 @@ show every card at once. Plan for this:
 7. **Two cards on one fact are kept apart**, and so is a card whose answer
    another card prints. The app lists both as faults for the student to
    send back to you.
+8. **A problem is worked, then checked**, after the worked example on its
+   method. Its steps come one at a time to a student who is stuck, and a
+   right answer reached with help counts as not yet.
 
 ### 2. Plan each idea before you write it
 
@@ -614,7 +661,11 @@ Every key idea gets at least one medium or hard MCQ.
    Greek letters (σ, π, λ, Δ), ×, ÷, √, ∝, ≈, ≤, °, and a slash for
    division: "L = 4πR²σT⁴", "λₘₐₓ = b / T", "d = 1 / p". Give the units
    with every quantity. A text field keeps no line breaks: in a worked
-   calculation, each step is its own entry in the example's `steps`.
+   calculation, each step is its own entry in the `steps`. Code is the one
+   exception: a name from code in backticks (`len(xs)`), and lines of code
+   in any field between a line of three backticks and another, exactly as
+   printed; the app sets both as code. A problem's own code goes in its
+   `code`.
 
 ### 5. What the slide asks students to know
 
@@ -800,7 +851,11 @@ Check your own draft:
    then flashcards, then MCQs. Does any card's answer appear in a card
    before it? Does any definition contain its own term or a word of its
    family? Could a stranger answer any card from plain English? Fix each.
-9. Is it valid JSON — no trailing commas, no comments, matching quotes —
+9. **Work every problem** from its question alone, as a student would. Do
+   your answer, its unit and the last step agree? Does every value it
+   needs appear in the question? Does each `mistakes` answer really follow
+   from its mistake? A wrong answer marks a right student wrong.
+10. Is it valid JSON — no trailing commas, no comments, matching quotes —
    with each item on one line and no indentation?
 
 If the student's source material is missing, empty, or too vague to ground

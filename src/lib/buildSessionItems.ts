@@ -19,6 +19,7 @@ export const STUDY_MODES = [
   'quiz',
   'flashcards',
   'definitions',
+  'problems',
   'mixed',
   'weakest',
   'missed',
@@ -207,16 +208,17 @@ export interface SessionOptions {
   questionsFirst?: boolean;
 }
 
-export type CardKind = 'questions' | 'flashcards' | 'terms';
+export type CardKind = 'questions' | 'flashcards' | 'terms' | 'problems';
 
 /** The file item type each kind keeps (a term is a definition until a mode asks for it). */
 const KIND_TYPE: Record<CardKind, StudyItem['type']> = {
   questions: 'mcq',
   flashcards: 'flashcard',
   terms: 'definition',
+  problems: 'problem',
 };
 
-const isGradable = (i: AnyItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall';
+const isGradable = (i: AnyItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall' || i.type === 'problem';
 
 /**
  * Order the items as a taught sequence rather than a filter.
@@ -521,6 +523,10 @@ export function buildSessionItems(
       break;
     case 'flashcards':
       items = items.filter((i) => i.type === 'flashcard');
+      break;
+    case 'problems':
+      // A problem set: every problem, in the lecture's order.
+      items = items.filter((i) => i.type === 'problem');
       break;
     case 'definitions':
       // Terms: type the word from its meaning. Reading the glossary is what

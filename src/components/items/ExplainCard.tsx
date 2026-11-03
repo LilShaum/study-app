@@ -1,6 +1,7 @@
 import type { ExplainItem } from '@/schema/course';
 import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
+import { RichText } from './RichText';
 
 /**
  * A key idea explained, to read before the questions on it: what it is, why,
@@ -16,7 +17,7 @@ export function ExplainCard({ item, frame = 'card', notesOpen = false }: { item:
       <h3 className="font-display text-heading font-semibold text-text">{item.title}</h3>
       <div className="prose-set mt-2 space-y-2 text-body text-text">
         {paragraphs.map((p, k) => (
-          <p key={k}>{p}</p>
+          <p key={k}><RichText text={p} /></p>
         ))}
       </div>
       <SourceNote excerpt={item.source_excerpt} open={notesOpen} />

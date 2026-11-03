@@ -5,6 +5,7 @@ import { DefinitionCard } from './DefinitionCard';
 import { ExampleCard } from './ExampleCard';
 import { ExplainCard } from './ExplainCard';
 import { GraphicCard } from './GraphicCard';
+import { ProblemCard } from './ProblemCard';
 import { RecallCard } from './RecallCard';
 import { PreviewCard } from './PreviewCard';
 import { SlidesCard } from './SlidesCard';
@@ -87,6 +88,22 @@ export function ItemRenderer({
       return <ExampleCard item={item} frame={frame} notesOpen={learning} />;
     case 'graphic':
       return <GraphicCard item={item} frame={frame} notesOpen={learning} />;
+    case 'problem':
+      return (
+        <ProblemCard
+          // Keyed, so ← → to another problem starts it unanswered.
+          key={item.id}
+          item={item}
+          onAnswered={onAnswered}
+          onOverride={onOverride}
+          onGot={onGot}
+          onMissed={onMissed}
+          onNext={onNext}
+          keyboardEnabled={keyboardEnabled}
+          frame={frame}
+          learning={learning}
+        />
+      );
     case 'recall':
       return (
         <RecallCard

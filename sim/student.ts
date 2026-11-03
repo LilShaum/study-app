@@ -100,6 +100,8 @@ export const SECONDS: Record<SessionItem['type'], number> = {
   flashcard: 13,
   recall: 25,
   mcq: 40,
+  // A guess until a real log has one: worked on paper, then checked.
+  problem: 120,
   preview: 5,
   // The card that sends the student to their own slides; the reading itself
   // happens outside the app. Simulated courses have no slide ranges.

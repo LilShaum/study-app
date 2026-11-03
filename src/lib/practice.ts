@@ -28,9 +28,10 @@ export const KINDS: { value: Kind; label: string }[] = [
   { value: 'questions', label: 'Multiple choice' },
   { value: 'flashcards', label: 'Flashcards' },
   { value: 'terms', label: 'Terms' },
+  { value: 'problems', label: 'Problems' },
 ];
 
-const MODES: Record<Kind, StudyMode> = { all: 'mixed', questions: 'quiz', flashcards: 'flashcards', terms: 'definitions' };
+const MODES: Record<Kind, StudyMode> = { all: 'mixed', questions: 'quiz', flashcards: 'flashcards', terms: 'definitions', problems: 'problems' };
 
 /**
  * The session a choice opens. Everything is the format-based modes (a
@@ -89,7 +90,7 @@ function listOf(basis: CountBasis, cards: Cards, kind: Kind, minutes: number, pa
   return buildSessionItems(course, s.mode, { progress, now, exam, minutes, pace, sectionId, onlyIds, kind: s.kind, missedIds });
 }
 
-const answered = (i: { type: string }) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall';
+const answered = (i: { type: string }) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall' || i.type === 'problem';
 
 /** The cards a choice would give in one lecture to answer, all of them (unlimited minutes is how the app counts everything due). */
 export function practiceCount(basis: CountBasis, cards: Cards, kind: Kind): number {

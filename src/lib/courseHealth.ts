@@ -1,5 +1,6 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { analyseCourseGaps, type CourseGaps } from './courseGaps';
+import { itemPrompt } from '@/schema/fragment';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 import { analyseQuestionQuality, type QuestionQuality } from './questionQuality';
 import { normalisedRationale } from './mcqRationale';
@@ -8,6 +9,7 @@ import { givesAway, restatesDefinition, sameFact, sameName, type Asked } from '.
 import { acceptedForms, normalise } from './typedAnswer';
 import { sectionDensity } from './sectionDensity';
 import { kindsOf } from './makeKinds';
+import { answerReached } from './problemAnswer';
 
 export type HealthSeverity = 'problem' | 'warning';
 
@@ -31,18 +33,7 @@ export interface CourseHealth {
   quality: QuestionQuality;
 }
 
-function promptOf(item: StudyItem): string {
-  switch (item.type) {
-    case 'mcq':
-      return item.question;
-    case 'flashcard':
-      return item.front;
-    case 'definition':
-      return item.term;
-    default:
-      return item.title;
-  }
-}
+const promptOf = itemPrompt;
 
 /**
  * The checks from scripts/audit-course.mjs that need no source material, run
@@ -67,7 +58,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
   // not reported (lib/makeKinds): a lecture of flashcards only lacks MCQs
   // on purpose.
   const make = kindsOf(course);
-  const questions = make.includes('mcq') || make.includes('flashcard');
+  const questions = make.includes('mcq') || make.includes('flashcard') || make.includes('problem');
   const items = course.sections.flatMap((s) => s.items);
 
   /* ---- structural faults ---- */
@@ -147,6 +138,18 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       severity: 'warning',
       message: `${citesSource.length} question${citesSource.length === 1 ? ' explains' : 's explain'} a wrong option only by saying your notes don't mention it, not by why it is wrong.`,
       items: citesSource.map((m) => m.id),
+    });
+  }
+
+  // A problem whose answer is a number none of its steps reaches: the key or
+  // the working is wrong, and a wrong key marks a right student wrong.
+  const unreached = course.sections.flatMap((s) => s.items.filter((i) => i.type === 'problem' && !i.set_aside && answerReached(i) === false));
+  if (unreached.length) {
+    findings.push({
+      id: 'problem-answer-mismatch',
+      severity: 'warning',
+      message: `${unreached.length} problem${unreached.length === 1 ? '’s answer is' : 's’ answers are'} a number its worked steps never reach, so the answer or the working is wrong.`,
+      items: unreached.map((i) => i.id),
     });
   }
 
@@ -542,6 +545,7 @@ const GROUPS: Record<string, FindingGroup> = {
   'option-count': 'fix',
   'rationale-missing': 'fix',
   'two-questions': 'fix',
+  'problem-answer-mismatch': 'fix',
   'rationale-cites-source': 'fix',
   'written-list': 'fix',
   'written-many': 'fix',

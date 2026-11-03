@@ -159,7 +159,7 @@ function student(memory: MemoryModel, seed: number, w: World) {
       used.ms += ms;
       if (item.type === 'definition') w.primed.set(keyOf(owner, recallId(item.id)), w.now);
       if (item.type === 'preview') w.primed.set(keyOf(owner, item.target.id), w.now);
-      if (item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall') answer(owner, item);
+      if (item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall' || item.type === 'problem') answer(owner, item);
       if (!store().next()) return 'done';
     }
   };

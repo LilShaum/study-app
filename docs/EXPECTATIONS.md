@@ -99,7 +99,8 @@ screens were "massive blocks of text … not intuitive for new users"): what
 to make, copy the prompt, paste the reply; one line each, the reasons and
 options folded behind a "more" line (`PromptStep`, `More`). What to make
 is a box per kind (multiple choice, flashcards, terms to name, written
-answers, explanations, worked examples, diagrams), all ticked; untick one
+answers, explanations, worked examples, problems to work out, diagrams),
+all ticked; untick one
 and the prompt says to make only the rest and where their content goes
 instead (`lib/makeKinds`, "if they just want flash cards … they will just
 get flash cards"). The choice is kept on the lecture (`metadata.make`):
@@ -165,7 +166,9 @@ existing ones are known.
 
 **How it works.** A prompt with the lecture's excerpts and the course
 check's gaps as priorities: sparse sections first, thin key terms, an MCQ
-mix that is too easy, too few gradable items.
+mix that is too easy, too few gradable items. What to make starts at
+multiple choice and flashcards, with problems too in a lecture that has
+them; written answers only when ticked.
 
 **Working means.** New angles on the same material, never rewordings of
 existing cards, and nothing that is not in the notes.
@@ -212,7 +215,9 @@ a prompt for the same chat, which judges each one against the notes.
 
 **Working means.** Findings are plain, each says what to do, and none
 blocks studying. They are grouped by what they ask (`findingGroup`): to
-fix (a question answerable without the material), to check on the slides,
+fix (a question answerable without the material, a problem whose answer
+its own worked steps never reach: `problem-answer-mismatch`, which Fix has
+worked again from the question alone), to check on the slides,
 and smaller notes, folded. A pattern finding (the right answer longest too
 often, from 35% of 16+ questions) hands Fix enough of the questions behind
 it to undo the pattern. "Too often" is what a guess at the longest option
@@ -257,7 +262,8 @@ sticks.
 owner, 2026-10-26): read a few definitions (and explanations, examples);
 recall them easy to hard, an easy multiple choice first, then the
 flashcards, then each term typed from its meaning; then apply them in the
-medium and hard multiple choice, with a card to write last (`rankOf`). A
+medium and hard multiple choice, then a problem to work out, with a card
+to write last (`rankOf`). A
 question with no difficulty counts as medium. Where a step has nothing
 easy to recall first, its terms are named after its questions, never
 straight after reading them (named straight after reading was
@@ -287,7 +293,15 @@ cards, nor count toward a section's density in the lecture check. Skip the
 reading leaves explanations out; Review and Practice never show them.
 
 A card that practises a worked example (most of its words in the example)
-comes after the example, never a step before it. A written answer of several points
+comes after the example, never a step before it. So does a problem: the
+worked example teaches the method, the problem has the student use it on a
+new case (the example-problem pair, docs/evidence.md). A step works at most
+two problems at the first meeting, the one on each of its worked examples
+first; the rest open the next sitting, since problems of one kind spread
+over sittings and mixed with other kinds teach maths far better than a
+block of them (docs/evidence.md). A problem counts as three cards in a step's
+size, is not held back by a term's three-card limit, and is never asked
+again in the sitting after a miss: its whole solution was just shown. A written answer of several points
 is not asked again within the sitting after a miss (Review brings it back a
 later day), and a section asks at most two cards to write in a sitting, the
 rest in the next. A question that asks for some of the points listed
@@ -322,7 +336,8 @@ unless Continue is pressed (store/resume resumesOnOpen).
 shaky.
 
 **How it works.** One page: which cards (due now, weakest first,
-mistakes, everything) × which kind (questions, flashcards, typed terms) ×
+mistakes, everything) × which kind (questions, flashcards, typed terms,
+problems; a kind the lecture or class has none of is left out of the row) ×
 which part of the lecture: a section, or its studies (every card about an
 empirical study, or one study; `lib/studies.ts`). A class page has the same
 Practice across all its lectures, where the part is a lecture or a study.
@@ -342,8 +357,9 @@ before does not keep exam week one at a time, and one made in exam week
 does not outlast the exam.
 On the lecture page, Today, Learn and Practice each carry one line on what
 they are for, and under Practice, and under a section page's Practice this
-section, are direct links: Multiple choice, Flashcards, Terms (every card of
-that kind in the lecture or section, started at once) and Practice test
+section, are direct links: Multiple choice, Flashcards, Terms, Problems
+(every card of that kind in the lecture or section, started at once; the
+problems as a problem set, in the lecture's order) and Practice test
 (the owner looked for "just flashcards" and "just multiple choice" for
 weeks; they were a Kind choice inside this page). Multiple choice chosen as
 the kind is always asked with its options; elsewhere a question answered
@@ -379,9 +395,15 @@ lecture.
 **Goal.** Check understanding the way an exam does.
 
 **How it works.** Only medium and hard MCQs (a question with no
-difficulty counts as medium); written questions too only when "Multiple
-choice and written answers" is chosen on the setup (the owner, 2026-10-26:
-"BY DEFAULT ONLY MULTIPLE CHOICE"). Drawn at random from a lecture, a section, a lecture's
+difficulty counts as medium); written questions and problems too only when
+chosen on the setup ("Multiple choice and written answers", "… and
+problems", "Multiple choice, problems and written answers", by what the
+lecture has; the owner, 2026-10-26: "BY DEFAULT ONLY MULTIPLE CHOICE"). A
+problem of any difficulty: an easy one is still worked, never recognised.
+A problem whose answer the app checks is typed, its unit beside the box,
+and marked by the checker (Check asks for a number it can read first); one
+checked against its steps is asked as a written question, its steps the
+points to tick. No steps as hints in a test. Drawn at random from a lecture, a section, a lecture's
 or a class's studies, everything an exam covers, or a whole class; 20, 40
 or all. Over several lectures, 20 or 40 are shared by each lecture's size,
 or equally if the student picks Each the same. Answers: As you go (the
@@ -428,6 +450,50 @@ Numbers tick points, Enter is Done (lib/answerPoints, FlashcardCard).
 **Working means.** A point is never split mid-sentence; a number inside a
 point ("2) hours") does not start a new one; an ordinary flashcard stays a
 flip card.
+
+### Worked problems
+
+**Goal.** Practise what an exam has the student work out (a calculation,
+code to trace or write, a reaction to predict, a proof) by working it, in a
+class built on methods rather than facts (the owner, 2026-10-29: a computer
+science student found the app "mainly good for multiple choice", not for
+"software development classes or math centered classes").
+
+**How it works.** A `problem` item (schema `ProblemItemSchema`, card
+`ProblemCard`): the question as an exam sets it, the code it asks about in
+a fixed-width block, and the worked steps. Made by default wherever the
+material teaches a method to carry out, at least one per worked example on
+a new case; a lecture with no method gets none. The student works it on
+paper or in their head, then:
+
+- **A number** (its unit beside the box) is checked as typed: "1.2e-3",
+  "1.2 × 10⁻³", "3/4", "2π", "x = 4", a unit after it or not. Right within
+  1% (a problem can set its own tolerance) or as the answer rounded to the
+  places typed, from two significant figures ("1.7" for 1.738, never "2")
+  (`lib/problemAnswer`).
+- **A short exact answer** (what code prints, a name, "O(n log n)") is
+  matched without case, spaces, quotes or a closing full stop, against its
+  other accepted forms too.
+- **Anything else** (an expression, a structure, a proof, code to write):
+  Show the solution, then tick each step the working got right; every
+  step is got it, as a written answer's points.
+
+Stuck, "Show the first step" gives the worked steps one at a time, never
+the last; right with a step shown counts as not yet, so it comes back
+sooner, to do alone. A wrong answer that a known mistake leads to says
+which ("Where that answer comes from: the time was not squared"). After
+every answer: the verdict, the whole solution, the method in a sentence,
+the passage (open after a miss), and for a checked answer "I was right,
+count it", as a typed term has. I don't know shows the solution as a miss.
+Code in any card's text is set as code: `inline` in backticks and lines of
+code between ``` lines, exactly as written (`RichText`); never read as
+markup.
+
+**Working means.** A right answer typed any reasonable way is right; a
+wrong one is never counted right by rounding; nothing typed that the
+checker cannot read counts at all ("Type the answer as a number"). Each
+problem's answer is one its own steps reach, or the lecture check says
+so. A lecture with code in its strings reads, pasted or uploaded.
 
 ### The memory model and review
 

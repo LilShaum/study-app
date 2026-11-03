@@ -4,7 +4,8 @@ import { useCoursesStore } from '@/store/courses';
 import { recordAnswers } from '@/store/session';
 import { isMissed, useProgressStore } from '@/store/progress';
 import { classExams, lecturesOf } from '@/lib/classExams';
-import { answeredRight, DONT_KNOW, drawTest, isWritten, lecturesIn, scoreTest, testPool, TEST_LENGTHS, type TestAnswer, type TestQuestion, type TestScope } from '@/lib/practiceTest';
+import { answeredRight, DONT_KNOW, drawTest, isProblem, isWritten, lecturesIn, scoreTest, testPool, TEST_LENGTHS, type CheckedProblem, type TestAnswer, type TestQuestion, type TestScope } from '@/lib/practiceTest';
+import { answerKind, checkAnswer, shownAnswer, unitOf } from '@/lib/problemAnswer';
 import { answerPoints } from '@/lib/answerPoints';
 import { optionOrder } from '@/lib/optionOrder';
 import { termPicked } from '@/lib/mixUps';
@@ -13,6 +14,8 @@ import type { Course } from '@/schema/course';
 import { normalisedRationale } from '@/lib/mcqRationale';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { SourceNote } from '@/components/items/SourceNote';
+import { CodeBlock, RichText } from '@/components/items/RichText';
+import { SolutionSteps } from '@/components/items/ProblemCard';
 
 /**
  * "/study/:id/test" (one lecture, `?section=` for one section) and
@@ -131,7 +134,8 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
       if (q) {
         test.push(q);
         const a = saved.answers[i];
-        const ok = isWritten(q.item) ? typeof a === 'string' || a === DONT_KNOW : typeof a === 'number' && a >= DONT_KNOW && a < q.item.options.length;
+        const ok =
+          q.item.type === 'mcq' ? typeof a === 'number' && a >= DONT_KNOW && a < q.item.options.length : typeof a === 'string' || a === DONT_KNOW;
         answers.push(ok ? a : null);
         answeredAt.push(ok ? (saved.answeredAt?.[i] ?? saved.savedAt ?? null) : null);
         // Ticks only while the card still has that many points.
@@ -240,10 +244,13 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       const lastAnswer = Math.max(0, ...answeredAt.map((t) => t ?? 0));
       // A written question counts once something was written or a point
       // ticked (answered in the head); left blank, it says nothing either.
+      // A problem counts once an answer the checker can read was typed.
       const answered = test.map((q, i) =>
         isWritten(q.item)
           ? answers[i] === DONT_KNOW || !!(typeof answers[i] === 'string' && (answers[i] as string).trim()) || !!marks[i]?.some(Boolean)
-          : answers[i] != null,
+          : isProblem(q.item)
+            ? answers[i] === DONT_KNOW || (typeof answers[i] === 'string' && checkAnswer(q.item, answers[i] as string) !== null)
+            : answers[i] != null,
       );
       recordAnswers(
         test.flatMap((q, i) => {
@@ -267,7 +274,7 @@ function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool:
       test.forEach((q, i) => {
         const chose = answers[i];
         const course = courses[q.courseId];
-        if (isWritten(q.item) || typeof chose !== 'number' || !course) return;
+        if (q.item.type !== 'mcq' || typeof chose !== 'number' || !course) return;
         if (studied[i] >= (answeredAt[i] ?? 0)) return;
         const other = termPicked(course, q.item, chose);
         if (other) progress.noteConfusion(q.courseId, q.item.id, other);
@@ -383,8 +390,10 @@ function Setup({
   // owner, 2026-10-26: "BY DEFAULT ONLY MULTIPLE CHOICE BUT YOU CAN CHOOSE
   // WHAT GOES ON IT BEFORE").
   const [written, setWritten] = useState(false);
-  const hasWritten = all.some((q) => isWritten(q.item));
-  const pool = written ? all : all.filter((q) => !isWritten(q.item));
+  const hasWritten = all.some((q) => q.item.type !== 'mcq');
+  const hasProblems = all.some((q) => q.problem);
+  const hasLong = all.some((q) => isWritten(q.item) && !q.problem);
+  const pool = written ? all : all.filter((q) => q.item.type === 'mcq');
   const missed = pool.filter(missedLast).length;
   const fresh = pool.filter(isFresh).length;
   const lengths = TEST_LENGTHS.filter((n) => n < pool.length);
@@ -402,7 +411,9 @@ function Setup({
           ? ' Answers wait until the end, as in an exam; then your score and every question you missed, with why.'
           : ' Each answer is marked as you give it, right or wrong with why; at the end, your score and every question you missed.'}
         {written &&
+          hasLong &&
           ' Short and long answers are written, as the exam has you write them; then you tick each point of the model answer you made.'}
+        {written && hasProblems && ' Problems are worked out: a number or a short answer is checked, anything else you check against the steps.'}
         {firstLine(pool.length, missed, fresh)}
       </p>
       {hasWritten && (
@@ -411,7 +422,10 @@ function Setup({
           <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
             {[
               { value: false, label: 'Multiple choice' },
-              { value: true, label: 'Multiple choice and written answers' },
+              {
+                value: true,
+                label: hasProblems && hasLong ? 'Multiple choice, problems and written answers' : hasProblems ? 'Multiple choice and problems' : 'Multiple choice and written answers',
+              },
             ].map((c, i) => (
               <span key={c.label} className="flex items-baseline">
                 <button
@@ -556,11 +570,11 @@ function Taking({
   const answered = answers.filter((a) => (typeof a === 'string' ? a.trim() : a != null)).length;
   const blank = typeof chosen === 'string' ? !chosen.trim() : chosen == null;
   // Shown in the test's own order; answers are kept by the file's index.
-  const options = useMemo(() => (isWritten(q.item) ? [] : q.item.options), [q]);
-  const rationales = useMemo(() => (isWritten(q.item) ? null : normalisedRationale(q.item)), [q]);
+  const options = useMemo(() => (q.item.type === 'mcq' ? q.item.options : []), [q]);
+  const rationales = useMemo(() => (q.item.type === 'mcq' ? normalisedRationale(q.item) : null), [q]);
   const order = useMemo(() => optionOrder(options, `${seed}/${q.courseId}/${q.item.id}`), [options, q, seed]);
-  // A written answer is checked by hand, once something is written.
-  const toCheck = instant && isWritten(q.item) && !shown && !blank;
+  // A written answer is checked by hand, once something is written; a problem by the checker.
+  const toCheck = instant && q.item.type !== 'mcq' && !shown && !blank;
 
   useKeyboardShortcuts((e) => {
     // Enter on a focused control (Back, Leave, End and mark it) does what
@@ -572,7 +586,7 @@ function Taking({
     if (focus?.closest('textarea')) return;
     if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && inOptions) return;
     const n = Number(e.key);
-    if (!isWritten(q.item) && !shown && Number.isInteger(n) && n >= 1 && n <= order.length) {
+    if (q.item.type === 'mcq' && !shown && Number.isInteger(n) && n >= 1 && n <= order.length) {
       e.preventDefault();
       onPick(order[n - 1], true);
     } else if (e.key === 'Enter' || e.key === 'ArrowRight') {
@@ -601,9 +615,21 @@ function Taking({
         </span>
         <span className="text-xs tabular-nums text-text-3">{answered} answered</span>
       </div>
-      {isWritten(q.item) ? (
+      {isProblem(q.item) ? (
+        <ProblemAsk
+          // Its own box per question, so a half-typed answer is never carried to the next.
+          key={`${q.courseId}/${q.item.id}`}
+          item={q.item}
+          chosen={chosen}
+          shown={shown}
+          onPick={onPick}
+          onSubmit={toCheck ? onCheck : onNext}
+        />
+      ) : isWritten(q.item) ? (
         <>
-          <div className="prose-set mt-4 text-heading text-text">{q.item.front}</div>
+          <div className="prose-set mt-4 text-heading text-text">
+            <RichText text={q.item.front} />
+          </div>
           {shown ? (
             <WrittenMarked item={q.item} chosen={chosen} ticks={marks[at]} onTick={onTick} />
           ) : (
@@ -626,7 +652,7 @@ function Taking({
         </>
       ) : (
         <>
-          <div className="prose-set mt-4 text-heading text-text">{q.item.question}</div>
+          <div className="prose-set mt-4 text-heading text-text"><RichText text={q.item.question} /></div>
           <div role="radiogroup" aria-label="Answer options" className="mt-4 space-y-2">
             {order.map((k, i) => {
               const opt = options[k];
@@ -659,12 +685,12 @@ function Taking({
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold">
                       {shown && right ? '✓' : pickedWrong ? '✗' : ('ABCD'[i] ?? i + 1)}
                     </span>
-                    <span>{opt}</span>
+                    <span><RichText text={opt} /></span>
                   </button>
                   {why && (
                     <div className={pickedWrong ? 'mt-1.5 border-l-2 border-error py-0.5 pl-3 text-small text-text-2' : 'mt-1 pl-3 text-xs text-text-3'}>
                       <span className={pickedWrong ? 'text-error' : 'text-text-2'}>{pickedWrong ? 'Why that is wrong: ' : 'Why not: '}</span>
-                      {why}
+                      <RichText text={why} />
                     </div>
                   )}
                 </div>
@@ -689,7 +715,13 @@ function Taking({
           Back
         </button>
         {toCheck ? (
-          <button type="button" onClick={onCheck} className="press press-ink tap-safe">
+          // A problem's Check goes through its form, which first asks for a number it can read.
+          <button
+            type={isProblem(q.item) ? 'submit' : 'button'}
+            form={isProblem(q.item) ? PROBLEM_FORM : undefined}
+            onClick={isProblem(q.item) ? undefined : onCheck}
+            className="press press-ink tap-safe"
+          >
             Check
           </button>
         ) : (
@@ -698,6 +730,107 @@ function Taking({
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+const PROBLEM_FORM = 'test-problem';
+
+/**
+ * A problem whose answer the app checks, asked in a test: worked out, the
+ * answer typed (its unit beside it), marked as it is given or at the end.
+ * No steps as hints here: it is a test.
+ */
+function ProblemAsk({
+  item,
+  chosen,
+  shown,
+  onPick,
+  onSubmit,
+}: {
+  item: CheckedProblem;
+  chosen: TestAnswer;
+  shown: boolean;
+  onPick: (a: TestAnswer) => void;
+  onSubmit: () => void;
+}) {
+  const unit = answerKind(item) === 'number' ? unitOf(item) : '';
+  const typed = typeof chosen === 'string' ? chosen : '';
+  const [nudge, setNudge] = useState(false);
+  return (
+    <>
+      <div className="prose-set mt-4 text-heading text-text">
+        <RichText text={item.question} />
+      </div>
+      {item.code?.trim() && <CodeBlock code={item.code} />}
+      {shown ? (
+        <ProblemMarked item={item} chosen={chosen} />
+      ) : (
+        <form
+          id={PROBLEM_FORM}
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (typed.trim() && checkAnswer(item, typed) === null) setNudge(true);
+            else onSubmit();
+          }}
+          className="mt-4 flex items-baseline gap-3"
+        >
+          <label htmlFor="test-problem-answer" className="sr-only">
+            Your answer{unit ? `, in ${unit}` : ''}
+          </label>
+          <input
+            id="test-problem-answer"
+            value={typed}
+            onChange={(e) => {
+              onPick(e.target.value);
+              setNudge(false);
+            }}
+            placeholder="Your answer"
+            spellCheck={false}
+            autoCorrect="off"
+            autoCapitalize="off"
+            autoComplete="off"
+            className="field min-w-0 flex-1 text-body"
+          />
+          {unit && <span className="shrink-0 text-body text-text-2">{unit}</span>}
+        </form>
+      )}
+      {nudge && !shown && (
+        <p className="mt-2 text-small text-text-3" role="status">
+          Type the answer as a number{unit ? `, in ${unit}` : ''}.
+        </p>
+      )}
+    </>
+  );
+}
+
+/** A problem marked: right, or the answer and the mistake it came from, then the solution. */
+function ProblemMarked({ item, chosen }: { item: CheckedProblem; chosen: TestAnswer }) {
+  const typed = typeof chosen === 'string' ? chosen.trim() : '';
+  const verdict = chosen === DONT_KNOW || !typed ? null : checkAnswer(item, typed);
+  const right = !!verdict?.right;
+  const answer = shownAnswer(item);
+  return (
+    <div className="mt-4" aria-live="polite">
+      {typed && <p className="text-small text-text-3">You answered {typed}</p>}
+      <p className={`font-medium ${chosen === DONT_KNOW ? 'text-text' : right ? 'text-success' : 'text-error'}`}>
+        {right ? `✓ Right: ${answer}.` : chosen === DONT_KNOW ? `The answer is ${answer}.` : `✗ Not this time: the answer is ${answer}.`}
+      </p>
+      {verdict?.mistake && (
+        <p className="mt-2 text-small text-text-2">
+          <span className="font-semibold text-text">Where that answer comes from: </span>
+          <RichText text={verdict.mistake} />
+        </p>
+      )}
+      <p className="mark mt-4 text-text-3">The solution</p>
+      <SolutionSteps steps={item.steps ?? []} />
+      {item.takeaway?.trim() && (
+        <p className="mt-3 text-small text-text-2">
+          <span className="font-semibold text-text">The method: </span>
+          <RichText text={item.takeaway} />
+        </p>
+      )}
+      <SourceNote excerpt={item.source_excerpt} open={!right} />
     </div>
   );
 }
@@ -711,7 +844,7 @@ function McqMarked({ item, chosen, order }: { item: Extract<TestQuestion['item']
       <p className={`font-medium ${chosen === DONT_KNOW ? 'text-text' : right ? 'text-success' : 'text-error'}`}>
         {right ? '✓ Correct' : chosen === DONT_KNOW ? `The answer is ${letter}.` : `✗ Not this time: the answer is ${letter}.`}
       </p>
-      {item.explanation && <p className="mt-1 text-sm text-text-2">{item.explanation}</p>}
+      {item.explanation && <p className="mt-1 text-sm text-text-2"><RichText text={item.explanation} /></p>}
       {/* After a miss the passage is open: the lesson again, not only the right option. */}
       <SourceNote excerpt={item.source_excerpt} open={!right} />
     </div>
@@ -744,7 +877,7 @@ function WrittenMarked({ item, chosen, ticks, onTick }: { item: Extract<TestQues
               ) : (
                 <input type="checkbox" checked={!!ticks?.[k]} onChange={() => onTick(k)} className="tap-safe mt-1 shrink-0 accent-accent" />
               )}
-              <span>{point}</span>
+              <span><RichText text={point} /></span>
             </label>
           </li>
         ))}
@@ -849,17 +982,40 @@ function Results({
                 return (
                   <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
                     {where}
-                    <div className="prose-set mt-1 text-body text-text">{q.item.front}</div>
+                    <div className="prose-set mt-1 text-body text-text">
+                      <RichText text={q.item.front} />
+                    </div>
                     <div className="mt-2 whitespace-pre-wrap border-l-2 border-border-strong pl-3 text-small text-text-2">
                       {chose === DONT_KNOW ? 'You didn’t know' : wrote || 'Nothing written'}
                     </div>
                     <ul className="mt-2 space-y-1">
                       {points.map((point, k) => (
                         <li key={k} className={`text-small ${ticks?.[k] ? 'text-success' : 'text-error'}`}>
-                          {ticks?.[k] ? '✓' : '✗'} {point}
+                          {ticks?.[k] ? '✓' : '✗'} <RichText text={point} />
                         </li>
                       ))}
                     </ul>
+                  </li>
+                );
+              }
+              if (isProblem(q.item)) {
+                const typed = typeof chose === 'string' ? chose.trim() : '';
+                const verdict = chose === DONT_KNOW || !typed ? null : checkAnswer(q.item, typed);
+                return (
+                  <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
+                    {where}
+                    <div className="prose-set mt-1 text-body text-text">
+                      <RichText text={q.item.question} />
+                    </div>
+                    {q.item.code?.trim() && <CodeBlock code={q.item.code} />}
+                    <div className="mt-2 text-small text-error">{chose === DONT_KNOW ? 'You didn’t know' : typed ? `✗ ${typed}` : 'No answer'}</div>
+                    {verdict?.mistake && (
+                      <div className="mt-1 border-l-2 border-error pl-3 text-small text-text-2">
+                        <RichText text={verdict.mistake} />
+                      </div>
+                    )}
+                    <div className="mt-2 text-small text-success">✓ {shownAnswer(q.item)}</div>
+                    <SolutionSteps steps={q.item.steps ?? []} />
                   </li>
                 );
               }
@@ -867,13 +1023,17 @@ function Results({
               return (
                 <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
                   {where}
-                  <div className="prose-set mt-1 text-body text-text">{q.item.question}</div>
+                  <div className="prose-set mt-1 text-body text-text"><RichText text={q.item.question} /></div>
                   <div className="mt-2 text-small text-error">
                     {typeof chose !== 'number' ? 'No answer' : chose === DONT_KNOW ? 'You didn’t know' : `✗ ${q.item.options[chose]}`}
                   </div>
-                  {why && <div className="mt-1 border-l-2 border-error pl-3 text-small text-text-2">{why}</div>}
+                  {why && <div className="mt-1 border-l-2 border-error pl-3 text-small text-text-2"><RichText text={why} /></div>}
                   <div className="mt-2 text-small text-success">✓ {q.item.options[q.item.correct_index]}</div>
-                  {q.item.explanation && <div className="mt-1 text-small text-text-2">{q.item.explanation}</div>}
+                  {q.item.explanation && (
+                    <div className="mt-1 text-small text-text-2">
+                      <RichText text={q.item.explanation} />
+                    </div>
+                  )}
                 </li>
               );
             })}
@@ -933,7 +1093,7 @@ function Marking({
                   {made} of {answerPoints(item)?.need ?? points.length}
                 </span>
               </div>
-              <div className="prose-set mt-1 text-body text-text">{item.front}</div>
+              <div className="prose-set mt-1 text-body text-text"><RichText text={item.front} /></div>
               <div className="mt-2 whitespace-pre-wrap border-l-2 border-border-strong pl-3 text-small text-text-2">
                 {unknown ? 'You didn’t know.' : wrote || 'Nothing written. Tick what you would have said, if anything.'}
               </div>
@@ -952,7 +1112,7 @@ function Marking({
                           className="tap-safe mt-1 shrink-0 accent-accent"
                         />
                       )}
-                      <span>{point}</span>
+                      <span><RichText text={point} /></span>
                     </label>
                   </li>
                 ))}

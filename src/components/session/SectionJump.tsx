@@ -10,7 +10,7 @@ import { sessionSections } from '@/lib/sessionSections';
  * section 5" would land you somewhere with no section-shaped run after it.
  * The control simply doesn't appear there.
  */
-const GROUPED_MODES: StudyMode[] = ['learn', 'quiz', 'flashcards', 'definitions', 'browse'];
+const GROUPED_MODES: StudyMode[] = ['learn', 'quiz', 'flashcards', 'definitions', 'problems', 'browse'];
 
 interface SectionJumpProps {
   items: SessionItem[];
