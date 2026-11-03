@@ -30,6 +30,41 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
 
+- **Practice test like a paper test: mark questions to come back to, and
+  move freely between them** (2026-11-03: "the practice test then should
+  also let you mark questions to go back to and let u swap between
+  questions to simulate a real test with pages u can flip between irl").
+- **Say how sure you are, and let it change what happens** (2026-11-03:
+  "for certain question times that it applies to, and in my mind the
+  perfect example are multiple choice questions, you should be able to
+  note how confident you are in your answer before locking it in or maybe
+  it should be after u answered u say how hard the question was or
+  something (maybe it should depend on the question type idk) and based
+  on if u get it right or wrong and based on ur confidence something
+  happens. like something you are confidently wrong about gets retested
+  or worked on sooner. maybe there would be a special in depth
+  explanation"). To plan first (CLAUDE.md method); changes the memory
+  model, so the simulator first.
+- **Teach understanding, not memorising: use the explanations, and
+  questions that test application, everywhere** (2026-11-03: "perhaps you
+  could use the new like explanation things that are part of the new
+  prompt to help explain different things in the app … its a new type of
+  thing the generating ai is giving us and we gotta think of clever ways
+  it can be used in the app to help the user learn and understand better.
+  i am a firm beliver that people shouldnt memorize, they should learn,
+  meaning understand why exactly the thing they are being taught is that
+  way, and by being curious and learning the actual reason why things are
+  ways or by making connections … thats what i want our app to focus on.
+  one of the best ways i think to help with this are those multiple
+  choice questions that test application, either by combining different
+  or multiple concepts so they need to be integrated, or testing them on
+  the nuanced details that differentiates something from something else
+  that is similar, or having those tricky answers that are common
+  misconceptions or the opposite of the right answer or are like mixed in
+  similar terms or that test nuanced understanding of something by having
+  everything but one little detail right in an answer … use it as a guide
+  or inspiration to help make the app better at actually teaching").
+  Standing direction as well as work: to plan first, with the ask above.
 - **A UI/UX and design-language audit, soon** (2026-11-03: "pretty soon we
   will need a big ui/ux audit and like design language audit because we
   haven't worked on that stuff in a long time … the main use of the app …

@@ -92,6 +92,15 @@ this is the intent it serves.
   app's defaults. A feature switches on from what a lecture contains, not
   from assumptions about the exam, and is judged on a class that has none
   of it too.
+- **Understanding, not memorising** (2026-11-03: "people shouldnt
+  memorize, they should learn, meaning understand why exactly the thing
+  they are being taught is that way … by making connections"). Questions
+  that test application: concepts combined, the nuance that tells two
+  similar things apart, wrong options that are misconceptions, the
+  opposite, a similar term swapped in, or right but for one detail. The
+  explanations the generator writes are there to be used for this, across
+  the app. Saying how sure you were should matter: a confident wrong
+  answer is worth more attention.
 - **How the owner studies:** reads the slides or notes, then answers from
   memory; Learn section by section alongside the notes.
 - **Studying is the app's main job:** keep improving how it teaches,
