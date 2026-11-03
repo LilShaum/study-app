@@ -267,8 +267,12 @@ to write last (`rankOf`). A
 question with no difficulty counts as medium. Where a step has nothing
 easy to recall first, its terms are named after its questions, never
 straight after reading them (named straight after reading was
-"accomplishing no teaching"). A step with no question of its own whose
-terms a later question uses joins the next step. Where every question on a
+"accomplishing no teaching"). A card goes in the step of the last term it
+names, and never before the passage it was written from: a question naming
+only an earlier term but quoting a later definition's passage waits for
+that step (a decay-chain question in step 1 of a real lecture, 2026-10-26).
+A step with no question of its own whose terms a later question uses
+joins the next step. Where every question on a
 term only restates its definition, the question still waits five cards
 after it, and the typed terms are what comes between; a term named in a
 question waits five cards before it is typed, so in a short section it can

@@ -59,6 +59,23 @@ describe('Learn in steps', () => {
     expect(stepOf(items, 'late')).toBe(1);
   });
 
+  it('never asks a question before the passage it was written from, even when it names only an earlier term', () => {
+    // A real lecture (2026-10-26): a decay-chain question named an earlier
+    // term and was asked in step 1, a step before its idea was taught.
+    const passage = 'Calcium released from stores binds calmodulin, which then activates kinases downstream';
+    const later = defs.map((d, n) => (n === 4 ? ({ ...d, source_excerpt: passage } as StudyItem) : d));
+    const q = { ...mcq('q', 'After Gs protein acts, what happens to the calcium released?'), source_excerpt: passage } as StudyItem;
+    const others = [mcq('e', 'What does Adenylyl cyclase make?'), mcq('l', 'What does Protein kinase C need?')];
+    for (const items of [learn([...later, q, ...others]), learn([...later, q])]) {
+      const at = (id: string) => items.findIndex((i) => i.id === id);
+      expect(at('q')).toBeGreaterThan(at('d4'));
+      expect(stepOf(items, 'q')).toBe(stepOf(items, 'd4'));
+    }
+    // Its passage an early one: it stays where its term is.
+    const early = defs.map((d, n) => (n === 1 ? ({ ...d, source_excerpt: passage } as StudyItem) : d));
+    expect(stepOf(learn([...early, q, ...others]), 'q')).toBe(0);
+  });
+
   it('holds a question back until every term it uses has been taught', () => {
     const items = learn([...defs, mcq('both', 'How does Gs protein differ from Diacylglycerol?')]);
     expect(items.findIndex((i) => i.id === 'both')).toBeGreaterThan(items.findIndex((i) => i.id === 'd6'));

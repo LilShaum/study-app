@@ -515,10 +515,7 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
     const hits = defs.map((_, k) => k).filter((k) => uses(texts.get(item)!, defNames[k]));
     const specific = hits.filter((k) => !genericIdx.has(k));
     const pick = specific.length ? specific : hits;
-    if (pick.length) {
-      termsOf.set(item, pick);
-      continue;
-    }
+    if (pick.length) termsOf.set(item, pick);
     const words = excerptWords(item);
     passagesOf.set(
       item,
@@ -547,19 +544,23 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
     const stepOf = new Map<SessionItem, number>();
     const leftover: SessionItem[] = [];
     for (const item of others) {
-      const terms = termsOf.get(item);
-      // The LAST step among the terms it uses: by then all of them are taught.
-      if (terms) {
-        stepOf.set(item, Math.max(...terms.map(stepOfK)));
-        continue;
-      }
-      // An item that names no term but quotes the same passage as a
-      // definition was written from what that definition teaches: it goes in
-      // that step. Ties go to the later step: by then both have been read.
+      // An item that quotes the same passage as a definition was written from
+      // what that definition teaches. Ties go to the later step: by then both
+      // have been read.
       let best: { step: number; score: number } | null = null;
       for (const { k, score } of passagesOf.get(item) ?? []) {
         const step = stepOfK(k);
         if (!best || score > best.score || (score === best.score && step > best.step)) best = { step, score };
+      }
+      const terms = termsOf.get(item);
+      // The LAST step among the terms it uses: by then all of them are taught.
+      // And never before the passage it was written from: a question that
+      // names only an earlier term can ask about a later idea (a decay-chain
+      // question in step 1 of a real lecture, 2026-10-26, its passage taught
+      // in step 2). Later only, so naming still sets the earliest it can be.
+      if (terms) {
+        stepOf.set(item, Math.max(...terms.map(stepOfK), best?.step ?? 0));
+        continue;
       }
       if (best) stepOf.set(item, best.step);
       else leftover.push(item);

@@ -84,9 +84,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   write come last in their section, and long answers are asked and scored
   instead of only read. Next, from the same reading: (done 2026-10-26: a
   term is named after the questions on it, not straight after reading it);
-  an MCQ can
-  still land before the idea it needs when it names only an earlier term
-  (a decay-chain question in step 1). (Done 2026-11-03: a plain
+  (done 2026-11-03: an MCQ that names only an earlier term but quotes a
+  later passage waits for that passage's step; a question whose passage is
+  not a definition's is not caught, as the app cannot see what it needs);
+  (done 2026-11-03: a plain
   flashcard's "Got it" was the kindest grade in the app; Hard now sits
   between it and Missed it, see Done.)
 - **Nutrition lectures (EPHE 155)** (2026-10-20: "let me know if … i
