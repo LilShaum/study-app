@@ -46,7 +46,8 @@ names. Load the skills each step needs when it starts (`working-method`,
    changes to how it teaches"; Read, Recall, Apply), so the narration joins
    it rather than reshaping it. Check the prompt change on the real lecture
    attached (make its file before and after the change, following
-   `prompts/generator.md` into the scratchpad): would a student who never
+   `prompts/generator.md` into the scratchpad, on Opus 5.5 at high effort
+   or more, as the owner does; CLAUDE.md, Models): would a student who never
    heard the lecture get what the
    teacher said? Anything Learn does differently goes through the
    simulator, and a real sitting is read (`sessionAudit`).

@@ -170,6 +170,15 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-11-04 The right model for each job (2026-11-04: "when it was
+  generating the course to test with it used sonnet 5.5. and i think
+  another one of the agents was using opus 5 instead of 5.5. how do i make
+  sure it uses the right models … i feel like generating the course should
+  be done how i do it"; "i genmerate courses with opus 5.5 on high effort
+  or higher"). In CLAUDE.md (Models): sessions on Opus 5.5, checked before
+  the first message; every agent's model named, never inherited; Sonnet
+  5.5 for scoped coding, Opus 5.5 for judgment; test courses on Opus 5.5
+  at high effort or more. Both session briefs say so.
 - 2026-11-03 No conclusions from the owner's own study data (2026-11-03:
   "i dont use the app enough, and im afraid you will make false
   conclusions off my one off shitty data"). Both session briefs now ask

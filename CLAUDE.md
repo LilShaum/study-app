@@ -132,6 +132,19 @@ this is the intent it serves.
   usage in ten minutes (2026-10-21), so say before a large fan-out. An
   earlier session wrote that complaint down as "one agent at a time"; the
   owner never said that.
+- **Models** (2026-11-04). Sessions run on Opus 5.5: check before the
+  first message (an early switch is cheap; one 22 minutes in made the new
+  model reread everything and used the owner's usage). Every agent is
+  spawned with its model named, never inherited: an agent copies the
+  session's model at that moment, which is how one ran on Opus 5. Sonnet
+  5.5 for well-scoped coding to an exact spec, searches and mechanical
+  edits; Opus 5.5 for planning, judging, reviewing, grading and anything a
+  student reads. **Courses are generated the way the owner does it: Opus
+  5.5 on high effort or more, with the prompt as the app hands it out**
+  (2026-11-04). A test course made on a smaller model shows that model's
+  limits, not the prompt's; a second model may be tried only to find
+  unclear wording, and a fault that shows only there is never patched
+  with more rules.
 - **Plans for reimagining, auditing or improving something** (2026-11-03:
   "make well thought out plans, and plan the plans. dont make them in one
   go, debate with urself what is better or worse between certain options

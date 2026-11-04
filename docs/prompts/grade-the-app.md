@@ -8,7 +8,8 @@ highest effort setting, attach the material below, and say: *"Read
 docs/prompts/grade-the-app.md and do it."*
 
 **Attach**: the **slides** (PDF) of one or two real lectures, nothing else.
-The session makes each lecture's file itself with the current prompt, so
+The session makes each lecture's file itself with the current prompt, on
+Opus 5.5 at high effort or more as the owner does (CLAUDE.md, Models), so
 the file it grades is what the app makes today. Slides stay out of the
 repo, which is public. Without them it grades on the made-up test
 lectures in `scripts/__fixtures__/` and marks those grades provisional.
