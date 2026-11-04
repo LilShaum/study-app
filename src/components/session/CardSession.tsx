@@ -43,7 +43,12 @@ interface CardSessionProps {
   resume?: boolean;
   /** Today from a class page: the next lecture offered is the class's. */
   classCode?: string;
-  /** With classCode: the class Practice's choice was this lecture only, so the end offers no next lecture. */
+  /**
+   * This lecture only, so the end offers no next lecture: the class
+   * Practice's choice was one lecture, or Today was started from the
+   * library's one-lecture row rather than its Start for the whole day
+   * (docs/proposals/design-audit.md §3A).
+   */
   single?: boolean;
   /**
    * With classCode: the class's lectures mixed in one sitting
@@ -661,7 +666,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       setMoreDue(0);
       setAppointment(appointmentFor());
     }
-    setNextCourse(mode === 'today' ? nextCourseFor() : null);
+    // One lecture was asked for, so the day stops with it.
+    setNextCourse(mode === 'today' && !single ? nextCourseFor() : null);
     setNextPractice(nextPracticeFor());
     // Learn's "Keep going": the section Learn would teach next, not this one again.
     const after = mode === 'learn' ? sectionsToLearn(course, useProgressStore.getState().getProgress(courseId)).find(({ section }) => section.id !== sectionId) : undefined;

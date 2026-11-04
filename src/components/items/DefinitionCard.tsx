@@ -53,7 +53,17 @@ export function DefinitionCard({ item, keyboardEnabled = false, onNext, frame = 
         {item.also_known_as && item.also_known_as.length > 0 && (
           <div className="mt-2 text-xs text-text-3">Also known as: {item.also_known_as.join(', ')}</div>
         )}
-        <SourceNote excerpt={item.source_excerpt} open={notesOpen} />
+        {/* With an example sentence, the passage folds.
+            A reading card with both told one idea three times over — the
+            definition, the same thing again in italics, then the passage it
+            came from — and it is the first card of the day
+            (docs/proposals/design-audit.md §3B). The example sentence is the
+            definition in use, which is the nearer of the two to the reading,
+            so the passage waits behind its line. It still opens by itself
+            after an answer, where restudying the source is what the evidence
+            supports (Karpicke & Roediger 2010), and on a card with no example
+            sentence nothing changes. */}
+        <SourceNote excerpt={item.source_excerpt} open={notesOpen && !item.example_sentence} />
       </div>
     </div>
   );

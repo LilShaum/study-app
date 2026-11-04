@@ -70,6 +70,27 @@ describe('ProgressRoute', () => {
     expect(screen.getByText('Still remembered')).toBeTruthy();
   });
 
+  it('leads with what is fading, each with its Review, and folds the accuracy below it', () => {
+    useCoursesStore.setState({ courses: { cell_biology: course } });
+    useProgressStore.setState({
+      byCourse: { cell_biology: { q1: { got: 1, missed: 0, lastSeen: Date.now() - 30 * 86_400_000 } } },
+    });
+
+    renderProgress();
+
+    const fading = screen.getByText('Still remembered');
+    const fold = screen.getByText('How well you answered ▸').closest('details')!;
+    // Fading comes first in the page, and is not inside the fold.
+    expect(fading.compareDocumentPosition(fold) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(fading.closest('details')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Review 1' }).getAttribute('href')).toBe('/session/cell_biology/review?section=s1');
+    // The accuracy and the tags are closed, and all still there.
+    expect(fold.open).toBe(false);
+    for (const label of ['Accuracy', 'Least accurate sections', 'Least accurate tags']) {
+      expect(screen.getByText(label).closest('details')).toBe(fold);
+    }
+  });
+
   it('handles a course id that does not exist', () => {
     expect(() => renderProgress('nope')).not.toThrow();
     expect(screen.getByText(/Lecture not found/)).toBeTruthy();

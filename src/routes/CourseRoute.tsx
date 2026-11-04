@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { PracticeKinds } from '@/components/PracticeKinds';
 import { useCoursesStore } from '@/store/courses';
 import type { Course } from '@/schema/course';
@@ -12,7 +12,7 @@ import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { bookmarkResolves, useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
-import { CourseTree } from '@/components/CourseTree';
+import { LectureTree } from '@/components/LectureTree';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
 import { TreeDialog } from '@/components/TreeDialog';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
@@ -31,6 +31,7 @@ import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { ExamDialog } from '@/components/ExamDialog';
 import { examLabel, ranges } from '@/lib/examLabel';
 import { classOf, lectureExam } from '@/lib/classExams';
+import { treeVersionOf } from '@/lib/treeWords';
 
 interface Counts {
   total: number;
@@ -95,6 +96,7 @@ function ToolButton({ children, ...rest }: React.ComponentProps<'button'>) {
 /** "/study/:id" — course overview + mode picker. */
 export function CourseRoute() {
   const { id } = useParams<{ id: string }>();
+  const [search] = useSearchParams();
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
   const [adding, setAdding] = useState<AddMode | null>(null);
   const [editingDetails, setEditingDetails] = useState(false);
@@ -254,56 +256,65 @@ export function CourseRoute() {
     ? `${exam.name ?? 'Exam'} ${examLabel(exam.date)}, on ${coverage} · Change`
     : 'Exam coming up? Add its date and what it covers';
 
-  const tree = (
-    <CourseTree
+  // Three versions, for the owner to choose between (components/LectureTree).
+  const treeBlock = (
+    <LectureTree
       courseId={id}
       course={course}
       progress={progress}
-      className={wide ? 'h-[26rem] w-full' : 'h-28 sm:h-52'}
-      interactive
-      mode="preview"
+      version={treeVersionOf(search.get('tree'))}
+      wide={wide}
       onExpand={() => setTreeOpen(true)}
     />
   );
   const titleBlock = (
     <div className="min-w-0 flex-1">
       <h1 className="font-display text-display font-semibold text-text">{course.metadata.title}</h1>
-      {/* What the whole lecture builds to, where the file says: the thread
-          that joins its sections (docs/proposals/narration.md). */}
-      {course.metadata.builds_to && <p className="mt-2 max-w-prose text-body text-text">{course.metadata.builds_to}</p>}
-      {course.metadata.description && (
-        <p className="mt-2 line-clamp-3 max-w-prose text-small text-text-2 sm:line-clamp-none">
-          {course.metadata.description}
-        </p>
-      )}
-      {/* The code, the subject and the figures were a line of run-together
-              small caps and a sentence of statistics. As a specimen label they
-              are fields, which is what they are. */}
-      <SpecimenLabel
-        className="mt-4"
-        rows={[
-          { label: 'Code', value: course.metadata.course_code },
-          { label: 'Subject', value: course.metadata.subject },
-          { label: 'Exam', value: exam.date ? `${exam.name ? `${exam.name}, ` : ''}${examLabel(exam.date)}` : null },
-          {
-            label: 'Contents',
-            value: `${counts.total} item${counts.total === 1 ? '' : 's'} in ${
-              course.sections.length
-            } section${course.sections.length === 1 ? '' : 's'}`,
-          },
-          {
-            label: 'Studied',
-            value:
-              counts.accuracy === null
-                ? 'Not yet'
-                : // "over 474 scorable items" read as though all 474 had
-                  // been studied, when the accuracy covers only those
-                  // that have.
-                  `${counts.accuracy}% correct · ${counts.studied} of ${counts.gradable} studied`,
-          },
-          { label: 'Tags', value: tags.length ? tags.join(', ') : null },
-        ]}
-      />
+      {/* The file's own details fold behind one line.
+          Open, the description and the specimen label filled the first phone
+          screen and pushed Today's Start to its foot — so the page every
+          study day starts from opened with the code, the subject and the tag
+          list rather than with studying (docs/proposals/design-audit.md §3C).
+          They are one tap away, and the label inside is unchanged: the fields
+          a herbarium sheet carries, not a sentence of statistics. */}
+      <details className="group/about mt-3">
+        <summary className="mark tap-safe inline-flex cursor-pointer list-none items-baseline text-text-3 hover:text-text">
+          <span className="group-open/about:hidden">About this lecture ▸</span>
+          <span className="hidden group-open/about:inline">About this lecture ▾</span>
+        </summary>
+        {/* What the whole lecture builds to: the thread that joins its
+            sections (docs/proposals/narration.md). First inside the fold,
+            since Learn already opens the lecture with it. */}
+        {course.metadata.builds_to && <p className="mt-3 max-w-prose text-body text-text">{course.metadata.builds_to}</p>}
+        {course.metadata.description && (
+          <p className="mt-3 max-w-prose text-small text-text-2">{course.metadata.description}</p>
+        )}
+        <SpecimenLabel
+          className="mt-3"
+          rows={[
+            { label: 'Code', value: course.metadata.course_code },
+            { label: 'Subject', value: course.metadata.subject },
+            { label: 'Exam', value: exam.date ? `${exam.name ? `${exam.name}, ` : ''}${examLabel(exam.date)}` : null },
+            {
+              label: 'Contents',
+              value: `${counts.total} item${counts.total === 1 ? '' : 's'} in ${
+                course.sections.length
+              } section${course.sections.length === 1 ? '' : 's'}`,
+            },
+            {
+              label: 'Studied',
+              value:
+                counts.accuracy === null
+                  ? 'Not yet'
+                  : // "over 474 scorable items" read as though all 474 had
+                    // been studied, when the accuracy covers only those
+                    // that have.
+                    `${counts.accuracy}% correct · ${counts.studied} of ${counts.gradable} studied`,
+            },
+            { label: 'Tags', value: tags.length ? tags.join(', ') : null },
+          ]}
+        />
+      </details>
     </div>
   );
 
@@ -336,10 +347,8 @@ export function CourseRoute() {
             }${resumable.kind ? `&kind=${resumable.kind}` : ''}${resumable.study ? `&study=${encodeURIComponent(resumable.study)}` : ''}${
               resumable.practice ? `&p=${encodeURIComponent(resumable.practice)}` : ''
             }${
-              resumable.classCode
-                ? `&class=${encodeURIComponent(resumable.classCode)}${resumable.single ? '&single=1' : resumable.mixed ? '&mix=1' : ''}`
-                : ''
-            }`}
+              resumable.classCode ? `&class=${encodeURIComponent(resumable.classCode)}${resumable.mixed && !resumable.single ? '&mix=1' : ''}` : ''
+            }${resumable.single ? '&single=1' : ''}`}
             className="press press-ink"
           >
             Continue
@@ -559,7 +568,7 @@ export function CourseRoute() {
       {wide ? (
         <div className="mt-6 grid grid-cols-[22rem_minmax(0,1fr)] gap-12">
           <aside>
-            {tree}
+            {treeBlock}
             <div className="mt-6">{contents}</div>
           </aside>
           <div>
@@ -570,9 +579,11 @@ export function CourseRoute() {
       ) : (
         <>
           {/* Column on a phone: beside the tree the title had a third of the
-              width and broke over four lines. */}
-          <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:gap-8">
-            {tree}
+              width and broke over four lines. The tree is now a block of its
+              own width either way (see treeBlock), so the title follows it
+              down the page rather than sitting beside it. */}
+          <div className="mt-4 flex flex-col items-start gap-3">
+            {treeBlock}
             {titleBlock}
           </div>
           {main}

@@ -171,17 +171,17 @@ export function ProgressRoute() {
         </div>
       </div>
 
-      {/* 2-up on phones — four tiles at 375px wrapped labels and looked broken. */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat num={`${stats.accuracyPct ?? 0}%`} label="Accuracy" />
-        <Stat num={String(stats.studiedCount)} label={`of ${stats.gradableCount} studied`} />
-        <Stat num={String(stats.totalGot)} label="Correct" />
-        <Stat num={String(stats.totalMissed)} label="Missed" />
-      </div>
-
+      {/* What is fading leads the page.
+          It used to open with accuracy — four tiles of past answers — and
+          then list the same sections three times over: recall now, accuracy,
+          tags. Only the first of those says what needs the student now, which
+          is the question this page is here to answer, so it comes first and
+          the accuracy figures fold below it
+          (docs/proposals/design-audit.md §3D). */}
       {fading.length > 0 && (
         <div className="mt-8">
-          <h2 className="mark mb-3 text-text-3">Still remembered</h2>
+          <h2 className="mark mb-1 text-text-3">Still remembered</h2>
+          <p className="mb-3 text-small text-text-2">How much of what you learned is still there, closest to fading first.</p>
           <div className="space-y-3">
             {fading.map(({ section, due, held }) => (
               <div key={section.id}>
@@ -230,31 +230,50 @@ export function ProgressRoute() {
         </div>
       )}
 
-      {stats.weakestSections.length > 0 && (
-        <div className="mt-8">
-          <h2 className="mark mb-3 text-text-3">
-            Least accurate sections
-          </h2>
-          <div className="space-y-3">
-            {stats.weakestSections.map((row) => (
-              <BarRow key={row.label} row={row} />
-            ))}
-          </div>
-        </div>
-      )}
+      {/* How well it was answered, folded: it is the record of past answers,
+          not what needs the student now, and the two "least accurate" lists
+          name the same sections the list above already ranks. One line, and
+          everything that was on the page is still here. */}
+      <details className="group/acc mt-8 border-t border-border pt-3">
+        <summary className="mark tap-safe inline-flex cursor-pointer list-none items-baseline text-text-3 hover:text-text">
+          <span className="group-open/acc:hidden">How well you answered ▸</span>
+          <span className="hidden group-open/acc:inline">How well you answered ▾</span>
+        </summary>
 
-      {stats.weakestTags.length > 0 && (
-        <div className="mt-8">
-          <h2 className="mark mb-3 text-text-3">
-            Least accurate tags
-          </h2>
-          <div className="space-y-3">
-            {stats.weakestTags.map((row) => (
-              <BarRow key={row.label} row={row} />
-            ))}
-          </div>
+        {/* 2-up on phones — four tiles at 375px wrapped labels and looked broken. */}
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Stat num={`${stats.accuracyPct ?? 0}%`} label="Accuracy" />
+          <Stat num={String(stats.studiedCount)} label={`of ${stats.gradableCount} studied`} />
+          <Stat num={String(stats.totalGot)} label="Correct" />
+          <Stat num={String(stats.totalMissed)} label="Missed" />
         </div>
-      )}
+
+        {stats.weakestSections.length > 0 && (
+          <div className="mt-8">
+            <h2 className="mark mb-3 text-text-3">
+              Least accurate sections
+            </h2>
+            <div className="space-y-3">
+              {stats.weakestSections.map((row) => (
+                <BarRow key={row.label} row={row} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {stats.weakestTags.length > 0 && (
+          <div className="mt-8">
+            <h2 className="mark mb-3 text-text-3">
+              Least accurate tags
+            </h2>
+            <div className="space-y-3">
+              {stats.weakestTags.map((row) => (
+                <BarRow key={row.label} row={row} />
+              ))}
+            </div>
+          </div>
+        )}
+      </details>
 
       {stats.weakestSections.length > 0 && (
         <Link

@@ -35,7 +35,8 @@ export function SessionRoute() {
   const resume = search.get('resume') === '1';
   // "?class=CODE": Today started from a class page carries on within the class.
   const classCode = search.get('class') ?? undefined;
-  // "?single=1": from a class's Practice, but one lecture only (no next lecture at the end).
+  // "?single=1": this lecture only, so nothing offers the next one at the end
+  // — from a class's Practice, or Today from the library's one-lecture row.
   const single = search.get('single') === '1';
   // "?mix=1": from a class's Practice, the class's lectures mixed in one sitting.
   const mixed = search.get('mix') === '1';
