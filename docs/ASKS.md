@@ -90,6 +90,15 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   the one detail off). Next: the lecture check for a lecture of recall
   only, after reading a real one; explanations of how each section
   follows from the last.
+- **Multi-select questions** (2026-11-04: "i had an idea i really want
+  implemented but dont work on it rn since im low on usage but just mark
+  it how u usually do. multi select questions"). Not started, on the
+  owner's word. When it is: plan first (CLAUDE.md method). Questions to
+  settle then: how one is marked (all right only, or part credit), how
+  the memory model scores it, the generator's rules for writing them (what
+  a "select all that apply" tests that one answer cannot), and every place
+  a question is asked (Learn, Today, Practice, the practice test, Why, Not
+  sure).
 - **A UI/UX and design-language audit, soon** (2026-11-03: "pretty soon we
   will need a big ui/ux audit and like design language audit because we
   haven't worked on that stuff in a long time … the main use of the app …
