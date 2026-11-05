@@ -15,7 +15,7 @@ import { More, PromptStep } from './PromptStep';
 import { ALL_KINDS, kindsOf, type MakeKind } from '@/lib/makeKinds';
 
 /** What More practice can make: questions, not reading. */
-const QUESTION_KINDS: readonly MakeKind[] = ['mcq', 'flashcard', 'written', 'problem'];
+const QUESTION_KINDS: readonly MakeKind[] = ['mcq', 'multi', 'flashcard', 'written', 'problem'];
 import { buildEvenOptionsPrompt, longestShare, optionsToRework, readEvenOptions, readEvenReply, withCorrections } from '@/lib/evenOptions';
 import { analyseCourseGaps } from '@/lib/courseGaps';
 import { sectionDensity } from '@/lib/sectionDensity';
@@ -43,6 +43,7 @@ interface AddToCourseDialogProps {
 
 const TYPE_LABELS: Record<string, string> = {
   mcq: 'MCQ',
+  multi: 'select-all question',
   flashcard: 'flashcard',
   definition: 'definition',
   example: 'example',
@@ -83,7 +84,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
     const made = kindsOf(course);
     // Problems too, in a lecture that has them: more practice on a method is more problems.
     const hasProblems = course.sections.some((s) => s.items.some((i) => i.type === 'problem' && !i.set_aside));
-    const asked = made.filter((k) => k === 'mcq' || k === 'flashcard' || (k === 'problem' && hasProblems));
+    const asked = made.filter((k) => k === 'mcq' || k === 'multi' || k === 'flashcard' || (k === 'problem' && hasProblems));
     return asked.length ? asked : made.filter((k) => QUESTION_KINDS.includes(k));
   });
   const chosenKinds = mode === 'material' ? kinds : mode === 'practice' ? practiceKinds : ALL_KINDS;

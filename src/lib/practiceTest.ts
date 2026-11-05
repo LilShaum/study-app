@@ -1,6 +1,7 @@
-import type { Course, FlashcardItem, McqItem, ProblemItem } from '@/schema/course';
+import type { Course, FlashcardItem, McqItem, MultiItem, ProblemItem } from '@/schema/course';
 import { answerPoints, isWrittenExample, writtenFromExample } from './answerPoints';
 import { answerKind, checkAnswer, writtenFromProblem } from './problemAnswer';
+import { multiKey, multiRight } from './multiKey';
 import type { Coverage } from './classExams';
 import { shuffle } from './shuffle';
 import { sortedSections } from './sortedSections';
@@ -12,7 +13,9 @@ import { sortedSections } from './sortedSections';
  *
  * Only the medium and hard MCQs: an easy MCQ recognises a fact as stated,
  * which the typed terms already practise, while medium and hard ones apply,
- * tell apart, chain and predict (prompts/generator.md, part 3). And the
+ * tell apart, chain and predict (prompts/generator.md, part 3). Select all
+ * that apply goes with them, under the same kind: options to pick from
+ * (docs/proposals/multi-select.md). And the
  * medium and hard written questions (lib/answerPoints): an exam that has the
  * student write short and long answers is practised by writing them; they
  * are ticked point by point once the test ends. A question with no
@@ -28,20 +31,27 @@ export type WrittenItem = FlashcardItem;
  * working them (the owner, 2026-10-21).
  */
 export type CheckedProblem = ProblemItem;
-export type TestItem = McqItem | WrittenItem | CheckedProblem;
+export type TestItem = McqItem | MultiItem | WrittenItem | CheckedProblem;
 
 export const isWritten = (item: TestItem): item is WrittenItem => item.type === 'flashcard';
 export const isProblem = (item: TestItem): item is CheckedProblem => item.type === 'problem';
+export const isMulti = (item: TestItem): item is MultiItem => item.type === 'multi';
 
 /**
- * An answer: the option picked, the text written (a written question), or
- * null for none. A written question's text is its answer even when empty
- * once its points are ticked: the student may answer in their head.
+ * An answer: the option picked, the statements ticked (select all that
+ * apply: their indices in the file, never empty), the text written (a
+ * written question), or null for none. A written question's text is its
+ * answer even when empty once its points are ticked: the student may answer
+ * in their head.
  */
-export type TestAnswer = number | string | null;
+export type TestAnswer = number | number[] | string | null;
 
 /** A multiple-choice answer of "I don't know": a miss, unlike a blank, which says nothing. */
 export const DONT_KNOW = -1;
+
+/** A select-all answer the question can still read: ticks, each a statement it has. */
+export const isMultiAnswer = (a: unknown, options: number): a is number[] =>
+  Array.isArray(a) && a.length > 0 && a.every((i) => Number.isInteger(i) && i >= 0 && i < options);
 
 export interface TestQuestion {
   courseId: string;
@@ -74,6 +84,9 @@ const usableMcq = (item: McqItem): boolean => {
   );
 };
 
+/** A select-all question a test can mark: a key it can trust, and not easy. */
+const usableMulti = (item: MultiItem): boolean => (item.options?.length ?? 0) >= 2 && !!multiKey(item) && item.difficulty !== 'easy';
+
 /** Every question a test over these lectures can ask, in course order. */
 export function testPool(scopes: TestScope[]): TestQuestion[] {
   const out: TestQuestion[] = [];
@@ -92,7 +105,9 @@ export function testPool(scopes: TestScope[]): TestQuestion[] {
         const asked: TestItem | null =
           card.type === 'mcq'
             ? usableMcq(card) ? card : null
-            : card.type === 'flashcard' && card.difficulty !== 'easy' && answerPoints(card) ? card : null;
+            : card.type === 'multi'
+              ? usableMulti(card) ? card : null
+              : card.type === 'flashcard' && card.difficulty !== 'easy' && answerPoints(card) ? card : null;
         if (!asked) continue;
         out.push({ courseId, lecture: course.metadata.title, sectionId: section.id, section: section.title, item: asked });
       }
@@ -164,6 +179,11 @@ export interface TestResult {
  */
 export function answeredRight(item: TestItem, answer: TestAnswer, ticks?: boolean[] | null): boolean {
   if (isProblem(item)) return typeof answer === 'string' && !!checkAnswer(item, answer)?.right;
+  // All or nothing: every true statement ticked and no false one (lib/multiKey).
+  if (isMulti(item)) {
+    const key = multiKey(item);
+    return !!key && Array.isArray(answer) && multiRight(key, answer);
+  }
   if (!isWritten(item)) return answer === item.correct_index;
   const need = answerPoints(item)?.need ?? ticks?.length ?? 1;
   return answer != null && !!ticks?.length && ticks.filter(Boolean).length >= need;

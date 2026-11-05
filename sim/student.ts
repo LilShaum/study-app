@@ -100,6 +100,9 @@ export const SECONDS: Record<SessionItem['type'], number> = {
   flashcard: 13,
   recall: 25,
   mcq: 40,
+  // A guess until a real log has one: four to six statements, each judged.
+  // Simulated lectures have none.
+  multi: 60,
   // A guess until a real log has one: worked on paper, then checked.
   problem: 120,
   preview: 5,

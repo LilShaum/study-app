@@ -42,3 +42,25 @@ describe('AddToCourseDialog, explanations', () => {
     expect(screen.getByText(/no explanations in it/)).toBeTruthy();
   });
 });
+
+describe('AddToCourseDialog, what to make', () => {
+  beforeEach(() => useCoursesStore.setState({ courses: { bio: course } }));
+  afterEach(cleanup);
+
+  it('offers select all that apply as its own tick, ticked by default, for new material and for more practice', () => {
+    for (const initialMode of ['material', 'practice'] as const) {
+      render(<AddToCourseDialog courseId="bio" course={course} initialMode={initialMode} onClose={() => {}} />);
+      const tick = screen.getByRole('checkbox', { name: 'Select all that apply' }) as HTMLInputElement;
+      expect(tick.checked).toBe(true);
+      fireEvent.click(tick);
+      expect(tick.checked).toBe(false);
+      cleanup();
+    }
+  });
+
+  it('leaves it unticked on a lecture made without it', () => {
+    const chosen = { ...course, metadata: { ...course.metadata, make: ['mcq', 'flashcard'] } } as Course;
+    render(<AddToCourseDialog courseId="bio" course={chosen} initialMode="practice" onClose={() => {}} />);
+    expect((screen.getByRole('checkbox', { name: 'Select all that apply' }) as HTMLInputElement).checked).toBe(false);
+  });
+});

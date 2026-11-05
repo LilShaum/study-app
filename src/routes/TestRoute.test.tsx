@@ -215,3 +215,96 @@ describe('practice test: problems to work out', () => {
     expect(screen.getByText('✓ 6 N')).toBeTruthy();
   });
 });
+
+describe('practice test: select all that apply', () => {
+  const multi = (id: string, difficulty: string) => ({
+    id,
+    type: 'multi',
+    question: `Which are true of ${id}?`,
+    options: ['true one', 'true two', 'false one', 'false two'],
+    correct: [0, 1],
+    option_rationale: ['so one', 'so two', 'not so one', 'not so two'],
+    explanation: `Why ${id}.`,
+    difficulty,
+    source_excerpt: `passage ${id}`,
+  });
+  const withMulti = {
+    ...lecture,
+    sections: [{ ...lecture.sections[0], items: [...lecture.sections[0].items, multi('m1', 'medium'), multi('m2', 'easy')] }],
+  } as unknown as Course;
+
+  function openWith(course: Course = withMulti) {
+    useCoursesStore.setState({ courses: { c: course } });
+    return render(
+      <MemoryRouter initialEntries={['/study/c/test']}>
+        <Routes>
+          <Route path="/study/:id/test" element={<TestRoute />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+  }
+  const statement = (text: string) => screen.getAllByRole('checkbox').find((b) => b.textContent?.includes(text))!;
+  /** On to the select-all question: the others skipped. */
+  function toMulti() {
+    for (let n = 0; n < 5 && !screen.queryByRole('group', { name: 'Statements' }); n++) fireEvent.click(screen.getByRole('button', { name: /Skip|Next/ }));
+  }
+
+  it('goes on as multiple choice when medium or hard, ticked, marked only at the end, and its review gives every statement with its reason', () => {
+    openWith();
+    // The three questions and the medium one; the easy one recognises, and stays off.
+    expect(screen.getByRole('button', { name: 'All 4' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
+    expect(screen.getByText(/^Question 1 of 4/)).toBeTruthy();
+    toMulti();
+    expect(screen.getByText('Select all that apply.')).toBeTruthy();
+    fireEvent.click(statement('true one'));
+    fireEvent.click(statement('false one'));
+    expect(statement('true one').getAttribute('aria-checked')).toBe('true');
+    expect(statement('false one').getAttribute('aria-checked')).toBe('true');
+    // Nothing marked while the test is taken.
+    expect(screen.queryByText(/statements right|Also true|Correct/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'End and see my score' }));
+    fireEvent.click(screen.getByRole('button', { name: 'End and see my score' }));
+    expect(screen.getByText('0 of 4')).toBeTruthy();
+    expect(screen.getByText('✗ 2 of 4 statements right')).toBeTruthy();
+    expect(screen.getByText(/^Also true/).parentElement!.textContent).toBe('Also true: so two');
+    expect(screen.getByText('not so one').textContent).toBe('Why that is wrong: not so one');
+    expect(screen.getByText('Why m1.')).toBeTruthy();
+    expect(screen.getByText('passage m1').closest('details')!.open).toBe(true);
+    // Recorded as a miss, all or nothing, given as sure.
+    expect(useProgressStore.getState().getProgress('c').m1).toMatchObject({ got: 0, missed: 1 });
+  });
+
+  it('counts every true statement and no false one as right, and lists it under Right, but marked ? when flagged', () => {
+    openWith();
+    fireEvent.click(screen.getByRole('button', { name: 'Start the test' }));
+    toMulti();
+    fireEvent.click(statement('true one'));
+    fireEvent.click(statement('true two'));
+    fireEvent.click(screen.getByRole('button', { name: 'Mark to come back to' }));
+    fireEvent.click(screen.getByRole('button', { name: 'End and see my score' }));
+    fireEvent.click(screen.getByRole('button', { name: 'End and see my score' }));
+    expect(screen.getByText('1 of 4')).toBeTruthy();
+    expect(screen.getByText('Right, but marked ?')).toBeTruthy();
+    expect(screen.getByText('Which are true of m1?')).toBeTruthy();
+    expect(useProgressStore.getState().getProgress('c').m1).toMatchObject({ got: 1, missed: 0 });
+  });
+
+  it('keeps a saved answer only while it names statements the question has', () => {
+    const save = (answer: unknown) =>
+      localStorage.setItem(
+        'arborous:test:lecture:c:',
+        JSON.stringify({ refs: [{ courseId: 'c', itemId: 'm1' }], answers: [answer], at: 0, done: false, recorded: false, atEnd: true, seed: 's', savedAt: Date.now() }),
+      );
+    save([0, 9]);
+    openWith();
+    expect(screen.getByText('0 answered')).toBeTruthy();
+    expect(screen.getAllByRole('checkbox').every((b) => b.getAttribute('aria-checked') === 'false')).toBe(true);
+    cleanup();
+    save([0, 1]);
+    openWith();
+    expect(screen.getByText('1 answered')).toBeTruthy();
+    expect(statement('true one').getAttribute('aria-checked')).toBe('true');
+    expect(statement('false one').getAttribute('aria-checked')).toBe('false');
+  });
+});

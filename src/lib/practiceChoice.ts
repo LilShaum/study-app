@@ -63,6 +63,7 @@ const ORDER_SET = new Set<string>(ORDERS.map((o) => o.value));
 export function kindOfItem(item: AnyItem): PracticeKind | null {
   switch (item.type) {
     case 'mcq':
+    case 'multi':
       return 'questions';
     case 'flashcard':
       return answerPoints(item) ? 'written' : 'flashcards';

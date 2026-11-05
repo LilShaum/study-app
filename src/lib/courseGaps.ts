@@ -1,6 +1,7 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { sortedSections } from './sortedSections';
 import { someTextCoversTerm } from './termMatch';
+import { multiKey } from './multiKey';
 
 export interface SectionGap {
   id: string;
@@ -28,6 +29,13 @@ export interface CourseGaps {
   gradableRatio: number;
 }
 
+/** An authored question: multiple choice of either sort, a flashcard or a problem. */
+const isAsked = (i: StudyItem) => i.type === 'mcq' || i.type === 'multi' || i.type === 'flashcard' || i.type === 'problem';
+
+/** A select-all question's true statements (none when its key is broken, lib/multiKey). */
+const trueStatements = (item: Extract<StudyItem, { type: 'multi' }>): string[] =>
+  [...(multiKey(item) ?? [])].map((i) => item.options[i] ?? '');
+
 /** The text a gradable item puts in front of the student. */
 /** A defined term's names: as written, without its bracket, the bracket alone, and the source's other names. */
 function namesOf(d: Extract<StudyItem, { type: 'definition' }>): string[] {
@@ -40,13 +48,15 @@ function namesOf(d: Extract<StudyItem, { type: 'definition' }>): string[] {
 /** What a question asks about: its own words and its answer. */
 function askedText(item: StudyItem): string {
   if (item.type === 'mcq') return [item.question, item.options?.[item.correct_index] ?? ''].join(' ');
+  // Its true statements are what it asks the student to know.
+  if (item.type === 'multi') return [item.question, ...trueStatements(item)].join(' ');
   if (item.type === 'flashcard') return [item.front, item.back].join(' ');
   if (item.type === 'problem') return item.question;
   return '';
 }
 
 function gradableText(item: StudyItem): string {
-  if (item.type === 'mcq') {
+  if (item.type === 'mcq' || item.type === 'multi') {
     return [item.question, ...(item.options ?? []), item.explanation ?? ''].join(' ');
   }
   if (item.type === 'flashcard') {
@@ -82,7 +92,7 @@ export function analyseCourseGaps(course: Course): CourseGaps {
   const byType: Record<string, number> = {};
   for (const item of items) byType[item.type] = (byType[item.type] ?? 0) + 1;
 
-  const gradable = items.filter((i) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'problem');
+  const gradable = items.filter(isAsked);
   const gradableTexts = gradable.map(gradableText);
 
   // Never tested: no question names it by any of its names (so a section's
@@ -113,7 +123,7 @@ export function analyseCourseGaps(course: Course): CourseGaps {
       id: s.id,
       title: s.title,
       total: s.items.length,
-      gradable: s.items.filter((i) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'problem').length,
+      gradable: s.items.filter(isAsked).length,
     }))
     // A section is thin when it can barely be practised: nothing scorable at
     // all, or fewer than a third of its items scorable.

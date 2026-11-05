@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { decodeChoice, encodeChoice } from './practiceChoice';
+import type { Course, StudyItem } from '@/schema/course';
+import { decodeChoice, encodeChoice, kindOfItem, kindsIn } from './practiceChoice';
+import { buildSessionItems } from './buildSessionItems';
 
 describe('decodeChoice', () => {
   const base = { kinds: ['flashcards'], which: ['due', 'new'], order: 'weakest' };
@@ -17,5 +19,26 @@ describe('decodeChoice', () => {
     expect(decodeChoice(JSON.stringify({ ...base, kinds: ['nonsense'] }))).toBeNull();
     expect(decodeChoice(JSON.stringify({ ...base, which: [] }))).toBeNull();
     expect(decodeChoice('{not json')).toBeNull();
+  });
+});
+
+describe('select all that apply in Practice', () => {
+  const multi = { id: 'm', type: 'multi', question: 'Which are true?', options: ['a', 'b', 'c', 'd'], correct: [0, 2] } as StudyItem;
+  const lecture = {
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: [{ id: 's', title: 'S', items: [multi, { id: 'f', type: 'flashcard', front: 'F?', back: 'B.' } as StudyItem] }],
+  } as Course;
+
+  it('is practised as multiple choice: options to pick from', () => {
+    expect(kindOfItem(multi)).toBe('questions');
+    expect(kindsIn([lecture])).toEqual(['questions', 'flashcards']);
+  });
+
+  it('comes in a sitting with Multiple choice ticked, and not with Flashcards alone', () => {
+    const sitting = (kinds: ('questions' | 'flashcards')[]) =>
+      buildSessionItems(lecture, 'practice', { practice: { kinds: new Set(kinds), which: new Set(['new']), order: 'inorder' } }).map((i) => i.id);
+    expect(sitting(['questions'])).toEqual(['m']);
+    expect(sitting(['flashcards'])).toEqual(['f']);
   });
 });

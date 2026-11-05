@@ -63,6 +63,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
 
 const SHORTCUTS: { keys: string; what: string }[] = [
   { keys: '1 – 4', what: 'Choose an option' },
+  { keys: '1 – 6', what: 'Tick a statement, in Select all that apply' },
   { keys: 'Enter', what: 'Check your answer, or go to the next item' },
   { keys: 'Space', what: 'Flip a flashcard' },
   { keys: 'G / H / M', what: 'Mark a flashcard got it, hard (right, but it took effort: it comes back sooner) or missed it' },
@@ -195,6 +196,11 @@ const SECTIONS: HelpSection[] = [
           A flashcard you mark yourself: <strong>Got it</strong>, <strong>Hard</strong> or <strong>Missed it</strong>.
           Hard is right, but only just, or after a long think: it comes back sooner than Got it. Under each is when the
           card would come back. Be strict with Got it: a near miss called Got it waits too long and fades.
+        </p>
+        <p className="mt-2">
+          <strong>Select all that apply</strong>: tick every statement that is true, then Check answer. It never
+          says how many are true. It counts as got only with every true one ticked and no false one; each
+          statement is then marked with why it is true or false, and how many of them you judged right.
         </p>
         <p className="mt-2">
           After a multiple-choice answer, <strong>Why</strong> is the idea the question rests on, from the

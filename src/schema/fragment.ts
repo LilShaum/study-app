@@ -103,6 +103,7 @@ export function parseFragment(raw: unknown, fallbackSectionId: string): ParseFra
 export function itemPrompt(item: StudyItem): string {
   switch (item.type) {
     case 'mcq':
+    case 'multi':
       return item.question;
     case 'flashcard':
       return item.front;

@@ -10,6 +10,7 @@ import { acceptedForms, normalise } from './typedAnswer';
 import { sectionDensity } from './sectionDensity';
 import { kindsOf } from './makeKinds';
 import { answerReached } from './problemAnswer';
+import { multiKey } from './multiKey';
 
 export type HealthSeverity = 'problem' | 'warning';
 
@@ -58,7 +59,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
   // not reported (lib/makeKinds): a lecture of flashcards only lacks MCQs
   // on purpose.
   const make = kindsOf(course);
-  const questions = make.includes('mcq') || make.includes('flashcard') || make.includes('problem');
+  const questions = make.includes('mcq') || make.includes('multi') || make.includes('flashcard') || make.includes('problem');
   const items = course.sections.flatMap((s) => s.items);
 
   /* ---- structural faults ---- */
@@ -84,6 +85,47 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       severity: 'problem',
       message: `${badIdx.length} question${badIdx.length === 1 ? ' has' : 's have'} an answer index pointing outside its options, so no option can be marked correct.`,
       items: badIdx.map((m) => m.id),
+    });
+  }
+
+  /* ---- select all that apply (docs/proposals/multi-select.md) ---- */
+  const multis = items.filter((i): i is Extract<StudyItem, { type: 'multi' }> => i.type === 'multi');
+  // A key that marks nothing true or names a statement that is not there:
+  // the card cannot mark it, so it scores nothing (lib/multiKey).
+  const brokenKey = multis.filter((m) => !multiKey(m));
+  if (brokenKey.length) {
+    const n = brokenKey.length;
+    findings.push({
+      id: 'multi-key-broken',
+      severity: 'problem',
+      message: `${n} select-all question${n === 1 ? '’s key marks' : 's’ keys mark'} no statement true or name${n === 1 ? 's' : ''} one that isn’t there, so ${n === 1 ? 'it' : 'they'} can’t be marked.`,
+      items: brokenKey.map((m) => m.id),
+    });
+  }
+  // Every statement true: ticking them all is always right, so nothing is
+  // judged and the question tests nothing.
+  const allTrue = multis.filter((m) => !m.set_aside && (multiKey(m)?.size ?? 0) === (m.options?.length ?? 0) && (m.options?.length ?? 0) > 0);
+  if (allTrue.length) {
+    const n = allTrue.length;
+    findings.push({
+      id: 'multi-all-true',
+      severity: 'warning',
+      message: `${n} select-all question${n === 1 ? ' has' : 's have'} every statement true, so ticking them all is always right and nothing is judged.`,
+      items: allTrue.map((m) => m.id),
+    });
+  }
+  // The same number true in every one: the count becomes a clue ("it is
+  // always two"), and the question turns back into elimination. Every other
+  // one is named, so a Fix round leaves the counts varied.
+  const counted = multis.filter((m) => !m.set_aside && multiKey(m));
+  const sizes = new Set(counted.map((m) => multiKey(m)!.size));
+  if (counted.length >= 3 && sizes.size === 1) {
+    const [k] = sizes;
+    findings.push({
+      id: 'multi-same-count',
+      severity: 'warning',
+      message: `All ${counted.length} select-all questions have ${k} true statement${k === 1 ? '' : 's'}, so the count is a clue. Fix can vary how many are true.`,
+      items: counted.filter((_, n) => n % 2 === 1).map((m) => m.id),
     });
   }
 
@@ -546,6 +588,8 @@ const GROUPS: Record<string, FindingGroup> = {
   'rationale-missing': 'fix',
   'two-questions': 'fix',
   'problem-answer-mismatch': 'fix',
+  'multi-all-true': 'fix',
+  'multi-same-count': 'fix',
   'rationale-cites-source': 'fix',
   'written-list': 'fix',
   'written-many': 'fix',

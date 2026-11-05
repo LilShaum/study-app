@@ -114,7 +114,7 @@ ${makeOnlyBlock(kinds)}${teacherNotesBlock(notes)}════════ MY SO
 
 function promptOf(item: { type: string; [k: string]: unknown }): string {
   const text =
-    item.type === 'mcq'
+    item.type === 'mcq' || item.type === 'multi' || item.type === 'problem'
       ? item.question
       : item.type === 'flashcard'
         ? item.front

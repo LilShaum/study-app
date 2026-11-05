@@ -222,7 +222,8 @@ const filledSlot = mcqs.filter((m) => Array.isArray(m.distractor_rationale) && S
 check(filledSlot.length === 0, `correct answer's rationale slot left empty${filledSlot.length ? ` — ${filledSlot.map((m) => m.id).join(', ')}` : ''}`, warn);
 
 /* ---- duplicates ---- */
-const promptOf = (i) => (i.type === 'mcq' ? i.question : i.type === 'flashcard' ? i.front : i.type === 'definition' ? i.term : i.title);
+const promptOf = (i) =>
+  i.type === 'mcq' || i.type === 'multi' || i.type === 'problem' ? i.question : i.type === 'flashcard' ? i.front : i.type === 'definition' ? i.term : i.title;
 const seen = new Map();
 const dupes = [];
 for (const i of items) {
@@ -233,10 +234,10 @@ for (const i of items) {
 check(dupes.length === 0, `no two items of one type share a prompt${dupes.length ? ` — ${dupes.join(', ')}` : ''}`);
 
 /* ---- graded spine ---- */
-const graded = items.filter((i) => i.type === 'mcq' || i.type === 'flashcard');
+const graded = items.filter((i) => i.type === 'mcq' || i.type === 'multi' || i.type === 'flashcard');
 check(
   items.length === 0 || graded.length >= Math.ceil(items.length * 0.4),
-  `enough gradable items: ${graded.length}/${items.length} are MCQ or flashcard (only these are scored)`,
+  `enough gradable items: ${graded.length}/${items.length} are MCQ, select-all or flashcard (only these are scored)`,
   warn,
 );
 
@@ -277,7 +278,7 @@ if (expectedTerms && expectedTerms.length) {
    definition is shown to the student but never tested. */
 if (definitions.length) {
   const gradableTexts = items
-    .filter((i) => i.type === 'mcq' || i.type === 'flashcard')
+    .filter((i) => i.type === 'mcq' || i.type === 'multi' || i.type === 'flashcard')
     .map((i) => `${i.question ?? ''} ${i.front ?? ''} ${i.back ?? ''} ${(i.options ?? []).join(' ')} ${i.explanation ?? ''}`);
   const untested = definitions.filter((d) => !someTextCoversTerm(gradableTexts, d.term ?? ''));
   const testedPct = Math.round(((definitions.length - untested.length) / definitions.length) * 100);

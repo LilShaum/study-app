@@ -40,6 +40,30 @@ export const McqItemSchema = z.looseObject({
   distractor_rationale: z.array(z.string()).optional(),
 });
 
+/**
+ * Select all that apply: several statements about one idea, each true or
+ * false of it, so each is a judgement of its own and none can be found by
+ * striking out the rest (docs/proposals/multi-select.md). Marked all or
+ * nothing: right only when every true statement is picked and no false one.
+ *
+ * A key that is empty or names a statement that is not there still loads,
+ * as an mcq's out-of-range `correct_index` does: refusing the whole lecture
+ * over one question would cost the student every other card in it. The card
+ * then says the fault is the file's and scores nothing, and the lecture
+ * check names it (lib/courseHealth, lib/multiKey).
+ */
+export const MultiItemSchema = z.looseObject({
+  ...itemBase,
+  type: z.literal('multi'),
+  question: z.string(),
+  options: z.array(z.string()).min(3),
+  /** The indices, in `options`, of the true statements. */
+  correct: z.array(z.number().int().min(0)),
+  /** One reason per statement, in the same order: why it is true, or why it is false. */
+  option_rationale: z.array(z.string()).optional().catch(undefined),
+  explanation: z.string().optional(),
+});
+
 export const FlashcardItemSchema = z.looseObject({
   ...itemBase,
   type: z.literal('flashcard'),
@@ -127,6 +151,7 @@ export const GraphicItemSchema = z.looseObject({
 
 export const StudyItemSchema = z.discriminatedUnion('type', [
   McqItemSchema,
+  MultiItemSchema,
   FlashcardItemSchema,
   DefinitionItemSchema,
   ExampleItemSchema,
@@ -152,6 +177,7 @@ export const SectionSchema = z.looseObject({
 export const ItemCountsSchema = z
   .object({
     mcq: z.number(),
+    multi: z.number(),
     flashcard: z.number(),
     definition: z.number(),
     example: z.number(),
@@ -253,6 +279,7 @@ export type StudyItem = z.infer<typeof StudyItemSchema>;
 export type ExplainItem = z.infer<typeof ExplainItemSchema>;
 export type ItemType = StudyItem['type'];
 export type McqItem = z.infer<typeof McqItemSchema>;
+export type MultiItem = z.infer<typeof MultiItemSchema>;
 export type FlashcardItem = z.infer<typeof FlashcardItemSchema>;
 export type DefinitionItem = z.infer<typeof DefinitionItemSchema>;
 export type ExampleItem = z.infer<typeof ExampleItemSchema>;

@@ -26,7 +26,8 @@ describe('NewCourseDialog: what to make', () => {
     fireEvent.change(screen.getByRole('textbox', { name: /reply/i }), { target: { value: reply } });
     fireEvent.click(screen.getByRole('button', { name: 'Add lecture' }));
     const [added] = Object.values(useCoursesStore.getState().courses);
-    expect(added.metadata.make).toEqual(['flashcard', 'terms', 'written', 'explain', 'example', 'problem', 'graphic']);
+    // Select all that apply has its own tick, left ticked: unticking Multiple choice leaves it.
+    expect(added.metadata.make).toEqual(['multi', 'flashcard', 'terms', 'written', 'explain', 'example', 'problem', 'graphic']);
   });
 
   it('keeps nothing when every kind is left ticked', () => {

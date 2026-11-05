@@ -76,6 +76,13 @@ const NAV_HINTS: KeyHint[] = [
   { keys: ['Esc'], label: 'back' },
 ];
 
+/** A select-all question: a number ticks or unticks its statement. */
+const MULTI_HINTS: KeyHint[] = [
+  { keys: ['1', '–', '6'], label: 'tick' },
+  { keys: ['Enter'], label: 'check / next' },
+  ...NAV_HINTS,
+];
+
 const ALL_CARD_KEYS: KeyHint[] = [
   { keys: ['1', '–', '4'], label: 'select' },
   { keys: ['Space'], label: 'flip' },
@@ -109,7 +116,7 @@ function comesBackFor(item: SessionItem, lectureId: string, lecture: Course | un
 
 /** A question's explanation, from its section of its own lecture (lib/learnSteps explanationFor). */
 function ideaFor(item: SessionItem, lecture: Course | undefined): { title: string; text: string } | null {
-  if (item.type !== 'mcq' || !lecture) return null;
+  if ((item.type !== 'mcq' && item.type !== 'multi') || !lecture) return null;
   const section = lecture.sections.find((s) => s.id === item._sectionId);
   const ex = section ? explanationFor(item, section.items as SessionItem[]) : null;
   return ex ? { title: ex.title, text: ex.text } : null;
@@ -302,6 +309,7 @@ function shortName(item: SessionItem): string {
     case 'flashcard':
       return clip(item.front);
     case 'mcq':
+    case 'multi':
       return clip(item.question);
     default:
       return '';
@@ -351,7 +359,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       ? answerKind(current) === 'self'
         ? STEPS_HINTS
         : [{ keys: ['Enter'], label: 'check / next' }, ...NAV_HINTS]
-      : KEY_HINTS[mode];
+      : current?.type === 'multi'
+        ? MULTI_HINTS
+        : KEY_HINTS[mode];
   const total = useSessionStore((s) => s.total());
   const hasNext = useSessionStore((s) => s.hasNext());
   const hasPrev = useSessionStore((s) => s.hasPrev());

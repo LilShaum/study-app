@@ -68,7 +68,7 @@ export function availableModes(section: Section): {
   return {
     // Learn reads each definition and later asks for it, so it serves both.
     learn: section.items.length + count('definition'),
-    quiz: count('mcq'),
+    quiz: count('mcq') + count('multi'),
     flashcards: count('flashcard'),
     definitions: count('definition'),
     mixed: section.items.length,

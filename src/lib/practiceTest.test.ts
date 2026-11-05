@@ -210,3 +210,35 @@ describe('practice test: problems', () => {
     expect(answeredRight(p, null)).toBe(false);
   });
 });
+
+describe('a select-all question on a test', () => {
+  const multi = (id: string, extra: Record<string, unknown> = {}): StudyItem =>
+    ({ id, type: 'multi', question: `${id}?`, options: ['t1', 't2', 'f1', 'f2'], correct: [0, 1], ...extra }) as StudyItem;
+
+  it('goes on when medium or hard and its key can be trusted', () => {
+    const c = course([
+      { id: 's1', items: [multi('med', { difficulty: 'medium' }), multi('easy', { difficulty: 'easy' }), multi('old'), multi('empty', { correct: [] }), multi('outside', { correct: [0, 8] })] },
+    ]);
+    expect(testPool([{ courseId: 'c', course: c, covers: 'all' }]).map((q) => q.item.id)).toEqual(['med', 'old']);
+  });
+
+  it('is right only with every true statement ticked and no false one', () => {
+    const item = multi('m') as Extract<StudyItem, { type: 'multi' }>;
+    expect(answeredRight(item, [0, 1])).toBe(true);
+    expect(answeredRight(item, [1, 0])).toBe(true);
+    expect(answeredRight(item, [0])).toBe(false);
+    expect(answeredRight(item, [0, 1, 2])).toBe(false);
+    expect(answeredRight(item, DONT_KNOW)).toBe(false);
+    expect(answeredRight(item, null)).toBe(false);
+    expect(answeredRight(multi('broken', { correct: [] }) as Extract<StudyItem, { type: 'multi' }>, [0, 1])).toBe(false);
+  });
+
+  it('is scored with the rest, a part-right answer among the missed', () => {
+    const c = course([{ id: 's1', items: [mcq('q'), multi('m')] }]);
+    const test = testPool([{ courseId: 'c', course: c, covers: 'all' }]);
+    const answers = test.map((q) => (q.item.type === 'multi' ? [0] : 1));
+    const result = scoreTest(test, answers);
+    expect(result.got).toBe(1);
+    expect(result.missed.map((m) => [m.q.item.id, m.chose])).toEqual([['m', [0]]]);
+  });
+});

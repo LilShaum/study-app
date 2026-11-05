@@ -1,5 +1,6 @@
-import type { McqItem } from '@/schema/course';
+import type { McqItem, MultiItem } from '@/schema/course';
 import { normalisedRationale } from './mcqRationale';
+import { multiKey, multiReasons } from './multiKey';
 
 /**
  * Multiple-choice options in a new order each time a question is shown.
@@ -60,15 +61,20 @@ const lastShown = new Map<string, { seed: string; order: number[] }>();
  * other than where it was the last time the question was shown. A shuffle
  * alone gave the same order back one time in 24, and the answer in the same
  * place one time in 4: a missed question that came back as it was let the
- * student answer from where it sat (the owner, 2026-10-26). The same seed
- * gives the same order again (a re-render, or React's double call in
- * development).
+ * student answer from where it sat (the owner, 2026-10-26). A select-all
+ * question passes all its true statements, and comes back with them not
+ * all in the same places. The same seed gives the same order again (a
+ * re-render, or React's double call in development).
  */
-export function orderForShowing(id: string, options: readonly string[], correctIndex: number, seed: string): number[] {
+export function orderForShowing(id: string, options: readonly string[], correct: number | readonly number[], seed: string): number[] {
   const last = lastShown.get(id);
   if (last?.seed === seed) return last.order;
   let order = optionOrder(options, seed);
-  const moved = (o: number[]) => !last || last.order.length !== o.length || o.indexOf(correctIndex) !== last.order.indexOf(correctIndex);
+  // A select-all question's true statements, all of them: moved when they
+  // are not all where they were (lib/multiKey).
+  const keys = Array.isArray(correct) ? correct : [correct];
+  const where = (o: number[]) => keys.map((k) => o.indexOf(k)).sort((a, b) => a - b).join();
+  const moved = (o: number[]) => !last || last.order.length !== o.length || where(o) !== where(last.order);
   // A fixed order (an option that points at the others) cannot move.
   if (!fixedOrder(options)) for (let k = 1; k < 64 && !moved(order); k++) order = optionOrder(options, `${seed}/${k}`);
   lastShown.set(id, { seed, order });
@@ -89,5 +95,24 @@ export function inOrder(item: McqItem, order: readonly number[]): McqItem {
     correct_index: order.indexOf(item.correct_index),
     // Notes that cannot be placed are dropped rather than moved to the wrong option.
     distractor_rationale: notes ? order.map((i) => notes[i]) : undefined,
+  };
+}
+
+/**
+ * A select-all question with its statements in `order`, its key and its
+ * reasons following. A broken key is left as it is, for the card to report;
+ * reasons that cannot be placed are dropped rather than moved to the wrong
+ * statement (lib/multiKey).
+ */
+export function multiInOrder(item: MultiItem, order: readonly number[]): MultiItem {
+  const options = item.options ?? [];
+  const key = multiKey(item);
+  if (order.length !== options.length || !key) return item;
+  const reasons = multiReasons(item);
+  return {
+    ...item,
+    options: order.map((i) => options[i]),
+    correct: [...key].map((i) => order.indexOf(i)).sort((a, b) => a - b),
+    option_rationale: reasons ? order.map((i) => reasons[i]) : undefined,
   };
 }

@@ -7,10 +7,13 @@ import type { Course } from '@/schema/course';
  * just want flash cards for example they will just get flash cards").
  * Fewer kinds is also a shorter reply, so less of the AI's usage.
  */
-export type MakeKind = 'mcq' | 'flashcard' | 'terms' | 'written' | 'explain' | 'example' | 'problem' | 'graphic';
+export type MakeKind = 'mcq' | 'multi' | 'flashcard' | 'terms' | 'written' | 'explain' | 'example' | 'problem' | 'graphic';
 
 export const MAKE_KINDS: { value: MakeKind; label: string }[] = [
   { value: 'mcq', label: 'Multiple choice' },
+  // Its own tick, so a student who does not want them gets none
+  // (docs/proposals/multi-select.md).
+  { value: 'multi', label: 'Select all that apply' },
   { value: 'flashcard', label: 'Flashcards' },
   { value: 'terms', label: 'Terms to name' },
   { value: 'written', label: 'Written answers' },
@@ -36,6 +39,7 @@ export function storedKinds(kinds: readonly MakeKind[]): MakeKind[] | undefined 
 /** How each kind appears in the lecture file, for the model. */
 const AS_FILE: Record<MakeKind, string> = {
   mcq: '`mcq` items (multiple choice)',
+  multi: '`multi` items (select all that apply)',
   flashcard: 'plain one-fact `flashcard` items',
   terms: '`definition` items (terms the student names from their meaning)',
   written: 'written-answer flashcards (a back of numbered points, or tagged short-answer or long-answer)',
@@ -48,6 +52,7 @@ const AS_FILE: Record<MakeKind, string> = {
 /** Where what a missing kind would have taught goes instead. */
 const INSTEAD: Record<MakeKind, string> = {
   mcq: 'what a multiple-choice question would test (applying, telling apart, predicting) is asked by the kinds kept, a flashcard where there is one',
+  multi: 'what a select-all question would test (several things true of one idea, told from what is true of its neighbour) is asked by the kinds kept, a multiple-choice question on each where there is one',
   flashcard: 'a fact a flashcard would ask is asked by the kinds kept',
   terms:
     'a term is taught and asked through the kinds kept (a flashcard "What is …?" or a question that uses it); leave `metadata.inventory.terms` empty and list each term under `inventory.mentioned`',

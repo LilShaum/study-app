@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
-import type { Difficulty, McqItem, StudyItem } from '@/schema/course';
+import type { Difficulty, McqItem, MultiItem, StudyItem } from '@/schema/course';
 import { normalisedRationale } from '@/lib/mcqRationale';
+import { multiReasons } from '@/lib/multiKey';
 
 interface EditItemFormProps {
   item: StudyItem;
@@ -145,14 +146,108 @@ function McqOptions({ draft, onChange }: { draft: McqDraft; onChange: (d: McqDra
   );
 }
 
+/** A select-all question's statements as edited: each with whether it is true and its reason. */
+interface MultiDraft {
+  options: string[];
+  correct: boolean[];
+  reasons: string[];
+}
+
+/** The schema's floor and the contract's range for a select-all question's statements. */
+const MIN_STATEMENTS = 3;
+const MAX_STATEMENTS = 8;
+
+function initialMultiDraft(item: MultiItem): MultiDraft {
+  const options = [...(item.options ?? [])];
+  const correct = new Set(item.correct ?? []);
+  const reasons = multiReasons(item);
+  return {
+    options,
+    correct: options.map((_, i) => correct.has(i)),
+    reasons: reasons ? [...reasons] : options.map(() => ''),
+  };
+}
+
+/**
+ * The statements of one select-all question, each with a tick for true and
+ * its reason. Controlled for the same reason as McqOptions: removing a
+ * statement moves its tick and its reason with it, or the key and the reasons
+ * would describe the statement after it.
+ */
+function MultiStatementsEditor({ draft, onChange }: { draft: MultiDraft; onChange: (d: MultiDraft) => void }) {
+  const { options, correct, reasons } = draft;
+  const set = (i: number, patch: { option?: string; correct?: boolean; reason?: string }) =>
+    onChange({
+      options: options.map((o, n) => (n === i && patch.option !== undefined ? patch.option : o)),
+      correct: correct.map((c, n) => (n === i && patch.correct !== undefined ? patch.correct : c)),
+      reasons: reasons.map((r, n) => (n === i && patch.reason !== undefined ? patch.reason : r)),
+    });
+  const add = () => {
+    if (options.length >= MAX_STATEMENTS) return;
+    onChange({ options: [...options, ''], correct: [...correct, false], reasons: [...reasons, ''] });
+  };
+  const remove = (i: number) => {
+    if (options.length <= MIN_STATEMENTS) return;
+    const keep = (_: unknown, n: number) => n !== i;
+    onChange({ options: options.filter(keep), correct: correct.filter(keep), reasons: reasons.filter(keep) });
+  };
+  const trueCount = correct.filter(Boolean).length;
+  return (
+    <>
+      <div className="space-y-3">
+        {options.map((opt, i) => (
+          <div key={i} className="space-y-1.5 border-b border-border-light pb-3">
+            <div className="flex items-end gap-2">
+              <div className="min-w-0 flex-1">
+                <Field label={`Statement ${i + 1}`}>
+                  <input value={opt} onChange={(e) => set(i, { option: e.target.value })} className={inputClass} aria-label={`Statement ${i + 1}`} />
+                </Field>
+              </div>
+              <button
+                type="button"
+                onClick={() => remove(i)}
+                disabled={options.length <= MIN_STATEMENTS}
+                aria-label={`Remove statement ${i + 1}`}
+                title={options.length <= MIN_STATEMENTS ? 'A question needs at least three statements' : 'Remove this statement'}
+                className="press mb-1.5 disabled:opacity-40"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <label className="tap-safe flex cursor-pointer items-center gap-2 text-sm text-text">
+              <input type="checkbox" checked={!!correct[i]} onChange={(e) => set(i, { correct: e.target.checked })} className="accent-accent" />
+              True
+            </label>
+            <Field label={correct[i] ? 'Why it is true' : 'Why it is false'}>
+              <input value={reasons[i] ?? ''} onChange={(e) => set(i, { reason: e.target.value })} className={inputClass} />
+            </Field>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="button" onClick={add} disabled={options.length >= MAX_STATEMENTS} className="press">
+          + Add statement
+        </button>
+        {(trueCount === 0 || trueCount === options.length) && (
+          <span className="text-xs text-text-3">Mark at least one statement true and one false.</span>
+        )}
+      </div>
+    </>
+  );
+}
+
 function TypeFields({
   item,
   mcqDraft,
   onMcqChange,
+  multiDraft,
+  onMultiChange,
 }: {
   item: StudyItem;
   mcqDraft: McqDraft;
   onMcqChange: (d: McqDraft) => void;
+  multiDraft: MultiDraft;
+  onMultiChange: (d: MultiDraft) => void;
 }) {
   switch (item.type) {
     case 'mcq':
@@ -162,6 +257,18 @@ function TypeFields({
             <textarea name="question" defaultValue={item.question} rows={2} className={inputClass} />
           </Field>
           <McqOptions draft={mcqDraft} onChange={onMcqChange} />
+          <Field label="Explanation">
+            <textarea name="explanation" defaultValue={item.explanation} rows={2} className={inputClass} />
+          </Field>
+        </>
+      );
+    case 'multi':
+      return (
+        <>
+          <Field label="Question">
+            <textarea name="question" defaultValue={item.question} rows={2} className={inputClass} />
+          </Field>
+          <MultiStatementsEditor draft={multiDraft} onChange={onMultiChange} />
           <Field label="Explanation">
             <textarea name="explanation" defaultValue={item.explanation} rows={2} className={inputClass} />
           </Field>
@@ -286,6 +393,9 @@ export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
   const [mcqDraft, setMcqDraft] = useState<McqDraft>(() =>
     item.type === 'mcq' ? initialMcqDraft(item) : { options: [], correctIndex: 0, rationale: undefined },
   );
+  const [multiDraft, setMultiDraft] = useState<MultiDraft>(() =>
+    item.type === 'multi' ? initialMultiDraft(item) : { options: [], correct: [], reasons: [] },
+  );
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -313,6 +423,19 @@ export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
           // it arrived in, since that is the only one that stays correct
           // through an add or a remove.
           ...(rationale ? { distractor_rationale: rationale } : {}),
+        };
+        break;
+      }
+      case 'multi': {
+        const { options, correct, reasons } = multiDraft;
+        updated = {
+          ...item,
+          question: str('question'),
+          options,
+          correct: correct.flatMap((c, i) => (c ? [i] : [])),
+          explanation: str('explanation'),
+          // One per statement, in order, as the contract asks; none when every one is blank.
+          option_rationale: reasons.some((r) => r.trim()) ? reasons.map((r) => r.trim()) : undefined,
         };
         break;
       }
@@ -375,7 +498,7 @@ export function EditItemForm({ item, onSave, onCancel }: EditItemFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-border-strong bg-surface p-5">
-      <TypeFields item={item} mcqDraft={mcqDraft} onMcqChange={setMcqDraft} />
+      <TypeFields item={item} mcqDraft={mcqDraft} onMcqChange={setMcqDraft} multiDraft={multiDraft} onMultiChange={setMultiDraft} />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Difficulty">
           <select name="difficulty" defaultValue={item.difficulty ?? ''} className={inputClass}>

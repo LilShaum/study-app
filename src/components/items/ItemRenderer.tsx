@@ -1,6 +1,7 @@
 import type { AnyItem } from '@/lib/buildSessionItems';
 import type { Grade } from '@/lib/memory';
 import { McqCard } from './McqCard';
+import { MultiCard } from './MultiCard';
 import { FlashcardCard, type ComesBack } from './FlashcardCard';
 import { DefinitionCard } from './DefinitionCard';
 import { ExampleCard } from './ExampleCard';
@@ -72,6 +73,10 @@ export function ItemRenderer({
     case 'mcq':
       return (
         <McqCard item={item} onAnswered={onAnswered} onNext={onNext} keyboardEnabled={keyboardEnabled} frame={frame} learning={learning} idea={idea} />
+      );
+    case 'multi':
+      return (
+        <MultiCard item={item} onAnswered={onAnswered} onNext={onNext} keyboardEnabled={keyboardEnabled} frame={frame} learning={learning} idea={idea} />
       );
     case 'flashcard':
       return (

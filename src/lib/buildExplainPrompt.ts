@@ -9,7 +9,7 @@ const MAX_QUESTIONS_PER_SECTION = 60;
 const MAX_EXCERPTS_PER_SECTION = 40;
 
 function questionOf(item: StudyItem): string | null {
-  if (item.type === 'mcq') return item.question;
+  if (item.type === 'mcq' || item.type === 'multi') return item.question;
   if (item.type === 'flashcard') return item.front;
   return null;
 }

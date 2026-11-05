@@ -26,6 +26,7 @@ interface NewCourseDialogProps {
 
 const TYPE_LABELS: Record<string, string> = {
   mcq: 'MCQ',
+  multi: 'select-all question',
   flashcard: 'flashcard',
   definition: 'definition',
   example: 'example',

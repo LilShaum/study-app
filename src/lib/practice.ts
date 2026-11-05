@@ -91,7 +91,7 @@ function listOf(basis: CountBasis, cards: Cards, kind: Kind, minutes: number, pa
   return buildSessionItems(course, s.mode, { progress, now, exam, minutes, pace, sectionId, onlyIds, kind: s.kind, missedIds });
 }
 
-const answered = (i: { type: string }) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall' || i.type === 'problem';
+const answered = (i: { type: string }) => i.type === 'mcq' || i.type === 'multi' || i.type === 'flashcard' || i.type === 'recall' || i.type === 'problem';
 
 /** The cards a choice would give in one lecture to answer, all of them (unlimited minutes is how the app counts everything due). */
 export function practiceCount(basis: CountBasis, cards: Cards, kind: Kind): number {

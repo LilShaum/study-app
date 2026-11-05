@@ -192,7 +192,7 @@ export function fileItemOf(item: SessionItem): string {
 }
 
 const isGradable = (item: SessionItem) =>
-  item.type === 'mcq' || item.type === 'flashcard' || item.type === 'recall' || item.type === 'problem';
+  item.type === 'mcq' || item.type === 'multi' || item.type === 'flashcard' || item.type === 'recall' || item.type === 'problem';
 
 /** Ephemeral, in-memory only — an active study session is not persisted. */
 /**

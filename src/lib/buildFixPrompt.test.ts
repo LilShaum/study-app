@@ -163,3 +163,20 @@ describe('what the teacher said, kept on the lecture', () => {
     }
   });
 });
+
+describe('Fix: select all that apply', () => {
+  const multi = (id: string, correct: number[]): StudyItem =>
+    ({ id, type: 'multi', question: `Which are true of ${id}?`, options: ['a', 'b', 'c', 'd'], correct, option_rationale: ['w', 'x', 'y', 'z'], explanation: 'e', source_excerpt: 'from the notes' }) as StudyItem;
+
+  it('asks for a broken key first, then the all-true one, each with what to do', () => {
+    const plan = planFixes(course([multi('all', [0, 1, 2, 3]), multi('broken', [])]));
+    expect(plan.faultyItems.map((f) => [f.item.id, f.faults])).toEqual([
+      ['broken', ['multi-key-broken']],
+      ['all', ['multi-all-true']],
+    ]);
+    const prompt = buildFixPrompt(course([multi('all', [0, 1, 2, 3]), multi('broken', [])]));
+    expect(prompt).toMatch(/its `correct` list is empty or names a statement that is not in `options`/);
+    expect(prompt).toMatch(/every statement is marked true/);
+    expect(prompt).toMatch(/Every `multi` needs four to six `options`/);
+  });
+});

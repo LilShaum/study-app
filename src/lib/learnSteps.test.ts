@@ -542,3 +542,43 @@ describe('explanationFor: the idea a question rests on', () => {
     expect(explanationFor(q('Which ion channel carries sodium in neurons during spikes?'), [cyclic, calcium])).toBeNull();
   });
 });
+
+describe('Learn: select all that apply', () => {
+  const multi = (id: string, question: string, options: string[], correct: number[], difficulty = 'medium'): StudyItem =>
+    ({ id, type: 'multi', question, options, correct, explanation: 'because', difficulty }) as StudyItem;
+
+  it('is Apply at any difficulty, with the medium and hard multiple choice, after reading and recall', () => {
+    const easy = { ...mcq('easy', 'Which enzyme turns ATP into cAMP?'), difficulty: 'easy' } as StudyItem;
+    const hard = { ...mcq('hard', 'Why does blocking the enzyme stop the signal?'), difficulty: 'hard' } as StudyItem;
+    const m = multi('m', 'Which are true of the enzyme that makes the second messenger?', ['It uses ATP', 'It is a kinase', 'It makes cAMP', 'It binds calcium'], [0, 2], 'easy');
+    const items = learn([defs[0], m, hard, card('f', 'What does the enzyme make from ATP?'), easy]);
+    expect(phaseOf('multi')).toBe('apply');
+    expect(phaseOfItem(items.find((i) => i.id === 'm')!)).toBe('apply');
+    const at = (id: string) => items.findIndex((i) => i.id === id);
+    // Read, then recall easy to hard, then the questions that apply.
+    expect(at('easy')).toBeLessThan(at('f'));
+    expect(at('f')).toBeLessThan(at(recallId('d0')));
+    expect(at(recallId('d0'))).toBeLessThan(at('m'));
+    expect(items.find((i) => i.id === 'm')?._phase).toBe('apply');
+  });
+
+  it('is placed by the terms its question and its true statements use, not by a false one', () => {
+    // A false statement names a later step's term (the neighbour's property):
+    // the question still belongs with the term it is about.
+    const m = multi('m', 'Which are true of Gs protein?', ['It switches on the enzyme', 'It binds GTP', 'It is switched on by Calmodulin', 'It is a kind of Protein kinase C'], [0, 1]);
+    // A question in each step, so each keeps its own (withQuestions).
+    const each = [mcq('early', 'What does Adenylyl cyclase make?'), mcq('late', 'What does Diacylglycerol switch on?')];
+    const items = learn([...defs, ...each, m]);
+    expect(stepOf(items, 'early')).toBe(0);
+    expect(stepOf(items, 'late')).toBe(1);
+    expect(stepOf(items, 'm')).toBe(0);
+    // With a true statement naming the later term, it waits for that term.
+    const later = multi('m2', 'Which are true of Gs protein?', ['It switches on the enzyme', 'It works alongside Calmodulin', 'It is a kinase', 'It binds calcium'], [0, 1]);
+    expect(stepOf(learn([...defs, ...each, later]), 'm2')).toBe(1);
+  });
+
+  it('is asked in a multiple-choice sitting and in Practice under Multiple choice', () => {
+    const m = multi('m', 'Which are true of Gs protein?', ['a1', 'a2', 'a3', 'a4'], [0]);
+    expect(buildSessionItems(course([defs[0], mcq('q', 'What?'), m, card('f', 'F?')]), 'quiz').map((i) => i.id)).toEqual(['q', 'm']);
+  });
+});

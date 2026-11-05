@@ -20,8 +20,11 @@ const CORRECTABLE = [
   // The student's own verdict while studying comes first: they met it.
   'student-flagged',
   'correct-index-out-of-range',
+  'multi-key-broken',
   'problem-answer-mismatch',
   'option-count',
+  'multi-all-true',
+  'multi-same-count',
   'rationale-misaligned',
   'rationale-missing',
   'two-questions',
@@ -43,6 +46,12 @@ const FAULT_LABELS: Record<string, string> = {
   'student-flagged':
     'I marked it as wrong or badly written while studying: check it against my notes and rewrite it, or tell me it should go',
   'correct-index-out-of-range': 'the answer key points outside the options, so no option can be marked correct',
+  'multi-key-broken':
+    'its `correct` list is empty or names a statement that is not in `options`, so it cannot be marked. Judge each statement against my notes and list the 0-based indices of the true ones, keeping at least one true and one false, with `option_rationale` saying why each is true or false',
+  'multi-all-true':
+    'every statement is marked true, so ticking them all is always right and nothing is judged. Keep the id and the true statements that matter most; replace one or two with false statements a student who studied might believe (the neighbour\'s property, the fact turned round, the limiting word swapped, the one detail off), and update `correct` and `option_rationale` to match',
+  'multi-same-count':
+    'every select-all question in this lecture has the same number of true statements, so the count is a clue. Rework this one so a different number of its statements are true (at least one true and at least one false), from my notes, keeping the id, and update `correct` and `option_rationale` to match',
   'problem-answer-mismatch':
     'its answer is a number that none of its worked steps reaches, so the answer or the working is wrong. Work it again from the question alone, as a student would, and correct whichever is wrong, keeping the id; check its `mistakes` still follow from their mistakes',
   'rationale-misaligned': "the distractor_rationale array isn't index-aligned with the options",
@@ -321,6 +330,10 @@ Both keys are optional — send only the ones you have something for.
 - Every \`mcq\` needs exactly four \`options\`, a 0-based \`correct_index\`, an
   \`explanation\`, and a \`distractor_rationale\` with one entry per option in the
   same order, with an empty string in the correct answer's slot.
+- Every \`multi\` needs four to six \`options\` (statements), a \`correct\` list of
+  the 0-based indices of the true ones (at least one true and at least one
+  false), an \`explanation\`, and an \`option_rationale\` with one reason per
+  statement in the same order: why it is true, or why it is false.
 - A corrected question must still pass the rules below. Fixing a broken key by
   adding a long, qualified right answer beside three short wrong ones swaps one
   fault for another.

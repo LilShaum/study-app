@@ -4,13 +4,14 @@ import { useCoursesStore } from '@/store/courses';
 import { recordAnswers } from '@/store/session';
 import { isMissed, useProgressStore } from '@/store/progress';
 import { classExams, lecturesOf } from '@/lib/classExams';
-import { answeredRight, DONT_KNOW, drawTest, isProblem, isWritten, lecturesIn, scoreTest, testPool, TEST_LENGTHS, type CheckedProblem, type TestAnswer, type TestQuestion, type TestScope } from '@/lib/practiceTest';
+import { answeredRight, DONT_KNOW, drawTest, isMulti, isMultiAnswer, isProblem, isWritten, lecturesIn, scoreTest, testPool, TEST_LENGTHS, type CheckedProblem, type TestAnswer, type TestQuestion, type TestScope } from '@/lib/practiceTest';
+import { multiKey, multiReasons, pickedList, statementsRight } from '@/lib/multiKey';
 import { answerKind, checkAnswer, shownAnswer, unitOf } from '@/lib/problemAnswer';
 import { answerPoints } from '@/lib/answerPoints';
 import { optionOrder } from '@/lib/optionOrder';
 import { termPicked } from '@/lib/mixUps';
 import { onlyStudies, studiesIn } from '@/lib/studies';
-import type { Course } from '@/schema/course';
+import type { Course, MultiItem } from '@/schema/course';
 import { normalisedRationale } from '@/lib/mcqRationale';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { SourceNote } from '@/components/items/SourceNote';
@@ -19,6 +20,7 @@ import { explanationFor } from '@/lib/learnSteps';
 import type { SessionItem } from '@/lib/buildSessionItems';
 import { CodeBlock, RichText } from '@/components/items/RichText';
 import { SolutionSteps } from '@/components/items/ProblemCard';
+import { MultiStatements } from '@/components/items/MultiCard';
 
 /**
  * "/study/:id/test" (one lecture, `?section=` for one section) and
@@ -152,7 +154,11 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
         test.push(q);
         const a = saved.answers[i];
         const ok =
-          q.item.type === 'mcq' ? typeof a === 'number' && a >= DONT_KNOW && a < q.item.options.length : typeof a === 'string' || a === DONT_KNOW;
+          q.item.type === 'mcq'
+            ? typeof a === 'number' && a >= DONT_KNOW && a < q.item.options.length
+            : q.item.type === 'multi'
+              ? a === DONT_KNOW || isMultiAnswer(a, q.item.options.length)
+              : typeof a === 'string' || a === DONT_KNOW;
         answers.push(ok ? a : null);
         answeredAt.push(ok ? (saved.answeredAt?.[i] ?? saved.savedAt ?? null) : null);
         // Ticks only while the card still has that many points.
@@ -299,7 +305,7 @@ function TestRun({ storageKey, pool, header, back, practiceTo }: { storageKey: s
           // A question still marked "?" when handed in was not sure, as on
           // paper; any other answered multiple choice was. Logged, not
           // scheduled on (docs/proposals/understanding.md).
-          const sure = q.item.type === 'mcq' && chose !== DONT_KNOW ? !flagged[i] : undefined;
+          const sure = (q.item.type === 'mcq' || q.item.type === 'multi') && chose !== DONT_KNOW ? !flagged[i] : undefined;
           return [{ courseId: q.courseId, item: q.item, got, sure }];
         }),
       );
@@ -464,7 +470,8 @@ const TEST_KINDS: { value: TestKind; label: string }[] = [
   { value: 'problem', label: 'Problems' },
   { value: 'written', label: 'Written answers' },
 ];
-const kindOfQuestion = (q: TestQuestion): TestKind => (q.item.type === 'mcq' ? 'mcq' : q.problem ? 'problem' : 'written');
+/** Select all that apply is multiple choice to the student: options to pick from (docs/proposals/multi-select.md). */
+const kindOfQuestion = (q: TestQuestion): TestKind => (q.item.type === 'mcq' || q.item.type === 'multi' ? 'mcq' : q.problem ? 'problem' : 'written');
 /** Exam pace, as a suggestion only: a multiple-choice question, a problem, an answer to write. */
 const PACE_SECONDS: Record<TestKind, number> = { mcq: 75, problem: 180, written: 300 };
 
@@ -714,7 +721,7 @@ function Taking({
   const [pages, setPages] = useState(false);
   const blank = typeof chosen === 'string' ? !chosen.trim() : chosen == null;
   // Shown in the test's own order; answers are kept by the file's index.
-  const options = useMemo(() => (q.item.type === 'mcq' ? q.item.options : []), [q]);
+  const options = useMemo(() => (q.item.type === 'mcq' || q.item.type === 'multi' ? q.item.options : []), [q]);
   const rationales = useMemo(() => (q.item.type === 'mcq' ? normalisedRationale(q.item) : null), [q]);
   const order = useMemo(() => optionOrder(options, `${seed}/${q.courseId}/${q.item.id}`), [options, q, seed]);
   // A written answer is checked by hand, once something is written; a problem by the checker.
@@ -725,7 +732,7 @@ function Taking({
     // that control says, and arrows inside the options are the options'
     // own; only an option or the page itself moves the test on.
     const focus = e.target instanceof HTMLElement ? e.target : null;
-    const inOptions = !!focus?.closest('[role=radiogroup]');
+    const inOptions = !!focus?.closest('[role=radiogroup], [data-statements]');
     if (e.key === 'Enter' && focus?.closest('button, a') && !inOptions) return;
     if (focus?.closest('textarea')) return;
     if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && inOptions) return;
@@ -733,6 +740,10 @@ function Taking({
     if (q.item.type === 'mcq' && !shown && Number.isInteger(n) && n >= 1 && n <= order.length) {
       e.preventDefault();
       onPick(order[n - 1], true);
+    } else if (q.item.type === 'multi' && !shown && Number.isInteger(n) && n >= 1 && n <= order.length) {
+      // A number ticks or unticks its statement; nothing is marked until the end.
+      e.preventDefault();
+      onPick(toggled(chosen, order[n - 1]));
     } else if (e.key === 'Enter' || e.key === 'ArrowRight') {
       e.preventDefault();
       if (toCheck) onCheck();
@@ -793,6 +804,8 @@ function Taking({
           onPick={onPick}
           onSubmit={toCheck ? onCheck : onNext}
         />
+      ) : isMulti(q.item) ? (
+        <MultiAsk item={q.item} chosen={chosen} order={order} shown={shown} onPick={onPick} />
       ) : isWritten(q.item) ? (
         <>
           <div className="prose-set mt-4 text-heading text-text">
@@ -913,6 +926,78 @@ function Taking({
 }
 
 const PROBLEM_FORM = 'test-problem';
+
+/** A select-all answer with one statement ticked or unticked; nothing ticked is no answer. */
+function toggled(chosen: TestAnswer, k: number): TestAnswer {
+  const now = new Set(Array.isArray(chosen) ? chosen : []);
+  if (now.has(k)) now.delete(k);
+  else now.add(k);
+  return now.size ? pickedList(now) : null;
+}
+
+/**
+ * Select all that apply, asked in a test: the statements to tick, in the
+ * test's order, kept by the file's index; nothing marked until the end, as
+ * every question there. How many are true is never said.
+ */
+function MultiAsk({
+  item,
+  chosen,
+  order,
+  shown,
+  onPick,
+}: {
+  item: MultiItem;
+  chosen: TestAnswer;
+  /** Entry k is the file index of the statement shown k-th (lib/optionOrder). */
+  order: number[];
+  shown: boolean;
+  onPick: (a: TestAnswer, andCheck?: boolean) => void;
+}) {
+  const key = multiKey(item);
+  const reasons = multiReasons(item);
+  const at = (k: number) => order.indexOf(k);
+  return (
+    <>
+      <div className="prose-set mt-4 text-heading text-text">
+        <RichText text={item.question} />
+      </div>
+      <p className="mt-1 text-small text-text-3">Select all that apply.</p>
+      <div className="mt-3">
+        <MultiStatements
+          options={order.map((k) => item.options[k])}
+          trueOnes={key ? new Set([...key].map(at)) : null}
+          picked={new Set(Array.isArray(chosen) ? chosen.map(at) : [])}
+          marked={shown}
+          reasons={reasons ? order.map((k) => reasons[k]) : undefined}
+          dontKnow={chosen === DONT_KNOW}
+          onToggle={shown ? undefined : (i) => onPick(toggled(chosen, order[i]))}
+        />
+      </div>
+      {shown && <MultiMarked item={item} chosen={chosen} />}
+    </>
+  );
+}
+
+/** A select-all question marked as it was answered: right, or how many statements were, with the explanation. */
+function MultiMarked({ item, chosen }: { item: MultiItem; chosen: TestAnswer }) {
+  const key = multiKey(item);
+  const n = item.options.length;
+  const right = !!key && Array.isArray(chosen) && statementsRight(key, chosen, n) === n;
+  return (
+    <div className="mt-4" aria-live="polite">
+      <p className={`font-medium ${chosen === DONT_KNOW ? 'text-text' : right ? 'text-success' : 'text-error'}`}>
+        {right
+          ? '✓ Correct'
+          : chosen === DONT_KNOW || !key
+            ? 'The true statements are marked ✓.'
+            : `✗ Not this time: ${statementsRight(key, Array.isArray(chosen) ? chosen : [], n)} of ${n} statements right.`}
+      </p>
+      {item.explanation && <p className="mt-1 text-sm text-text-2"><RichText text={item.explanation} /></p>}
+      <SourceNote excerpt={item.source_excerpt} open={!right} />
+    </div>
+  );
+}
 
 /** Answered: an option, I don't know, or something written. */
 function isAnswered(a: TestAnswer | undefined): boolean {
@@ -1199,7 +1284,9 @@ function Results({
     const ex = section ? explanationFor(q.item as SessionItem, section.items as SessionItem[]) : null;
     return ex ? { title: ex.title, text: ex.text } : null;
   };
-  const unsureRight = test.filter((q, n) => q.item.type === 'mcq' && flagged[n] && answers[n] === q.item.correct_index);
+  const unsureRight = test.flatMap((q, n) =>
+    (q.item.type === 'mcq' || q.item.type === 'multi') && flagged[n] && answeredRight(q.item, answers[n] ?? null) ? [{ q, chose: answers[n] }] : [],
+  );
   const result = useMemo(() => scoreTest(test, answers, marks), [test, answers, marks]);
   const pct = result.total ? Math.round((result.got / result.total) * 100) : 0;
   const lectures = new Set(test.map((q) => q.courseId)).size;
@@ -1314,6 +1401,41 @@ function Results({
                   </li>
                 );
               }
+              if (isMulti(q.item)) {
+                const key = multiKey(q.item);
+                const ticked = Array.isArray(chose) ? chose : [];
+                const n = q.item.options.length;
+                return (
+                  <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
+                    {where}
+                    <div className="prose-set mt-1 text-body text-text"><RichText text={q.item.question} /></div>
+                    <div className="mt-2 text-small text-error">
+                      {chose === DONT_KNOW
+                        ? 'You didn’t know'
+                        : !ticked.length || !key
+                          ? 'No answer'
+                          : `✗ ${statementsRight(key, ticked, n)} of ${n} statements right`}
+                    </div>
+                    <div className="mt-2">
+                      <MultiStatements
+                        options={q.item.options}
+                        trueOnes={key}
+                        picked={new Set(ticked)}
+                        marked
+                        reasons={multiReasons(q.item)}
+                        dontKnow={!ticked.length}
+                      />
+                    </div>
+                    {q.item.explanation && (
+                      <div className="mt-2 text-small text-text-2">
+                        <RichText text={q.item.explanation} />
+                      </div>
+                    )}
+                    <IdeaNote idea={ideaOf(q)} open />
+                    <SourceNote excerpt={q.item.source_excerpt} open />
+                  </li>
+                );
+              }
               const why = typeof chose === 'number' ? normalisedRationale(q.item)?.[chose] : undefined;
               return (
                 <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
@@ -1345,16 +1467,28 @@ function Results({
               it (Butler, Karpicke & Roediger 2008): the why, as for a miss. */}
           <p className="mb-2 text-small text-text-3">You were not sure of these. Here is why each is right.</p>
           <ol className="border-t border-border">
-            {unsureRight.map((q) => (
+            {unsureRight.map(({ q, chose }) => (
               <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
                 <div className="text-xs text-text-3">{q.section}</div>
                 <div className="prose-set mt-1 text-body text-text">
-                  <RichText text={q.item.type === 'mcq' ? q.item.question : ''} />
+                  <RichText text={q.item.type === 'mcq' || q.item.type === 'multi' ? q.item.question : ''} />
                 </div>
                 {q.item.type === 'mcq' && (
                   <div className="mt-2 text-small text-success">✓ {q.item.options[q.item.correct_index]}</div>
                 )}
-                {q.item.type === 'mcq' && q.item.explanation && (
+                {/* Every statement with why it is true or false: each was a judgement, and each was right. */}
+                {q.item.type === 'multi' && (
+                  <div className="mt-2">
+                    <MultiStatements
+                      options={q.item.options}
+                      trueOnes={multiKey(q.item)}
+                      picked={new Set(Array.isArray(chose) ? chose : [])}
+                      marked
+                      reasons={multiReasons(q.item)}
+                    />
+                  </div>
+                )}
+                {(q.item.type === 'mcq' || q.item.type === 'multi') && q.item.explanation && (
                   <div className="mt-1 text-small text-text-2">
                     <RichText text={q.item.explanation} />
                   </div>

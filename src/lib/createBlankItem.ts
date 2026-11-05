@@ -5,6 +5,8 @@ export function createBlankItem(type: ItemType, id: string): StudyItem {
   switch (type) {
     case 'mcq':
       return { id, type, question: '', options: ['', '', '', ''], correct_index: 0, explanation: '' };
+    case 'multi':
+      return { id, type, question: '', options: ['', '', '', ''], correct: [0], option_rationale: ['', '', '', ''], explanation: '' };
     case 'flashcard':
       return { id, type, front: '', back: '' };
     case 'definition':

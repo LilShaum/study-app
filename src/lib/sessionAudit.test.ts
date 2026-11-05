@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CourseSchema, type Course } from '@/schema/course';
 import { buildSessionItems } from './buildSessionItems';
 import { auditSession, formatAudit, formatWalk } from './sessionAudit';
+import { phaseOf } from './learnSteps';
 
 /**
  * The order a student meets, held on the test lectures
@@ -35,6 +36,29 @@ describe.each(COURSES)('a sitting of %s', (name) => {
     });
     it(`${mode}: asks more than it reads`, () => {
       expect(audit.readingShare).toBeLessThan(0.5);
+    });
+  }
+});
+
+// The lecture with explanations has two select-all questions; it reads more
+// than it asks by design, so it is held to the order rules, not that share.
+describe('a sitting with select-all questions', () => {
+  const course = load('explained');
+  for (const [mode, items] of [
+    ['learn', buildSessionItems(course, 'learn', { now: NOW })],
+    ['today', buildSessionItems(course, 'today', { now: NOW, minutes: 60, progress: {} })],
+  ] as const) {
+    it(`${mode}: asks each in Apply after its step's reading, and keeps the order rules`, () => {
+      for (const id of ['m1', 'm2']) {
+        const at = items.findIndex((i) => i.id === id);
+        expect(at).toBeGreaterThan(0);
+        expect(items[at]._phase).toBe('apply');
+        expect(items.slice(at + 1).some((i) => i._block === items[at]._block && phaseOf(i.type) === 'read')).toBe(false);
+      }
+      const audit = auditSession(items);
+      expect(audit.giveawaysAsked).toEqual([]);
+      expect(audit.shownThenAsked).toBe(0);
+      expect(audit.sameFactInStep).toEqual([]);
     });
   }
 });

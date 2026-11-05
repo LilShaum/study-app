@@ -225,15 +225,19 @@ export interface SessionOptions {
 
 export type CardKind = 'questions' | 'flashcards' | 'terms' | 'problems';
 
-/** The file item type each kind keeps (a term is a definition until a mode asks for it). */
-const KIND_TYPE: Record<CardKind, StudyItem['type']> = {
-  questions: 'mcq',
-  flashcards: 'flashcard',
-  terms: 'definition',
-  problems: 'problem',
+/**
+ * The file item types each kind keeps (a term is a definition until a mode
+ * asks for it). Questions are multiple choice of both sorts: one answer, or
+ * select all that apply (docs/proposals/multi-select.md).
+ */
+const KIND_TYPES: Record<CardKind, readonly AnyItem['type'][]> = {
+  questions: ['mcq', 'multi'],
+  flashcards: ['flashcard'],
+  terms: ['definition'],
+  problems: ['problem'],
 };
 
-const isGradable = (i: AnyItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall' || i.type === 'problem';
+const isGradable = (i: AnyItem) => i.type === 'mcq' || i.type === 'multi' || i.type === 'flashcard' || i.type === 'recall' || i.type === 'problem';
 
 /**
  * Order the items as a taught sequence rather than a filter.
@@ -371,7 +375,7 @@ export function buildSessionItems(
   // Before the mode turns definitions into typed recall, and right-answered
   // questions into typed questions, so each kind keeps what it was.
   if (kind && (mode === 'review' || mode === 'weakest' || mode === 'missed')) {
-    items = items.filter((i) => i.type === KIND_TYPE[kind]);
+    items = items.filter((i) => KIND_TYPES[kind].includes(i.type));
   }
 
   const ranges = new Map(course.sections.filter((s) => s.source_range?.trim()).map((s) => [s.id, s.source_range!.trim()]));
@@ -533,8 +537,9 @@ export function buildSessionItems(
   switch (mode) {
     case 'quiz':
       // Multiple choice, chosen as such: asked with its options, even once
-      // right before. Review and the mixed sittings ask those typed.
-      items = items.filter((i) => i.type === 'mcq');
+      // right before. Review and the mixed sittings ask those typed. Select
+      // all that apply is multiple choice too, never typed.
+      items = items.filter((i) => i.type === 'mcq' || i.type === 'multi');
       break;
     case 'flashcards':
       items = items.filter((i) => i.type === 'flashcard');

@@ -3,6 +3,7 @@ import type { Course, StudyItem } from '@/schema/course';
 import { useSessionStore } from './session';
 import type { SessionItem } from '@/lib/buildSessionItems';
 import { useProgressStore } from './progress';
+import { useStudyLogStore } from './studyLog';
 
 function mcq(id: string, question: string): StudyItem {
   return {
@@ -665,5 +666,65 @@ describe('session store: a class practised with its lectures mixed', () => {
     s().initMixed('A', [['A', A], ['B', B]], 'today');
     expect(s().lectures).toBeNull();
     expect(s().items.every((i) => i._courseId === undefined)).toBe(true);
+  });
+});
+
+describe('session store: a select-all question', () => {
+  const multi = {
+    id: 'm1',
+    type: 'multi',
+    question: 'Which are true of Alpha?',
+    options: ['one', 'two', 'three', 'four'],
+    correct: [0, 2],
+    explanation: 'x',
+  } as StudyItem;
+  const withMulti = {
+    schema_version: '1.0',
+    metadata: { title: 'M' },
+    sections: [
+      {
+        id: 's1',
+        title: 'One',
+        items: [
+          { id: 'd0', type: 'definition', term: 'Alpha', definition: 'meaning zero' } as StudyItem,
+          mcq('q1', 'Which is Alpha?'),
+          multi,
+          { id: 'f1', type: 'flashcard', front: 'f', back: 'b' } as StudyItem,
+        ],
+      },
+    ],
+  } as Course;
+  const s = () => useSessionStore.getState();
+
+  beforeEach(() => {
+    useProgressStore.setState({ byCourse: {} });
+    useStudyLogStore.setState({ byCourse: {} });
+    useSessionStore.setState({ pendingKind: null });
+  });
+
+  it('is multiple choice: asked in a multiple-choice sitting and kept with the questions', () => {
+    s().init('mq', withMulti, 'quiz');
+    expect(s().items.map((i) => i.id)).toEqual(['q1', 'm1']);
+    s().setPendingKind('questions');
+    s().init('mq', withMulti, 'weakest');
+    expect(s().items.map((i) => i.id).sort()).toEqual(['m1', 'q1']);
+  });
+
+  it('records its answer, all or nothing, with whether it was sure', () => {
+    s().init('mq', withMulti, 'quiz');
+    while (s().current()?.id !== 'm1') s().next();
+    s().record(false, undefined, false);
+    expect(useProgressStore.getState().getProgress('mq').m1).toMatchObject({ got: 0, missed: 1 });
+    const [event] = useStudyLogStore.getState().byCourse.mq.answers;
+    expect(event).toMatchObject({ type: 'multi', got: false, sure: false });
+  });
+
+  it('comes back later in its step when missed in Learn, as a question does', () => {
+    const more = { ...withMulti, sections: [{ ...withMulti.sections[0], items: [...withMulti.sections[0].items, mcq('q2', 'Which is Beta?'), mcq('q3', 'Which is Gamma?')] }] } as Course;
+    s().init('mq', more, 'learn');
+    while (s().current()?.id !== 'm1') if (!s().next()) throw new Error('m1 not reached');
+    const at = s().index;
+    s().record(false);
+    expect(s().items.slice(at + 1).some((i) => i.id === 'm1' && i._again === 1)).toBe(true);
   });
 });

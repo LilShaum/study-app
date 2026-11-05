@@ -4,6 +4,7 @@ import { previewId, recallId } from './scored';
 import { answeredBy, revealsAnswer, type Asked } from './contentChecks';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
 import { answerPoints } from './answerPoints';
+import { multiKey } from './multiKey';
 
 /**
  * Learn, in steps.
@@ -59,7 +60,9 @@ export type LearnPhase = 'read' | 'recall' | 'apply';
 export function phaseOf(type: AnyItem['type']): LearnPhase | null {
   if (type === 'definition' || type === 'explain' || type === 'example' || type === 'graphic' || type === 'preview' || type === 'slides') return 'read';
   if (type === 'flashcard' || type === 'recall') return 'recall';
-  if (type === 'mcq' || type === 'problem') return 'apply';
+  // Select all that apply is Apply at any difficulty: judging several
+  // statements asks more than picking one (docs/proposals/multi-select.md).
+  if (type === 'mcq' || type === 'multi' || type === 'problem') return 'apply';
   return null;
 }
 
@@ -83,9 +86,11 @@ const ORDER: Record<AnyItem['type'], number> = {
   // "accomplishing no teaching and slows shit down").
   flashcard: 5,
   recall: 6,
-  // Apply: the medium and hard questions, which use the ideas; then a
-  // problem to work out, and a card to write after them (rankOf).
+  // Apply: the medium and hard questions, which use the ideas, select all
+  // that apply among them; then a problem to work out, and a card to write
+  // after them (rankOf).
   mcq: 7,
+  multi: 7,
   problem: 8.5,
 };
 
@@ -136,11 +141,18 @@ function namesOf(def: Def): Set<string>[] {
   );
 }
 
+/** A select-all question's true statements: what it asks the student to know (none when its key is broken). */
+const trueStatements = (item: SessionItem & { type: 'multi' }): string[] => [...(multiKey(item) ?? [])].map((i) => item.options[i] ?? '');
+
 /** The words an item puts in front of the student. */
 function textOf(item: SessionItem): string {
   switch (item.type) {
     case 'mcq':
       return [item.question, item.options?.[item.correct_index] ?? '', item.explanation ?? ''].join(' ');
+    case 'multi':
+      // Its question and what is true, as an MCQ its question and its answer:
+      // it is placed by the terms those use, not by its false statements.
+      return [item.question, ...trueStatements(item), item.explanation ?? ''].join(' ');
     case 'flashcard':
       return [item.front, item.back].join(' ');
     case 'example':
@@ -255,6 +267,9 @@ export function askedOf(item: SessionItem): Asked | null {
         answer: item.options[item.correct_index] ?? '',
         after: item.explanation,
       };
+    case 'multi':
+      // Once marked it shows every true statement: a later card they answer waits.
+      return { question: item.question, answer: trueStatements(item).join('; '), after: item.explanation };
     case 'flashcard':
       return { question: item.front, answer: item.back };
     case 'recall':
@@ -427,7 +442,7 @@ const inOrder = (step: SessionItem[]): SessionItem[] => {
  * nothing to apply them in first.
  */
 function withQuestions(steps: SessionItem[][], termsIn: (item: SessionItem) => readonly number[]): SessionItem[][] {
-  const isAsk = (i: SessionItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'problem';
+  const isAsk = (i: SessionItem) => i.type === 'mcq' || i.type === 'multi' || i.type === 'flashcard' || i.type === 'problem';
   const out: SessionItem[][] = [];
   let carry: SessionItem[] = [];
   steps.forEach((step, s) => {
@@ -548,7 +563,7 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
   // An explanation teaches as a worked example does: a card on it comes after it.
   const exampleWords = new Map(others.filter((i) => i.type === 'example' || i.type === 'explain').map((ex) => [ex, contentWords(ex)]));
   const cardWords = new Map<SessionItem, Set<string>>(
-    others.filter((i) => i.type === 'flashcard' || i.type === 'mcq' || i.type === 'problem').map((i) => [i, contentWords(i)]),
+    others.filter((i) => i.type === 'flashcard' || i.type === 'mcq' || i.type === 'multi' || i.type === 'problem').map((i) => [i, contentWords(i)]),
   );
   /** A question, flashcard or problem most of whose words are in this example or explanation. */
   const practises = (item: SessionItem, words: Set<string>) => {
@@ -596,7 +611,7 @@ export function stepSection(group: SessionItem[], progress?: Record<string, Item
       for (const item of rest) stepOf.set(item, defSteps);
       steps = defSteps + 1;
     } else {
-      for (const type of ['example', 'graphic', 'flashcard', 'mcq', 'problem'] as const) {
+      for (const type of ['example', 'graphic', 'flashcard', 'mcq', 'multi', 'problem'] as const) {
         const ofType = rest.filter((i) => i.type === type);
         ofType.forEach((item, k) => stepOf.set(item, Math.floor((k * defSteps) / ofType.length)));
       }

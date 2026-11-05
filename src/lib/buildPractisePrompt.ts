@@ -117,7 +117,7 @@ export function buildPractisePrompt(course: Course, notes = course.metadata.stud
   }
   if (gaps.gradableRatio < 0.5) {
     priorities.push(
-      `- Only ${gaps.gradableItems} of ${gaps.totalItems} items (${Math.round(gaps.gradableRatio * 100)}%) are MCQs, flashcards or problems. Everything else is read but never scored, so weight this round heavily toward those types.`,
+      `- Only ${gaps.gradableItems} of ${gaps.totalItems} items (${Math.round(gaps.gradableRatio * 100)}%) are questions, flashcards or problems. Everything else is read but never scored, so weight this round heavily toward those types.`,
     );
   }
 
@@ -139,11 +139,13 @@ What I want back:
   ask for the case that separates two things the notes contrast; apply a
   formula the course only states.
 - Harder than what is already there. The existing items are the floor.
-- Mostly \`mcq\` and \`flashcard\`, and \`problem\` wherever the course
-  has a method to carry out (a formula, code, a worked example): a new case
-  to work, never one already here. The app already quizzes every definition
-  by name, so another definition is only another name to recall; what I am
-  short of is questions that make me use what the definitions say.
+- Mostly \`mcq\` and \`flashcard\`, a \`multi\` where an idea has several
+  things true of it that a student could confuse, and \`problem\` wherever
+  the course has a method to carry out (a formula, code, a worked example):
+  a new case to work, never one already here. The app already quizzes
+  every definition by name, so another definition is only another name to
+  recall; what I am short of is questions that make me use what the
+  definitions say.
 - Nothing that duplicates an existing item. The existing prompts are listed
   under each section below so you can check.
 

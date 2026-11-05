@@ -348,3 +348,44 @@ describe('analyseCourseHealth — problems', () => {
     expect(find(h, 'low-gradable')).toBeUndefined();
   });
 });
+
+describe('analyseCourseHealth — select all that apply', () => {
+  const multi = (id: string, correct: number[], extra: Record<string, unknown> = {}): StudyItem =>
+    ({
+      id,
+      type: 'multi',
+      question: `Which are true of ${id}?`,
+      options: ['a', 'b', 'c', 'd'],
+      correct,
+      option_rationale: ['w', 'x', 'y', 'z'],
+      explanation: 'because',
+      ...extra,
+    }) as StudyItem;
+
+  it('flags a key that marks nothing true or names a statement that is not there, as a problem', () => {
+    const h = analyseCourseHealth(course([multi('ok', [0, 1]), multi('empty', []), multi('outside', [1, 4])]));
+    expect(find(h, 'multi-key-broken')).toMatchObject({ severity: 'problem', items: ['empty', 'outside'] });
+  });
+
+  it('flags one whose every statement is true: ticking them all is always right', () => {
+    const h = analyseCourseHealth(course([multi('ok', [0, 1]), multi('all', [0, 1, 2, 3])]));
+    expect(find(h, 'multi-all-true')).toMatchObject({ severity: 'warning', items: ['all'] });
+    expect(find(h, 'multi-key-broken')).toBeUndefined();
+  });
+
+  it('flags a lecture of three or more whose true count never varies, naming every other one for Fix', () => {
+    const same = analyseCourseHealth(course([multi('m1', [0, 1]), multi('m2', [1, 3]), multi('m3', [0, 2])]));
+    expect(find(same, 'multi-same-count')).toMatchObject({ severity: 'warning', items: ['m2'] });
+    expect(find(same, 'multi-same-count')?.message).toMatch(/All 3 select-all questions have 2 true statements/);
+    // Varied, or too few to be a pattern: nothing to say.
+    expect(find(analyseCourseHealth(course([multi('m1', [0, 1]), multi('m2', [1]), multi('m3', [0, 2])])), 'multi-same-count')).toBeUndefined();
+    expect(find(analyseCourseHealth(course([multi('m1', [0, 1]), multi('m2', [1, 3])])), 'multi-same-count')).toBeUndefined();
+  });
+
+  it('leaves the single-answer checks to multiple choice, and counts a multi as a question', () => {
+    const h = analyseCourseHealth(course([multi('m1', [0, 1]), multi('m2', [2]), multi('m3', [0, 2, 3])]));
+    for (const id of ['correct-index-out-of-range', 'rationale-misaligned', 'rationale-missing', 'option-count', 'length-tell', 'duplicate-prompts', 'low-gradable'])
+      expect(find(h, id)).toBeUndefined();
+    expect(h.problems).toBe(0);
+  });
+});

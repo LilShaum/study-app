@@ -9,6 +9,7 @@ import { EditItemForm } from './EditItemForm';
 
 const TYPES: { value: ItemType; label: string }[] = [
   { value: 'mcq', label: 'Multiple Choice' },
+  { value: 'multi', label: 'Select All That Apply' },
   { value: 'flashcard', label: 'Flashcard' },
   { value: 'definition', label: 'Definition' },
   { value: 'explain', label: 'Explanation' },

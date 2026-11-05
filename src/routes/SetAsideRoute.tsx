@@ -23,6 +23,7 @@ const GROUPS: { reason: Reason; title: string; note: string }[] = [
 
 const TYPE_LABEL: Record<StudyItem['type'], string> = {
   mcq: 'Question',
+  multi: 'Question',
   flashcard: 'Flashcard',
   definition: 'Term',
   example: 'Example',

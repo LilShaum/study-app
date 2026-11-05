@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseCourse } from './parseCourse';
+import { multiReasons } from '@/lib/multiKey';
 
 const validCourse = {
   schema_version: '1.0',
@@ -114,5 +115,49 @@ describe('parseCourse — the generator’s inventory is read forgivingly', () =
     expect(r.course.metadata.inventory?.unclear_figures).toEqual(['x'.repeat(300), 'slide 3: faint labels']);
     expect(r.course.metadata.inventory?.terms).toEqual(['Stoma']);
     expect(r.course.metadata.inventory?.mentioned).toBeUndefined();
+  });
+});
+
+describe('parseCourse — select all that apply', () => {
+  const withItem = (item: Record<string, unknown>) => ({
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: [{ id: 's', title: 'S', items: [{ id: 'm', type: 'multi', question: 'Which are true?', options: ['a', 'b', 'c', 'd'], correct: [0, 2], ...item }] }],
+  });
+
+  it('reads a multi with its key and its reasons', () => {
+    const r = parseCourse(withItem({ option_rationale: ['so', 'not so', 'so', 'not so'], explanation: 'e', difficulty: 'hard' }));
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const m = r.course.sections[0].items[0];
+    expect(m.type).toBe('multi');
+    if (m.type !== 'multi') return;
+    expect(m.correct).toEqual([0, 2]);
+    expect(m.option_rationale).toEqual(['so', 'not so', 'so', 'not so']);
+  });
+
+  it('refuses a multi without its statements or its key', () => {
+    expect(parseCourse(withItem({ options: ['a', 'b'] })).ok).toBe(false);
+    expect(parseCourse(withItem({ correct: undefined })).ok).toBe(false);
+    expect(parseCourse(withItem({ correct: 2 })).ok).toBe(false);
+    expect(parseCourse(withItem({ correct: [0.5] })).ok).toBe(false);
+    expect(parseCourse(withItem({ correct: [-1] })).ok).toBe(false);
+  });
+
+  it('keeps the lecture when the key is empty or names a statement that is not there: the card and the check report it', () => {
+    expect(parseCourse(withItem({ correct: [] })).ok).toBe(true);
+    expect(parseCourse(withItem({ correct: [0, 7] })).ok).toBe(true);
+  });
+
+  it('keeps the lecture when the reasons are in the wrong shape, and places none of them', () => {
+    for (const option_rationale of ['not a list', ['one', 'too few'], [1, 2, 3, 4]]) {
+      const r = parseCourse(withItem({ option_rationale }));
+      expect(r.ok).toBe(true);
+      if (!r.ok) return;
+      const m = r.course.sections[0].items[0];
+      if (m.type !== 'multi') return;
+      const reasons = multiReasons(m);
+      expect(reasons === undefined || reasons.every((x) => x === '')).toBe(true);
+    }
   });
 });

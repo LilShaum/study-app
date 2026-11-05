@@ -101,3 +101,38 @@ describe('EditItemForm — MCQ options', () => {
     expect(saved(onSave).explanation).toBe('Because beta.');
   });
 });
+
+describe('EditItemForm — select all that apply', () => {
+  const multi = (): StudyItem =>
+    ({
+      id: 'm1',
+      type: 'multi',
+      question: 'Which are true?',
+      options: ['alpha', 'beta', 'gamma', 'delta'],
+      correct: [0, 2],
+      option_rationale: ['a is so', 'b is not', 'g is so', 'd is not'],
+      explanation: 'Because.',
+    }) as StudyItem;
+  const savedMulti = (onSave: ReturnType<typeof vi.fn>) => onSave.mock.calls[0][0] as Extract<StudyItem, { type: 'multi' }>;
+  const trueBoxes = () => screen.getAllByRole('checkbox', { name: 'True' }) as HTMLInputElement[];
+
+  it('shows each statement, whether it is true and its reason, and saves them as they are', () => {
+    const onSave = open(multi());
+    expect(trueBoxes().map((b) => b.checked)).toEqual([true, false, true, false]);
+    fireEvent.click(trueBoxes()[1]);
+    fireEvent.change(screen.getByLabelText('Statement 4'), { target: { value: 'delta, reworded' } });
+    save();
+    expect(savedMulti(onSave)).toMatchObject({
+      options: ['alpha', 'beta', 'gamma', 'delta, reworded'],
+      correct: [0, 1, 2],
+      option_rationale: ['a is so', 'b is not', 'g is so', 'd is not'],
+    });
+  });
+
+  it('removes a statement with its tick and its reason', () => {
+    const onSave = open(multi());
+    fireEvent.click(screen.getByRole('button', { name: 'Remove statement 1' }));
+    save();
+    expect(savedMulti(onSave)).toMatchObject({ options: ['beta', 'gamma', 'delta'], correct: [1], option_rationale: ['b is not', 'g is so', 'd is not'] });
+  });
+});
