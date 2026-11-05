@@ -348,7 +348,7 @@ come from. Leave it out when the source has no numbers; never guess one.
 Every item, of any type, carries these common fields:
 
 - `id` (string, required) — unique within the file, slug-like (e.g. `"q_km_1"`)
-- `type` (required) — one of `mcq` | `flashcard` | `definition` | `explain` | `example` | `problem` | `graphic`
+- `type` (required) — one of `mcq` | `multi` | `flashcard` | `definition` | `explain` | `example` | `problem` | `graphic`
 - `source_excerpt` (string, **required**) — see obligation 1
 - `difficulty` (`"easy" | "medium" | "hard"`, optional but strongly encouraged)
 - `tags` (string[], optional) — consistent keywords for later filtering; reuse
@@ -366,6 +366,7 @@ Every item, of any type, carries these common fields:
 | name a term from its meaning | `definition` (the app asks it typed) |
 | recall one fact, or say in a sentence what something does or why | `flashcard` |
 | tell close things apart, apply an idea to a case, predict, catch a qualifier | `mcq` |
+| judge several statements about one idea, each true or false on its own | `multi` (below) |
 | follow a process or a calculation step by step | `example` to read, then a `problem` on the same method |
 | work something out as the exam does: a calculation, code to trace or write, a reaction to predict, a proof | `problem` (below) |
 | see a structure, cycle or pathway | `graphic` |
@@ -387,6 +388,31 @@ order as `options`** — so four entries for four options. Put an empty string
 in the slot for the correct answer. (Index-aligning it this way is what lets
 the app show each rationale under the right option; a shorter list that only
 covers the wrong answers is ambiguous about which slot is which.)
+
+**`multi`** — select all that apply: one question, four to six
+statements, any number of them true.
+```
+{ "id", "type": "multi", "question", "options": [4–6 statements],
+  "correct": [0-based indices of every true statement], "explanation",
+  "option_rationale": [one per option],
+  "difficulty", "tags", "source_excerpt" }
+```
+Write one where an idea has several things true of it that a student
+could confuse: the properties of one structure, what a mechanism does and
+does not do, which of a set apply to this case and not its neighbour, the
+steps that belong to this pathway. The student cannot strike out three and
+take the fourth: each statement is judged on its own, so a half-known idea
+shows. Each false statement is one of the wrong-option kinds (Quality bar,
+part 3): the neighbour's property, the reversal, the qualifier swap, the
+one detail off, the misconception. The true ones are as specific as the
+false ones, and none is true by being vague. At least one true and at
+least one false; vary how many are true across a lecture, never the same
+number every time, so the count gives nothing away. The app never says how
+many are true. `option_rationale` has one entry per option, in order: for
+a true one why it holds, for a false one what is wrong with it. Where the
+source gives one fact to know, write an `mcq`, not a `multi`. `correct` is
+0-based, as `correct_index` is. Medium or hard: judging several statements
+is never easy.
 
 **`flashcard`** — one atomic fact, front as a question/prompt (not just a bare term).
 ```
@@ -608,6 +634,11 @@ because the definition leaves it out or buries it in a clause:
    one explains the other. A student who learned each idea alone, by its
    words, cannot answer it; one who understood them can. Write it in the
    later section, once both have been taught.
+
+Some of these are best asked as a `multi` (select all that apply): an
+idea with several properties, where each statement can be right but for
+one detail. The rules below for distractors apply to its false
+statements.
 
 **Nuance, not trivia.** Tell apart what the lecture **teaches** from how
 it **illustrated** it.
@@ -843,6 +874,10 @@ Check your own draft:
    Delete or fix any that don't.
 3. Does every MCQ have four options, a 0-based `correct_index` pointing at
    the genuinely correct one, and a real `distractor_rationale` per option?
+   Does every `multi` have a 0-based `correct` naming every true statement
+   and no false one, at least one of each, an `option_rationale` per
+   option, and a number true that differs from the lecture's other multis
+   somewhere?
 4. **Scan the options alone.** For each MCQ, count the words of each
    option: is one distractor at least as long as the correct one? Then
    count the MCQs whose correct option is the longest of the four, and those

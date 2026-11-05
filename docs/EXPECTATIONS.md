@@ -457,6 +457,31 @@ reloads the app after switching away) until the student starts a new one.
 Answers count as practice once, when the test is marked, so Today knows
 what the test found.
 
+### Select all that apply
+
+**Goal.** Make each statement about an idea a judgement of its own, true
+or false, so a half-known idea shows: a student cannot strike out three
+options and take the fourth (the owner, 2026-11-04: "multi select
+questions"; docs/proposals/multi-select.md). Multiple true-false questions
+show incomplete understanding and held misconceptions that single-answer
+questions miss (Couch, Wood & Knight 2015).
+
+**How it works.** A `multi` item: a question and four to six statements,
+any number of them true (`correct`), each with its reason
+(`option_rationale`). It says "Select all that apply" and never how many.
+Tick the true ones, then Check answer; Not sure and I don't know work as
+in multiple choice. Got it only when every true statement is ticked and no
+false one is (all or nothing, as a written answer needs every point); each
+statement is then marked (ticked and true, ticked but false with why,
+"Also true" for one missed), with a count ("3 of 4 statements right"),
+the explanation, Why and the passage. In Learn it is with the Apply
+questions; in Practice and the practice test it counts as Multiple choice
+(the test marks it at the end, the "?" as Not sure). Making a lecture,
+"Select all that apply" is its own kind to tick, ticked by default. The
+lecture check flags one with no true statement, one naming an option that
+is not there, one with every statement true, and a lecture whose multis
+always have the same number true.
+
 ### Flip cards
 
 **Goal.** A flashcard you check yourself, graded as honestly as the student
