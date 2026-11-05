@@ -24,6 +24,7 @@ const CORRECTABLE = [
   'problem-answer-mismatch',
   'option-count',
   'multi-all-true',
+  'multi-reasons',
   'multi-same-count',
   'rationale-misaligned',
   'rationale-missing',
@@ -50,6 +51,8 @@ const FAULT_LABELS: Record<string, string> = {
     'its `correct` list is empty or names a statement that is not in `options`, so it cannot be marked. Judge each statement against my notes and list the 0-based indices of the true ones, keeping at least one true and one false, with `option_rationale` saying why each is true or false',
   'multi-all-true':
     'every statement is marked true, so ticking them all is always right and nothing is judged. Keep the id and the true statements that matter most; replace one or two with false statements a student who studied might believe (the neighbour\'s property, the fact turned round, the limiting word swapped, the one detail off), and update `correct` and `option_rationale` to match',
+  'multi-reasons':
+    'it has no reason for each statement, so a wrong tick is marked without saying why. Add `option_rationale` with exactly one reason per statement, in the order of `options`: for a true one, why it holds; for a false one, what is wrong with it, from my notes. Keep the id and the statements',
   'multi-same-count':
     'every select-all question in this lecture has the same number of true statements, so the count is a clue. Rework this one so a different number of its statements are true (at least one true and at least one false), from my notes, keeping the id, and update `correct` and `option_rationale` to match',
   'problem-answer-mismatch':

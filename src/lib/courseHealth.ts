@@ -10,7 +10,7 @@ import { acceptedForms, normalise } from './typedAnswer';
 import { sectionDensity } from './sectionDensity';
 import { kindsOf } from './makeKinds';
 import { answerReached } from './problemAnswer';
-import { multiKey } from './multiKey';
+import { multiKey, multiReasons } from './multiKey';
 
 export type HealthSeverity = 'problem' | 'warning';
 
@@ -112,6 +112,18 @@ export function analyseCourseHealth(course: Course): CourseHealth {
       severity: 'warning',
       message: `${n} select-all question${n === 1 ? ' has' : 's have'} every statement true, so ticking them all is always right and nothing is judged.`,
       items: allTrue.map((m) => m.id),
+    });
+  }
+  // No reason for each statement: the card then marks a wrong tick without
+  // saying why (lib/multiKey multiReasons).
+  const noReasons = multis.filter((m) => !m.set_aside && !multiReasons(m));
+  if (noReasons.length) {
+    const n = noReasons.length;
+    findings.push({
+      id: 'multi-reasons',
+      severity: 'warning',
+      message: `${n} select-all question${n === 1 ? ' has' : 's have'} no reason for each statement, so a wrong tick is marked without saying why.`,
+      items: noReasons.map((m) => m.id),
     });
   }
   // The same number true in every one: the count becomes a clue ("it is
@@ -589,6 +601,7 @@ const GROUPS: Record<string, FindingGroup> = {
   'two-questions': 'fix',
   'problem-answer-mismatch': 'fix',
   'multi-all-true': 'fix',
+  'multi-reasons': 'fix',
   'multi-same-count': 'fix',
   'rationale-cites-source': 'fix',
   'written-list': 'fix',

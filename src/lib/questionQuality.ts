@@ -1,4 +1,5 @@
 import type { Course, StudyItem } from '@/schema/course';
+import { multiKey } from './multiKey';
 
 /**
  * Checks on what the questions ASK, as opposed to whether the file is
@@ -25,12 +26,13 @@ export interface Mcq {
 }
 
 const isMcq = (i: StudyItem): i is Extract<StudyItem, { type: 'mcq' }> => i.type === 'mcq';
-const isGradable = (i: StudyItem) => i.type === 'mcq' || i.type === 'flashcard';
+const isGradable = (i: StudyItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'multi';
 
 /** What a gradable item asks, whichever type it is. */
 export function stemOf(item: StudyItem): string {
   if (item.type === 'mcq') return item.question;
   if (item.type === 'flashcard') return item.front;
+  if (item.type === 'multi') return item.question;
   return '';
 }
 
@@ -38,6 +40,10 @@ export function stemOf(item: StudyItem): string {
 function answerOf(item: StudyItem): string {
   if (item.type === 'mcq') return item.options[item.correct_index] ?? '';
   if (item.type === 'flashcard') return item.back;
+  if (item.type === 'multi') {
+    const key = multiKey(item);
+    return key ? item.options.filter((_, n) => key.has(n)).join(' ') : '';
+  }
   return '';
 }
 

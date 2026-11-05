@@ -179,4 +179,11 @@ describe('Fix: select all that apply', () => {
     expect(prompt).toMatch(/every statement is marked true/);
     expect(prompt).toMatch(/Every `multi` needs four to six `options`/);
   });
+
+  it('asks for one reason per statement when they are missing', () => {
+    const bare = { ...multi('bare', [0, 1]), option_rationale: undefined } as StudyItem;
+    const plan = planFixes(course([bare]));
+    expect(plan.faultyItems.map((f) => [f.item.id, f.faults])).toEqual([['bare', ['multi-reasons']]]);
+    expect(buildFixPrompt(course([bare]))).toMatch(/exactly one reason per statement, in the order of `options`/);
+  });
 });

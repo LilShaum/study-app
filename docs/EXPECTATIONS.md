@@ -479,8 +479,10 @@ questions; in Practice and the practice test it counts as Multiple choice
 (the test marks it at the end, the "?" as Not sure). Making a lecture,
 "Select all that apply" is its own kind to tick, ticked by default. The
 lecture check flags one with no true statement, one naming an option that
-is not there, one with every statement true, and a lecture whose multis
-always have the same number true.
+is not there, one with every statement true, one without a reason for each
+statement, and a lecture whose multis always have the same number true; the
+question-quality checks (restated from the notes, cued by "the notes",
+sections of recall only) count them as they count multiple choice.
 
 ### Flip cards
 

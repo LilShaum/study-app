@@ -183,3 +183,15 @@ describe('analyseQuestionQuality — recall-only sections', () => {
     expect(q.recallOnlySections).toEqual([]);
   });
 });
+
+describe('select all that apply in the quality checks', () => {
+  const multi = (id: string, question: string): StudyItem =>
+    ({ id, type: 'multi', question, options: ['a', 'b', 'c', 'd'], correct: [0, 2], option_rationale: ['w', 'x', 'y', 'z'], explanation: 'e', source_excerpt: 's' }) as StudyItem;
+
+  it('counts a multi as gradable and finds one that quotes the notes', () => {
+    const q = analyseQuestionQuality(course([multi('m1', 'According to the notes, which are true?'), multi('m2', 'Which of these hold for a membrane?'), mcq('q', even, 0)]));
+    expect(q.gradable).toBe(3);
+    expect(q.sourceCued).toContain('m1');
+    expect(q.sourceCued).not.toContain('m2');
+  });
+});

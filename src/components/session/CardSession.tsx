@@ -360,7 +360,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         ? STEPS_HINTS
         : [{ keys: ['Enter'], label: 'check / next' }, ...NAV_HINTS]
       : current?.type === 'multi'
-        ? MULTI_HINTS
+        ? [{ keys: ['1', '–', String(Math.min(9, current.options.length))], label: 'tick' }, ...MULTI_HINTS.slice(1)]
         : KEY_HINTS[mode];
   const total = useSessionStore((s) => s.total());
   const hasNext = useSessionStore((s) => s.hasNext());

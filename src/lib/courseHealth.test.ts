@@ -373,6 +373,20 @@ describe('analyseCourseHealth — select all that apply', () => {
     expect(find(h, 'multi-key-broken')).toBeUndefined();
   });
 
+  it('flags one with no reason for each statement, unless it is set aside', () => {
+    const h = analyseCourseHealth(
+      course([
+        multi('ok', [0, 1]),
+        multi('none', [0, 1], { option_rationale: undefined }),
+        multi('short', [0, 1], { option_rationale: ['w', 'x'] }),
+        multi('aside', [0, 1], { option_rationale: undefined, set_aside: true }),
+      ]),
+    );
+    expect(find(h, 'multi-reasons')).toMatchObject({ severity: 'warning', items: ['none', 'short'] });
+    expect(find(h, 'multi-reasons')?.message).toMatch(/2 select-all questions have no reason for each statement/);
+    expect(find(analyseCourseHealth(course([multi('ok', [0, 1])])), 'multi-reasons')).toBeUndefined();
+  });
+
   it('flags a lecture of three or more whose true count never varies, naming every other one for Fix', () => {
     const same = analyseCourseHealth(course([multi('m1', [0, 1]), multi('m2', [1, 3]), multi('m3', [0, 2])]));
     expect(find(same, 'multi-same-count')).toMatchObject({ severity: 'warning', items: ['m2'] });
