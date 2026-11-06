@@ -271,7 +271,12 @@ In the last 3 days, a day of 30 minutes or more is split into 3 sittings
 3 hours apart. A few hours after a sitting, coming back gives a short
 catch-up on what was missed. With several lectures, one daily time is
 shared by how soon each exam is. A class page's Today starts in the lecture
-with the nearest exam and carries on through the others.
+with the nearest exam and carries on through the others. The library's
+Today is one Start for the whole day ("All 3 lectures", their minutes
+added up), which starts in the first lecture and offers the next at the end
+of each; below it, a row for each lecture studies that one alone and stops
+there ("?single=1"). With one lecture to study, its own row is the day
+(design audit 3A, built 2026-11-05 on a branch, waiting on the owner).
 
 **Working means.** A sitting ends close to its planned minutes; nothing
 due is starved; new material is reached; the plan follows the exam.
@@ -304,7 +309,11 @@ on one fact are at least 5 cards apart; at most 3 cards on a term at its
 first meeting, the rest in a second look at the next sitting (never in the
 sitting that taught it). A miss comes back later in its step with the
 passage from the notes, before the step's question to write, which stays
-last. A term defined the same way in two lectures counts
+last. On a reading card the passage is open, except on a definition with
+an example sentence: there it is folded behind "From your notes ▸", since
+the card already said the idea twice, and it still opens by itself after
+an answer (design audit 3B; built on a branch, not yet checked on a real
+lecture's sitting). A term defined the same way in two lectures counts
 once. A section with a slide range can start with "read this part of your material" (any source: the range carries its unit, slides or pages; worded for any source, the owner 2026-10-29), then
 everything is asked first. "Skip the reading" asks every card first, for
 material already met in class. At the end Learn offers the next section.
@@ -649,9 +658,22 @@ wrong ones to the AI to rewrite.
   instead, so a section studied today keeps its leaves (the owner,
   2026-11-03, watched one drop them hours after studying it). Choosing a
   branch drops the leaves it has lost since it was last chosen, once
-  (`store/fallen`).
-- **Progress** shows what is fading and per-section figures, and the
-  mix-ups on record: answers that named another term of the lecture
+  (`store/fallen`). On the lecture page it is large, with a line of words
+  that agrees with it ("11 sections · 6 fading · 4 not started", read from
+  the same `sectionMemory`). Three versions are built for the owner to
+  choose between, behind the "Tree 1 2 3" switch at the top of the page,
+  none picked (design audit §4, on a branch): 1, the drawing alone as large
+  as the first screen holds it; 2, every branch numbered round the crown
+  like a botanical plate, a tap on a number opening that section; 3, the
+  drawing small with a key naming the fading sections, each a tap to its
+  Review. The one chosen stays and the switch goes.
+- **The lecture page** opens on the tree, the title and Today's Start: the
+  file's own details (description, code, subject, exam, contents, tags)
+  fold behind "About this lecture ▸" (design audit 3C, on a branch).
+- **Progress** leads with what is fading, each section with its Review,
+  closest to gone first; how well it was answered (accuracy and the least
+  accurate sections and tags) folds below it (design audit 3D, on a
+  branch). It also shows the mix-ups on record: answers that named another term of the lecture
   (`lib/mixUps.ts`), typed or picked from the options. Each brings that term
   straight after the card in Review until the card is right on a later day.
 - **Related terms** under a definition, and under a typed term once it is

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
-import { dayAcross, dayLine, startLine, todayAcrossCourses, type CourseToday } from './libraryToday';
+import { dayAcross, dayLine, todayAcrossCourses, type CourseToday } from './libraryToday';
 
 const DAY = 86_400_000;
 const now = new Date(2026, 9, 1, 19).getTime();
@@ -110,24 +110,18 @@ describe('the whole day across lectures', () => {
 
   it('adds up what the lectures left the student to add up', () => {
     const day = dayAcross([row({ review: 12, examDays: 9 }), row({ review: 6, hasNew: true, examDays: 4 }), row({ hasNew: true })]);
-    expect(day).toEqual({ lectures: 3, minutes: 90, review: 18, hasNew: true, allCatchUp: false, examDays: 4 });
-    expect(dayLine(day)).toBe('90 min · 3 lectures · 18 to review · new material');
+    expect(day).toEqual({ minutes: 90, review: 18, hasNew: true, allCatchUp: false });
+    // The lectures are counted in the heading above it ("All 3 lectures").
+    expect(dayLine(day)).toBe('90 min · 18 to review · new material');
   });
 
   it('says the catch-up when that is all that is left, as one lecture does', () => {
     const day = dayAcross([row({ minutes: 5, catchUp: true, review: 3 }), row({ minutes: 5, catchUp: true, review: 2 })]);
-    expect(dayLine(day)).toBe('2 lectures · catch-up: 5 to look at again');
+    expect(dayLine(day)).toBe('catch-up: 5 to look at again');
   });
 
   it('is not a catch-up while any lecture still has its time', () => {
     expect(dayAcross([row({ catchUp: true }), row({})]).allCatchUp).toBe(false);
-  });
-
-  it('says where the day starts, and that it carries on', () => {
-    const rows = [row({ title: 'Enzymes', examDays: 4 }), row({ title: 'Motion' })];
-    expect(startLine(rows)).toBe('Starts in Enzymes, exam in 4 days, then on through the rest.');
-    expect(startLine(rows.slice(1))).toBe('Starts in Motion.');
-    expect(startLine([])).toBeNull();
   });
 });
 

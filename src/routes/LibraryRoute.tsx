@@ -20,7 +20,7 @@ import { KeepSafe } from '@/components/KeepSafe';
 import { RestoreButton } from '@/components/Backup';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { usePlanStore } from '@/store/plan';
-import { dayAcross, dayLine, startLine, todayAcrossCourses, todayLine } from '@/lib/libraryToday';
+import { dayAcross, dayLine, todayAcrossCourses, todayLine } from '@/lib/libraryToday';
 import { plannedMinutes, studiedToday } from '@/lib/todaySitting';
 import { roman } from '@/lib/roman';
 
@@ -240,30 +240,31 @@ export function LibraryRoute() {
               {/* One Start for the day, over every lecture at once.
                   Today already plans across lectures (lib/libraryToday), so
                   one row per lecture made the student add up three "30 min"
-                  lines and pick one before studying anything — a choice to
+                  lines and pick one before studying anything: a choice to
                   make every day, where the app is meant to be one tap
                   (docs/proposals/design-audit.md §3A). The day's own totals
                   are stated here, and the lectures stay below for the day a
                   student wants one of them alone.
 
-                  Set as the class page's Today row is, so the one Start reads
-                  the same wherever a student meets it. */}
-              <ul className="border-y-2 border-text-3">
-                <li className="flex items-center gap-4 py-4">
-                  <div className="min-w-0 flex-1">
-                    <span className="block font-display text-heading font-semibold text-text">Today</span>
-                    <span className="block text-small text-text-2">{dayLine(day)}</span>
-                    <span className="mt-0.5 block text-small text-text-3">{startLine(todays)}</span>
-                  </div>
-                  <Link to={`/session/${todays[0].id}/today`} className="press press-ink tap-safe shrink-0">
-                    Start
-                  </Link>
-                </li>
-              </ul>
-              {/* A lecture on its own: "?single=1" ends the sitting in that
-                  lecture rather than offering the next one, which is what
-                  choosing one here means. */}
-              <h3 className="mark mb-1 mt-5 text-text-3">One lecture instead</h3>
+                  With one lecture there is nothing to add up or choose
+                  between, so its own row is the day and the main action. */}
+              {todays.length > 1 && (
+                <>
+                  <ul className="border-y-2 border-text-3">
+                    <li className="flex items-center gap-4 py-4">
+                      <div className="min-w-0 flex-1">
+                        <span className="block font-display text-heading font-semibold text-text">All {todays.length} lectures</span>
+                        <span className="block text-small text-text-2">{dayLine(day)}</span>
+                        <span className="mt-0.5 block text-small text-text-3">Starts with {todays[0].title}.</span>
+                      </div>
+                      <Link to={`/session/${todays[0].id}/today`} className="press press-ink tap-safe shrink-0">
+                        Start
+                      </Link>
+                    </li>
+                  </ul>
+                  <h3 className="mark mb-1 mt-5 text-text-3">One lecture instead</h3>
+                </>
+              )}
               <ul className="border-y border-border">
                 {todays.slice(0, TODAY_ROWS).map((c) => (
                   <li key={c.id} className="flex items-center gap-4 border-b border-border py-3 last:border-b-0">
@@ -273,7 +274,13 @@ export function LibraryRoute() {
                       </span>
                       <span className="block text-small text-text-2">{todayLine(c)}</span>
                     </div>
-                    <Link to={`/session/${c.id}/today?single=1`} className="press tap-safe shrink-0">
+                    {/* A lecture on its own: "?single=1" ends the sitting in
+                        that lecture rather than offering the next one, which
+                        is what choosing one here means. */}
+                    <Link
+                      to={`/session/${c.id}/today${todays.length > 1 ? '?single=1' : ''}`}
+                      className={`press tap-safe shrink-0 ${todays.length > 1 ? '' : 'press-ink'}`}
+                    >
                       Start
                     </Link>
                   </li>

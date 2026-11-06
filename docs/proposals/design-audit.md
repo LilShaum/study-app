@@ -143,6 +143,30 @@ Each is phone first, both themes, and checked by the screenshot script.
 A redesign of a page is the work to run on the highest effort setting
 (the owner's standing ask: say when it is worth it).
 
+## 5a. Built for the owner to see (2026-11-05)
+
+A, B, C, D and three versions of the tree are built on a branch, not on
+`main`, with phone screenshots before and after in both themes. Where the
+pick changed once it was on a screen:
+
+- **A.** One lecture to study would have shown it twice (the day's Start,
+  then the same lecture "instead"), so with one the row is the day. The
+  day's row is headed "All 3 lectures", not a second "Today" under the
+  Today label, and says where it starts ("Starts with …").
+- **B.** Built against the made-up test lectures only. The check this
+  section asked for, on a real lecture's sitting, is still to do.
+- **C.** With the details folded, Today's row lands at the foot of the
+  first screen, where a sliver of it showing hid the pinned Start and left
+  no Start on screen. The pinned Start now watches the button, not the row.
+- **The tree.** "Tap a branch" stays a number per branch: aiming at a limb
+  is right about 65% of the time even full size (components/CourseTree).
+  Numbers on the crown were lost among the leaves, so they ride a ring
+  outside it with hairlines that never cross (lib/treeKeys). Every tree
+  had a blank quarter above its crown; the lecture page now starts the
+  sheet at the crown, so the larger tree costs no more of the first screen.
+  The three versions are live behind a switch ("Tree 1 2 3"), none picked:
+  1 large, 2 numbered, 3 small with a key of what is fading.
+
 ## 6. What would change this plan
 
 - If the owner dislikes the book language itself, not its structure,

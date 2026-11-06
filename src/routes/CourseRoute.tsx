@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { PracticeKinds } from '@/components/PracticeKinds';
 import { useCoursesStore } from '@/store/courses';
 import type { Course } from '@/schema/course';
@@ -12,7 +12,7 @@ import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { bookmarkResolves, useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
-import { LectureTree } from '@/components/LectureTree';
+import { LectureTree, TreeVersionSwitch } from '@/components/LectureTree';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
 import { TreeDialog } from '@/components/TreeDialog';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
@@ -31,7 +31,7 @@ import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { ExamDialog } from '@/components/ExamDialog';
 import { examLabel, ranges } from '@/lib/examLabel';
 import { classOf, lectureExam } from '@/lib/classExams';
-import { treeVersionOf } from '@/lib/treeWords';
+import { useTreeVersion } from '@/lib/useTreeVersion';
 
 interface Counts {
   total: number;
@@ -96,8 +96,8 @@ function ToolButton({ children, ...rest }: React.ComponentProps<'button'>) {
 /** "/study/:id" — course overview + mode picker. */
 export function CourseRoute() {
   const { id } = useParams<{ id: string }>();
-  const [search] = useSearchParams();
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
+  const [treeVersion, chooseTreeVersion] = useTreeVersion();
   const [adding, setAdding] = useState<AddMode | null>(null);
   const [editingDetails, setEditingDetails] = useState(false);
   const [treeOpen, setTreeOpen] = useState(false);
@@ -141,15 +141,17 @@ export function CourseRoute() {
   }, [course, progress, now]);
 
   const wide = useMediaQuery(WIDE);
-  // The pinned Start on a phone shows only once Today itself has scrolled
-  // away: with both on screen it said the same thing twice and covered the
-  // line under it.
+  // The pinned Start on a phone shows only while Today's own Start cannot be
+  // tapped: with both on screen it said the same thing twice and covered the
+  // line under it. Watching the button and not its row, because the row now
+  // lands at the foot of the first screen, where a sliver of it showing would
+  // otherwise take the pinned Start away and leave no Start on screen at all.
   const [todayInView, setTodayInView] = useState(true);
   const todayObserver = useRef<IntersectionObserver | null>(null);
-  const todayRef = useCallback((el: HTMLLIElement | null) => {
+  const todayRef = useCallback((el: HTMLAnchorElement | null) => {
     todayObserver.current?.disconnect();
     if (!el || typeof IntersectionObserver === 'undefined') return;
-    todayObserver.current = new IntersectionObserver(([entry]) => setTodayInView(entry.isIntersecting));
+    todayObserver.current = new IntersectionObserver(([entry]) => setTodayInView(entry.intersectionRatio > 0.9), { threshold: [0, 1] });
     todayObserver.current.observe(el);
   }, []);
   const [examOpen, setExamOpen] = useState(false);
@@ -262,7 +264,7 @@ export function CourseRoute() {
       courseId={id}
       course={course}
       progress={progress}
-      version={treeVersionOf(search.get('tree'))}
+      version={treeVersion}
       wide={wide}
       onExpand={() => setTreeOpen(true)}
     />
@@ -379,7 +381,7 @@ export function CourseRoute() {
       <section className="mt-8">
         <h2 className="mark mb-2 text-text-3">Ways to work</h2>
         <ul className="border-t border-border">
-          <li ref={todayRef} className="border-b-2 border-text-3 py-4">
+          <li className="border-b-2 border-text-3 py-4">
             <div className="flex items-start gap-4">
               <div className="min-w-0 flex-1">
                 <span className="flex items-baseline gap-3">
@@ -403,7 +405,7 @@ export function CourseRoute() {
                 </button>
               </div>
               {!today?.empty && (
-                <Link to={`/session/${id}/today`} className="press press-ink shrink-0">
+                <Link ref={todayRef} to={`/session/${id}/today`} className="press press-ink shrink-0">
                   Start
                 </Link>
               )}
@@ -546,19 +548,22 @@ export function CourseRoute() {
   return (
     // Room under the page on a phone for the pinned Start bar.
     <div className={wide ? '' : 'pb-20 sm:pb-0'}>
-      <span className="flex items-baseline gap-2 text-sm text-text-3">
-        <Link to="/" className="tap-safe inline-flex items-center text-text-2 hover:text-text">
-          ← Library
-        </Link>
-        {classCode && (
-          <>
-            <span aria-hidden="true">·</span>
-            <Link to={`/class/${encodeURIComponent(classCode)}`} className="tap-safe inline-flex items-center text-text-2 hover:text-text">
-              {classCode}
-            </Link>
-          </>
-        )}
-      </span>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+        <span className="flex items-baseline gap-2 text-sm text-text-3">
+          <Link to="/" className="tap-safe inline-flex items-center text-text-2 hover:text-text">
+            ← Library
+          </Link>
+          {classCode && (
+            <>
+              <span aria-hidden="true">·</span>
+              <Link to={`/class/${encodeURIComponent(classCode)}`} className="tap-safe inline-flex items-center text-text-2 hover:text-text">
+                {classCode}
+              </Link>
+            </>
+          )}
+        </span>
+        <TreeVersionSwitch version={treeVersion} onChoose={chooseTreeVersion} />
+      </div>
 
       {/* Two layouts, not one stretched. On a desktop the course page is
           where you look around, so it spreads into two columns: the tree

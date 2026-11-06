@@ -119,21 +119,13 @@ function sortToday(out: CourseToday[]): CourseToday[] {
   });
 }
 
-/** "exam in 4 days", or nothing when there is no date to say it from. */
-function examWord(examDays: number | null): string | null {
-  if (examDays == null) return null;
-  if (examDays === 0) return 'exam today';
-  if (examDays === 1) return 'exam tomorrow';
-  return `exam in ${examDays} days`;
-}
-
 /** "12 to review · new material · exam in 4 days" — only the parts that apply. */
 export function todayLine(c: CourseToday): string {
   return [
     c.catchUp ? null : `${Math.round(c.minutes)} min`,
     c.catchUp ? `catch-up: ${c.review} to look at again` : c.review > 0 ? `${c.review} to review` : null,
     c.hasNew ? 'new material' : null,
-    examWord(c.examDays),
+    c.examDays === 0 ? 'exam today' : c.examDays === 1 ? 'exam tomorrow' : c.examDays != null ? `exam in ${c.examDays} days` : null,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -141,15 +133,12 @@ export function todayLine(c: CourseToday): string {
 
 /** The whole day, added up over every lecture that has something to do. */
 export interface DayAcross {
-  lectures: number;
   /** The day's planned minutes, added up: three lectures of 30 is 90, and saying so is the point. */
   minutes: number;
   review: number;
   hasNew: boolean;
   /** Every lecture's time is spent, so all that is left is the short second look. */
   allCatchUp: boolean;
-  /** Whole days to the nearest exam of the lot, or null with none coming. */
-  examDays: number | null;
 }
 
 /**
@@ -162,33 +151,21 @@ export interface DayAcross {
  * added here rather than in the page.
  */
 export function dayAcross(rows: CourseToday[]): DayAcross {
-  const examDays = rows.map((r) => r.examDays).filter((d): d is number => d != null);
   return {
-    lectures: rows.length,
     minutes: rows.reduce((n, r) => n + r.minutes, 0),
     review: rows.reduce((n, r) => n + r.review, 0),
     hasNew: rows.some((r) => r.hasNew),
     allCatchUp: rows.length > 0 && rows.every((r) => r.catchUp),
-    examDays: examDays.length ? Math.min(...examDays) : null,
   };
 }
 
-/** "45 min across 3 lectures · 18 to review · new material". */
+/** "90 min · 18 to review · new material": the line under "All 3 lectures". */
 export function dayLine(d: DayAcross): string {
   return [
     d.allCatchUp ? null : `${Math.round(d.minutes)} min`,
-    d.lectures > 1 ? `${d.lectures} lectures` : null,
     d.allCatchUp ? `catch-up: ${d.review} to look at again` : d.review > 0 ? `${d.review} to review` : null,
     d.hasNew ? 'new material' : null,
   ]
     .filter(Boolean)
     .join(' · ');
-}
-
-/** Where the day begins, and that it carries on: "Starts in Enzyme Kinetics, exam in 4 days, then the next lecture." */
-export function startLine(rows: CourseToday[]): string | null {
-  const first = rows[0];
-  if (!first) return null;
-  const exam = examWord(first.examDays);
-  return `Starts in ${first.title}${exam ? `, ${exam}` : ''}${rows.length > 1 ? ', then on through the rest' : ''}.`;
 }

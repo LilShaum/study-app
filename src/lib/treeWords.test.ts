@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
-import { treeCounts, treeVersionOf, treeWords, TREE_VERSION } from './treeWords';
+import { treeCounts, treeVersionOf, treeWords } from './treeWords';
 
 const DAY = 86_400_000;
 const now = new Date(2026, 9, 1, 19).getTime();
@@ -38,9 +38,10 @@ describe('treeCounts', () => {
   });
 
   it('does not call a section fading for a card missed and never yet got right', () => {
-    // Due within hours, and never learned: the tree drops no leaf for it, so
-    // the words must not say it is fading (the owner, 2026-11-03).
-    const missed: ItemResult = { got: 0, missed: 2, lastSeen: now - 5 * 3_600_000 };
+    // Due within hours (a miss keeps a day's stability, so recall falls under
+    // the review point at about seven), and never learned: the tree drops no
+    // leaf for it, so the words must not say it is fading (the owner, 2026-11-03).
+    const missed: ItemResult = { got: 0, missed: 2, lastSeen: now - 8 * 3_600_000 };
     const counts = treeCounts(lecture(1), { s0q: missed, s0f: fresh }, now);
     expect(counts.sections[0].due).toBeGreaterThan(0);
     expect(counts.sections[0].state).toBe('held');
@@ -76,9 +77,9 @@ describe('treeWords', () => {
 });
 
 describe('treeVersionOf', () => {
-  it('takes the three versions and nothing else', () => {
+  it('takes the three versions, and shows the first for anything else: none is picked', () => {
     expect(['1', '2', '3'].map(treeVersionOf)).toEqual([1, 2, 3]);
-    expect(['', '4', 'map'].map(treeVersionOf)).toEqual([TREE_VERSION, TREE_VERSION, TREE_VERSION]);
-    expect(treeVersionOf(null)).toBe(TREE_VERSION);
+    expect(['', '4', 'map'].map(treeVersionOf)).toEqual([1, 1, 1]);
+    expect(treeVersionOf(null)).toBe(1);
   });
 });

@@ -6,15 +6,15 @@ import { sortedSections } from './sortedSections';
 
 /**
  * Which version of the tree the lecture page draws (components/LectureTree).
- * Three are built and none is chosen: the owner picks, and `?tree=1|2|3` on
- * the lecture page shows each. This is only what the page shows without one:
- * the proposal's pick, the map (docs/proposals/design-audit.md §4).
+ * Three are built and none is chosen: the owner picks, with the switch at the
+ * top of the lecture page (docs/proposals/design-audit.md §4). With nothing
+ * tapped yet it shows the first, for no better reason than that it is first.
  */
 export type TreeVersion = 1 | 2 | 3;
-export const TREE_VERSION: TreeVersion = 2;
+export const TREE_VERSIONS: TreeVersion[] = [1, 2, 3];
 
-export function treeVersionOf(asked: string | null): TreeVersion {
-  return asked === '1' || asked === '2' || asked === '3' ? (Number(asked) as TreeVersion) : TREE_VERSION;
+export function treeVersionOf(stored: string | null): TreeVersion {
+  return stored === '2' ? 2 : stored === '3' ? 3 : 1;
 }
 
 /** How a section stands, in the tree's own terms. */

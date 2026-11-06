@@ -40,6 +40,11 @@ interface CourseTreeProps {
   /** Draw this section's limbs at full strength and dim everything else. */
   highlight?: string | null;
   /**
+   * Start the sheet this far down the drawing, in viewBox units, so a tree with
+   * blank paper above its crown fills its box (lib/treeKeys plateTop).
+   */
+  viewTop?: number;
+  /**
    * Draw the tree on, once, as it appears.
    *
    * The only animation in the app, and it is growth-shaped because that is
@@ -141,9 +146,8 @@ interface Sample {
  * to make them clickable would have put one section's branches back on top of
  * another's leaves.
  *
- * Deliberately has no caption. It either communicates or it does not, and a
- * sentence underneath describing the picture would be an admission that it
- * does not.
+ * The drawing carries no caption of its own. Where words sit beside it, on the
+ * lecture page, LectureTree sets them from the same reading of the sections.
  */
 export function CourseTree({
   courseId,
@@ -152,6 +156,7 @@ export function CourseTree({
   className = 'h-40',
   interactive = false,
   highlight = null,
+  viewTop = 0,
   animate = false,
   grewFrom,
   mode = 'navigate',
@@ -607,7 +612,7 @@ export function CourseTree({
   const svg = (
     <svg
       ref={svgRef}
-      viewBox={`0 0 ${tree.width} ${tree.height}`}
+      viewBox={`0 ${viewTop} ${tree.width} ${tree.height - viewTop}`}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -752,7 +757,7 @@ export function CourseTree({
         type="button"
         onClick={onExpand}
         aria-label={`${label}. Open it`}
-        className="shrink-0 cursor-zoom-in rounded transition-opacity hover:opacity-80"
+        className="max-w-full shrink-0 cursor-zoom-in rounded transition-opacity hover:opacity-80"
       >
         {svg}
       </button>

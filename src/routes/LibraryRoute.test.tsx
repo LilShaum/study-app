@@ -37,7 +37,8 @@ describe("the library's Today", () => {
     expect(inked).toHaveLength(1);
     // No "?single": this one carries on through the rest.
     expect(inked[0].getAttribute('href')).toMatch(/^\/session\/[ab]\/today$/);
-    expect(inked[0].closest('li')!.textContent).toContain('2 lectures');
+    expect(inked[0].closest('li')!.textContent).toContain('All 2 lectures');
+    expect(inked[0].closest('li')!.textContent).toMatch(/Starts with (Alpha|Beta)\./);
   });
 
   it('keeps a row for each lecture below it, for the day a student wants one alone', () => {
@@ -47,6 +48,18 @@ describe("the library's Today", () => {
     expect(links.map((l) => l.getAttribute('href')).sort()).toEqual(['/session/a/today?single=1', '/session/b/today?single=1']);
     expect(within(rows).getByText('Alpha')).toBeTruthy();
     expect(within(rows).getByText('Beta')).toBeTruthy();
+  });
+
+  it('with one lecture left to study today, makes its own row the day: nothing to add up or choose', () => {
+    // Beta answered and still fresh: nothing due, nothing new.
+    useProgressStore.setState({ byCourse: { b: { f: { got: 2, missed: 0, lastSeen: Date.now(), stability: 30 } } } });
+    open({ a: lecture('Alpha'), b: lecture('Beta') });
+    const all = starts();
+    expect(all).toHaveLength(1);
+    expect(all[0].getAttribute('href')).toBe('/session/a/today');
+    expect(all[0].classList.contains('press-ink')).toBe(true);
+    expect(screen.queryByText('One lecture instead')).toBeNull();
+    expect(screen.queryByText(/^All \d+ lectures$/)).toBeNull();
   });
 
   it('leaves New lecture as the main action when there is no day to start', () => {
