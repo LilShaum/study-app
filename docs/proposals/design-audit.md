@@ -167,6 +167,15 @@ pick changed once it was on a screen:
   The three versions are live behind a switch ("Tree 1 2 3"), none picked:
   1 large, 2 numbered, 3 small with a key of what is fading.
 
+## 5b. Chosen (2026-11-06)
+
+The owner said yes to A, B, C and D, and chose the tree's first version as
+the default: "make it version 1 by default but if u do something the
+numbers pop up cleanly … when u press ur finger on a branch or swipe across
+them … and move with the branches". So version 1 shipped alone, the switch
+and version 3 went, and version 2's numbering (lib/treeKeys) is kept for
+that reveal, which is planned and shown to the owner before it ships.
+
 ## 6. What would change this plan
 
 - If the owner dislikes the book language itself, not its structure,

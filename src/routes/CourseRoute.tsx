@@ -12,7 +12,7 @@ import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { bookmarkResolves, useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
-import { LectureTree, TreeVersionSwitch } from '@/components/LectureTree';
+import { LectureTree } from '@/components/LectureTree';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
 import { TreeDialog } from '@/components/TreeDialog';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
@@ -31,7 +31,6 @@ import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { ExamDialog } from '@/components/ExamDialog';
 import { examLabel, ranges } from '@/lib/examLabel';
 import { classOf, lectureExam } from '@/lib/classExams';
-import { useTreeVersion } from '@/lib/useTreeVersion';
 
 interface Counts {
   total: number;
@@ -97,7 +96,6 @@ function ToolButton({ children, ...rest }: React.ComponentProps<'button'>) {
 export function CourseRoute() {
   const { id } = useParams<{ id: string }>();
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
-  const [treeVersion, chooseTreeVersion] = useTreeVersion();
   const [adding, setAdding] = useState<AddMode | null>(null);
   const [editingDetails, setEditingDetails] = useState(false);
   const [treeOpen, setTreeOpen] = useState(false);
@@ -258,13 +256,11 @@ export function CourseRoute() {
     ? `${exam.name ?? 'Exam'} ${examLabel(exam.date)}, on ${coverage} · Change`
     : 'Exam coming up? Add its date and what it covers';
 
-  // Three versions, for the owner to choose between (components/LectureTree).
   const treeBlock = (
     <LectureTree
       courseId={id}
       course={course}
       progress={progress}
-      version={treeVersion}
       wide={wide}
       onExpand={() => setTreeOpen(true)}
     />
@@ -562,7 +558,6 @@ export function CourseRoute() {
             </>
           )}
         </span>
-        <TreeVersionSwitch version={treeVersion} onChoose={chooseTreeVersion} />
       </div>
 
       {/* Two layouts, not one stretched. On a desktop the course page is

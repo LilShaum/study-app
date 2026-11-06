@@ -660,16 +660,14 @@ wrong ones to the AI to rewrite.
   branch drops the leaves it has lost since it was last chosen, once
   (`store/fallen`). On the lecture page it is large, with a line of words
   that agrees with it ("11 sections · 6 fading · 4 not started", read from
-  the same `sectionMemory`). Three versions are built for the owner to
-  choose between, behind the "Tree 1 2 3" switch at the top of the page,
-  none picked (design audit §4, on a branch): 1, the drawing alone as large
-  as the first screen holds it; 2, every branch numbered round the crown
-  like a botanical plate, a tap on a number opening that section; 3, the
-  drawing small with a key naming the fading sections, each a tap to its
-  Review. The one chosen stays and the switch goes.
+  the same `sectionMemory`). Of three versions the owner chose the drawing
+  alone, as large as the first screen holds it (2026-11-06; design audit
+  §4). The numbered branches of another are to come back as something a
+  touch on the tree reveals (docs/ASKS.md).
 - **The lecture page** opens on the tree, the title and Today's Start: the
   file's own details (description, code, subject, exam, contents, tags)
-  fold behind "About this lecture ▸" (design audit 3C, on a branch).
+  fold behind "About this lecture ▸" (design audit 3C). What the whole
+  lecture builds to is the first thing inside the fold.
 - **Progress** leads with what is fading, each section with its Review,
   closest to gone first; how well it was answered (accuracy and the least
   accurate sections and tags) folds below it (design audit 3D, on a

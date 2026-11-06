@@ -127,6 +127,21 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   Start for the day on the library, the lecture page's first screen,
   Progress leading with what is fading, a lighter first reading card, and
   versions of the tree. Worth the highest effort setting.
+  Chosen by the owner and live 2026-11-06 ("yes to all 5"): one Start for
+  the day, the lecture page's first screen, Progress leading with what is
+  fading, the lighter first reading card, and the tree's large version
+  (the switch and the other two versions gone). Second pass not started.
+- **The tree: numbers that appear on a touch and move with the branches;
+  better motion** (2026-11-06: "is there a way to cleanly and intuitively
+  make a combo of version 1 and 2? like can we make it version 1 by default
+  but if u do something the numbers pop up cleanly? like can u make it so
+  like when u press ur finger on the tree or smth in some specific way or
+  smth then the numbers pop up? and can u also see if the tree motion code
+  could be made better? it would be cool aswell to make them only pop up
+  when u press ur finger on a branch or swipe across them or smth and then
+  they pop up and move with the branches making a really clean and dynamic
+  feel"). To plan first (CLAUDE.md method), build, and show the owner a
+  recording before it ships: a screenshot cannot show how it feels.
 - **Say when a higher effort setting is worth it, before starting a task**
   (2026-10-29: "I'm wondering if there is a certain time it would be
   beneficial to put you on ultra code mode and maybe if you could suggest

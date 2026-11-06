@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
@@ -48,10 +48,6 @@ afterEach(() => {
   useProgressStore.setState({ byCourse: {} });
 });
 
-/** The switch at the top of the page, while the owner chooses between the versions. */
-const pick = (version: 1 | 2 | 3) => fireEvent.click(screen.getByRole('button', { name: `Version ${version}` }));
-const chosen = () => screen.getAllByRole('button', { name: /^Version \d$/ }).filter((b) => b.getAttribute('aria-pressed') === 'true').map((b) => b.textContent);
-
 describe("the lecture page's first screen", () => {
   it("folds the file's details behind one line, nothing lost", () => {
     open();
@@ -69,56 +65,16 @@ describe("the lecture page's first screen", () => {
   });
 });
 
-describe('the three versions of the tree', () => {
-  it('shows the first until another is tapped, picking none: the owner chooses', () => {
-    open();
-    expect(chosen()).toEqual(['1']);
-    pick(3);
-    expect(chosen()).toEqual(['3']);
-  });
-
-  it('keeps the one last shown, so going into a section and back does not lose the place', () => {
-    open();
-    pick(2);
-    cleanup();
-    open();
-    expect(chosen()).toEqual(['2']);
-  });
-
-  it('says the same words in each', () => {
-    open();
-    for (const version of [1, 2, 3] as const) {
-      pick(version);
-      const page = document.body.textContent ?? '';
-      for (const part of ['3 sections', '1 fading', '1 not started']) expect(page).toContain(part);
-    }
-  });
-
-  it('1: the drawing alone and large, a tap opening the large tree', () => {
+describe('the tree on the lecture page', () => {
+  it('is the drawing alone and large, a tap opening the large tree, with its line of words', () => {
     const { container } = open();
-    pick(1);
     expect(screen.getByRole('button', { name: /sections in leaf\. Open it/ })).toBeTruthy();
     expect(container.querySelector('figure a')).toBeNull();
     expect(container.textContent).toContain('3 sections · 1 fading · 1 not started');
   });
 
-  it('2: every branch numbered, each number a way into its section', () => {
+  it('has no switch between versions any more: the owner chose', () => {
     open();
-    pick(2);
-    const keys = screen.getAllByRole('link', { name: /^Section \d/ });
-    expect(keys.map((a) => a.getAttribute('aria-label'))).toEqual([
-      expect.stringMatching(/^Section 1, Membranes: fading, \d+% still held$/),
-      'Section 2, Transport: still held',
-      'Section 3, Signals: not started',
-    ]);
-    expect(keys[0].getAttribute('href')).toBe('#/study/cell/section/s1');
-    expect(keys.map((a) => a.textContent)).toEqual(['1', '2', '3']);
-  });
-
-  it('3: the fading section named, a tap from its Review', () => {
-    open();
-    pick(3);
-    expect(screen.getByRole('link', { name: /Membranes.*Review 2/ }).getAttribute('href')).toBe('/session/cell/review?section=s1');
-    expect(screen.queryByRole('link', { name: /Transport.*Review/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Version \d$/ })).toBeNull();
   });
 });

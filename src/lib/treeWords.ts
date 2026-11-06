@@ -4,19 +4,6 @@ import { examRule } from './exam';
 import { sectionMemory } from './sectionMemory';
 import { sortedSections } from './sortedSections';
 
-/**
- * Which version of the tree the lecture page draws (components/LectureTree).
- * Three are built and none is chosen: the owner picks, with the switch at the
- * top of the lecture page (docs/proposals/design-audit.md §4). With nothing
- * tapped yet it shows the first, for no better reason than that it is first.
- */
-export type TreeVersion = 1 | 2 | 3;
-export const TREE_VERSIONS: TreeVersion[] = [1, 2, 3];
-
-export function treeVersionOf(stored: string | null): TreeVersion {
-  return stored === '2' ? 2 : stored === '3' ? 3 : 1;
-}
-
 /** How a section stands, in the tree's own terms. */
 export type SectionState = 'bare' | 'fading' | 'held';
 

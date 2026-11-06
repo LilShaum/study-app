@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
-import { treeCounts, treeVersionOf, treeWords } from './treeWords';
+import { treeCounts, treeWords } from './treeWords';
 
 const DAY = 86_400_000;
 const now = new Date(2026, 9, 1, 19).getTime();
@@ -73,13 +73,5 @@ describe('treeWords', () => {
 
   it('has something to say about an empty lecture', () => {
     expect(words({}, 0)).toBe('Nothing in this lecture yet');
-  });
-});
-
-describe('treeVersionOf', () => {
-  it('takes the three versions, and shows the first for anything else: none is picked', () => {
-    expect(['1', '2', '3'].map(treeVersionOf)).toEqual([1, 2, 3]);
-    expect(['', '4', 'map'].map(treeVersionOf)).toEqual([1, 1, 1]);
-    expect(treeVersionOf(null)).toBe(1);
   });
 });
