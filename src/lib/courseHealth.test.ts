@@ -403,3 +403,47 @@ describe('analyseCourseHealth — select all that apply', () => {
     expect(h.problems).toBe(0);
   });
 });
+
+describe('a diagram marked as something to know', () => {
+  const lecture = (graphic: Record<string, unknown>, question: Record<string, unknown> = {}): Course =>
+    ({
+      schema_version: '1.0',
+      metadata: { title: 'Plants', course_code: 'BIO1' },
+      sections: [
+        {
+          id: 's1',
+          title: 'Water',
+          items: [
+            { id: 'g1', type: 'graphic', title: 'Xylem', purpose: 'know', ...graphic },
+            { id: 'q1', type: 'flashcard', front: 'What carries sugar?', back: 'Phloem', ...question },
+          ],
+        },
+      ],
+    }) as Course;
+  const found = (c: Course) => analyseCourseHealth(c).findings.find((f) => f.id === 'untested-figures');
+
+  it('is reported when nothing asks about it', () => {
+    expect(found(lecture({}))?.message).toMatch(/One diagram is marked as something to know.*Xylem/);
+  });
+
+  it('is not when a question names it, or shares its tag', () => {
+    expect(found(lecture({}, { front: 'What does xylem carry?' }))).toBeUndefined();
+    expect(found(lecture({ title: 'The whole of the long route water takes', tags: ['transport'] }, { tags: ['transport'] }))).toBeUndefined();
+  });
+
+  it('is judged by its tag when it has one', () => {
+    expect(found(lecture({ tags: ['transport'] }, { front: 'What does xylem carry?', tags: ['other'] }))).toBeDefined();
+  });
+
+  it('says nothing of a figure there only to paint the picture, or a title too long to look for', () => {
+    expect(found(lecture({ purpose: 'picture' }))).toBeUndefined();
+    expect(found(lecture({ purpose: undefined }))).toBeUndefined();
+    expect(found(lecture({ title: 'The whole of the long route water takes' }))).toBeUndefined();
+  });
+
+  it('is left alone in a lecture the student chose to have no questions in', () => {
+    const c = lecture({});
+    c.metadata.make = ['explain', 'graphic'];
+    expect(found(c)).toBeUndefined();
+  });
+});

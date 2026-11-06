@@ -9,6 +9,7 @@ import { availableModes, findSection, sectionStats } from '@/lib/sectionStats';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { CourseTree } from '@/components/CourseTree';
 import { examRule } from '@/lib/exam';
+import { RichText } from '@/components/items/RichText';
 
 const TYPE_LABELS: Record<string, string> = {
   mcq: 'MCQ',
@@ -102,6 +103,14 @@ export function SectionRoute() {
         <CourseTree courseId={id} course={course} progress={progress} className="h-24 sm:h-36" highlight={section.id} />
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-title font-semibold text-text sm:text-display">{section.title}</h1>
+          {/* What this run of slides builds to: the sentences that joined the
+              bullets and were never written down (docs/proposals/narration.md).
+              It leads, because it is why the rest of the page is in this order. */}
+          {section.builds_to && (
+            <p className="mt-2 max-w-prose text-body text-text">
+              <RichText text={section.builds_to} />
+            </p>
+          )}
           {section.description && <p className="mt-2 max-w-prose text-small text-text-2">{section.description}</p>}
 
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-2">

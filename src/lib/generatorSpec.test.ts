@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Course, StudyItem } from '@/schema/course';
-import { generatorSpec, hasStudies, ITEM_TYPES_SPEC, QUALITY_BAR_SPEC, specSection } from './generatorSpec';
+import { generatorSpec, hasStudies, ITEM_TYPES_SPEC, NARRATION_SPEC, QUALITY_BAR_SPEC, specSection } from './generatorSpec';
 import { buildNewCoursePrompt } from './buildNewCoursePrompt';
 import { buildAddPrompt } from './buildAddPrompt';
 import { buildPractisePrompt } from './buildPractisePrompt';
@@ -151,6 +151,8 @@ describe('planFixes / buildFixPrompt', () => {
   });
 });
 
+const GENERATOR_RAW = fs.readFileSync(path.resolve(__dirname, '../../prompts/generator.md'), 'utf8');
+
 describe('generatorSpec: the studies passages, chosen', () => {
   const off = generatorSpec(false);
   const on = generatorSpec(true);
@@ -160,7 +162,7 @@ describe('generatorSpec: the studies passages, chosen', () => {
     expect(on).toMatch(/Teach the\s+finding, how the experiment showed it/);
     expect(off).not.toMatch(/One labelled exception/);
     expect(off).not.toMatch(/how the experiment showed it/);
-    expect(off).toMatch(/Nothing comes from outside the source, studies included/);
+    expect(off).toMatch(/No facts come from outside the source, studies included/);
     expect(off).toMatch(/evidence for\s+the point it supports/);
   });
 
@@ -184,5 +186,38 @@ describe('generatorSpec: the studies passages, chosen', () => {
     const tagged = course([mcq('q1', ['aa', 'bb', 'cc', 'dd'], 0, { tags: ['study:Hollis et al. (1998)'] })]);
     expect(buildAddPrompt(tagged)).toMatch(/One labelled exception/);
     expect(buildAddPrompt(tagged, undefined, false)).not.toMatch(/One labelled exception/);
+  });
+});
+
+describe('generatorSpec: the narration', () => {
+  const off = generatorSpec(false);
+  const on = generatorSpec(true);
+
+  it('no longer throws away what the map finds', () => {
+    expect(GENERATOR_RAW).not.toMatch(/map is not part of the output/);
+    expect(on).toMatch(/Part of the map goes into the file/);
+  });
+
+  it('asks for what a section builds to, a figure note and an implied comparison, in one place', () => {
+    for (const asked of ['`builds_to`', '`why`', '`purpose`', '`where`', 'An implied comparison']) expect(NARRATION_SPEC).toContain(asked);
+    expect(ITEM_TYPES_SPEC).toMatch(/"svg"\?/);
+  });
+
+  it('sends every handwritten note to the student', () => {
+    expect(on).toMatch(/What is written beside a slide is the narration itself/);
+    expect(on).toMatch(/Walk the handwriting, note by note/);
+  });
+
+  it('lets a reason in from outside only labelled, and never under a card, studies or not', () => {
+    for (const spec of [on, off]) {
+      expect(spec).toMatch(/A tutor also says why: the reason, labelled/);
+      expect(spec).toMatch(/No question,\s+flashcard or definition may rest on it/);
+    }
+  });
+
+  it('keeps one lecture out of the prompt the app hands everyone', () => {
+    // Examples in the spec are made up, and from no student's material.
+    expect(NARRATION_SPEC).toMatch(/buyer/);
+    expect(NARRATION_SPEC).not.toMatch(/retina|ganglion|optic|thalamus/i);
   });
 });

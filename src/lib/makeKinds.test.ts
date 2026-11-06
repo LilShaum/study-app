@@ -58,3 +58,10 @@ describe('makeKinds: select all that apply', () => {
     expect(kindsOf(course(['mcq', 'flashcard']))).toEqual(['mcq', 'flashcard']);
   });
 });
+
+describe('makeOnlyBlock and the narration', () => {
+  it('leaves out what a section builds to for a student who chose no explanations', () => {
+    expect(makeOnlyBlock(['flashcard'])).toMatch(/sections have no `builds_to`/);
+    expect(makeOnlyBlock(['explain', 'flashcard'])).not.toMatch(/`builds_to`/);
+  });
+});

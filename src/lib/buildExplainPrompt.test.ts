@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course } from '@/schema/course';
 import { buildExplainPrompt } from './buildExplainPrompt';
-import { EXPLAIN_SPEC } from './generatorSpec';
+import { EXPLAIN_SPEC, NARRATION_SPEC } from './generatorSpec';
 import { parseFragment } from '@/schema/fragment';
 import { planMerge } from './mergeFragment';
 
@@ -56,5 +56,46 @@ describe('buildExplainPrompt', () => {
     const plan = planMerge(lecture, parsed.fragment, { skipDuplicates: true });
     expect(plan.totalAdded).toBe(1);
     expect(plan.sections[0].id).toBe('s1');
+  });
+});
+
+describe('buildExplainPrompt: the narration, for a lecture made before it', () => {
+  const lecture = (over: Partial<Course['sections'][number]> = {}, make?: string[]): Course =>
+    ({
+      schema_version: '1.0',
+      metadata: { title: 'Signals', make },
+      sections: [
+        {
+          id: 's1',
+          title: 'Second messengers',
+          items: [
+            { id: 'q1', type: 'mcq', question: 'Why?', options: ['a', 'b'], correct_index: 0 },
+            { id: 'g1', type: 'graphic', title: 'The cascade' },
+          ],
+          ...over,
+        },
+      ],
+    }) as Course;
+
+  it('asks what each section builds to, and how to write it', () => {
+    const prompt = buildExplainPrompt(lecture());
+    expect(prompt).toContain('its `builds_to`');
+    expect(prompt).toContain(NARRATION_SPEC);
+    expect(prompt).not.toContain('Already says what it builds to');
+  });
+
+  it('says which sections already have it, and which figures', () => {
+    const prompt = buildExplainPrompt(lecture({ builds_to: 'To the cascade.' }));
+    expect(prompt).toContain('Already says what it builds to');
+    expect(prompt).toMatch(/Figures it already has, do not write these again:\n\s+- The cascade/);
+  });
+
+  it('only asks for figures the student chose to have', () => {
+    expect(buildExplainPrompt(lecture())).toContain('no\n`svg`');
+    expect(buildExplainPrompt(lecture({}, ['mcq', 'explain']))).not.toContain('no\n`svg`');
+  });
+
+  it('labels a reason from outside the slides', () => {
+    expect(buildExplainPrompt(lecture())).toMatch(/reason for something the slides state/);
   });
 });

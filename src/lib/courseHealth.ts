@@ -412,6 +412,18 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     });
   }
 
+  // A diagram is read, never scored. The generator marks the ones that are
+  // content rather than scenery, and marking one is a promise that the
+  // lecture asks about it too (docs/proposals/narration.md).
+  if (gaps.untestedFigures.length && questions) {
+    const n = gaps.untestedFigures.length;
+    findings.push({
+      id: 'untested-figures',
+      severity: 'warning',
+      message: `${n === 1 ? 'One diagram is' : `${n} diagrams are`} marked as something to know, but no question asks about ${n === 1 ? 'it' : 'them'}: ${gaps.untestedFigures.slice(0, 3).join(', ')}${n > 3 ? `, +${n - 3} more` : ''}. Diagrams are read, never scored, so Add questions is what turns ${n === 1 ? 'it' : 'them'} into something you are tested on.`,
+    });
+  }
+
   if (items.length > 0 && gaps.gradableRatio < 0.4 && questions) {
     findings.push({
       id: 'low-gradable',
@@ -608,6 +620,7 @@ const GROUPS: Record<string, FindingGroup> = {
   'written-many': 'fix',
   'unsafe-svg': 'fix',
   'unclear-figures': 'slides',
+  'untested-figures': 'slides',
   'sparse-sections': 'slides',
   'dense-sections': 'slides',
   'declared-terms-missing': 'slides',

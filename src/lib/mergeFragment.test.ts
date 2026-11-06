@@ -340,3 +340,54 @@ describe('applyMerge — inventory of added material', () => {
     expect(merged.metadata.total_items).toBe(1);
   });
 });
+
+describe('what a section builds to, in a reply', () => {
+  const reply = (sections: unknown[]) => {
+    const parsed = parseFragment({ sections }, 's1');
+    if (!parsed.ok) throw new Error(parsed.error);
+    return parsed.fragment;
+  };
+
+  it('reaches a section that has none, with no items needed', () => {
+    const plan = planMerge(course(), reply([{ id: 's1', builds_to: 'Where the energy comes from.', items: [] }]));
+    expect(plan.totalFramed).toBe(1);
+    expect(plan.totalAdded).toBe(0);
+    const merged = applyMerge(course(), plan);
+    expect(merged.sections[0].builds_to).toBe('Where the energy comes from.');
+    expect(merged.sections[0].items).toHaveLength(1);
+  });
+
+  it('never replaces what a section already says', () => {
+    const had = course();
+    had.sections[0].builds_to = 'The one the student read.';
+    const plan = planMerge(had, reply([{ id: 's1', builds_to: 'Something else.', items: [] }]));
+    expect(plan.totalFramed).toBe(0);
+    expect(applyMerge(had, plan).sections[0].builds_to).toBe('The one the student read.');
+  });
+
+  it('comes with a new section, as do its place in the slides and its description', () => {
+    const plan = planMerge(
+      course(),
+      reply([
+        {
+          id: 's9',
+          title: 'Membranes',
+          description: 'What they are',
+          source_range: 'slides 40–48',
+          builds_to: 'To why a membrane leaks.',
+          items: [flashcard('n1', 'What is a pore?')],
+        },
+      ]),
+    );
+    const added = applyMerge(course(), plan).sections.find((s) => s.id === 's9')!;
+    expect(added.builds_to).toBe('To why a membrane leaks.');
+    expect(added.source_range).toBe('slides 40–48');
+    expect(added.description).toBe('What they are');
+  });
+
+  it('adds nothing to the plan when the reply gives nothing', () => {
+    const plan = planMerge(course(), reply([{ id: 's1', items: [] }]));
+    expect(plan.sections).toHaveLength(0);
+    expect(plan.totalFramed).toBe(0);
+  });
+});

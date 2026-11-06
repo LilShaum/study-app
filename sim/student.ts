@@ -91,6 +91,9 @@ MEMORY['fsrs-power'] = {
  * real student's medians (study log, 2026-10-12) since 2026-10-13; the
  * guesses before ran about a quarter short (typed term 15 s, MCQ 35 s).
  */
+/** What a section builds to, read before it starts: a guess, one to three sentences. */
+export const OPENING_SECONDS = 20;
+
 export const SECONDS: Record<SessionItem['type'], number> = {
   definition: 22,
   // An assumption until a real log has one: a few sentences to read.

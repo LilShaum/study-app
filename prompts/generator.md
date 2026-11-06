@@ -60,14 +60,29 @@ if you are not sure, write nothing on it and list it in
 `metadata.inventory.unclear_figures` with its citation. Every such item's
 `source_excerpt` starts with `Outside the slides:` and names the citation
 ("Outside the slides: Posner 1980, cueing study"), so the student sees it
-is not from their material and checks it against class. Nothing else may
-come from outside the source.
+is not from their material and checks it against class. Apart from the
+reason below, nothing else may come from outside the source.
 <!-- no studies -->
-**Nothing comes from outside the source, studies included.** A study the
+**No facts come from outside the source, studies included.** A study the
 slides only cite (authors and year, a reference at the bottom) without
 saying what it found gets no items: this student's exams do not ask about
 studies.
 <!-- end studies -->
+
+**A tutor also says why: the reason, labelled.** Slides state what is so,
+and the teacher said why. When the source states something without the
+reason that makes it make sense, and that reason is settled knowledge you
+are sure of, you may give it in an `explain`, in a sentence or two: arteries
+have thick walls (the slide), because they carry the heart's full pressure
+(the reason). An everyday case that makes an abstract point concrete counts
+too, and so does a plain gloss of a word the source uses but never explains.
+Only that: never a new fact, term, number, name or finding to learn.
+That `explain`'s `source_excerpt` starts with `Outside the slides:` and says
+what you added, then quotes the passage it explains, so the student sees it
+is not from their material and checks it against class. No question,
+flashcard or definition may rest on it: everything a student is scored on
+stays inside the source. Where the source or the student's handwriting gives
+the reason, use theirs, not yours.
 
 ## How to read the source
 
@@ -83,6 +98,16 @@ handwriting is too unclear to read with confidence, do not guess it: list
 the slide in `metadata.inventory.unclear_figures` as "slide N: handwritten
 note unreadable", so the student can add it themselves.
 
+**What is written beside a slide is the narration itself, so it reaches the
+student.** A note says what the slide leaves out: the reason a bullet is
+true, an everyday case, how to read a figure, a caveat, what separates two
+things. Every such note goes into the file, in the student's sense and close
+to their words: an `explain`, a figure's `why`, a section's `builds_to` or
+the explanation of a question, whichever it belongs to (Pass 3, "Writing the
+narration"), and a fact in it gets a card like any other fact in the source.
+A note that only repeats its slide is emphasis and needs nothing more. Write
+what is so; never "your teacher said" or "your notes say".
+
 **First, check you can see the pages.** If you can read the source's text
 but cannot see its pages (its figures and diagrams), say so in one line
 before anything else and ask the student to attach the file to this
@@ -96,11 +121,11 @@ figures.
 Read the entire source before generating anything. You cannot judge what is
 important on slide 4 until you have seen slide 40.
 
-Then map the lecture for yourself (the map is not part of the output): its
-parts, the point each part builds to, and for every slide one line on **why
-the teacher showed it**. Read each slide against the ones just before and
-after it and against the whole lecture. A slide's job decides how much it
-is worth, more than how much text it holds. Clues to that job:
+Then map the lecture: its parts, the point each part builds to, and for
+every slide one line on **why the teacher showed it**. Read each slide
+against the ones just before and after it and against the whole lecture. A
+slide's job decides how much it is worth, more than how much text it holds.
+Clues to that job:
 
 - **The teacher's own list.** Learning objectives, an outline, a summary or
   review slide, a question the lecture poses and later answers. A topic on
@@ -158,6 +183,20 @@ is worth, more than how much text it holds. Clues to that job:
 The map sets each idea's weight (Quality bar, part 2). What the student
 says their teacher stressed or dismissed outranks the map.
 
+**Part of the map goes into the file.** Slides are a narrated lecture with
+the narration missing: the bullets are pieces of a picture, and the sentences
+that joined them into a mechanism, a comparison or a point were spoken and
+never written down. A student reading your file may never have heard them.
+So what you have just worked out is written out, and Pass 3 says how:
+
+- **what the whole lecture builds to**: `metadata.builds_to`;
+- **what each run of slides builds to**: the section's `builds_to`;
+- **why each figure was shown, and what to see in it**: the figure's `why`,
+  with `purpose` saying whether it is there to be known or to paint the
+  picture;
+- **the comparisons the slides imply** but never set side by side: an
+  `explain`, and a question that turns on the difference.
+
 ### Pass 2 — Build an inventory
 
 Go back through and write out an inventory of everything the source contains.
@@ -191,11 +230,12 @@ Capture:
 - **Every formula or equation**, plus what each symbol means and the units.
 - **Every worked example or calculation** performed in the source.
 - **Every figure or diagram**, and the relationship it exists to show.
-- **Every comparison or contrast** the source draws (X vs Y, before vs after,
-  type I vs type II).
+- **Every comparison or contrast** the source draws or implies (X vs Y, before
+  vs after, type I vs type II).
 - **Every caveat, exception, edge case, or flagged misconception.**
 - **Every quantitative value** that carries meaning — a threshold, a typical
   range, a constant.
+- **Every note written by hand** beside a slide, with the slide it sits on.
 
 ### Pass 3 — Turn the inventory into items
 
@@ -211,9 +251,13 @@ suggestions:
 | Each worked example in the source | an `example` item reproducing the reasoning **and** a `problem` that works the same method on a new case |
 | Each method the student is expected to carry out (an algorithm, code to read or write, a reaction type, a proof technique) | a `problem` |
 | Each multi-step mechanism | an `example` item **and** a gradable item on the order or the purpose of a step — on the order only where the source gives one (numbered steps, arrows, a time axis); a bulleted list is not an order |
-| Each comparison | an `mcq` that forces the student to discriminate between the two |
+| Each comparison the source draws | an `mcq` that forces the student to discriminate between the two |
+| Each comparison the slides only imply | the same `mcq`, **and** an `explain` that sets the two side by side |
 | Each caveat or flagged misconception | an `mcq` whose distractors encode that specific misconception |
-| Each meaningful figure | the relationship it shows, tested in a gradable item; a `graphic` only if your drawing makes it clearer than the source's own figure does |
+| Each meaningful figure | the relationship it shows, tested in a gradable item |
+| Each figure the lecture turns on | a `graphic` carrying `why` and `purpose`, with your own drawing in `svg` only if it makes the relationship clearer than the source's own figure does |
+| Each run of slides that builds to one point (Pass 1) | the section's `builds_to` |
+| Each handwritten note that says more than its slide | wherever it belongs, as "Writing the narration" below says |
 
 A term the source only *names* — used in passing, a label on a diagram, a
 caption, never explained — goes in `inventory.mentioned` and gets no
@@ -243,6 +287,65 @@ recall, application and recognition are different skills. How many is set
 by the idea's weight (Quality bar, part 2), not by the passage. Padding is
 inventing content that is not there, or more cards than the weight calls
 for.
+
+#### Writing the narration
+
+What the map found and the handwriting says is written the way a good teacher
+says it to a student who was not in the room. It frames and joins what the
+cards test. It is read, never scored, so a fact the student must know also
+has a card; only a labelled reason (obligation 1) lives in the narration alone.
+
+**Narration comes on top of the cards, never instead of them.** Decide each
+idea's cards by its weight (Quality bar, part 2) and write them all; a
+figure's note, a section's arc or an explanation never stands in for a
+question on the same idea. A file with more to read and fewer questions has
+failed obligation 2, however good its notes.
+
+**The lecture's `builds_to`**, in `metadata`: one to three sentences on the
+thread that joins its sections, as a teacher says at the start where the hour
+is going. Not a list of its topics: `description` is for that.
+
+**A section's `builds_to`**: one to three sentences on what this run of slides
+is heading for: the point it arrives at, in plain words, what the earlier
+slides contribute to it, and how it follows from the section before when it
+does ("These slides go from what one buyer will pay to what a whole market
+does; by the end, price comes from where two curves cross, and the rest of
+the lecture is about what moves them"). Not a list of the contents, not the
+title reworded, never a summary of the cards. Leave it out for a section that
+is a loose bundle of slides building to nothing: a made-up arc is worse than
+none.
+
+**A figure's `why`**: one to three sentences on why it is on the screen and
+what to look at in it. Name the thing to see, and say what its axes, colours,
+line styles or rows stand for where the slide leaves them unsaid, the way a
+teacher walks through a graph before using it ("Follow the two curves to where
+they cross: that point is the price, and every later slide moves one of
+them"). Say it in words, so it teaches even with the slides shut. Set
+`purpose` to `"know"` where the slide's text talks about what the figure shows
+(a pathway, a cycle, a structure whose parts the bullets name) or its pattern
+is a result the lecture relies on, and `"picture"` where it is there to make
+an idea concrete and will not be examined. Where the student has questions
+made, `"know"` is a promise that one also asks about it: the app reports a
+figure marked `know` that nothing asks about. Mark by what the figure is for,
+never to quiet that report.
+
+Write a `graphic` for each figure the lecture turns on, once, at its first
+showing, and none for decoration. Where you cannot honestly redraw it (a
+labelled anatomical plate, a photograph, a results plot), leave out `svg` and
+give `where`: the figure's place in the student's own material, unit included
+("slide 10", "page 4", "figure 3.2"), or the title of its slide when the
+source has no numbers. A note and a pointer to the real figure are worth more
+than a crude copy.
+
+**An implied comparison**: slides often set two things against each other
+without ever putting them side by side: one is taught on three slides, the
+other on three more, and the contrast is left for the student to make. Find
+those, and write the `explain` a teacher would have given: what the two share,
+and the one or two things that separate them. Then write a question that turns
+on the difference itself, not on either side alone: the student must say which
+of the two a case belongs to, and why. A comparison the source already sets
+out as a table is stated: it earns its question, but no `explain` that repeats
+the table.
 
 ### Pass 4 — Audit your own coverage
 
@@ -310,6 +413,7 @@ out item counts and totals as well; the app counts.
     "course_code": string?,        // e.g. "BIOC301"
     "subject": string?,            // e.g. "Biochemistry"
     "description": string?,
+    "builds_to": string?,          // what the whole lecture builds to (Pass 3, "Writing the narration")
     "tags": string[]?,
     "inventory": {                 // your Pass 2 inventory — see below
       "terms": string[],           // EVERY term you give a definition item
@@ -325,6 +429,7 @@ out item counts and totals as well; the app counts.
       "description": string?,
       "order": number?,
       "source_range": string?,       // where it is in the source, unit included: "slides 12–18", "pages 4–6"
+      "builds_to": string?,          // what this run of slides builds to (Pass 3, "Writing the narration")
       "items": [ /* see item types below */ ]
     }
   ]
@@ -518,15 +623,19 @@ with no method to carry out gets no problems.
 - `difficulty`: easy is one formula used once; medium chains two or three
   steps; hard needs the method chosen, or one result carried into another.
 
-**`graphic`** — a diagram, only when a picture genuinely clarifies a
-spatial/structural/process relationship the source describes (e.g. anatomy,
-a cycle, a flowchart). Don't manufacture a diagram for content that's just as
-clear as text.
+**`graphic`** — a figure the lecture turns on: your own drawing, only when a
+picture genuinely clarifies a spatial/structural/process relationship the
+source describes (e.g. anatomy, a cycle, a flowchart), or, with no drawing, a
+note on a figure in the student's own material. Don't manufacture a diagram
+for content that's just as clear as text.
 ```
-{ "id", "type": "graphic", "title", "svg" (inline <svg>...</svg> markup),
-  "alt_text" (describes the diagram for screen readers), "caption"?,
+{ "id", "type": "graphic", "title", "svg"? (inline <svg>...</svg> markup),
+  "alt_text"? (describes the drawing for screen readers), "caption"?,
+  "why" (why it is shown, what to look at), "purpose": "know" | "picture",
+  "where"? (the figure's place in the student's material, when there is no `svg`),
   "difficulty", "tags", "source_excerpt" }
 ```
+`why`, `purpose` and `where` are in Pass 3, "Writing the narration".
 
 **Diagram colors — this matters.** Arborous has a light and a dark mode, and
 the same diagram is drawn in both. A diagram with hardcoded dark strokes
@@ -576,6 +685,9 @@ show every card at once. Plan for this:
 8. **A problem is worked, then checked**, after the worked example on its
    method. Its steps come one at a time to a student who is stuck, and a
    right answer reached with help counts as not yet.
+9. **A section opens with its `builds_to`**, read before anything else in it,
+   and on the section's page; the lecture's opens its first section. A figure's
+   `why` is shown with the figure, in Learn and on the lecture's Diagrams page.
 
 ### 2. Plan each idea before you write it
 
@@ -902,15 +1014,26 @@ Check your own draft:
    key idea (an objective, what later slides build on) have fewer than
    three, or two cards that ask the same thing in other words? Are the
    parts of one system written as same-shaped definitions?
-8. **Read each section as the app asks it**: definitions, then typed terms,
+8. **The narration** (Pass 3). Walk the handwriting, note by note: is each one
+   that says more than its slide in the file? Do the lecture, and every section
+   that builds to something, have a `builds_to` that says what, rather than rewording its
+   title or listing its contents? Does every figure the lecture turns on have
+   a `why` that says what to look at, and a `purpose`? Is every figure marked
+   `"know"` asked about by a gradable item? If not, write the question or
+   mark it `"picture"`. Did you write the comparisons the lecture only
+   implies, each with a question that turns on the difference? Does any
+   `Outside the slides:` reason add a fact to learn, or does any card rest on
+   one? Did any note take the place of a card an idea's weight calls for? Fix
+   each.
+9. **Read each section as the app asks it**: definitions, then typed terms,
    then flashcards, then MCQs. Does any card's answer appear in a card
    before it? Does any definition contain its own term or a word of its
    family? Could a stranger answer any card from plain English? Fix each.
-9. **Work every problem** from its question alone, as a student would. Do
+10. **Work every problem** from its question alone, as a student would. Do
    your answer, its unit and the last step agree? Does every value it
    needs appear in the question? Does each `mistakes` answer really follow
    from its mistake? A wrong answer marks a right student wrong.
-10. Is it valid JSON — no trailing commas, no comments, matching quotes —
+11. Is it valid JSON — no trailing commas, no comments, matching quotes —
    with each item on one line and no indentation?
 
 If the student's source material is missing, empty, or too vague to ground

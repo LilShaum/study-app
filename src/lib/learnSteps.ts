@@ -305,6 +305,11 @@ export function shownOf(item: SessionItem): Shown | null {
   // Prose that teaches, so a card whose answer it prints waits as it would
   // after a definition that prints it.
   if (item.type === 'explain') return { asked: { question: `${item.title}. ${item.text}`, answer: '' }, explains: true };
+  // What a section builds to is read the same way, and can print an answer too.
+  if (item.type === 'slides') {
+    const framing = [item.lectureBuildsTo, item.buildsTo].filter(Boolean).join(' ');
+    return framing ? { asked: { question: framing, answer: '' }, explains: true } : null;
+  }
   const asked = item._again ? null : askedOf(item);
   return asked ? { asked } : null;
 }

@@ -140,13 +140,53 @@ export const ProblemItemSchema = z.looseObject({
     .catch(undefined),
 });
 
+/**
+ * A piece of the narration the slides leave out: what a run of slides builds
+ * to, or why a figure was put on the screen (docs/proposals/narration.md).
+ * Read forgivingly: it frames what is studied and is never scored, so an
+ * over-long one is cut at its last whole sentence rather than dropped, and it
+ * never rejects the lecture around it.
+ */
+export const narration = (maxLength: number) =>
+  z.preprocess((v) => {
+    const text = typeof v === 'string' ? v.trim() : '';
+    if (!text) return undefined;
+    if (text.length <= maxLength) return text;
+    const kept = text.slice(0, maxLength);
+    const end = Math.max(kept.lastIndexOf('. '), kept.lastIndexOf('? '), kept.lastIndexOf('! '));
+    return end > 0 ? kept.slice(0, end + 1) : kept;
+  }, z.string().optional());
+
 export const GraphicItemSchema = z.looseObject({
   ...itemBase,
   type: z.literal('graphic'),
   title: z.string(),
+  /** Absent for a figure in the student's own material that the generator cannot honestly redraw. */
   svg: z.string().optional(),
   alt_text: z.string().optional(),
   caption: z.string().optional(),
+  /**
+   * Why the figure is on the screen and what to look at in it: the sentences
+   * that went with it and are not on the slide (docs/proposals/narration.md).
+   */
+  why: narration(600),
+  /**
+   * Whether the figure is there to be known or to paint the picture, which
+   * the generator's Pass 1 already decides: `know` for a pathway, cycle or
+   * structure the slide's text talks about, or a plot whose pattern is a
+   * result the lecture relies on; `picture` for one that makes an idea
+   * concrete. A graphic is read, never scored, so `know` is what lets the
+   * lecture check notice that nothing in the lecture asks about it.
+   */
+  purpose: z.enum(['know', 'picture']).optional().catch(undefined),
+  /**
+   * Where the figure is in the student's own material, unit included ("slide
+   * 10", "page 4", "figure 3.2"), or the title of its slide when the source
+   * has no numbers. Trimmed rather than dropped: a long one ("the slide
+   * titled X, shown again on Y") still finds the figure, and dropping it
+   * would leave the student nowhere to look.
+   */
+  where: narration(200),
 });
 
 export const StudyItemSchema = z.discriminatedUnion('type', [
@@ -171,6 +211,14 @@ export const SectionSchema = z.looseObject({
    * first and then asks before it shows (docs/proposals/modes.md).
    */
   source_range: z.string().max(60).optional(),
+  /**
+   * What this run of slides builds to, as a teacher opens it: the point the
+   * section is heading for, and how it follows from the one before
+   * (docs/proposals/narration.md). The generator works this out in Pass 1 and
+   * used to throw it away. Not an item: it belongs to the run, so it is never
+   * scored, never set aside and never shuffled into a quiz.
+   */
+  builds_to: narration(600),
   items: z.array(StudyItemSchema),
 });
 
@@ -258,6 +306,11 @@ export const CourseMetadataSchema = z.looseObject({
   /** The kinds of item the student chose to have made (lib/makeKinds); every kind when absent. */
   make: z.array(z.string()).max(20).optional().catch(undefined),
   description: z.string().optional(),
+  /**
+   * What the whole lecture builds to: the thread that joins its sections, as
+   * a teacher says where the hour is going (docs/proposals/narration.md).
+   */
+  builds_to: narration(600),
   tags: z.array(z.string()).optional(),
   total_items: z.number().optional(),
   item_counts: ItemCountsSchema.optional(),

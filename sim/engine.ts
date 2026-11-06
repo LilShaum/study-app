@@ -15,7 +15,7 @@ import { useSessionStore } from '@/store/session';
 import { useLearnStore } from '@/store/learn';
 import { makeCourse, SHAPES } from './course';
 import { rng, type Rand } from './random';
-import { chanceRight, FIRST_TIME, MCQ_GUESS, MEMORY, SECONDS } from './student';
+import { chanceRight, FIRST_TIME, MCQ_GUESS, MEMORY, OPENING_SECONDS, SECONDS } from './student';
 
 const DAY = 864e5;
 const MIN = 6e4;
@@ -535,7 +535,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       for (;;) {
         if (used >= capMs) return 'out' as const;
         const item = store().current()!;
-        const ms = SECONDS[item.type] * 1000;
+        const ms = (item.type === 'slides' && item.buildsTo ? OPENING_SECONDS : SECONDS[item.type]) * 1000;
         now += ms;
         used += ms;
         if (reviewing(item, mode)) reviewMs += ms;

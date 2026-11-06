@@ -6,6 +6,9 @@ import { prepareSvg } from '@/lib/prepareSvg';
 import { scrollToAnchor } from '@/lib/scrollToAnchor';
 import { Icon } from '@/components/Icon';
 import { SourceNote } from '@/components/items/SourceNote';
+import { FigureElsewhere } from '@/components/items/GraphicCard';
+import { RichText } from '@/components/items/RichText';
+import { purposeLabel } from '@/lib/figurePurpose';
 import type { GraphicItem } from '@/schema/course';
 
 /** I, II, III… the way a plate has been numbered since before any of this. */
@@ -47,6 +50,7 @@ function PlateFigure({ plate, courseId }: { plate: Plate; courseId: string }) {
   const { item } = plate;
   // Sanitized + theme-adapted; see prepareSvg for why raw markup isn't used.
   const svg = useMemo(() => prepareSvg(item.svg), [item.svg]);
+  const purpose = purposeLabel(item.purpose);
 
   return (
     <figure
@@ -55,7 +59,10 @@ function PlateFigure({ plate, courseId }: { plate: Plate; courseId: string }) {
       className="scroll-mt-20 border-t border-border pt-5"
     >
       <div className="flex items-baseline justify-between gap-3 text-micro uppercase tracking-wider text-text-3">
-        <span>Plate {roman(plate.number)}</span>
+        <span>
+          Plate {roman(plate.number)}
+          {purpose && <span className="normal-case tracking-normal"> · {purpose}</span>}
+        </span>
         <Link
           to={`/study/${courseId}/section/${encodeURIComponent(plate.sectionId)}`}
           className="truncate hover:text-text"
@@ -64,21 +71,32 @@ function PlateFigure({ plate, courseId }: { plate: Plate; courseId: string }) {
         </Link>
       </div>
 
-      <div
-        role="img"
-        aria-label={item.alt_text || item.title}
-        className="mt-5 flex items-center justify-center border border-border p-6 text-text [&_svg]:max-h-80 [&_svg]:max-w-full"
-      >
-        {svg ? (
-          <div dangerouslySetInnerHTML={{ __html: svg }} />
-        ) : (
-          <div className="text-sm text-text-3">No diagram provided</div>
-        )}
-      </div>
+      {svg && (
+        <div
+          role="img"
+          aria-label={item.alt_text || item.title}
+          className="mt-5 flex items-center justify-center border border-border p-6 text-text [&_svg]:max-h-80 [&_svg]:max-w-full"
+          dangerouslySetInnerHTML={{ __html: svg }}
+        />
+      )}
 
-      <figcaption className="mt-5">
+      <figcaption className={svg ? 'mt-5' : 'mt-3'}>
         <span className="font-display text-heading font-semibold text-text">{item.title}</span>
-        {item.caption && <p className="mt-1 max-w-prose text-small text-text-2">{item.caption}</p>}
+        {/* Why it is on the screen and what to look at: the sentences that
+            went with the figure and never made it onto the slide. */}
+        {item.why && (
+          <p className="mt-1 max-w-prose text-small text-text-2">
+            <RichText text={item.why} />
+          </p>
+        )}
+        {item.caption && <p className="mt-1 max-w-prose text-small text-text-3">{item.caption}</p>}
+        {/* A figure with no drawing of ours is still a plate: it says where
+            the real one is, so the gallery indexes what the lecture turns on. */}
+        {!svg && (
+          <div className="mt-2">
+            <FigureElsewhere where={item.where} />
+          </div>
+        )}
         {/* The passage the diagram was drawn from stays: it is the evidence
             the drawing is grounded in, and it is already quiet enough to sit
             under a caption. The difficulty badge does not — a diagram is read,
@@ -154,8 +172,8 @@ export function DiagramsRoute() {
           <p className="mt-3 text-text-2">This lecture has no diagrams.</p>
           <p className="mx-auto mt-1 max-w-md text-sm text-text-3">
             The generator only draws one where a picture genuinely clarifies something: a cycle, a
-            structure, a flowchart. If your notes have figures it skipped, &ldquo;More
-            practice&rdquo; can ask for them.
+            structure, a flowchart. If your notes have figures it skipped, &ldquo;Add
+            questions&rdquo; on the lecture page can ask for them.
           </p>
         </div>
       ) : (

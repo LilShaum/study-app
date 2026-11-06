@@ -37,7 +37,7 @@ export function specSection(heading: string, source: string = GENERATOR_SPEC): s
   return lines.slice(start, end).join('\n').trim();
 }
 
-const STUDY_BLOCK = /<!-- studies -->\n([\s\S]*?)<!-- no studies -->\n([\s\S]*?)<!-- end studies -->\n?/g;
+const STUDY_BLOCK = /<!-- studies -->\r?\n([\s\S]*?)<!-- no studies -->\r?\n([\s\S]*?)<!-- end studies -->\r?\n?/g;
 
 /**
  * The generator spec with its studies passages chosen: teaching each cited
@@ -75,3 +75,6 @@ export function itemTypeSpec(type: string, source: string = ITEM_TYPES_SPEC): st
 
 /** What an explanation is and how to write one. */
 export const EXPLAIN_SPEC = itemTypeSpec('explain');
+
+/** How to write what the slides leave out: what a section builds to, a figure's note, an implied comparison. */
+export const NARRATION_SPEC = specSection('#### Writing the narration');

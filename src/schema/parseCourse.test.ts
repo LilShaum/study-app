@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseCourse } from './parseCourse';
 import { multiReasons } from '@/lib/multiKey';
+import { CourseSchema, type GraphicItem } from './course';
 
 const validCourse = {
   schema_version: '1.0',
@@ -159,5 +160,38 @@ describe('parseCourse — select all that apply', () => {
       const reasons = multiReasons(m);
       expect(reasons === undefined || reasons.every((x) => x === '')).toBe(true);
     }
+  });
+});
+
+describe('the narration in a lecture file', () => {
+  const file = (section: Record<string, unknown>, graphic: Record<string, unknown> = {}) => ({
+    schema_version: '1.0',
+    metadata: { title: 'T' },
+    sections: [{ id: 's', title: 'S', ...section, items: [{ id: 'g', type: 'graphic', title: 'G', ...graphic }] }],
+  });
+
+  it('keeps what a section builds to and what a figure is for', () => {
+    const c = CourseSchema.parse(file({ builds_to: 'To the point.' }, { why: 'Look here.', purpose: 'know', where: 'slide 10' }));
+    expect(c.sections[0].builds_to).toBe('To the point.');
+    const g = c.sections[0].items[0] as GraphicItem;
+    expect([g.why, g.purpose, g.where]).toEqual(['Look here.', 'know', 'slide 10']);
+  });
+
+  it('cuts an essay at its last whole sentence rather than dropping it or the lecture', () => {
+    const c = CourseSchema.parse(file({ builds_to: `First sentence. ${'word '.repeat(200)}` }));
+    expect(c.sections[0].builds_to).toBe('First sentence.');
+  });
+
+  it('never refuses a lecture over a note in the wrong shape', () => {
+    const c = CourseSchema.parse(file({ builds_to: 7 }, { why: ['a'], purpose: 'decoration', where: 'x'.repeat(500) }));
+    expect(c.sections[0].builds_to).toBeUndefined();
+    const g = c.sections[0].items[0] as GraphicItem;
+    expect([g.why, g.purpose]).toEqual([undefined, undefined]);
+    // A long place is cut short, never lost: it is how the student finds the figure.
+    expect(g.where).toHaveLength(200);
+  });
+
+  it('stands without a drawing', () => {
+    expect((CourseSchema.parse(file({}, { why: 'Look here.' })).sections[0].items[0] as GraphicItem).svg).toBeUndefined();
   });
 });

@@ -3,6 +3,7 @@ import type { Course } from '@/schema/course';
 import { buildSessionItems } from './buildSessionItems';
 import { scoredEntries } from './scored';
 import type { ExamRule } from './exam';
+import { shownOf } from './learnSteps';
 
 const course = {
   schema_version: '1.0',
@@ -521,6 +522,56 @@ describe('Learn with the student\'s own slides', () => {
   it('starts Today\'s new material with it too', () => {
     const items = buildSessionItems(withRange, 'today', { minutes: 60 });
     expect(items.find((i) => i._block !== 'review')?.type).toBe('slides');
+  });
+});
+
+describe('Learn, opening a section with what it builds to', () => {
+  const framed = {
+    ...mixedCourse,
+    sections: mixedCourse.sections.map((s) => (s.id === 'sa' ? { ...s, builds_to: 'To where it all leads.' } : s)),
+  } as Course;
+
+  it('opens with it, in the first step, with no place in the slides needed', () => {
+    const items = buildSessionItems(framed, 'learn', { sectionId: 'sa' });
+    expect(items[0]).toMatchObject({ id: 'sa~slides', type: 'slides', buildsTo: 'To where it all leads.', _step: 0 });
+    expect(items[0]).not.toHaveProperty('range', expect.anything());
+    expect(items[0]._block).toBe(items[1]._block);
+  });
+
+  it('says both on one card when the section has a place in the slides too', () => {
+    const both = { ...framed, sections: framed.sections.map((s) => ({ ...s, source_range: 'slides 1–3' })) } as Course;
+    const openers = buildSessionItems(both, 'learn', { sectionId: 'sa' }).filter((i) => i.type === 'slides');
+    expect(openers).toHaveLength(1);
+    expect(openers[0]).toMatchObject({ range: 'slides 1–3', buildsTo: 'To where it all leads.' });
+  });
+
+  it('adds nothing to a section that does not say', () => {
+    expect(buildSessionItems(framed, 'learn', { sectionId: 'sb' }).some((i) => i.type === 'slides')).toBe(false);
+  });
+
+  it('says what the whole lecture builds to once, on its first section', () => {
+    const lecture = { ...mixedCourse, metadata: { ...mixedCourse.metadata, builds_to: 'To the whole of it.' } } as Course;
+    const openers = buildSessionItems(lecture, 'learn').filter((i) => i.type === 'slides');
+    expect(openers).toHaveLength(1);
+    expect(openers[0]).toMatchObject({ _sectionId: mixedCourse.sections[0].id, lectureBuildsTo: 'To the whole of it.' });
+  });
+
+  it('opens the new part of Today, and no review', () => {
+    const items = buildSessionItems(framed, 'today', { minutes: 60 });
+    expect(items.find((i) => i._block !== 'review')?.type).toBe('slides');
+    expect(items.filter((i) => i._block === 'review').some((i) => i.type === 'slides')).toBe(false);
+  });
+
+  it('stays out of Skip the reading and every practice mode', () => {
+    expect(buildSessionItems(framed, 'learn', { sectionId: 'sa', questionsFirst: true }).some((i) => i.type === 'slides')).toBe(false);
+    for (const mode of ['review', 'weakest'] as const) {
+      expect(buildSessionItems(framed, mode).some((i) => i.type === 'slides')).toBe(false);
+    }
+  });
+
+  it('counts as reading that can print an answer, so the audit can see it', () => {
+    const [opener] = buildSessionItems(framed, 'learn', { sectionId: 'sa' });
+    expect(shownOf(opener)).toMatchObject({ explains: true, asked: { question: 'To where it all leads.' } });
   });
 });
 

@@ -1,7 +1,8 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { sortedSections } from './sortedSections';
 import { freshIdPrefix } from './idPrefix';
-import { EXPLAIN_SPEC } from './generatorSpec';
+import { EXPLAIN_SPEC, NARRATION_SPEC } from './generatorSpec';
+import { kindsOf } from './makeKinds';
 import { teacherNotesBlock } from './teacherNotes';
 
 /** Enough of a section's questions to show what its explanations prepare for. */
@@ -30,6 +31,10 @@ function questionOf(item: StudyItem): string | null {
  * Pasted into the chat that wrote the lecture, the model has the slides and
  * writes from them. Elsewhere it falls back to the source excerpts the
  * lecture's items recorded, as More practice does.
+ *
+ * The same reply gives a lecture made before them what its sections build to
+ * and notes on its figures (docs/proposals/narration.md), so a lecture already
+ * studied gets the narration without losing its scores.
  */
 export function buildExplainPrompt(course: Course, notes = course.metadata.student_notes): string {
   // A section the student set wholly aside is not asked about.
@@ -39,6 +44,7 @@ export function buildExplainPrompt(course: Course, notes = course.metadata.stude
     .map((s) => {
       const live = s.items.filter((i) => !i.set_aside);
       const explained = live.filter((i) => i.type === 'explain').map((i) => `    - ${i.title}`);
+      const figures = live.filter((i) => i.type === 'graphic').map((i) => `    - ${i.title}`);
       const terms = live.filter((i) => i.type === 'definition').map((i) => i.term);
       const questions = live.map(questionOf).filter((q): q is string => !!q);
       const shown = questions.slice(0, MAX_QUESTIONS_PER_SECTION);
@@ -55,7 +61,9 @@ export function buildExplainPrompt(course: Course, notes = course.metadata.stude
         shown.map((q) => `    - ${q}`).join('\n') || '    (nothing yet)',
         questions.length > shown.length ? `    (…and ${questions.length - shown.length} more)` : '',
         '',
+        ...(s.builds_to ? ['  Already says what it builds to: leave out `builds_to` here.', ''] : []),
         ...(explained.length ? ['  Already explained, do not write these again:', ...explained, ''] : []),
+        ...(figures.length ? ['  Figures it already has, do not write these again:', ...figures, ''] : []),
         '  Source material its items were written from:',
         excerpts.map((e) => `    • ${e}`).join('\n') || '    (none recorded)',
       ]
@@ -63,6 +71,13 @@ export function buildExplainPrompt(course: Course, notes = course.metadata.stude
         .join('\n');
     })
     .join('\n\n');
+
+  const figureNotes = kindsOf(course).includes('graphic')
+    ? `\n\nIf you can see my slides or notes, also write a \`graphic\` item with no
+\`svg\` for each figure the lecture turns on that the section does not already
+have, with its \`why\`, \`purpose\` and \`where\`. If you cannot see them, write
+no figures: do not guess at what one shows.`
+    : '';
 
   return `I want EXPLANATIONS added to an Arborous lecture I already have. Its
 questions are fine; what it lacks is the teaching before them. I may never
@@ -74,9 +89,9 @@ things different) reach me only as questions I get wrong.
 from them: they are complete.** If it does not, use the source material
 listed under each section below, which my lecture's items quoted from the
 slides. Either way, every sentence must be something that material says or
-shows.
+shows, apart from a reason labelled as below.
 
-What I want back: \`explain\` items only, no other type. One for each key
+What I want back, first: \`explain\` items. One for each key
 idea a section's questions turn on that its terms alone do not teach: a
 mechanism, a cause and effect, a comparison, a principle and its reason, a
 list whose items each mean something. A key idea is one the slides build
@@ -86,10 +101,15 @@ most sections need one to three. Read each section's questions to see what
 its explanations must make sense of, but teach the idea, never a question's
 answer as a fact to remember.
 
+Second: for each section whose slides build to something, its \`builds_to\`, a
+field on the section beside its id${course.metadata.builds_to ? '' : ', and the `builds_to` of the whole lecture, beside `sections`'}.${figureNotes}
+
 Ground each one: its \`source_excerpt\` quotes the passage it explains.
 Where the slides only name a study or a figure and you fill in what it
 showed from your own knowledge, start the excerpt with "Outside the
-slides:" and name the source, and write it only if you are sure.
+slides:" and name the source, and write it only if you are sure. The same
+label goes on the reason for something the slides state, when the slides do
+not give it and you are sure of it: a reason only, never a new fact to learn.
 
 Where the rules at the end say "part 2's table", they mean the key ideas
 above; where they say "obligation 1", the paragraph just above.
@@ -99,7 +119,7 @@ holding only the sections you add to:
 
 {
   "sections": [
-    { "id": "<one of the section ids below>", "items": [ /* explain items */ ] }
+    { "id": "<one of the section ids below>", "builds_to": "…", "items": [ /* explain items, and figures if asked for above */ ] }
   ]
 }
 
@@ -111,6 +131,8 @@ its title and text in the words those cards use.
 ════════ HOW TO WRITE AN EXPLANATION ════════
 
 ${EXPLAIN_SPEC}
+
+${NARRATION_SPEC}
 
 ${teacherNotesBlock(notes)}════════ THE LECTURE ════════
 

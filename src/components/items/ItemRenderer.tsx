@@ -63,6 +63,8 @@ export function ItemRenderer({
       return (
         <SlidesCard
           range={item.range}
+          buildsTo={item.buildsTo}
+          lectureBuildsTo={item.lectureBuildsTo}
           sectionTitle={'_sectionTitle' in item ? String(item._sectionTitle) : ''}
           keyboardEnabled={keyboardEnabled}
           onReadThem={onReadThem}

@@ -268,6 +268,9 @@ export function CourseRoute() {
   const titleBlock = (
     <div className="min-w-0 flex-1">
       <h1 className="font-display text-display font-semibold text-text">{course.metadata.title}</h1>
+      {/* What the whole lecture builds to, where the file says: the thread
+          that joins its sections (docs/proposals/narration.md). */}
+      {course.metadata.builds_to && <p className="mt-2 max-w-prose text-body text-text">{course.metadata.builds_to}</p>}
       {course.metadata.description && (
         <p className="mt-2 line-clamp-3 max-w-prose text-small text-text-2 sm:line-clamp-none">
           {course.metadata.description}
@@ -458,7 +461,9 @@ export function CourseRoute() {
             <ToolButton onClick={() => setAdding('material')}>Add material</ToolButton>
             <ToolButton onClick={() => setAdding('practice')}>Add questions</ToolButton>
             {/* For a lecture made before explanations existed. */}
-            {counts.explain === 0 && kindsOf(course).includes('explain') && <ToolButton onClick={() => setAdding('explain')}>Add explanations</ToolButton>}
+            {(counts.explain === 0 || !course.sections.some((s) => s.builds_to)) && kindsOf(course).includes('explain') && (
+              <ToolButton onClick={() => setAdding('explain')}>Add explanations</ToolButton>
+            )}
             <ToolButton onClick={() => setEditingDetails(true)}>Edit details</ToolButton>
             <ToolButton
               onClick={async () => {

@@ -146,7 +146,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   }, [pasted, course, firstSectionId, skipDuplicates, mode]);
 
   const plan = result && 'plan' in result ? result.plan : null;
-  const canApply = !!plan && plan.totalAdded + plan.totalCorrected > 0;
+  const canApply = !!plan && plan.totalAdded + plan.totalCorrected + plan.totalFramed + (plan.builds_to ? 1 : 0) > 0;
 
   const gaps = useMemo(() => analyseCourseGaps(course), [course]);
   // The same list the More practice prompt puts first (buildPractisePrompt).
@@ -227,8 +227,10 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
     const parts: string[] = [];
     if (plan.totalAdded) parts.push(`Added ${plural(plan.totalAdded, 'item')}`);
     if (plan.totalCorrected) parts.push(`fixed ${plural(plan.totalCorrected, 'item')}`);
+    if (plan.totalFramed || plan.builds_to) parts.push('added what the lecture builds to');
+    const said = parts.join(', ');
     toast(
-      `${parts.join(', ')}.${renamed ? ` ${plural(renamed, 'id')} renamed to avoid a clash.` : ''}`,
+      `${said.charAt(0).toUpperCase()}${said.slice(1)}.${renamed ? ` ${plural(renamed, 'id')} renamed to avoid a clash.` : ''}`,
       { type: 'success' },
     );
     onClose();
@@ -544,7 +546,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
           {plan && (
             <div className="border-l-2 border-border-strong bg-bg py-2 pl-3 text-sm">
-              {plan.totalAdded === 0 && plan.totalCorrected === 0 ? (
+              {plan.totalAdded === 0 && plan.totalCorrected === 0 && plan.totalFramed === 0 ? (
                 <div className="text-text-2">
                   Nothing new to add
                   {plan.totalDuplicates > 0
@@ -659,10 +661,11 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             disabled={!canApply}
             className="press press-ink"
           >
-            {plan && (plan.totalAdded > 0 || plan.totalCorrected > 0)
+            {plan && (plan.totalAdded > 0 || plan.totalCorrected > 0 || plan.totalFramed > 0)
               ? [
                   plan.totalAdded > 0 ? `Add ${plural(plan.totalAdded, 'item')}` : null,
                   plan.totalCorrected > 0 ? `fix ${plural(plan.totalCorrected, 'item')}` : null,
+                  plan.totalAdded === 0 && plan.totalCorrected === 0 ? 'Add' : null,
                 ]
                   .filter(Boolean)
                   .join(' & ')

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CourseSchema, InventorySchema, StudyItemSchema, type Section, type StudyItem } from './course';
+import { CourseSchema, InventorySchema, narration, StudyItemSchema, type Section, type StudyItem } from './course';
 import { formatZodError } from './formatZodError';
 
 /* ============================================================
@@ -19,6 +19,8 @@ export const FragmentSectionSchema = z.looseObject({
   title: z.string().optional(),
   description: z.string().optional(),
   order: z.number().optional(),
+  source_range: z.string().max(60).optional().catch(undefined),
+  builds_to: narration(600),
   items: z.array(StudyItemSchema),
 });
 
@@ -37,6 +39,8 @@ export const FragmentSchema = z
     corrections: z.array(StudyItemSchema).optional(),
     /** The new material's own Pass 2 inventory, joined to the course's (see applyMerge). */
     inventory: InventorySchema.optional(),
+    /** What the whole lecture builds to, for a lecture that does not say yet. */
+    builds_to: narration(600),
   })
   .refine((f) => (f.sections?.length ?? 0) > 0 || (f.corrections?.length ?? 0) > 0, {
     message: 'Expected at least one section of items, or at least one correction.',

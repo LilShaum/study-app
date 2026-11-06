@@ -1,3 +1,5 @@
+const OUTSIDE = /^\s*outside the (slides|notes|source)\b/i;
+
 /**
  * Shows the passage from the student's own notes that an item was generated
  * from.
@@ -10,6 +12,10 @@
  */
 export function SourceNote({ excerpt, open = false }: { excerpt?: string; open?: boolean }) {
   if (!excerpt?.trim()) return null;
+  // The generator's label on what it added itself (prompts/generator.md,
+  // obligation 1): said on the closed line too, since the whole point is that
+  // the student sees it is not from their material and checks it against class.
+  const from = OUTSIDE.test(excerpt) ? 'Not from your notes' : 'From your notes';
 
   return (
     // Open on Learn's reading cards: there the passage is the lesson, and a
@@ -18,8 +24,8 @@ export function SourceNote({ excerpt, open = false }: { excerpt?: string; open?:
     // passage beat feedback without it (Karpicke & Roediger 2010).
     <details open={open} className="group/src mt-3 border-t border-border-light pt-2">
       <summary className="tap-safe flex cursor-pointer list-none items-center text-xs text-text-3 hover:text-text-2">
-        <span className="group-open/src:hidden">From your notes ▸</span>
-        <span className="hidden group-open/src:inline">From your notes ▾</span>
+        <span className="group-open/src:hidden">{from} ▸</span>
+        <span className="hidden group-open/src:inline">{from} ▾</span>
       </summary>
       <blockquote className="mt-1.5 border-l-2 border-border-strong pl-2.5 text-xs italic text-text-2">
         {excerpt}

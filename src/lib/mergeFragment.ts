@@ -10,6 +10,11 @@ export interface MergePlanSection {
   added: StudyItem[];
   /** Incoming items skipped because the course already has the same prompt. */
   duplicates: { item: StudyItem; existingPrompt: string }[];
+  /** What the section builds to, when the reply gives it and the section has none. */
+  builds_to?: string;
+  /** A new section's own details, kept as the reply wrote them. */
+  description?: string;
+  source_range?: string;
 }
 
 /** One existing item the paste would replace, kept under its own id. */
@@ -33,10 +38,14 @@ export interface MergePlan {
   renamedIds: Record<string, string>;
   totalAdded: number;
   totalDuplicates: number;
+  /** Existing sections that gain what they build to. */
+  totalFramed: number;
   /** Per-type counts of what would actually be added. */
   countsByType: Record<string, number>;
   /** The added material's inventory, joined to the course's when applied. */
   inventory?: Fragment['inventory'];
+  /** What the whole lecture builds to, when the reply gives it and the lecture does not say yet. */
+  builds_to?: string;
 }
 
 export interface MergeOptions {
@@ -168,7 +177,10 @@ export function planMerge(course: Course, fragment: Fragment, options: MergeOpti
       added.push(finalItem);
     }
 
-    if (added.length === 0 && duplicates.length === 0) continue;
+    // Never over what a section already says: a reply is not a correction,
+    // and the student may have read that one already.
+    const buildsTo = existing?.builds_to ? undefined : incoming.builds_to;
+    if (added.length === 0 && duplicates.length === 0 && !(existing && buildsTo)) continue;
 
     sections.push({
       id: incoming.id,
@@ -176,6 +188,8 @@ export function planMerge(course: Course, fragment: Fragment, options: MergeOpti
       isNew: !existing,
       added,
       duplicates,
+      builds_to: buildsTo,
+      ...(existing ? {} : { description: incoming.description, source_range: incoming.source_range }),
     });
   }
 
@@ -187,8 +201,10 @@ export function planMerge(course: Course, fragment: Fragment, options: MergeOpti
     renamedIds,
     totalAdded: sections.reduce((n, s) => n + s.added.length, 0),
     totalDuplicates: sections.reduce((n, s) => n + s.duplicates.length, 0),
+    totalFramed: sections.filter((s) => !s.isNew && s.builds_to).length,
     countsByType,
     inventory: fragment.inventory,
+    builds_to: course.metadata.builds_to ? undefined : fragment.builds_to,
   };
 }
 
@@ -211,10 +227,11 @@ export function applyMerge(course: Course, plan: MergePlan): Course {
     const items = corrected.size
       ? section.items.map((item) => corrected.get(item.id) ?? item)
       : section.items;
+    const framed = planned?.builds_to ? { builds_to: planned.builds_to } : {};
     if (!planned || planned.added.length === 0) {
-      return items === section.items ? section : { ...section, items };
+      return items === section.items && !planned?.builds_to ? section : { ...section, ...framed, items };
     }
-    return { ...section, items: [...items, ...planned.added] };
+    return { ...section, ...framed, items: [...items, ...planned.added] };
   });
 
   for (const planned of plan.sections) {
@@ -223,11 +240,15 @@ export function applyMerge(course: Course, plan: MergePlan): Course {
       id: planned.id,
       title: planned.title,
       order: sections.length,
+      ...(planned.description ? { description: planned.description } : {}),
+      ...(planned.source_range ? { source_range: planned.source_range } : {}),
+      ...(planned.builds_to ? { builds_to: planned.builds_to } : {}),
       items: planned.added,
     });
   }
 
   const merged: Course = { ...course, sections };
+  if (plan.builds_to) merged.metadata = { ...course.metadata, builds_to: plan.builds_to };
 
   // New material brings new terms: join its inventory to the course's, so
   // the coverage check covers what was added too. A term already listed as
@@ -243,7 +264,7 @@ export function applyMerge(course: Course, plan: MergePlan): Course {
     const explained = new Set(terms.map((t) => t.toLowerCase()));
     const mentioned = union(was.mentioned, plan.inventory.mentioned).filter((t) => !explained.has(t.toLowerCase()));
     merged.metadata = {
-      ...course.metadata,
+      ...merged.metadata,
       inventory: {
         ...was,
         terms,

@@ -4,6 +4,7 @@ import type { Course } from '@/schema/course';
 import { sortedSections } from '@/lib/sortedSections';
 import { EditableItem } from '@/components/items/EditableItem';
 import { AddItemButton } from '@/components/items/AddItemButton';
+import { RichText } from '@/components/items/RichText';
 
 interface BrowseSessionProps {
   courseId: string;
@@ -146,6 +147,11 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
               className="mb-10 scroll-mt-20"
             >
               <h2 className="font-display text-title font-semibold text-text">{section.title}</h2>
+              {section.builds_to && (
+                <p className="prose-set mt-2 text-body text-text">
+                  <RichText text={section.builds_to} />
+                </p>
+              )}
               {section.description && <p className="mt-1 text-sm text-text-2">{section.description}</p>}
               <div className="mt-4 space-y-4">
                 {section.items.map((item) => (

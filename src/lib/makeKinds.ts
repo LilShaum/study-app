@@ -57,7 +57,7 @@ const INSTEAD: Record<MakeKind, string> = {
   terms:
     'a term is taught and asked through the kinds kept (a flashcard "What is …?" or a question that uses it); leave `metadata.inventory.terms` empty and list each term under `inventory.mentioned`',
   written: 'a key idea is asked by the kinds kept, never as an answer to write',
-  explain: 'the connection an explanation would give goes in the explanations of the questions on it',
+  explain: 'the connection an explanation would give goes in the explanations of the questions on it, and sections have no `builds_to`',
   example: 'a worked method is asked as a question to work through, in the kinds kept',
   problem: 'a method to carry out (a calculation, code, a mechanism) is asked by the kinds kept, a multiple-choice question that applies it where there is one',
   graphic: 'what a diagram shows is asked about in words, in the kinds kept',

@@ -218,7 +218,9 @@ export function makeCourse(shape: CourseShape, seed = 1): Course {
         alt_text: 'A line.',
       } as StudyItem);
     }
-    return { id: `s${j}`, title: `Section ${j + 1}`, order: j + 1, items };
+    // SIM_OPENING: every section says what it builds to, so Learn opens each
+    // with a card to read (docs/proposals/narration.md).
+    return { id: `s${j}`, title: `Section ${j + 1}`, order: j + 1, ...(process.env.SIM_OPENING ? { builds_to: 'Where this section is going.' } : {}), items };
   });
 
   return { schema_version: '1.0', metadata: { title: `Synthetic (${shape.name})` }, sections } as Course;

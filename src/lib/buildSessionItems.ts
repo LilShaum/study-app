@@ -115,16 +115,22 @@ export interface PreviewItem {
 }
 
 /**
- * Learn's first card in a section whose place in the student's own slides is
- * known (Section.source_range): read those slides, then either be asked
- * first, with the answers after, or be taught here as usual
- * (components/items/SlidesCard). Session-only, never scored.
+ * Learn's first card in a section, when the course says what the section
+ * builds to (Section.builds_to) or where it is in the student's own slides
+ * (Section.source_range). What it builds to is read first, the way a teacher
+ * opens a new part of a lecture. Where the place is known: read those slides,
+ * then either be asked first, with the answers after, or be taught here as
+ * usual (components/items/SlidesCard). Session-only, never scored.
  */
 export interface SlidesItem {
   id: string;
   type: 'slides';
   /** "slides 12–18", as the course gives it. */
-  range: string;
+  range?: string;
+  /** What the section builds to, as the course gives it. */
+  buildsTo?: string;
+  /** On the lecture's first section: what the whole lecture builds to. */
+  lectureBuildsTo?: string;
 }
 
 export type AnyItem = StudyItem | RecallItem | PreviewItem | SlidesItem;
@@ -251,8 +257,8 @@ const isGradable = (i: AnyItem) => i.type === 'mcq' || i.type === 'multi' || i.t
 function learnOrder(
   items: SessionItem[],
   progress?: Record<string, ItemResult>,
-  /** Section id to where it is in the student's slides (Section.source_range). */
-  ranges?: ReadonlyMap<string, string>,
+  /** Section id to how it opens: where it is in the student's slides, what it (and for the first, the lecture) builds to. */
+  openings?: ReadonlyMap<string, { range?: string; buildsTo?: string; lectureBuildsTo?: string }>,
   /** Questions first (store/learn.ts): no reading cards, and no slides card to ask for it. */
   questionsFirst = false,
 ): SessionItem[] {
@@ -271,15 +277,18 @@ function learnOrder(
     // Skip the reading leaves out every card that teaches, explanations included.
     const steps = questionsFirst ? all.filter((i) => i.type !== 'definition' && i.type !== 'preview' && i.type !== 'explain') : all;
     if (questionsFirst) return steps;
-    const range = ranges?.get(group[0]._sectionId);
+    const opening = openings?.get(group[0]._sectionId);
     const first = steps[0];
-    // A section that says where it is in the slides opens with that, as part
-    // of its first step: once the step is done, the card goes with it.
-    if (!range || !first || first._step !== 0) return steps;
+    // A section that says what it builds to or where it is in the slides
+    // opens with that, as part of its first step: once the step is done, the
+    // card goes with it.
+    if (!opening || !first || first._step !== 0) return steps;
     const slides: SessionItem = {
       id: `${first._sectionId}~slides`,
       type: 'slides',
-      range,
+      range: opening.range,
+      buildsTo: opening.buildsTo,
+      lectureBuildsTo: opening.lectureBuildsTo,
       _sectionTitle: first._sectionTitle,
       _sectionId: first._sectionId,
       _sectionOrder: first._sectionOrder,
@@ -378,7 +387,20 @@ export function buildSessionItems(
     items = items.filter((i) => KIND_TYPES[kind].includes(i.type));
   }
 
-  const ranges = new Map(course.sections.filter((s) => s.source_range?.trim()).map((s) => [s.id, s.source_range!.trim()]));
+  const firstSectionId = sortedSections(course).find((s) => s.items.some((i) => !i.set_aside))?.id;
+  const lectureBuildsTo = course.metadata.builds_to;
+  const openings = new Map(
+    course.sections
+      .filter((s) => s.source_range?.trim() || s.builds_to || (lectureBuildsTo && s.id === firstSectionId))
+      .map((s) => [
+        s.id,
+        {
+          range: s.source_range?.trim() || undefined,
+          buildsTo: s.builds_to,
+          lectureBuildsTo: s.id === firstSectionId ? lectureBuildsTo : undefined,
+        },
+      ]),
+  );
 
   // The pool is the WHOLE course's definitions even when the session is one
   // section: a term confused with one from another section is still a
@@ -590,7 +612,7 @@ export function buildSessionItems(
       break;
     case 'learn': {
       // Read the definition, then recall it a few cards later in its step.
-      const all = learnOrder(withRecall(items), progress, ranges, questionsFirst);
+      const all = learnOrder(withRecall(items), progress, openings, questionsFirst);
       // Pick up where you stopped, as Today does: a step whose every question
       // has been answered is done, and Review brings it back when it fades.
       // Once every step is done, Learn is the whole thing again.
@@ -664,7 +686,7 @@ export function buildSessionItems(
       let full = false;
       for (const { section } of sectionsToLearn(course, progress ?? {}, now)) {
         if (full) break;
-        const steps = learnOrder(withRecall(items.filter((i) => i._sectionId === section.id)), progress, ranges, questionsFirst);
+        const steps = learnOrder(withRecall(items.filter((i) => i._sectionId === section.id)), progress, openings, questionsFirst);
         for (let s = 0; s < (steps[0]?._steps ?? 0); s++) {
           const step = steps.filter((i) => i._step === s);
           // Carry on where Learn left off: a step whose every question has

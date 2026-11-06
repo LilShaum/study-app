@@ -10,6 +10,32 @@ it holds under both memory models (`fsrs` and `harsh`).
 
 ---
 
+## 2026-11-05 · A card to read at each section's start costs nothing measurable
+
+The teacher's narration (docs/proposals/narration.md) opens each section in
+Learn, and in Today's new material, with what the section builds to: one
+more card to read per section. `SIM_OPENING=1` gives every synthetic section
+a `builds_to`; the card takes `OPENING_SECONDS` (20 s, a guess) and, like
+any reading card, primes nothing.
+
+**Result** (5 seeds, exam score, without the card, then with it):
+
+| Scenario | Without | With |
+|---|---|---|
+| steady-30 | 46% ±2 | 45% ±2 |
+| steady-45 | 66% ±1 | 66% ±2 |
+| busy-20 | 25% ±4 | 24% ±2 |
+| crammer | 63% ±1 | 63% ±1 |
+| steady-30-harsh | 17% ±1 | 17% ±0 |
+| steady-45-harsh | 21% ±0 | 22% ±0 |
+
+Every difference is inside the spread, under both memory models. This is
+the cost side only: the simulated student has no understanding for the card
+to add to, so it can only show what the time costs, and that is too small to
+see. Whether reading it helps is the real lecture's question, not the
+simulator's. Not re-baselined: the default run is unchanged, since
+`SIM_OPENING` is off.
+
 ## 2026-11-03 · Saying how sure: it should change what is shown, not when
 
 The owner asked for confidence on multiple choice, a confident wrong

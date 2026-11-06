@@ -19,6 +19,13 @@ export interface CourseGaps {
    * as that one card rather than understood.
    */
   thinKeyTerms: string[];
+  /**
+   * Figures the generator marked as content to know (`purpose: "know"`) that
+   * no question ever asks about. A graphic is read, never scored, so marking
+   * one `know` is a promise the lecture also tests it; this is the promise
+   * unkept (docs/proposals/narration.md).
+   */
+  untestedFigures: string[];
   /** Sections carrying little or nothing that can actually be scored. */
   thinSections: SectionGap[];
   /** Item counts by type across the whole course. */
@@ -118,6 +125,39 @@ export function analyseCourseGaps(course: Course): CourseGaps {
     .filter((d) => askedTexts.filter((t) => namesOf(d).some((name) => someTextCoversTerm([t], name))).length <= 1)
     .map((d) => d.term);
 
+  /*
+   * A figure marked "to know" that nothing asks about.
+   *
+   * Reported only where the answer is clear, because these names are handed
+   * to an AI as work to do and over-reporting is not harmless (see above).
+   * Tags are the reliable handle: the generator is asked to reuse one
+   * spelling across a lecture, so a figure's tag appearing on no question is
+   * a real signal with no token matching to go wrong. A figure without tags
+   * is judged on its title, and only when the title is short enough to be
+   * matched honestly — "Rod" can be looked for in a question, "Visual field
+   * reception has some redundancy" cannot.
+   */
+  const TITLE_TOKENS = 4;
+  const untestedFigures = sections
+    .flatMap((s) => s.items.map((item) => ({ item, section: s })))
+    .filter((x): x is { item: Extract<StudyItem, { type: 'graphic' }>; section: (typeof sections)[number] } => x.item.type === 'graphic' && !x.item.set_aside)
+    .filter(({ item: g }) => g.purpose === 'know')
+    .filter(({ item: g, section }) => {
+      const tags = (g.tags ?? []).map((t) => t.trim().toLowerCase()).filter(Boolean);
+      if (tags.length) {
+        // Its own section's questions only: a topic tag every item carries
+        // would otherwise mark every figure in the lecture as asked about.
+        const near = section.items.filter((q) => q.type === 'mcq' || q.type === 'flashcard' || q.type === 'problem' || q.type === 'multi');
+        const onQuestions = new Set(near.flatMap((q) => (q.tags ?? []).map((t) => t.trim().toLowerCase())));
+        return !tags.some((t) => onQuestions.has(t));
+      }
+      const title = (g.title ?? '').trim();
+      if (!title || title.split(/\s+/).length > TITLE_TOKENS) return false;
+      return !someTextCoversTerm(gradableTexts, title);
+    })
+    .map(({ item: g }) => g.title)
+    .filter(Boolean);
+
   const thinSections = sections
     .map((s) => ({
       id: s.id,
@@ -132,6 +172,7 @@ export function analyseCourseGaps(course: Course): CourseGaps {
   return {
     untestedTerms,
     thinKeyTerms,
+    untestedFigures,
     thinSections,
     byType,
     totalItems: items.length,

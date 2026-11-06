@@ -119,6 +119,17 @@ one card on what it found as the slide states it, nothing from outside
 The AI reads everything, maps why each slide is there, builds an inventory,
 weights each idea, writes items, audits itself, and returns JSON. The app
 reads the reply even if it is wrapped in text or cut off.
+Part of the map is written out as the narration the slides leave out
+(the owner, 2026-11-03: "slides are … a narrated lecture with the
+narration missing"; docs/proposals/narration.md): what the lecture and each
+section build to (`builds_to`), why each figure the lecture turns on is on
+the screen and what to see in it (`why`; `purpose`, to know or just to
+picture it; `where`, when there is no drawing of its own), and an `explain`
+for each comparison the slides only imply, with a question that turns on
+it. Every handwritten note that says more than its slide reaches the
+student. A reason the slides do not give, an everyday case or a plain gloss
+may be added in an `explain`, labelled `Outside the slides:`; nothing
+scored rests on one, and the student sees "Not from your notes" on it.
 
 **Working means.**
 
@@ -138,6 +149,9 @@ reads the reply even if it is wrapped in text or cut off.
   lecture's own terms; at least one is as long as the right answer.
 - If the AI can see only the text of the slides, it says so and asks for
   the file attached, rather than generating without the figures.
+- The lecture and every section that builds to something say what, in a
+  teacher's words, not a list of contents; each figure the lecture turns on
+  has a note on what to look at; a figure marked to know is asked about.
 
 **Not wanted.** Over-taught basics (twenty cards from one slide), skipped
 figures and pathways, definitions of things only named, trivia about how a
@@ -180,13 +194,17 @@ before its questions: the connections a teacher makes in class, for a
 student who may never have been (2026-10-26).
 
 **How it works.** "Add explanations" on the lecture page (shown while the
-lecture has none; also a tab of Add material). The prompt lists each
+lecture has none, or says nothing of what it builds to; also a tab of Add
+material). The prompt lists each
 section by id with its slide range, the terms it defines, every question
 it asks, the explanations it already has and the passages its items
 quoted, and the generator's own `explain` rules word for word
 (lib/buildExplainPrompt). Pasted into the chat that wrote the lecture, it
 writes from the slides; elsewhere from the quoted passages. The reply is
-explanations only, merged into their sections like any fragment.
+explanations, merged into their sections like any fragment, with what the
+lecture and each section build to where they do not say yet (never over
+what one already says), and, with Diagrams chosen and the slides in the
+chat, notes on the figures the lecture has none of.
 
 **Working means.** One to three per section where its questions turn on a
 mechanism, a cause, a comparison or a reason; none for a section of plain
@@ -212,6 +230,11 @@ Fix turns into multiple choice, terms never defined, sections that only test rec
 and sections with far fewer or far more items for their slides than the
 rest of the lecture (`lib/sectionDensity.ts`). Fix turns the findings into
 a prompt for the same chat, which judges each one against the notes.
+
+A figure the generator marked as something to know that no question asks
+about is reported with the slides' findings: a diagram is read, never
+scored, so it is the one way the student learns it will not be tested
+(`untested-figures`).
 
 **Working means.** Findings are plain, each says what to do, and none
 blocks studying. They are grouped by what they ask (`findingGroup`): to
@@ -285,6 +308,18 @@ last. A term defined the same way in two lectures counts
 once. A section with a slide range can start with "read this part of your material" (any source: the range carries its unit, slides or pages; worded for any source, the owner 2026-10-29), then
 everything is asked first. "Skip the reading" asks every card first, for
 material already met in class. At the end Learn offers the next section.
+
+A section that says what it builds to opens with it, as a teacher opens a
+new part of a lecture, on the same first card as its slide range when it
+has one; the lecture's first section opens with what the whole lecture
+builds to as well (the owner, 2026-11-03; docs/proposals/narration.md).
+It is read once, in the section's first step, in Learn and in Today's new
+material, never in a review, Practice or the test, and Skip the reading
+leaves it out. A figure's card says what to look at and whether it is to
+know or just to picture it; one with no drawing of the app's says where it
+is in the student's own notes. Neither moves a card or changes a schedule:
+one more card to read per section cost nothing measurable in the simulator
+(sim/FINDINGS.md, 2026-11-05).
 
 An explanation (`explain`: a key idea in 2 to 4 sentences, what it is,
 why, how it follows from the one before, as a tutor would say it) is also
@@ -688,7 +723,9 @@ measured against.
 - **Glossary**: any term of the lecture, found in a second, with its
   neighbours to tell it apart from.
 - **Diagrams**: the lecture's figures to look at in one place, each with
-  what it shows.
+  what it shows, what to look at in it, and whether it is to know or just
+  to picture it. A figure the app has no drawing of is still a plate: it
+  says where the real one is in the student's own notes.
 - **Help**: the answer to what a student wonders while studying, short,
   found without reading the rest.
 - **The first run**: from opening the app for the first time to studying a
