@@ -59,7 +59,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   be universal"). What exists: the generator maps every slide's purpose
   and where runs of slides build to, but "the map is not part of the
   output"; only explanations and questions carry it. To plan, and the
-  grading session's main lens for the generator.
+  grading session's main lens for the generator. Whatever is built must
+  reach lectures made before it without losing their progress, as Add
+  explanations does: the owner is generating courses now rather than
+  waiting (2026-11-06: "I'm waiting for all these changes we are working on
+  to go through before generating my new courses and studying for upcoming
+  stuff").
 - **Teach understanding, not memorising: use the explanations, and
   questions that test application, everywhere** (2026-11-03: "perhaps you
   could use the new like explanation things that are part of the new

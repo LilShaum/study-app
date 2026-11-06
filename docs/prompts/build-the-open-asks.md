@@ -40,6 +40,11 @@ names. Load the skills each step needs when it starts (`working-method`,
    - for each diagram, why it is there and what to see in it;
    - the comparisons the slides imply.
 
+   **Lectures made before it must be able to get it without losing their
+   progress**, the way Add explanations adds to a lecture and keeps its
+   scores: the owner is generating and studying their courses now rather
+   than waiting (2026-11-06).
+
    Plan it first in `docs/proposals/` (the owner's method: how to decide,
    the options argued, a pick, then the build plan). It changes the
    lecture file, the prompt and Learn. Learn's order is set ("no drastic
