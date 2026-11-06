@@ -4,6 +4,7 @@ import { buildSessionItems } from './buildSessionItems';
 import { scoredEntries } from './scored';
 import type { ExamRule } from './exam';
 import { shownOf } from './learnSteps';
+import { auditSession } from './sessionAudit';
 
 const course = {
   schema_version: '1.0',
@@ -567,6 +568,13 @@ describe('Learn, opening a section with what it builds to', () => {
     for (const mode of ['review', 'weakest'] as const) {
       expect(buildSessionItems(framed, mode).some((i) => i.type === 'slides')).toBe(false);
     }
+  });
+
+  it('does not count naming a term as giving away that term typed', () => {
+    const term = (framed.sections.find((s) => s.id === 'sa')!.items.find((i) => i.type === 'definition') as { term: string }).term;
+    const giving = { ...framed, sections: framed.sections.map((s) => (s.id === 'sa' ? { ...s, builds_to: `This part builds to ${term}.` } : s)) } as Course;
+    const items = buildSessionItems(giving, 'learn', { sectionId: 'sa' });
+    expect(auditSession(items).sameFactInStep).toEqual([]);
   });
 
   it('counts as reading that can print an answer, so the audit can see it', () => {

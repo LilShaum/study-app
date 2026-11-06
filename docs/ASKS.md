@@ -64,7 +64,20 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   explanations does: the owner is generating courses now rather than
   waiting (2026-11-06: "I'm waiting for all these changes we are working on
   to go through before generating my new courses and studying for upcoming
-  stuff").
+  stuff"). Planned and built 2026-11-06 (docs/proposals/narration.md),
+  live: what the lecture and each section build to (`builds_to`), opening
+  each section in Learn and Today's new material and on the section and
+  lecture pages; a note on each figure the lecture turns on (why it is
+  shown, what to look at, to know or just to picture it, where it is in
+  the student's own notes when the app has no drawing); an explanation and
+  a question for each comparison the slides only imply; every handwritten
+  note that says more than its slide carried into the file; a reason the
+  slides do not give allowed in an explanation, labelled "Not from your
+  notes", never under a scored card. Lectures made before it get it from
+  Add explanations, scores kept. Tested on a real lecture, Opus 5.5 at high
+  effort: figure-reading notes reached a reading card 10 times against 3,
+  with as many questions as before once a rule kept narration on top of the
+  cards. Waits on the owner's look at a lecture made with it.
 - **Teach understanding, not memorising: use the explanations, and
   questions that test application, everywhere** (2026-11-03: "perhaps you
   could use the new like explanation things that are part of the new
@@ -92,7 +105,13 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   recall only. Built 2026-11-03, live: each question's explanation as its
   Why, open after a miss, folded after a right answer, in every mode and
   the test's review; the generator's two new kinds (two ideas together,
-  the one detail off). Next: the lecture check for a lecture of recall
+  the one detail off). Decided 2026-11-06 (docs/proposals/narration.md,
+  section 8): how each section follows from the last is in its
+  `builds_to`, live; the check for a lecture of mostly recall is not built,
+  because the real lecture read showed no such problem (about two thirds of
+  a sample applied, predicted or explained) and the app's own measure of it
+  counted far too few, which is for the grading session to look at.
+  Was: the lecture check for a lecture of recall
   only, after reading a real one; explanations of how each section
   follows from the last.
 - **A UI/UX and design-language audit, soon** (2026-11-03: "pretty soon we

@@ -162,11 +162,24 @@ the handwriting says that the slides do not.
 | Questions asking the same fact twice | 14 | 5 |
 | Reading share of a Learn walk | 40% | 51% |
 
-The narration does what it is for. The cost is the question count: the
-after file asked a third fewer, and Learn became half reading. One run each
-cannot say how much is the prompt and how much is chance, so a rule went in
-that narration comes on top of the cards, never instead of them, and a
-second after run is what would show whether the questions came back.
+The narration does what it is for. The cost was the question count: the
+first after file asked a third fewer, and Learn became half reading. So a
+rule went in that narration comes on top of the cards, never instead of
+them, and the after run was made again with the prompt as it ships:
+
+| | Before | After, with the rule |
+|---|---|---|
+| Cards asked in a Learn walk | 103 | 108 |
+| Reading share of a Learn walk | 40% | 44% |
+| On a card the student reads, of the 74 | 50 | 57 |
+| How to read a figure, on a reading card | 3 of 15 | 10 of 15 |
+| Sections asking only for recall | 3 | 0 |
+
+The questions came back and the narration held. Walking it found that a
+section's opening card named a term its first step then asked typed; that
+is not a giveaway (the term's own definition comes just before it by
+design), so the rule that keeps an answer five cards away counts the
+opening card for questions but not for a term typed from its meaning.
 
 ## 10. What would change this plan
 

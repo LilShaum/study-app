@@ -385,6 +385,15 @@ describe('what a section builds to, in a reply', () => {
     expect(added.description).toBe('What they are');
   });
 
+  it('takes the lecture\'s thread beside the sections, or inside a metadata object', () => {
+    for (const shape of [{ builds_to: 'The thread.' }, { metadata: { builds_to: 'The thread.' } }]) {
+      const parsed = parseFragment({ ...shape, sections: [{ id: 's1', items: [] }] }, 's1');
+      if (!parsed.ok) throw new Error(parsed.error);
+      const plan = planMerge(course(), parsed.fragment);
+      expect(applyMerge(course(), plan).metadata.builds_to).toBe('The thread.');
+    }
+  });
+
   it('adds nothing to the plan when the reply gives nothing', () => {
     const plan = planMerge(course(), reply([{ id: 's1', items: [] }]));
     expect(plan.sections).toHaveLength(0);

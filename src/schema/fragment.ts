@@ -92,6 +92,12 @@ export function parseFragment(raw: unknown, fallbackSectionId: string): ParseFra
   }
 
   // (1) The fragment shape — items to add, corrections to apply, or both.
+  // The lecture's thread may come beside `sections` or, as the narration
+  // rules word it for a whole lecture, inside a `metadata` object.
+  const meta = (raw as Record<string, unknown>).metadata as Record<string, unknown> | undefined;
+  if (meta && typeof meta === 'object' && meta.builds_to !== undefined && (raw as Record<string, unknown>).builds_to === undefined) {
+    raw = { ...(raw as Record<string, unknown>), builds_to: meta.builds_to };
+  }
   const asFragment = FragmentSchema.safeParse(raw);
   if (asFragment.success) {
     return { ok: true, fragment: asFragment.data };

@@ -298,6 +298,12 @@ interface Shown {
   def?: string;
   /** An explanation read: it can print a later card's answer, and asks nothing itself. */
   explains?: boolean;
+  /**
+   * What a section builds to: it can print a question's answer, but naming
+   * a term it teaches is not giving away the term typed from its meaning,
+   * which follows the term's own definition by design.
+   */
+  frames?: boolean;
 }
 
 export function shownOf(item: SessionItem): Shown | null {
@@ -308,7 +314,7 @@ export function shownOf(item: SessionItem): Shown | null {
   // What a section builds to is read the same way, and can print an answer too.
   if (item.type === 'slides') {
     const framing = [item.lectureBuildsTo, item.buildsTo].filter(Boolean).join(' ');
-    return framing ? { asked: { question: framing, answer: '' }, explains: true } : null;
+    return framing ? { asked: { question: framing, answer: '' }, explains: true, frames: true } : null;
   }
   const asked = item._again ? null : askedOf(item);
   return asked ? { asked } : null;
@@ -318,6 +324,7 @@ export function shownOf(item: SessionItem): Shown | null {
 export function answers(earlier: Shown, item: SessionItem, asked: Asked): boolean {
   if (item.type === 'explain') return false;
   if (earlier.def && item.type === 'recall' && item.target.id === earlier.def) return false;
+  if (earlier.frames && item.type === 'recall' && !item.question) return false;
   // An explanation has no answer of its own to be the same fact as.
   if (earlier.explains) return revealsAnswer(earlier.asked, asked);
   return answeredBy(earlier.asked, asked);
