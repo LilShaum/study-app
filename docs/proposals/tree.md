@@ -186,7 +186,9 @@ loosens; one still shows L2 with it.
    above. Recorded for the owner before it ships.
 3. **The look and the habit**, once the owner picks from the stills: G1
    with the chosen leaf style, in lib/growTree, keeping its contract; the
-   contract's taper note updated if limbs are filled.
+   contract's taper note updated if limbs are filled. The owner chose C,
+   L2 with the habit change (2026-11-07, "c"); built on the branch
+   `tree-look` (§5, the look as built).
 4. **Second look** at the large tree once the lecture page's touch has
    been lived with: it may need numbers too, or less.
 
@@ -226,3 +228,84 @@ and dark.
 
 **Not checked.** A real phone and iOS Safari (Chromium with touch emulated
 only); real-sitting feel of the linger time (5 s) and the hold (180 ms).
+
+### The look as built (2026-11-07, on the branch `tree-look`)
+
+The owner chose C from the stills: L2's leaves with the habit change of
+§1. It is in lib/growTree for every tree, with no switch left.
+
+- **Leaves.** A clump carries 45% of the leaves it has room for, each 1.55
+  times the habit's leaf, each with a vein: its midrib, a fine line from
+  the stalk three quarters of the way to the tip, at half the leaf's
+  weight. Under half the leaf paths of before; with the veins, the drawing
+  still has fewer paths than it had (2928 against 3180 in the test tree of
+  nine sections).
+- **Branching.** Section limbs leave the trunk up to 17 degrees either
+  side of their angle (8 before), the lowest opening out by up to 6 degrees
+  more. A section's main limb and the leader rise toward the vertical at
+  0.45 of the lift of the limbs off them. The two finest orders of limb
+  each curve their own way, and the last twigs are 0.72 as long.
+- **Ground.** One line drawn by hand, under the tree and about 50 units out
+  either side.
+- **Fallen leaves.** Lying flat, within about 6 degrees of level, in a band
+  2.4 units deep at the ground, under their branch and drawn a little
+  toward the trunk, at 1.1 times the habit's leaf.
+
+**What differs from the prototype, and why.**
+
+- **The twigs' curve.** The prototype took it from a sine hash, the
+  fraction of sin(x) times 43758, which multiplies sin's last bits, where
+  browsers can differ, by forty thousand: a course could curve its twigs
+  one way in Safari and another in Chrome. It is now an integer hash of the
+  limb's starting point taken to 0.01, mixed with Math.imul (`hashUnit`),
+  still outside the seeded stream, so no course's tree changes shape for
+  it. Each twig bends by a different amount than in the stills, over the
+  same range. With the prototype's hash and fit put back, the port draws
+  every wood path, leaf, fallen leaf and vein of the prototype exactly (80
+  trees checked).
+- **The vein is part of its leaf** (`Limb.vein`), not a limb of its own.
+  As a limb of its own the renderer filed it under wood: drawn under every
+  leaf and hidden by the paper they are filled with. CourseTree draws it
+  straight after its leaf, at half the leaf's weight, never as a target,
+  and budding with its leaf at a session's end; it dims, swings and comes
+  to the front with its section with no code of its own. Fallen, falling
+  and lost leaves have none.
+- **A lost leaf is outlined at the size it grew.** The prototype drew the
+  outline, which is also the leaf that falls when its branch is picked, at
+  the old size, so a small leaf would have fallen from where a large one
+  was.
+- **The fit allows for the larger leaves.** A broad tree is narrowed to
+  its sheet by its wood plus a clump's reach, and the prototype kept the
+  reach of the old leaves: in crowns in full leaf, 116 trees of 462
+  measured ran leaves up to 15 units past the sheet's side, cut off by its
+  edge in the large tree, the library and a session's end. The stills had
+  20 units of paper either side, so they never showed it. The reach now
+  adds what the largest leaf grew by: 19 trees of 462, by at most 9 units
+  (33 trees by at most 7 before the change). The cost: a broad crown is
+  about 4% narrower than in the stills (the test lecture at 0.80 of its
+  width against 0.83), and the widths of different courses' crowns spread
+  less, about 34 units across twenty courses where they spread 62. Most of
+  that is the habit change itself opening every crown out: the narrowest
+  of the twenty went from 105 units to 129.
+- **The numbers sit 4 units further out** (lib/treeKeys: 16 at the sides
+  and 18 above, from 12 and 14), about what the leaves grew by. In crowns
+  in full leaf a number sat on a leaf one time in 26 with the larger
+  leaves at the old ring (one in 40 with the old leaves); now one in 80,
+  and a leaf comes within 6 units of a number's centre 12% of the time,
+  where it was 21%. The sheet above the crown is 4 units taller, which
+  also gives the larger leaves at the top their room: 2 trees of 462 reach
+  past the cropped top, by under a unit (4 trees by up to 5 at the old
+  ring).
+- **Falling leaves land in the band** where the fallen ones lie
+  (components/CourseTree), not up to five units below it.
+
+**Checked** (scratchpad `design/tree-c`): the lecture page's tree as it
+opens and with each branch picked and the numbers up, light and dark; the
+large tree with each branch picked; the target still beside the port
+drawn by the same renderer; the leaves enlarged from a phone shot. At
+288px the crown reads as separate leaves, each with its vein; the ring of
+numbers stands clear of the leaves; the picked branch comes to the front
+with its veins; dark holds up.
+
+**Not checked.** A real phone and iOS Safari, still; a session's end
+watched (the vein's class and timing there are tested, not seen).

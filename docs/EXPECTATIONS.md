@@ -652,7 +652,11 @@ wrong ones to the AI to rewrite.
 - **The tree** shows a lecture's state at a glance: a section never opened
   is a bare branch, what is learned is in leaf, what has faded falls. The
   same lecture always grows the same tree (`lib/growTree.ts` holds the
-  drawing rules). A leaf falls only for a card once got right that has
+  drawing rules). Its look is the one the owner chose (2026-11-07, look C
+  of docs/proposals/tree.md): larger leaves and fewer, each with a vein;
+  limbs at uneven angles, the low ones opening out; one ground line, and
+  the fallen leaves lying flat along it under their branch. A leaf falls
+  only for a card once got right that has
   faded to where Review asks it again (`heldShare`): a card missed and not
   yet got right was never learned, and thins the branch through accuracy
   instead, so a section studied today keeps its leaves (the owner,

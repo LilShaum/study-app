@@ -14,9 +14,15 @@ export interface TreeKey {
   at: Point;
 }
 
-/** How far outside the crown the numbers ride, in viewBox units. */
-const CLEAR_SIDE = 12;
-const CLEAR_TOP = 14;
+/**
+ * How far outside the crown's wood the numbers ride, in viewBox units, so
+ * that they sit on clear paper past its leaves, which the wood does not
+ * show. Four more than before the larger leaves of 2026-11-07, about what
+ * they grew by: at 12 and 14, one number in 26 sat on a leaf of a crown in
+ * full leaf, where now it is one in 80.
+ */
+const CLEAR_SIDE = 16;
+const CLEAR_TOP = 18;
 /** The room left above the highest number, so all of it is on the sheet and can be tapped. */
 const HEADROOM = 10;
 /** Asked apart along the ring, in viewBox units: a fingertip at phone size. */

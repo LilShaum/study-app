@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
@@ -160,7 +160,27 @@ function paintLimb(limb: Limb, held: boolean, animate: boolean, pointable: boole
   };
 }
 
+/** A leaf budding at the end of a session: its class and where and when it unfurls. */
 type Motion = { className: string; style: Record<string, string> };
+
+/**
+ * One limb's paths: the limb, and after a leaf its vein (lib/growTree,
+ * `Limb.vein`). Straight after its own leaf, so that leaf's paper fill
+ * cannot hide it while the next leaf over can, as it hides the rest of the
+ * leaf. At half the leaf's weight, never a target, and budding with its
+ * leaf: the same stalk to unfurl from, at the same moment.
+ */
+function limbWithVein(limb: Limb, key: number | string, held: boolean, animate: boolean, pointable: boolean, motion?: Motion) {
+  const paint = paintLimb(limb, held, animate, pointable);
+  const className = motion ? `${paint.className} ${motion.className}` : paint.className;
+  if (!limb.vein) return <path key={key} {...paint} className={className} style={motion?.style} />;
+  return (
+    <Fragment key={key}>
+      <path {...paint} className={className} style={motion?.style} />
+      <path d={limb.vein} strokeWidth={paint.strokeWidth / 2} className={motion ? `vn ${motion.className}` : 'vn'} style={motion?.style} />
+    </Fragment>
+  );
+}
 
 /**
  * One section's paths in one layer, drawn once and kept.
@@ -184,13 +204,7 @@ export const LimbPaths = memo(function LimbPaths({
   pointable: boolean;
   grow?: Map<string, Motion>;
 }) {
-  return (
-    <>
-      {limbs.map((limb, i) => (
-        <path key={i} {...paintLimb(limb, held, animate, pointable)} {...(limb.leafKey ? grow?.get(limb.leafKey) : undefined)} />
-      ))}
-    </>
-  );
+  return <>{limbs.map((limb, i) => limbWithVein(limb, i, held, animate, pointable, limb.leafKey ? grow?.get(limb.leafKey) : undefined))}</>;
 });
 
 /**
@@ -294,7 +308,7 @@ export function CourseTree({
       const h = leafHash(l.leafKey!);
       const at = startOf(l.d);
       grow.set(l.leafKey!, {
-        className: 'lf leaf-bud',
+        className: 'leaf-bud',
         style: {
           // Unfurl from the stem, not from the leaf's middle.
           transformOrigin: at ? `${at[0]}px ${at[1]}px` : 'center',
@@ -538,7 +552,9 @@ export function CourseTree({
         .map((l) => {
           const h = leafHash(l.leafKey ?? l.d);
           const at = startOf(l.d);
-          const ground = tree.height - 12 + (h % 7);
+          // Into the thin band along the ground where the fallen leaves lie
+          // (lib/growTree), not below it.
+          const ground = tree.height - 13 + (h % 3);
           return {
             d: l.d,
             style: {
@@ -864,9 +880,7 @@ export function CourseTree({
             <LimbPaths limbs={limbs} held={false} animate={animate} pointable={false} />
           </g>
         ))}
-        {layers.structuralFoliage.map((limb, i) => (
-          <path key={`sf${i}`} {...paintLimb(limb, false, animate, false)} />
-        ))}
+        {layers.structuralFoliage.map((limb, i) => limbWithVein(limb, `sf${i}`, false, animate, false))}
         {[...layers.foliage].map(([id, limbs]) => (
           <g key={id} data-sid={id} data-held={id === active || undefined} data-dim={dim(id) || undefined} data-back={stepsBack(id) || undefined} className="limb-set" style={swing(id)}>
             <LimbPaths limbs={limbs} held={id === active} animate={animate} pointable={false} grow={motion.grow} />

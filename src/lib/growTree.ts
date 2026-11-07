@@ -14,7 +14,8 @@
       machinery.
    3. Three weights, never one: TRUNK heaviest, BRANCH lighter, TWIG and
       LEAF lightest. This is what makes a flat line drawing sit in front
-      of itself.
+      of itself. A leaf's vein, a mark inside it, is lighter again: half
+      the leaf's weight.
    4. `currentColor` everywhere, so the drawing belongs to whatever theme
       it is rendered in. The WOOD is stroke-only like the icon set. The
       FOLIAGE is filled with the surface colour so it occludes the branches
@@ -82,6 +83,16 @@ export interface Limb {
   leafKey?: string;
   /** A lost leaf lying on the ground under the branch it fell from. */
   fallen?: boolean;
+  /**
+   * A leaf's vein: its midrib, one fine line from the stalk most of the way
+   * to the tip. Part of the leaf, not a limb of its own: a limb of its own is
+   * wood to the renderer, drawn under every leaf and hidden by their paper.
+   * So the renderer draws it straight after its leaf, at half the leaf's
+   * weight, and it moves, dims and comes to the front with its section as
+   * the leaf does. Only a leaf on the branch has one; a leaf lost, lying on
+   * the ground or falling is the outline alone.
+   */
+  vein?: string;
 }
 
 export interface Tree {
@@ -327,10 +338,53 @@ function leafPath(
   );
 }
 
+/**
+ * A leaf's vein (Limb.vein): its midrib, straight from the stalk three
+ * quarters of the way to the tip, on the line the outline is drawn about,
+ * as in the stills the owner chose it from.
+ */
+function veinPath(at: Pt, angle: number, length: number): string {
+  const dx = Math.sin(angle);
+  const dy = -Math.cos(angle);
+  return `M${round(at.x)} ${round(at.y)}L${round(at.x + dx * length * 0.74)} ${round(at.y + dy * length * 0.74)}`;
+}
+
 const RAD = Math.PI / 180;
+
+/**
+ * A number from 0 to 1 that belongs to a point of the drawing, for a trait
+ * that may follow the drawing but must not take a draw from the seeded
+ * stream: one draw more there moves every limb after it, and every course's
+ * tree would change shape.
+ *
+ * Integers only. The usual hash, the fraction of sin(x) times 43758,
+ * multiplies sin's last bits by forty thousand, and those bits are where
+ * browsers' sines can differ: the same course could curve its twigs one way
+ * in Safari and another in Chrome. Here the point is taken to 0.01 first, so
+ * no difference that small reaches the result, and mixed with Math.imul, a
+ * 32-bit integer multiply that every engine computes exactly alike.
+ */
+export function hashUnit(p: Pt): number {
+  let h = Math.imul(Math.round(p.x * 100), 0x9e3779b1) ^ Math.imul(Math.round(p.y * 100) ^ 0x632be5ab, 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 16), 0x7feb352d);
+  h = Math.imul(h ^ (h >>> 15), 0x846ca68b);
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
 
 /** How wide the leader starts, and so how wide the trunk ends: one width where they meet. */
 export const LEADER_WIDTH = 2.6;
+
+/**
+ * The leaves the owner chose (2026-11-07, look C of docs/proposals/tree.md
+ * §3): a clump carries this share of the leaves it has room for, each this
+ * many times the habit's leaf, with a vein. A crown of a few drawn leaves,
+ * where it was a pile of seeds.
+ */
+const LEAF_SHARE = 0.45;
+const LEAF_SCALE = 1.55;
+/** A leaf on the ground, smaller than on the branch, so the litter stays a thin band. */
+const FALLEN_SCALE = 1.1;
 
 interface Anchor {
   at: Pt;
@@ -368,14 +422,28 @@ function grow(
 ): void {
   const { rand, traits } = ctx;
 
+  // The habit the owner chose (2026-11-07, docs/proposals/tree.md §1 and
+  // §5). The last twigs are shorter: at full length they stood out past the
+  // leaves like a broom (finding 7).
+  if (depth === 0) length *= 0.72;
+  // The fine limbs each curve their own way, as a twig drawn by hand does.
+  // The bend comes from where the limb starts, not from the seeded stream,
+  // so no limb after it moves.
+  const bend = depth <= 1 ? (hashUnit(origin) - 0.5) * 0.9 : 0;
+  // A section's main limb, and the leader, rise less toward the vertical
+  // than the limbs off them, so the crown opens out instead of nesting into
+  // a fan of Vs (finding 8).
+  const lift = depth >= 3 ? traits.lift * 0.45 : traits.lift;
+
   // Walk the limb as a curve, bending back toward vertical as it rises.
   const STEPS = depth >= 3 ? 6 : 4;
   const pts: Pt[] = [origin];
   let p = origin;
   let a = angle;
   for (let i = 1; i <= STEPS; i++) {
-    a *= 1 - traits.lift / STEPS;
+    a *= 1 - lift / STEPS;
     a += (rand() - 0.5) * 0.06;
+    a += bend / STEPS;
     const step = length / STEPS;
     p = {
       x: p.x + Math.sin(a) * step + (rand() - 0.5) * width * 0.5,
@@ -613,18 +681,14 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
     );
   }
 
-  // The ground: a hairline in a few broken pieces, never one ruled line.
-  for (const [a0, a1] of [
-    [-46 - br() * 8, -30 + br() * 4],
-    [-26 + br() * 3, 24 + br() * 3],
-    [29 + br() * 4, 44 + br() * 8],
-  ]) {
+  // The ground: one line drawn by hand, rising and dipping a little along
+  // its length, never ruled. It was three broken dashes (docs/proposals/
+  // tree.md, finding 7). They were the last marks to draw from the base's
+  // stream, so the line drawing nothing from it moves nothing else.
+  {
     const pts: Pt[] = [];
-    const steps = 4;
-    for (let i = 0; i <= steps; i++) {
-      pts.push({ x: baseX + a0 + ((a1 - a0) * i) / steps, y: GROUND + (br() - 0.5) * 0.6 });
-    }
-    limbs.push({ d: smooth(pts), weight: 0.55, kind: 'twig' });
+    for (let i = 0; i <= 10; i++) pts.push({ x: baseX - 52 + i * 10.6, y: GROUND + Math.sin(i * 1.7) * 0.35 });
+    limbs.push({ d: smooth(pts), weight: 0.6, kind: 'twig' });
   }
 
   const totalWeight = sections.reduce((n, s) => n + Math.max(1, s.weight), 0) || 1;
@@ -656,9 +720,11 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
 
     // Lower limbs leave the trunk nearer the horizontal and are longer; upper
     // ones are steeper and shorter. That is what gives a crown its shape
-    // instead of a triangle.
+    // instead of a triangle. Each leaves at its own angle, up to 17 degrees
+    // either way, and the lowest open out further still: within 8 degrees
+    // of each other the limbs nested into a fan of Vs (finding 8).
     const spread = traits.spread[0] + (traits.spread[1] - traits.spread[0]) * t;
-    const angle = side * (spread + (rand() - 0.5) * 16) * RAD;
+    const angle = side * (spread + (rand() - 0.5) * 34 + (1 - t) * 14) * RAD;
     const length = (30 + 18 * vigour) * (1.2 - 0.45 * t);
 
     const anchors: Anchor[] = [];
@@ -729,7 +795,10 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
     for (let c = 0; c < had; c++) {
       const host = order[c % order.length].a;
       const spreadR = traits.clumpSize * (sizes[0] + r() * sizes[1]);
-      const leaves = traits.clumpDensity + Math.floor(r() * traits.clumpDensity * 0.6);
+      // Fewer leaves than the clump has room for, each larger (LEAF_SCALE):
+      // packed at full density, a crown of outlined leaves read as a pile of
+      // seeds at phone size (docs/proposals/tree.md §3).
+      const leaves = Math.max(3, Math.round((traits.clumpDensity + Math.floor(r() * traits.clumpDensity * 0.6)) * LEAF_SHARE));
       const onTree = c < shown;
       // The last clumps still on the branch are the next to go; they droop,
       // the outermost most.
@@ -752,16 +821,14 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
         // Every leaf consumes the same draws whether it shows, droops or
         // lies on the ground, so no state moves any other leaf.
         const leafRand = rng(hashSeed(`${key}/${c}/${k}/${shape}`));
+        const at = { x: host.at.x + Math.cos(theta) * radius, y: host.at.y + Math.sin(theta) * radius * 0.85 };
+        const size = length * LEAF_SCALE;
 
         if (!onTree) {
-          // Where it grew, unturned: the outline of what was known.
+          // Where it grew, unturned and at its size there: the outline of
+          // what was known, and the leaf that falls when its branch is picked.
           limbs.push({
-            d: leafPath(
-              { x: host.at.x + Math.cos(theta) * radius, y: host.at.y + Math.sin(theta) * radius * 0.85 },
-              own,
-              length,
-              rng(hashSeed(`${key}/${c}/${k}/${shape}`)),
-            ),
+            d: leafPath(at, own, size, rng(hashSeed(`${key}/${c}/${k}/${shape}`))),
             weight: 0.7,
             kind: 'leaf',
             ghost: true,
@@ -776,13 +843,10 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
           // all swung to one angle reads as a clump drawn upside down.
           const down = Math.PI;
           const delta = Math.atan2(Math.sin(down - own), Math.cos(down - own));
+          const angle = own + delta * 0.7 * droop;
           limbs.push({
-            d: leafPath(
-              { x: host.at.x + Math.cos(theta) * radius, y: host.at.y + Math.sin(theta) * radius * 0.85 },
-              own + delta * 0.7 * droop,
-              length,
-              leafRand,
-            ),
+            d: leafPath(at, angle, size, leafRand),
+            vein: veinPath(at, angle, size),
             weight: 0.7,
             kind: 'leaf',
             solid: true,
@@ -790,16 +854,19 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
             sectionId,
           });
         } else if (k % 8 === 0) {
-          // Fallen: one leaf in eight, lying flat on the ground under where it
-          // grew. Enough to read as leaf litter, not so many that a
-          // badly-faded course is a carpet — one in four was.
-          const x = Math.min(width - 8, Math.max(8, host.at.x + (fallX - 0.5) * 18));
-          const y = baseY + 1 + fallY * (height - baseY - 4);
+          // Fallen: one leaf in eight, lying flat in a thin band along the
+          // ground under the branch it fell from, drawn a little toward the
+          // trunk, the way leaves gather under a tree. Enough to read as leaf
+          // litter, not so many that a badly-faded course is a carpet — one
+          // in four was. Scattered down the paper below the ground, they read
+          // as confetti (finding 7).
+          const x = Math.min(width - 8, Math.max(8, host.at.x * 0.85 + baseX * 0.15 + (fallX - 0.5) * 12));
+          const y = baseY + 0.6 + fallY * 2.4;
           limbs.push({
             d: leafPath(
               { x, y },
-              (fallTurn < 0.5 ? -1 : 1) * (Math.PI / 2 + (fallTurn - 0.5) * 0.5),
-              length * 0.8,
+              (fallTurn < 0.5 ? -1 : 1) * (Math.PI / 2 + (fallTurn - 0.5) * 0.22),
+              length * FALLEN_SCALE,
               leafRand,
             ),
             weight: 0.7,
@@ -825,16 +892,22 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
      edge would cut it off. Narrow the whole tree about its trunk just enough
      to fit, judged by the wood plus a clump's reach so that the measure never
      depends on how much is in leaf — a tree must not change width as it is
-     learned. ---- */
+     learned. The reach is a clump's at the old leaf size, plus what its
+     largest leaf grew by at LEAF_SCALE: without it, a quarter of trees in
+     full leaf ran leaves past the sheet's side, cut off by its edge in the
+     large tree (docs/proposals/tree.md §5). ---- */
   const PAIR = /(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g;
   const xs = limbs.filter((l) => l.kind !== 'leaf').flatMap((l) => [...l.d.matchAll(PAIR)].map((m) => Number(m[1])));
-  const reach = traits.clumpSize * 1.3;
+  const reach = traits.clumpSize * 1.3 + traits.leafLength * 1.4 * (LEAF_SCALE - 1);
   const left = baseX - (Math.min(...xs) - reach);
   const right = Math.max(...xs) + reach - baseX;
   const k = Math.min(1, (baseX - 2) / left, (width - 2 - baseX) / right);
   if (k < 1) {
+    const narrow = (_: string, x: string, y: string) => `${round(baseX + (Number(x) - baseX) * k)} ${y}`;
     for (const limb of limbs) {
-      limb.d = limb.d.replace(PAIR, (_, x: string, y: string) => `${round(baseX + (Number(x) - baseX) * k)} ${y}`);
+      limb.d = limb.d.replace(PAIR, narrow);
+      // A vein narrows with its leaf, or it would stand off the leaf it is drawn in.
+      if (limb.vein) limb.vein = limb.vein.replace(PAIR, narrow);
       // The strokes narrow with the outlines. Narrowing the trunk's outline
       // and not the leader's stroke left the leader wider than the trunk it
       // grows from: the bulge where they meet, on every tree broad enough to

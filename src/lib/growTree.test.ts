@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { growTree, type Limb, type TreeSection, LEADER_WIDTH, TAPER_STEP, taperedLimb } from './growTree';
+import { describe, expect, it, vi } from 'vitest';
+import { growTree, hashUnit, type Limb, type TreeSection, LEADER_WIDTH, TAPER_STEP, taperedLimb } from './growTree';
 
 const sections = (n: number, mastery = 0): TreeSection[] =>
   Array.from({ length: n }, (_, i) => ({ id: `s${i}`, weight: 8 + i, mastery }));
@@ -244,7 +244,10 @@ describe('each course grows its own habit', () => {
 
   it('some courses are upright and narrow, others broad', () => {
     const widths = Array.from({ length: 20 }, (_, i) => reach(`course-${i}`));
-    expect(Math.max(...widths) - Math.min(...widths)).toBeGreaterThan(40);
+    // Look C (2026-11-07) opens every crown out, the narrowest of these from
+    // 105 units to about 129, and the broadest are fitted to the sheet with
+    // room for the larger leaves: the spread is about 34 where it was 62.
+    expect(Math.max(...widths) - Math.min(...widths)).toBeGreaterThan(28);
   });
 
   it('stays inside the drawing', () => {
@@ -294,6 +297,113 @@ describe('the joins (the coordinator, 2026-11-06: a bulge where the trunk meets 
         const turn = Math.abs(Math.atan2(into.x * out.y - into.y * out.x, into.x * out.x + into.y * out.y));
         expect(turn).toBeLessThan(0.05);
       }
+    }
+  });
+});
+
+describe('the look the owner chose (2026-11-07, look C of docs/proposals/tree.md)', () => {
+  const numbers = (d: string) => (d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+  // A section well learned and mostly forgotten: leaves on the branch, lost
+  // ones outlined where they grew, and fallen ones on the ground.
+  const faded = growTree('c', [
+    { id: 'a', weight: 12, mastery: 0.2, learned: 1 },
+    { id: 'b', weight: 10, mastery: 0.6 },
+  ]);
+
+  it('gives every leaf on the branch a vein, and a fallen or lost leaf none', () => {
+    const onTree = faded.limbs.filter((l) => l.kind === 'leaf' && l.solid && !l.fallen);
+    const fallen = faded.limbs.filter((l) => l.fallen);
+    const ghosts = faded.limbs.filter((l) => l.ghost);
+    expect(onTree.length).toBeGreaterThan(0);
+    expect(fallen.length).toBeGreaterThan(0);
+    expect(ghosts.length).toBeGreaterThan(0);
+    expect(onTree.every((l) => l.vein)).toBe(true);
+    // A leaf falling is drawn from its ghost, so it has none either.
+    expect([...fallen, ...ghosts].some((l) => l.vein)).toBe(false);
+    expect(faded.limbs.filter((l) => l.kind !== 'leaf').some((l) => l.vein)).toBe(false);
+  });
+
+  it('runs a vein from its leaf’s stalk along its middle, three quarters of the way, in a narrowed tree too', () => {
+    // These are broad enough to be narrowed to their sheet: a vein left
+    // unnarrowed would stand off the leaf it is drawn in.
+    for (const seed of ['bioc301', 'lecture-a', 'motion']) {
+      const tree = growTree(seed, sections(11, 1));
+      const leaves = tree.limbs.filter((l) => l.vein);
+      expect(leaves.length).toBeGreaterThan(100);
+      for (const leaf of leaves) {
+        // M stalk Q control, tip Q control, stalk.
+        const [sx, sy, , , tx, ty] = numbers(leaf.d);
+        const [vx0, vy0, vx1, vy1] = numbers(leaf.vein!);
+        expect([vx0, vy0]).toEqual([sx, sy]);
+        const len = Math.hypot(tx - sx, ty - sy);
+        const along = ((vx1 - sx) * (tx - sx) + (vy1 - sy) * (ty - sy)) / (len * len);
+        const off = Math.abs((vx1 - sx) * (ty - sy) - (vy1 - sy) * (tx - sx)) / len;
+        expect(along).toBeGreaterThan(0.68);
+        expect(along).toBeLessThan(0.8);
+        expect(off).toBeLessThan(0.25);
+      }
+    }
+  });
+
+  it('draws the ground as one line, under the tree and out either side of it', () => {
+    for (const seed of ['bioc301', 'base', 'lecture-a']) {
+      const tree = growTree(seed, sections(6, 0.5));
+      const ground = tree.limbs.filter((l) => !l.sectionId && l.kind === 'twig');
+      expect(ground).toHaveLength(1);
+      expect(ground[0].d.match(/M/g)).toHaveLength(1);
+      const pts = numbers(ground[0].d);
+      const xs = pts.filter((_, i) => i % 2 === 0);
+      const ys = pts.filter((_, i) => i % 2 === 1);
+      // The trunk's foot: the lowest points of its outline.
+      const trunk = numbers(tree.limbs.find((l) => l.ink)!.d);
+      const lowest = Math.max(...trunk.filter((_, i) => i % 2 === 1));
+      const foot = trunk.filter((_, i) => i % 2 === 0 && trunk[i + 1] > lowest - 1);
+      const footX = foot.reduce((n, x) => n + x, 0) / foot.length;
+      expect(Math.min(...xs)).toBeLessThan(footX - 35);
+      expect(Math.max(...xs)).toBeGreaterThan(footX + 35);
+      // At the foot of the trunk, and drawn, not ruled: it rises and dips.
+      for (const y of ys) expect(Math.abs(y - (tree.height - 14))).toBeLessThan(1);
+      expect(new Set(ys).size).toBeGreaterThan(3);
+    }
+  });
+
+  it('lays fallen leaves flat in a thin band along the ground, not scattered down the paper', () => {
+    const fallen = faded.limbs.filter((l) => l.fallen);
+    for (const leaf of fallen) {
+      const [sx, sy, , , tx, ty] = numbers(leaf.d);
+      expect(sy).toBeGreaterThanOrEqual(faded.height - 14);
+      expect(sy).toBeLessThanOrEqual(faded.height - 11);
+      // Lying, not standing: much longer than it is tall.
+      expect(Math.abs(ty - sy)).toBeLessThan(Math.abs(tx - sx) * 0.3);
+    }
+  });
+
+  it('takes the twigs’ curve from a point by integers alone, the same in every browser', () => {
+    // fract(sin(x) * 43758) multiplies sin's last bits, which browsers do
+    // not agree on, by forty thousand.
+    const sin = vi.spyOn(Math, 'sin');
+    const cos = vi.spyOn(Math, 'cos');
+    const v = hashUnit({ x: 12.34, y: 56.78 });
+    expect(sin).not.toHaveBeenCalled();
+    expect(cos).not.toHaveBeenCalled();
+    sin.mockRestore();
+    cos.mockRestore();
+    // Pinned, because every twig of every course's tree curves by these.
+    expect(v).toBe(2375698910 / 2 ** 32);
+    expect(hashUnit({ x: 0, y: 0 })).toBe(3972407871 / 2 ** 32);
+    expect(hashUnit({ x: -3.5, y: 200.01 })).toBe(4157180131 / 2 ** 32);
+    // Below a hundredth, the noise two engines' sines and cosines leave in a
+    // point does not reach it; a hundredth does.
+    expect(hashUnit({ x: 12.34 + 1e-9, y: 56.78 - 1e-9 })).toBe(v);
+    expect(hashUnit({ x: 12.35, y: 56.78 })).not.toBe(v);
+    // From 0 to 1, and spread across it.
+    const many = Array.from({ length: 2000 }, (_, i) => hashUnit({ x: (i % 50) * 3.7, y: Math.floor(i / 50) * 5.3 }));
+    expect(Math.min(...many)).toBeGreaterThanOrEqual(0);
+    expect(Math.max(...many)).toBeLessThan(1);
+    for (let tenth = 0; tenth < 10; tenth++) {
+      const share = many.filter((x) => Math.floor(x * 10) === tenth).length / many.length;
+      expect(share).toBeGreaterThan(0.06);
+      expect(share).toBeLessThan(0.14);
     }
   });
 });

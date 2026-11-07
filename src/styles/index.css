@@ -559,7 +559,9 @@
     stroke-dasharray: 1;
     animation: tree-wood 900ms ease-out both;
   }
-  .tree-grow .lf {
+  /* A leaf's vein (.vn) arrives with its leaf, not with the wood. */
+  .tree-grow .lf,
+  .tree-grow .vn {
     animation: tree-leaf 700ms ease-out 650ms both;
   }
   /* ---- leaves in motion ----

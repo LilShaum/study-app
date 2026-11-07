@@ -72,7 +72,9 @@ describe('CourseTree', () => {
     // across the whole drawing is what decides paint order.
     const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
     const painted = [...container.querySelectorAll('path')];
-    const isLeaf = (el: Element) => el.classList.contains('lf');
+    // A leaf's vein (.vn) is part of its leaf, drawn straight after it.
+    const isLeaf = (el: Element) => el.classList.contains('lf') || el.classList.contains('vn');
+    expect(painted.some((el) => el.classList.contains('vn'))).toBe(true);
     const lastWood = painted.reduce((last, el, i) => (isLeaf(el) ? last : i), -1);
     const firstLeaf = painted.findIndex(isLeaf);
     expect(firstLeaf).toBeGreaterThan(lastWood);
@@ -122,6 +124,66 @@ describe('CourseTree', () => {
   it('draws nothing in front with no branch picked', () => {
     const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
     expect(container.querySelectorAll('g[data-front] path')).toHaveLength(0);
+  });
+
+  /** Each leaf's vein with the leaf it belongs to: the path drawn just before it. */
+  const veinsOf = (root: Element) =>
+    [...root.querySelectorAll('path.vn')].map((vein) => ({ vein, leaf: vein.previousElementSibling as Element }));
+  const width = (el: Element) => Number(el.getAttribute('stroke-width'));
+
+  it('draws each leaf’s vein straight after it, in its section’s group, at half its weight, never a target', () => {
+    const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
+    const veins = veinsOf(container);
+    expect(veins.length).toBeGreaterThan(0);
+    for (const { vein, leaf } of veins) {
+      // After its own leaf, so that leaf's paper cannot cover it.
+      expect(leaf.classList.contains('lf')).toBe(true);
+      expect(width(vein)).toBeCloseTo(width(leaf) / 2, 5);
+      // In the same group as its leaf, so it dims and swings with its section.
+      expect(vein.parentElement).toBe(leaf.parentElement);
+      expect(vein.closest('g.limb-set')?.getAttribute('data-sid')).toBe('sec-a');
+      // A stroke, never filled with the paper, and never pointed at.
+      expect(vein.getAttribute('fill')).toBeNull();
+      expect(vein.hasAttribute('data-section')).toBe(false);
+    }
+    // One for every leaf on the branch.
+    const onBranch = [...container.querySelectorAll('g.limb-set path.lf')];
+    expect(veins).toHaveLength(onBranch.length);
+  });
+
+  it('brings the picked branch’s veins to the front with its leaves, at the picked weight', () => {
+    const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive highlight="sec-a" />);
+    const front = container.querySelector('g[data-front="sec-a"]')!;
+    const veins = veinsOf(front);
+    expect(veins.length).toBeGreaterThan(0);
+    expect(veins).toHaveLength(front.querySelectorAll('path.lf').length);
+    for (const { vein, leaf } of veins) {
+      expect(leaf.classList.contains('lf')).toBe(true);
+      expect(width(vein)).toBeCloseTo(width(leaf) / 2, 5);
+    }
+    // Heavier with its leaf, as the picked branch is drawn.
+    const { container: plain } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
+    const unpicked = plain.querySelector('g.limb-set[data-sid="sec-a"] path.vn')!;
+    expect(width(veins[0].vein)).toBeCloseTo(width(unpicked) * 1.5, 5);
+  });
+
+  it('puts no vein on a leaf lying on the ground', () => {
+    const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
+    const litter = container.querySelectorAll('g.tree-litter path');
+    expect(litter.length).toBeGreaterThan(0);
+    expect(container.querySelectorAll('g.tree-litter path.vn')).toHaveLength(0);
+  });
+
+  it('buds each vein with its leaf at the end of a session: the same stalk, the same moment', () => {
+    // Nothing on the tree when the session began, so every leaf is new.
+    const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} grewFrom={{}} />);
+    const budding = veinsOf(container).filter(({ leaf }) => leaf.classList.contains('leaf-bud'));
+    expect(budding.length).toBeGreaterThan(0);
+    for (const { vein, leaf } of budding) {
+      expect(vein.classList.contains('leaf-bud')).toBe(true);
+      expect(vein.getAttribute('style')).toBe(leaf.getAttribute('style'));
+      expect(vein.classList.contains('lf')).toBe(false);
+    }
   });
 
   it('leaves the paths of a section alone when another is picked', () => {
