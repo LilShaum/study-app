@@ -590,6 +590,14 @@ export function CourseTree({
 
   /** Finger down and the tree has it: a hold or a sideways swipe, not a scroll. */
   const engaged = useRef(false);
+  /**
+   * Engaged by resting, and not moved since. A thumb often rests a moment
+   * before a slow scroll: if its first move is up or down, it was a scroll
+   * after all, and the page gets it.
+   */
+  const stillSinceHold = useRef(false);
+  /** The press moved the picked branch, so its click is not a tap. */
+  const dragged = useRef(false);
   const down = useRef<{ x: number; y: number; shown: boolean } | null>(null);
   const holdTimer = useRef<number | undefined>(undefined);
   const hideTimer = useRef<number | undefined>(undefined);
@@ -640,11 +648,27 @@ export function CourseTree({
     const svg = svgRef.current;
     if (!svg || !reveal) return;
     const hold = (e: TouchEvent) => {
-      if (engaged.current && e.cancelable) e.preventDefault();
+      if (!engaged.current) return;
+      const d = down.current;
+      const t = e.touches[0];
+      if (stillSinceHold.current && d && t) {
+        const dx = t.clientX - d.x;
+        const dy = t.clientY - d.y;
+        if (Math.hypot(dx, dy) > SLOP_PX) {
+          stillSinceHold.current = false;
+          if (Math.abs(dy) > Math.abs(dx)) {
+            // A scroll that began with a rest: let it go, numbers and all.
+            engaged.current = false;
+            hide();
+            return;
+          }
+        }
+      }
+      if (e.cancelable) e.preventDefault();
     };
     svg.addEventListener('touchmove', hold, { passive: false });
     return () => svg.removeEventListener('touchmove', hold);
-  }, [reveal]);
+  }, [reveal, hide]);
 
   /** The number under a tap, by where it is drawn now (swung or not). */
   const keyAt = (x: number, y: number): string | null => {
@@ -670,12 +694,15 @@ export function CourseTree({
           lastPointer.current = e.pointerType;
           down.current = { x: e.clientX, y: e.clientY, shown: revealed };
           engaged.current = false;
+          stillSinceHold.current = false;
+          dragged.current = false;
           if (e.pointerType === 'mouse') return;
           window.clearTimeout(hideTimer.current);
           const at = { clientX: e.clientX, clientY: e.clientY };
           window.clearTimeout(holdTimer.current);
           holdTimer.current = window.setTimeout(() => {
             engaged.current = true;
+            stillSinceHold.current = true;
             show();
             pickAt(at, 'touch');
           }, HOLD_MS);
@@ -698,6 +725,7 @@ export function CourseTree({
             engaged.current = true;
             show();
           }
+          if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > SLOP_PX) dragged.current = true;
           pickAt(e, e.pointerType);
         },
         onPointerUp: (e: ReactPointerEvent<SVGSVGElement>) => {
@@ -722,6 +750,13 @@ export function CourseTree({
           // From the keyboard the focused number's own link, or Enter on the
           // tree, has it.
           if (e.detail === 0) return;
+          // A finger that swept across the branches was picking, not tapping,
+          // even when the browser still calls it a click.
+          if (dragged.current) {
+            dragged.current = false;
+            down.current = null;
+            return;
+          }
           const shownAtDown = down.current ? down.current.shown : revealed;
           down.current = null;
           if (!shownAtDown) {

@@ -219,6 +219,51 @@ describe('CourseTree on the lecture page (reveal)', () => {
     expect(svgOf(container).style.touchAction).toBe('pan-y');
   });
 
+  it('lets a scroll that began with a rest go to the page', () => {
+    const { container } = show();
+    touch(svgOf(container), 'pointerDown', 200, 300);
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+    expect(shown(container)).toBe(true);
+    // The thumb rested, then went up: the page's, not the tree's.
+    const move = new TouchEvent('touchmove', { cancelable: true, touches: [{ clientX: 202, clientY: 260 } as Touch] });
+    act(() => {
+      svgOf(container).dispatchEvent(move);
+    });
+    expect(move.defaultPrevented).toBe(false);
+    expect(shown(container)).toBe(false);
+  });
+
+  it('keeps the finger once a held press moves sideways', () => {
+    const { container } = show();
+    touch(svgOf(container), 'pointerDown', 200, 300);
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+    const move = new TouchEvent('touchmove', { cancelable: true, touches: [{ clientX: 240, clientY: 304 } as Touch] });
+    act(() => {
+      svgOf(container).dispatchEvent(move);
+    });
+    expect(move.defaultPrevented).toBe(true);
+    expect(shown(container)).toBe(true);
+  });
+
+  it('opens nothing when a sweep across the branches ends in a click', () => {
+    const onExpand = vi.fn();
+    const { container } = show({ onExpand });
+    tap(svgOf(container));
+    expect(shown(container)).toBe(true);
+    touch(svgOf(container), 'pointerDown', 200, 300);
+    touch(svgOf(container), 'pointerMove', 215, 301);
+    touch(svgOf(container), 'pointerUp', 215, 301);
+    fireEvent.click(svgOf(container), { detail: 1, clientX: 215, clientY: 301 });
+    expect(onExpand).not.toHaveBeenCalled();
+    // And the next real tap still does.
+    tap(svgOf(container));
+    expect(onExpand).toHaveBeenCalledTimes(1);
+  });
+
   it('puts them away a few seconds after the finger lifts', () => {
     const { container } = show();
     tap(svgOf(container));
