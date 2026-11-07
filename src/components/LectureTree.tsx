@@ -1,9 +1,7 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
-import { growTree } from '@/lib/growTree';
-import { sortedSections } from '@/lib/sortedSections';
-import { plateTop } from '@/lib/treeKeys';
 import { treeCounts, treeWordParts, type TreeCounts } from '@/lib/treeWords';
 import { CourseTree } from './CourseTree';
 
@@ -23,10 +21,11 @@ function TreeLine({ counts }: { counts: TreeCounts }) {
 
 /**
  * The tree on the lecture page: the drawing as large as the first screen
- * holds it, with the words as its caption, and a tap opening the large tree.
- * The owner chose this one of three (2026-11-06; docs/proposals/design-audit.md
- * §4), with the numbered branches of another to come back as something a
- * touch reveals (docs/ASKS.md).
+ * holds it, with the words as its caption. The owner chose this one of three
+ * (2026-11-06), with the numbered branches of another coming back as
+ * something a touch reveals: any touch raises a number on every branch, the
+ * branch under the finger picked out and named here, and a tap on a number
+ * opens its section (docs/proposals/tree.md §2).
  */
 export function LectureTree({
   courseId,
@@ -45,11 +44,8 @@ export function LectureTree({
   // Fading is judged as of drawing, as the tree judges it: rendering must not read the clock.
   const [now] = useState(Date.now);
   const counts = useMemo(() => treeCounts(course, progress, now), [course, progress, now]);
-  // The sheet starts at the crown, so the drawing has the whole of its box.
-  const top = useMemo(
-    () => plateTop(growTree(courseId, sortedSections(course).map((s) => ({ id: s.id, weight: s.items.length, mastery: 0 })))),
-    [courseId, course],
-  );
+  const [picked, setPicked] = useState<string | null>(null);
+  const named = picked ? counts.sections.find((s) => s.id === picked) : undefined;
 
   return (
     <figure className="w-full">
@@ -58,15 +54,36 @@ export function LectureTree({
           courseId={courseId}
           course={course}
           progress={progress}
-          viewTop={top}
+          crop
           className={`${wide ? 'h-[22rem]' : 'h-72'} max-w-full`}
           interactive
-          mode="preview"
+          mode="reveal"
           onExpand={onExpand}
+          onPoint={setPicked}
         />
       </div>
-      <figcaption className="mt-2 text-center">
-        <TreeLine counts={counts} />
+      {/* While a branch is picked, the words name it instead, with a way in
+          big enough for a thumb. Its height is held, so the page under it
+          does not jump as the finger moves. Part of the tree for a tap: the
+          numbers stay up while its Open is tapped. */}
+      <figcaption className="mt-1 flex min-h-11 items-center justify-center text-center" data-keeps-tree-open aria-live="polite">
+        {named ? (
+          <span className="flex min-w-0 items-baseline gap-2">
+            <span className="mark shrink-0 tabular-nums text-text-3">{named.n}</span>
+            <span className="min-w-0 truncate font-display text-text">{named.title}</span>
+            {/* The title is what a phone's width is for; the number's own ink
+                says the rest, and only fading is worth the words. */}
+            {named.state === 'fading' && <span className="mark shrink-0 text-accent">fading</span>}
+            <Link
+              to={`/study/${courseId}/section/${encodeURIComponent(named.id)}`}
+              className="mark tap-safe inline-flex shrink-0 items-center text-accent hover:underline"
+            >
+              Open ▸
+            </Link>
+          </span>
+        ) : (
+          <TreeLine counts={counts} />
+        )}
       </figcaption>
     </figure>
   );

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { growTree, type Limb, type TreeSection } from './growTree';
+import { growTree, type Limb, type TreeSection, LEADER_WIDTH, TAPER_STEP, taperedLimb } from './growTree';
 
 const sections = (n: number, mastery = 0): TreeSection[] =>
   Array.from({ length: n }, (_, i) => ({ id: `s${i}`, weight: 8 + i, mastery }));
@@ -249,5 +249,51 @@ describe('each course grows its own habit', () => {
 
   it('stays inside the drawing', () => {
     for (let i = 0; i < 40; i++) expect(reach(`course-${i}`)).toBeLessThanOrEqual(200);
+  });
+});
+
+describe('the joins (the coordinator, 2026-11-06: a bulge where the trunk meets the leader)', () => {
+  const sections = Array.from({ length: 11 }, (_, i) => ({ id: `s${i}`, weight: 6 + ((i * 7) % 11), mastery: 0.5 }));
+
+  it('ends the trunk as wide as the leader starts', () => {
+    for (const seed of ['bioc301', 'lecture-a', 'motion']) {
+      const tree = growTree(seed, sections);
+      // The trunk is one outline: down its left side, a point over the top,
+      // up its right. Its anchors either side of the top give its width there.
+      const anchors = [...tree.limbs.find((l) => l.ink)!.d.matchAll(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)(?=[CZ]|$)/g)].map((m) => ({
+        x: Number(m[1]),
+        y: Number(m[2]),
+      }));
+      const topIndex = anchors.reduce((best, p, i) => (p.y < anchors[best].y ? i : best), 0);
+      const width = Math.hypot(anchors[topIndex - 1].x - anchors[topIndex + 1].x, anchors[topIndex - 1].y - anchors[topIndex + 1].y);
+      // Narrowed to fit or not, the trunk ends as wide as the leader's stroke.
+      const leader = tree.limbs.find((l) => l.sectionId === 's10' && l.spine)!;
+      expect(leader.weight).toBeLessThanOrEqual(LEADER_WIDTH);
+      expect(Math.abs(width - leader.weight)).toBeLessThan(0.15);
+    }
+  });
+
+  it('tapers a limb in steps too small to see, its pieces meeting on one curve', () => {
+    const points = Array.from({ length: 7 }, (_, i) => ({ x: 100 + i * 6 + i * i * 0.8, y: 200 - i * 9 }));
+    for (const [from, to] of [
+      [2.6, 1.43],
+      [1.6, 0.88],
+      [1.0, 0.55],
+    ]) {
+      const pieces = taperedLimb(points, from, to, 'branch');
+      for (let i = 1; i < pieces.length; i++) {
+        expect(Math.abs(pieces[i - 1].weight - pieces[i].weight)).toBeLessThanOrEqual(TAPER_STEP + 1e-9);
+        // Where one piece ends the next begins, leaving in the same direction:
+        // the last control point, the join and the next first control point in a line.
+        const prev = (pieces[i - 1].d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+        const next = (pieces[i].d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+        const join = { x: prev.at(-2)!, y: prev.at(-1)! };
+        expect({ x: next[0], y: next[1] }).toEqual(join);
+        const into = { x: join.x - prev.at(-4)!, y: join.y - prev.at(-3)! };
+        const out = { x: next[2] - join.x, y: next[3] - join.y };
+        const turn = Math.abs(Math.atan2(into.x * out.y - into.y * out.x, into.x * out.x + into.y * out.y));
+        expect(turn).toBeLessThan(0.05);
+      }
+    }
   });
 });

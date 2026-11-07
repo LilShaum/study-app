@@ -118,6 +118,9 @@ export function TreeDialog({ courseId, course, progress, onClose }: TreeDialogPr
           className="h-[50vh] sm:h-[62vh]"
           interactive
           mode="navigate"
+          // From the crown down: it floated in a tall sheet, a quarter of it
+          // blank paper above the tree (docs/proposals/tree.md, finding 5).
+          crop
         />
       </div>
     </div>

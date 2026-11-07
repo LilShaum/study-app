@@ -1,8 +1,8 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render as rtlRender, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, fireEvent, render as rtlRender, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import type { ReactElement } from 'react';
-import { CourseTree } from './CourseTree';
+import { CourseTree, LimbPaths } from './CourseTree';
 import type { Course } from '@/schema/course';
 
 const course: Course = {
@@ -89,38 +89,160 @@ describe('CourseTree', () => {
     }
   });
 
-  it('expands rather than navigating when it is a preview', () => {
-    const onExpand = vi.fn();
-    render(
-      <CourseTree courseId="c1" course={course} progress={progress} interactive mode="preview" onExpand={onExpand} />,
+  it('dims the other sections as a group, writing nothing on the paths', () => {
+    const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive highlight="sec-a" />);
+    const dimmed = [...container.querySelectorAll('g[data-dim]')];
+    expect(dimmed.length).toBeGreaterThan(0);
+    expect(dimmed.every((g) => g.getAttribute('data-sid') !== 'sec-a')).toBe(true);
+    // An opacity on every stroke darkened wherever two strokes crossed: a dot
+    // at each joint and the leaves a grey scribble. The ink is the group's.
+    expect(container.querySelectorAll('path[opacity]')).toHaveLength(0);
+    // The bole belongs to no section and never dims.
+    expect(container.querySelector('path.ink')!.closest('[data-dim]')).toBeNull();
+  });
+
+  it('leaves the paths of a section alone when another is picked', () => {
+    const tree = (highlight: string) => (
+      <MemoryRouter>
+        <CourseTree courseId="c1" course={course} progress={progress} highlight={highlight} />
+      </MemoryRouter>
     );
-    // At thumbnail size a click cannot reliably pick one limb among
-    // interleaved crowns, so the whole drawing is one button.
-    fireEvent.click(screen.getByRole('button'));
+    const { container, rerender } = rtlRender(tree('sec b/slash'));
+    const paths = () => [...container.querySelectorAll('g[data-sid="sec b/slash"] path')].map((el) => el.outerHTML);
+    const picked = paths();
+    rerender(tree('sec-a'));
+    const before = paths();
+    rerender(tree('sec-a'));
+    // Dimming is the group's ink, so a branch that is not picked keeps the
+    // same paths whichever other one is; kept apart in a memo, React skips
+    // them, and a change of branch re-renders only the branch left and the
+    // branch picked (it re-rendered the whole drawing on every move).
+    expect(paths()).toEqual(before);
+    expect(picked).not.toEqual(before);
+    expect((LimbPaths as unknown as { $$typeof: symbol }).$$typeof).toBe(Symbol.for('react.memo'));
+  });
+
+  it('starts the sheet at the crown when cropped', () => {
+    const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} crop />);
+    const [, top] = container.querySelector('svg')!.getAttribute('viewBox')!.split(' ').map(Number);
+    expect(top).toBeGreaterThan(0);
+  });
+});
+
+describe('CourseTree on the lecture page (reveal)', () => {
+  const svgOf = (c: HTMLElement) => c.querySelector('svg')!;
+  const shown = (c: HTMLElement) => c.querySelector('.tree-keys')!.hasAttribute('data-shown');
+  const numbers = () => screen.getAllByRole('link', { name: /^Section \d/ });
+  const touch = (svg: Element, type: 'pointerDown' | 'pointerMove' | 'pointerUp' | 'pointerCancel', x = 300, y = 300) =>
+    fireEvent[type](svg, { pointerType: 'touch', clientX: x, clientY: y });
+  const tap = (svg: Element) => {
+    touch(svg, 'pointerDown');
+    touch(svg, 'pointerUp');
+    fireEvent.click(svg, { detail: 1, clientX: 300, clientY: 300 });
+  };
+  const show = (extra: { onExpand?: () => void; onPoint?: (id: string | null) => void } = {}) =>
+    render(<CourseTree courseId="c1" course={course} progress={progress} interactive mode="reveal" {...extra} />);
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('shows the drawing alone until touched: the numbers there, down and out of the tab order', () => {
+    const { container } = show();
+    expect(shown(container)).toBe(false);
+    expect(numbers().map((a) => a.getAttribute('tabindex'))).toEqual(['-1', '-1']);
+    expect(numbers().map((a) => a.getAttribute('href'))).toEqual(['#/study/c1/section/sec-a', '#/study/c1/section/sec%20b%2Fslash']);
+  });
+
+  it('raises the numbers on the first tap, which no longer opens the large tree; a tap on the drawing then does', () => {
+    const onExpand = vi.fn();
+    const { container } = show({ onExpand });
+    tap(svgOf(container));
+    expect(shown(container)).toBe(true);
+    expect(onExpand).not.toHaveBeenCalled();
+    tap(svgOf(container));
+    expect(onExpand).toHaveBeenCalledTimes(1);
+  });
+
+  it('raises them for a press held a moment', () => {
+    const { container } = show();
+    touch(svgOf(container), 'pointerDown');
+    expect(shown(container)).toBe(false);
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+    expect(shown(container)).toBe(true);
+  });
+
+  it('raises them at once for a sideways swipe', () => {
+    const { container } = show();
+    touch(svgOf(container), 'pointerDown', 100, 300);
+    touch(svgOf(container), 'pointerMove', 130, 302);
+    expect(shown(container)).toBe(true);
+  });
+
+  it('raises nothing for a drag up or down: that is the page scrolling', () => {
+    const { container } = show();
+    touch(svgOf(container), 'pointerDown', 200, 300);
+    touch(svgOf(container), 'pointerMove', 202, 260);
+    touch(svgOf(container), 'pointerCancel', 202, 200);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(shown(container)).toBe(false);
+    expect(svgOf(container).style.touchAction).toBe('pan-y');
+  });
+
+  it('puts them away a few seconds after the finger lifts', () => {
+    const { container } = show();
+    tap(svgOf(container));
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(shown(container)).toBe(true);
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(shown(container)).toBe(false);
+  });
+
+  it('raises them for the keyboard, lets Tab reach each number, and Escape puts them away', () => {
+    const { container } = show();
+    fireEvent.focus(svgOf(container));
+    expect(shown(container)).toBe(true);
+    expect(numbers().map((a) => a.getAttribute('tabindex'))).toEqual(['0', '0']);
+    fireEvent.keyDown(svgOf(container), { key: 'Escape' });
+    expect(shown(container)).toBe(false);
+  });
+
+  it('takes no focus from a finger or a mouse, so no ring is drawn round the picture', () => {
+    const { container } = show();
+    expect(fireEvent.mouseDown(svgOf(container))).toBe(false);
+  });
+
+  it('opens the large tree from the keyboard with Enter on the drawing', () => {
+    const onExpand = vi.fn();
+    const { container } = show({ onExpand });
+    fireEvent.keyDown(svgOf(container), { key: 'Enter' });
     expect(onExpand).toHaveBeenCalled();
   });
 
-  it('does not follow the pointer while it is a preview', () => {
-    const { container } = render(
-      <CourseTree courseId="c1" course={course} progress={progress} interactive mode="preview" onExpand={vi.fn()} />,
-    );
-    const svg = container.querySelector('svg')!;
-    fireEvent.pointerMove(svg, { clientX: 40, clientY: 40 });
-    // Tracking the nearest limb at thumbnail size changes its answer every
-    // few pixels, and the crowns twitch between lit and dim as the mouse
-    // crosses. Nothing may respond to the pointer here.
-    expect(container.querySelectorAll('path[opacity]')).toHaveLength(0);
-    expect(container.querySelectorAll('path[data-section]')).toHaveLength(0);
-    expect(container.querySelectorAll('a')).toHaveLength(0);
-  });
-
-  it('dims the other sections while one is highlighted', () => {
-    const { container } = render(
-      <CourseTree courseId="c1" course={course} progress={progress} interactive highlight="sec-a" />,
-    );
-    const dimmed = [...container.querySelectorAll('path[opacity]')];
-    expect(dimmed.length).toBeGreaterThan(0);
-    // The bole and the leader belong to no section and must never dim.
-    expect(container.querySelectorAll('path').length).toBeGreaterThan(dimmed.length);
+  it('carries each number in its branch: one transform moves both', () => {
+    const onPoint = vi.fn();
+    const { container } = show({ onPoint });
+    fireEvent.focus(numbers()[0]);
+    expect(onPoint).toHaveBeenLastCalledWith('sec-a');
+    for (const key of container.querySelectorAll('.tree-keys g[data-sid]')) {
+      const sid = key.getAttribute('data-sid')!;
+      const wood = [...container.querySelectorAll('g.limb-set')].find((g) => g.getAttribute('data-sid') === sid && !g.closest('.tree-keys')) as SVGElement;
+      expect((key as SVGElement).style.transform).toBe(wood.style.transform);
+      expect((key as SVGElement).style.transformOrigin).toBe(wood.style.transformOrigin);
+    }
+    // The other branch swung aside, so the check above compared something.
+    const other = [...container.querySelectorAll('.tree-keys g[data-sid]')].find((g) => g.getAttribute('data-sid') === 'sec b/slash') as SVGElement;
+    expect(other.style.transform).not.toBe('rotate(0deg)');
   });
 });

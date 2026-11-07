@@ -57,6 +57,9 @@
   --color-surface-sunken: #e6e3d7;
 
   --color-border: #cfccbc;
+  /* A branch set back while another is picked: the ink at about a third,
+     flat, so where strokes overlap they do not darken (docs/proposals/tree.md). */
+  --color-ink-dim: #b3b2ad;
   --color-border-light: #dddacb;
   --color-border-strong: #6f6d5f;
 
@@ -175,6 +178,7 @@
     --color-surface-sunken: #0f1113;
 
     --color-border: #333840;
+    --color-ink-dim: #595a5d;
     --color-border-light: #262a30;
     --color-border-strong: #767d88;
 
@@ -229,6 +233,7 @@
   --color-surface-sunken: #0f1113;
 
   --color-border: #333840;
+  --color-ink-dim: #595a5d;
   --color-border-light: #262a30;
   --color-border-strong: #767d88;
 

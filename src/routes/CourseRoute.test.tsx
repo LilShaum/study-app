@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
@@ -66,11 +66,22 @@ describe("the lecture page's first screen", () => {
 });
 
 describe('the tree on the lecture page', () => {
-  it('is the drawing alone and large, a tap opening the large tree, with its line of words', () => {
+  it('is the drawing alone and large with its line of words, the numbers down until it is touched', () => {
     const { container } = open();
-    expect(screen.getByRole('button', { name: /sections in leaf\. Open it/ })).toBeTruthy();
-    expect(container.querySelector('figure a')).toBeNull();
+    expect(screen.getByRole('group', { name: /sections in leaf\. Touch or focus it to number its sections/ })).toBeTruthy();
+    expect(container.querySelector('.tree-keys')!.hasAttribute('data-shown')).toBe(false);
     expect(container.textContent).toContain('3 sections · 1 fading · 1 not started');
+  });
+
+  it('names the picked branch under the tree, with a way into it', () => {
+    const { container } = open();
+    fireEvent.focus(screen.getByRole('link', { name: /^Section 2, Transport/ }));
+    const caption = container.querySelector('figcaption')!;
+    expect(caption.textContent).toContain('Transport');
+    expect(caption.textContent).not.toContain('fading');
+    expect(caption.querySelector('a')!.getAttribute('href')).toBe('/study/cell/section/s2');
+    // Tapping its Open must not put the numbers away under the finger.
+    expect(caption.hasAttribute('data-keeps-tree-open')).toBe(true);
   });
 
   it('has no switch between versions any more: the owner chose', () => {

@@ -662,8 +662,15 @@ wrong ones to the AI to rewrite.
   that agrees with it ("11 sections · 6 fading · 4 not started", read from
   the same `sectionMemory`). Of three versions the owner chose the drawing
   alone, as large as the first screen holds it (2026-11-06; design audit
-  §4). The numbered branches of another are to come back as something a
-  touch on the tree reveals (docs/ASKS.md).
+  §4). Any touch on it raises a number on every branch, on a ring round
+  the crown, each riding its branch as it swings; the branch under the
+  finger is picked out and named under the tree with "Open"; a tap on a
+  number opens its section, a tap on the drawing while they show opens the
+  large tree, and an up-and-down drag still scrolls the page. Mouse: hover;
+  keyboard: focus, Tab through the numbers, Enter (docs/proposals/tree.md
+  §2; on a branch, recorded for the owner). Picking a branch sets the rest
+  in a flat lighter ink, never per-stroke see-through (overlaps darkened
+  into dots and scribble), and the large tree starts at its crown.
 - **The lecture page** opens on the tree, the title and Today's Start: the
   file's own details (description, code, subject, exam, contents, tags)
   fold behind "About this lecture ▸" (design audit 3C). What the whole

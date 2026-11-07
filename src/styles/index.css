@@ -636,7 +636,11 @@
   }
   /* The rest of the tree stepping back while a session's regrowth plays,
      and coming back up once it has. */
-  .tree-spotlight path {
+  .tree-spotlight [data-back] {
+    opacity: 0.25;
+  }
+  .tree-spotlight .limb-set,
+  .tree-spotlight .tree-litter {
     transition: opacity 900ms ease;
   }
   .leaf-clear {
@@ -663,12 +667,78 @@
     transform-box: view-box;
     transition: transform 420ms cubic-bezier(0.2, 0.7, 0.3, 1);
   }
+  /* A branch set back while another is picked, or while a session's
+     regrowth plays elsewhere: the whole section in a flat lighter ink. It
+     was an opacity on every stroke, so wherever two strokes crossed they
+     darkened again: a dot at every joint and the leaves a grey scribble. A
+     colour on the group cannot stack, and the leaves keep their paper fill,
+     so they still hide what is behind them. It changes at once: colour is
+     inherited, so easing it re-styled every path in the section on every
+     frame of the ease, and a sweep across the large tree measured four times
+     the long frames it had before. */
+  .tree [data-dim] {
+    color: var(--color-ink-dim);
+  }
   /* The branch under the pointer settles at once; only its neighbours drift.
      Sharing the slow transition made the one you had just moved ONTO swing
      back up from where the last one had pushed it, so the branch you were
      pointing at looked like it was tilting along with the rest. */
   .limb-set[data-held] {
     transition-duration: 120ms;
+  }
+
+  /* The numbers a touch raises on the lecture page's tree. Each travels out
+     from its branch's tip to its place round the crown, its hairline drawn
+     on behind it, and goes back the same way. Set on the paper, so a
+     hairline stops short of the figure. */
+  .tree-key-num {
+    font-family: var(--font-display);
+    font-variant-numeric: lining-nums;
+    font-size: 12px;
+    font-weight: 500;
+    fill: var(--color-text);
+    stroke: var(--color-bg);
+    stroke-width: 3.5px;
+    paint-order: stroke;
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    transform: var(--from) scale(0.4);
+    transition:
+      transform 300ms cubic-bezier(0.2, 0.7, 0.3, 1),
+      opacity 200ms ease,
+      font-size 160ms ease;
+  }
+  .tree-key-num[data-state='fading'] {
+    fill: var(--color-accent);
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .tree-key-num[data-state='bare'] {
+    fill: var(--color-text-3);
+  }
+  .tree-key-line {
+    fill: none;
+    stroke: var(--color-text-3);
+    stroke-width: 0.5px;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 300ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  .tree-key-line[data-state='fading'] {
+    stroke: var(--color-accent);
+  }
+  .tree-keys[data-shown] .tree-key-num {
+    opacity: 1;
+    transform: none;
+  }
+  .tree-keys[data-shown] .tree-key-line {
+    stroke-dashoffset: 0;
+  }
+  /* The picked branch's number stands up from the rest. */
+  .tree-keys[data-shown] [data-held] .tree-key-num {
+    font-size: 14.5px;
+    font-weight: 700;
   }
 
   /* Flashcard 3D flip. Tailwind v3 ships no utilities for perspective,

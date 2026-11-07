@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { sortedSections } from '@/lib/sortedSections';
 import { sectionStats } from '@/lib/sectionStats';
-import { growTree, type Limb } from '@/lib/growTree';
+import { growTree, type Limb, type Tree } from '@/lib/growTree';
 import { sectionMemory } from '@/lib/sectionMemory';
+import { placeTreeKeys, plateTop } from '@/lib/treeKeys';
 import { useFallenStore } from '@/store/fallen';
 import { examRule } from '@/lib/exam';
 
@@ -21,43 +22,47 @@ interface CourseTreeProps {
    */
   className?: string;
   /**
-   * Limbs become live: pointing at one lights it and pivots its neighbours
-   * aside. Off by default — a thumbnail on a library card is a picture of a
-   * course, not a way into its eleventh section.
+   * Limbs become live. Off by default — a thumbnail on a library card is a
+   * picture of a course, not a way into its eleventh section.
    */
   interactive?: boolean;
   /**
-   * What a click does.
+   * What touching it does.
    *
-   * 'preview' calls `onExpand`, because at the size a tree sits on a course
-   * page you cannot reliably aim at one limb among eleven interleaved
-   * crowns — measured at 60% correct. 'navigate' goes to the section, and is
-   * for the expanded view, where the same drawing is three times the size
-   * and the pointer resolves about four times finer.
+   * 'navigate' is the large tree: pointing picks the branch nearest the
+   * pointer, named under the drawing, and tapping the picked one opens it.
+   * At the size of the expanded view the pointer resolves finely enough.
+   *
+   * 'reveal' is the lecture page, where the tree is a third of the first
+   * screen and the page has to scroll past it: any touch raises a number on
+   * every branch, the branch under the finger picked out, and a tap on a
+   * number opens its section (docs/proposals/tree.md §2).
    */
-  mode?: 'preview' | 'navigate';
+  mode?: 'navigate' | 'reveal';
+  /** Reveal: a tap on the drawing, not on a number, while the numbers show. */
   onExpand?: () => void;
+  /** Reveal: which branch is picked, or null, for the words under the drawing. */
+  onPoint?: (sectionId: string | null) => void;
   /** Draw this section's limbs at full strength and dim everything else. */
   highlight?: string | null;
   /**
-   * Start the sheet this far down the drawing, in viewBox units, so a tree with
-   * blank paper above its crown fills its box (lib/treeKeys plateTop).
+   * Start the sheet at the crown (lib/treeKeys plateTop): most trees leave a
+   * blank stretch above it that a large drawing should not spend.
    */
-  viewTop?: number;
+  crop?: boolean;
   /**
    * Draw the tree on, once, as it appears.
    *
-   * The only animation in the app, and it is growth-shaped because that is
-   * the one thing this drawing is about: the wood inks itself in and the
-   * leaves come after it. Reserved for the end of a session, where something
-   * has actually been earned; a tree that redraws itself every time a page
-   * loads is a loading spinner with extra steps.
+   * Growth-shaped because that is the one thing this drawing is about: the
+   * wood inks itself in and the leaves come after it. Reserved for the end
+   * of a session, where something has actually been earned; a tree that
+   * redraws itself every time a page loads is a loading spinner with extra
+   * steps.
    */
   animate?: boolean;
   /**
    * The course's progress when a session began. Given, the tree shows what
-   * the session changed: leaves it won back rise from the ground to where
-   * they fell from, and leaves for newly learned material grow in place.
+   * the session changed: leaves won back and newly learned grow in place.
    * For the end of a session.
    */
   grewFrom?: Record<string, ItemResult>;
@@ -79,23 +84,10 @@ const clumpOf = (key: string) => Number(key.split('/').at(-2)) || 0;
 /** The most leaves that move at once. Past this the motion reads as noise, and costs frames on a phone. */
 const MAX_MOVING = 60;
 
-/** Wood that belongs to no section — the bole and the leader — never dims. */
-const isStructural = (limb: Limb) => !limb.sectionId;
-
 /**
  * How close the pointer must come to a branch, in SCREEN PIXELS, to be on it.
- *
- * This used to be 26 viewBox units, which on a 200x260 tree is 13% of the
- * whole drawing — and a branch's own stroke is between one and three units.
- * So a section grabbed the pointer from ten times its own width away, and on
- * a crown where limbs overlap the nearer one snapped the selection off the
- * one underneath before you ever reached it. Pointing at a branch has to
- * mean being ON the branch.
- *
  * In pixels rather than viewBox units because the same drawing renders at a
- * thumbnail and at 68vh: a fixed unit distance is a different physical
- * target in each. Converted through the CTM at the moment of the test, so
- * the tolerance is the same on any screen at any size.
+ * thumbnail and at 68vh; converted through the CTM at the moment of the test.
  */
 const REACH_PX = 11;
 
@@ -109,14 +101,23 @@ const PIVOT = 5;
 const PIVOT_REACH = 60;
 
 /**
- * How much nearer a different branch must be before the selection moves to it.
- *
- * Without this the answer changes the instant another branch is a hair
- * closer, so crossing the crown flickers between sections and the drawing
- * churns. Holding what you have until something is clearly nearer is what
- * makes it feel like pointing at a thing rather than sweeping a field.
+ * How much nearer a different branch must be before the selection moves to
+ * it. Without this, crossing the crown flickers between sections.
  */
 const STICK = 1.2;
+
+/* The reveal's timing. A press raises the numbers once the finger has
+   rested this long without setting off a scroll; a sideways move further
+   than the slop raises them at once; once the finger lifts they stay long
+   enough to tap one; a mouse that leaves puts them away a little after. */
+const HOLD_MS = 180;
+const SLOP_PX = 8;
+const LINGER_MS = 5000;
+const LEAVE_MS = 700;
+/** How close a tap must land to a number, in screen pixels, to mean it. */
+const KEY_REACH_PX = 26;
+/** Paper either side of the drawing for the ring of numbers, in viewBox units. */
+const KEY_PAD = 24;
 
 /** The first point of a path — where a limb leaves the wood it grew from. */
 function startOf(d: string): [number, number] | null {
@@ -131,20 +132,70 @@ interface Sample {
 }
 
 /**
+ * A limb's own attributes. Nothing here depends on which branch is picked
+ * except its weight, and only for the picked branch's own paths: dimming is
+ * the section group's ink (styles/index.css, `[data-dim]`), so picking a
+ * branch re-renders two sections, not the drawing.
+ */
+function paintLimb(limb: Limb, held: boolean, animate: boolean, pointable: boolean) {
+  return {
+    d: limb.d,
+    // The picked limb is drawn heavier as well as left in full ink. Dimming
+    // alone had to be so deep to register that the whole crown went to a
+    // ghost, and a tree you cannot see is not locating anything.
+    strokeWidth: held ? limb.weight * 1.5 : limb.weight,
+    className: limb.solid ? 'lf' : limb.ink ? 'ink' : 'wd',
+    // The trunk is a filled outline in the line colour (see growTree).
+    fill: limb.ink ? 'currentColor' : undefined,
+    stroke: limb.ink ? 'none' : undefined,
+    // Normalised length, so one dash rule can draw on a path of any size.
+    pathLength: animate && !limb.solid && !limb.ink ? 1 : undefined,
+    // Only a section's MAIN LINE, at branch weight, is a target: every
+    // stroke of a section sampled made a wide ragged region that overlapped
+    // its neighbours', and the hair-thin tip wanders in among other limbs.
+    'data-section': pointable && limb.spine && limb.kind === 'branch' ? limb.sectionId : undefined,
+  };
+}
+
+type Motion = { className: string; style: Record<string, string> };
+
+/**
+ * One section's paths in one layer, drawn once and kept.
+ *
+ * Every finger move that changed the picked branch used to re-render all
+ * ~1200 paths of the drawing, because the dimming and the weight were
+ * written onto each; slowed to a phone's pace that was frames of 100 to
+ * 230 ms mid-swipe (docs/proposals/tree.md, finding 2). Kept apart, a change
+ * of branch re-renders the branch left and the branch picked.
+ */
+export const LimbPaths = memo(function LimbPaths({
+  limbs,
+  held,
+  animate,
+  pointable,
+  grow,
+}: {
+  limbs: Limb[];
+  held: boolean;
+  animate: boolean;
+  pointable: boolean;
+  grow?: Map<string, Motion>;
+}) {
+  return (
+    <>
+      {limbs.map((limb, i) => (
+        <path key={i} {...paintLimb(limb, held, animate, pointable)} {...(limb.leafKey ? grow?.get(limb.leafKey) : undefined)} />
+      ))}
+    </>
+  );
+});
+
+/**
  * The course, drawn.
  *
  * Structure comes from the course and never moves; foliage comes from what
  * has been studied. A section never opened is a bare branch, which is the
  * one thing a percentage cannot show you at a glance.
- *
- * When `interactive`, each section's limbs are also a link into that section,
- * which is the difference between a drawing beside an app and a drawing that
- * IS one. The links are a second layer of transparent, deliberately fat
- * copies of the wood rather than handlers on the visible paths, because the
- * paint order cannot be disturbed: every leaf is drawn after every branch so
- * that a canopy hides the wood behind it, and grouping the paths by section
- * to make them clickable would have put one section's branches back on top of
- * another's leaves.
  *
  * The drawing carries no caption of its own. Where words sit beside it, on the
  * lecture page, LectureTree sets them from the same reading of the sections.
@@ -156,35 +207,33 @@ export function CourseTree({
   className = 'h-40',
   interactive = false,
   highlight = null,
-  viewTop = 0,
+  crop = false,
   animate = false,
   grewFrom,
   mode = 'navigate',
   onExpand,
+  onPoint,
 }: CourseTreeProps) {
   const [pointed, setPointed] = useState<string | null>(null);
+  // Reveal: whether the numbers are up.
+  const [revealed, setRevealed] = useState(false);
   // Fading is judged as of when the tree was drawn: rendering must not read
   // the clock, and a canopy that shed leaves while you looked at it would be
   // a strange thing to watch.
   const [now] = useState(Date.now);
 
-  /*
-   * Only the expanded drawing follows the pointer.
-   *
-   * A thumbnail is one object, not eleven. Tracking the nearest limb at
-   * 176px tall means the answer changes every few pixels of mouse travel —
-   * sections flicking between lit and dim, crowns twitching — and the page
-   * reads as though it is malfunctioning. The whole preview responds to a
-   * click instead; the pointing happens where the limbs are far enough apart
-   * to point at.
-   */
-  const tracking = interactive && mode === 'navigate';
+  const reveal = interactive && mode === 'reveal';
+  /* The pointer picks branches in the large tree always, and on the lecture
+     page while the numbers are up: a thumbnail-sized tree that followed every
+     pass of the pointer flickered between sections for nothing. */
+  const tracking = interactive && (mode === 'navigate' || revealed);
   const active = (tracking ? pointed : null) ?? highlight;
 
   const { tree, sections } = useMemo(() => {
     const sections = sortedSections(course).map((section) => {
       const stats = sectionStats(section, progress);
       const memory = sectionMemory(section, progress, now, examRule(course, progress, now));
+      const heldPct = memory.learned ? Math.round((memory.held / memory.learned) * 100) : 100;
       return {
         id: section.id,
         title: section.title,
@@ -195,24 +244,30 @@ export function CourseTree({
         mastery: memory.held,
         studied: memory.studied,
         due: memory.due,
+        heldPct,
+        // As lib/treeWords reads it, so a number and the words agree.
+        state: memory.studied === 0 ? ('bare' as const) : heldPct < 100 ? ('fading' as const) : ('held' as const),
       };
     });
     return { tree: growTree(courseId, sections), sections };
   }, [courseId, course, progress, now]);
 
+  // The wood never moves with what is learned, so the crop and the numbers'
+  // places come from the tree already grown: the lecture page grew a second
+  // tree just to crop the first.
+  const top = useMemo(() => (crop ? plateTop(tree) : 0), [crop, tree]);
+  const pad = reveal ? KEY_PAD : 0;
+  const keys = useMemo(() => (reveal ? placeTreeKeys(tree, sections.map((s) => s.id)) : []), [reveal, tree, sections]);
+  const sectionById = useMemo(() => new Map(sections.map((s) => [s.id, s])), [sections]);
+
   /*
    * What a session changed, leaf by leaf: the same tree grown from the
-   * progress it started with, compared by each leaf's stable key.
-   *
-   * Leaves that are on the branch now and were not then bud and unfurl from
-   * their own stems, staggered — whether they were won back or are new.
-   * They do NOT fly back up off the ground: nothing a tree does looks like
-   * that. What shows a leaf was won back is the ground instead: the section's
-   * fallen leaves that are no longer fallen fade from the pile as the branch
-   * fills in, so the pile shrinks while the crown grows.
+   * progress it started with, compared by each leaf's stable key. Leaves on
+   * the branch now that were not then bud from their own stems; the
+   * section's fallen leaves that are no longer fallen fade from the pile.
    */
   const motion = useMemo(() => {
-    const grow = new Map<string, { className: string; style: Record<string, string> }>();
+    const grow = new Map<string, Motion>();
     const clearing: { d: string; style: Record<string, string> }[] = [];
     const changed = new Set<string>();
     if (!grewFrom) return { grow, clearing, changed };
@@ -240,8 +295,7 @@ export function CourseTree({
         style: {
           // Unfurl from the stem, not from the leaf's middle.
           transformOrigin: at ? `${at[0]}px ${at[1]}px` : 'center',
-          // Clump by clump, each leaf a little after its neighbours, so the
-          // branch fills in rather than every leaf popping at once.
+          // Clump by clump, each leaf a little after its neighbours.
           animationDelay: `${400 + clumpOf(l.leafKey!) * 140 + (h % 260)}ms`,
         },
       });
@@ -259,10 +313,8 @@ export function CourseTree({
 
   /*
    * While a session's regrowth plays, the sections it did not touch step
-   * back, so the branch filling in is the thing you see. Measured on a real
-   * course: one section budding inside an otherwise full crown was
-   * invisible — every frame looked the same. Once it has grown, the rest of
-   * the tree comes back up.
+   * back, so the branch filling in is the thing you see. Once it has grown,
+   * the rest of the tree comes back up.
    */
   const [spotlight, setSpotlight] = useState(true);
   useEffect(() => {
@@ -270,66 +322,56 @@ export function CourseTree({
     const t = setTimeout(() => setSpotlight(false), 2800);
     return () => clearTimeout(t);
   }, [grewFrom]);
-  const stepsBack = (limb: Limb) =>
-    !!grewFrom && spotlight && motion.changed.size > 0 && !!limb.sectionId && !motion.changed.has(limb.sectionId);
+  /** Stepping back while a session's regrowth plays: the group's opacity, eased (styles/index.css). */
+  const stepsBack = (sid: string) => !!grewFrom && spotlight && motion.changed.size > 0 && !motion.changed.has(sid);
+  /** Set in the lighter ink because another branch is picked. */
+  const dim = (sid: string) => !!active && sid !== active;
 
   /*
-   * The limbs, grouped twice: by layer, then by section.
-   *
-   * By layer because paint order is load-bearing — every leaf is drawn after
-   * every branch so a canopy hides the wood behind it, and grouping by
-   * section alone would put one section's branches back on top of another's
-   * leaves. By section inside that, because a section is the thing that
-   * moves: pointing at one limb swings its neighbours aside, and a group is
-   * what can carry a transform.
-   *
-   * Each section also gets an anchor — where its lowest limb leaves the wood
-   * it grew from, which is what it pivots about — and a centroid, which is
-   * what decides the direction it swings.
+   * The limbs, grouped twice: by layer, then by section. By layer because
+   * paint order is load-bearing — every leaf is drawn after every branch so a
+   * canopy hides the wood behind it. By section inside that, because a
+   * section is the thing that moves and dims, and a group is what can carry
+   * a transform and an ink.
    */
   const layers = useMemo(() => {
     const wood = new Map<string, Limb[]>();
     const foliage = new Map<string, Limb[]>();
     const ghosts = new Map<string, Limb[]>();
-    const structural: Limb[] = [];
-    const structuralFoliage: Limb[] = [];
     // On the ground, so it never swings with its branch; it still dims and
     // lights with its section, which is how you tell whose litter is whose.
-    const litter: Limb[] = [];
+    const litter = new Map<string, Limb[]>();
+    const structural: Limb[] = [];
+    const structuralFoliage: Limb[] = [];
+    const add = (into: Map<string, Limb[]>, id: string, limb: Limb) => {
+      const list = into.get(id);
+      if (list) list.push(limb);
+      else into.set(id, [limb]);
+    };
     for (const limb of tree.limbs) {
       if (limb.fallen) {
-        litter.push(limb);
+        add(litter, limb.sectionId ?? '', limb);
         continue;
       }
       if (limb.ghost) {
         // The leader's lost leaves belong to no section and are never
         // pointed at, so they are never drawn.
-        if (!limb.sectionId) continue;
-        const list = ghosts.get(limb.sectionId);
-        if (list) list.push(limb);
-        else ghosts.set(limb.sectionId, [limb]);
+        if (limb.sectionId) add(ghosts, limb.sectionId, limb);
         continue;
       }
       if (!limb.sectionId) {
-        // Split by layer, not just set aside. The leader carries foliage and
-        // belongs to no section, so filing all of it as "structural" and
-        // drawing that first put the leader's leaves UNDER the branches —
-        // the one thing the layering exists to prevent.
         (limb.solid ? structuralFoliage : structural).push(limb);
         continue;
       }
-      const into = limb.solid ? foliage : wood;
-      const list = into.get(limb.sectionId);
-      if (list) list.push(limb);
-      else into.set(limb.sectionId, [limb]);
+      add(limb.solid ? foliage : wood, limb.sectionId, limb);
     }
 
     const geometry = new Map<string, { anchor: [number, number]; cx: number }>();
     for (const [id, limbs] of wood) {
       const starts = limbs.map((l) => startOf(l.d)).filter((p): p is [number, number] => !!p);
       if (!starts.length) continue;
-      // Lowest start point: the limb nearest the ground is the one the rest
-      // of the section hangs off, so it is what the section turns about.
+      // The limb nearest the ground is the one the rest of the section hangs
+      // off, so it is what the section turns about.
       const anchor = starts.reduce((low, p) => (p[1] > low[1] ? p : low));
       const cx = starts.reduce((n, p) => n + p[0], 0) / starts.length;
       geometry.set(id, { anchor, cx });
@@ -346,9 +388,8 @@ export function CourseTree({
     for (const [id, geo] of layers.geometry) {
       if (id === active) continue;
       const dx = geo.cx - focus.cx;
-      // Away from the section being pointed at, hardest for its nearest
-      // neighbours and fading across the crown. A tie goes left, so two limbs
-      // at the same centroid never both sit still.
+      // Away from the section pointed at, hardest for its nearest neighbours.
+      // A tie goes left, so two limbs at the same centroid never both sit still.
       const away = dx === 0 ? -1 : Math.sign(dx);
       const angle = away * PIVOT * Math.exp(-Math.abs(dx) / PIVOT_REACH);
       out.set(id, `rotate(${angle.toFixed(2)}deg)`);
@@ -360,8 +401,7 @@ export function CourseTree({
   const cloud = useRef<Sample[]>([]);
   /**
    * What the last press came from. A tap fires `click` with no pointermove
-   * before it, and React's synthetic click carries no pointerType, so without
-   * this a finger tapping a branch was measured against the cursor's radius.
+   * before it, and React's synthetic click carries no pointerType.
    */
   const lastPointer = useRef('mouse');
   /** Which branch was selected when the current touch began. */
@@ -369,51 +409,25 @@ export function CourseTree({
   const navigate = useNavigate();
 
   /*
-   * Pointing at a limb is decided by DISTANCE, not by stacking.
-   *
-   * The first version gave each section a fat transparent copy of its own
-   * wood and let the browser hit-test them. With eleven crowns interleaved
-   * in one canvas those copies overlap almost everywhere, and the last one
-   * appended wins, so aiming at a visible limb selected the right section
-   * 54% of the time — measured, not guessed. Weighting the order by limb
-   * thickness moved it to 58%. A control that misroutes two clicks in five
-   * is worse than no control.
-   *
-   * So the limbs are sampled into a point cloud once, and the pointer picks
-   * the nearest sample. Whatever you are closest to is what you get, which
-   * is both correct by construction and what the drawing looks like it
-   * should do.
-   *
-   * Measured at the expanded size, over 1737 probes along every limb:
-   *
-   *   hit-test by stacking, fat transparent copies ......... 54%
-   *   ditto, ordered by limb thickness ..................... 58%
-   *   nearest sampled point (this) ......................... 65%
-   *   ditto, plus one sample per leaf ...................... 58%
-   *   ditto, distance discounted by limb weight ............ 63%
-   *
-   * Sampling the canopy sounds right — a person aims at the leafy mass, not
-   * the twig — and measures worse, because leaves sit at the crown's edge
-   * where sections interleave most. Weighting by thickness measures worse
-   * too. The remaining error is not a modelling failure: deep in a crown the
-   * nearest limb genuinely belongs to a neighbour, and no hit model fixes an
-   * ambiguous drawing. What fixes it is naming what the pointer is on before
-   * the click, which is what the caption under the tree does.
+   * Pointing at a limb is decided by DISTANCE, not by stacking: the main
+   * lines are sampled into a point cloud and the pointer picks the nearest
+   * sample (65% right at the expanded size, against 54% for stacked hit
+   * areas, measured over 1737 probes). Sampled when the page is idle, or at
+   * the first touch if that comes sooner, not before the first paint: the
+   * cloud is only wanted once a finger arrives, and building it in a layout
+   * effect held up the large tree's first frame.
    */
-  useLayoutEffect(() => {
+  const sampled = useRef<Tree | null>(null);
+  const sample = useCallback(() => {
     const svg = svgRef.current;
-    if (!svg || !tracking) return;
+    if (!svg || sampled.current === tree) return;
+    sampled.current = tree;
     const samples: Sample[] = [];
     for (const el of svg.querySelectorAll<SVGPathElement>('path[data-section]')) {
-      // jsdom has no SVG geometry, so the cloud stays empty under test and
-      // pointing simply finds nothing — which is the correct behaviour for a
-      // renderer that cannot measure a path.
+      // jsdom has no SVG geometry, so the cloud stays empty under test.
       if (typeof el.getTotalLength !== 'function') return;
       const sectionId = el.dataset.section!;
       const length = el.getTotalLength();
-      // Every ~2 units. With a grab radius of a few units, a 6-unit sample
-      // spacing left scallops between samples where the line tested as
-      // further away than it is.
       const steps = Math.max(2, Math.ceil(length / 2));
       for (let i = 0; i <= steps; i++) {
         const { x, y } = el.getPointAtLength((length * i) / steps);
@@ -421,109 +435,63 @@ export function CourseTree({
       }
     }
     cloud.current = samples;
-  }, [tree, tracking]);
+  }, [tree]);
+  useEffect(() => {
+    if (!interactive) return;
+    const idle = window.requestIdleCallback ?? ((fn: () => void) => window.setTimeout(fn, 300));
+    const cancel = window.cancelIdleCallback ?? window.clearTimeout;
+    const handle = idle(() => sample());
+    return () => cancel(handle);
+  }, [interactive, sample]);
 
   const nearest = useCallback(
     (event: { clientX: number; clientY: number; pointerType?: string }, holding: string | null): string | null => {
-    const svg = svgRef.current;
-    if (!svg) return null;
-    const ctm = svg.getScreenCTM();
-    if (!ctm) return null;
-    const point = svg.createSVGPoint();
-    point.x = event.clientX;
-    point.y = event.clientY;
-    const { x, y } = point.matrixTransform(ctm.inverse());
-    // One screen pixel is this many viewBox units at the size we are drawn.
-    const perPx = Math.hypot(ctm.a, ctm.b) || 1;
-    // Ask the event what is pointing, not the device. A media query was
-    // allocated here on every move, and it answered the wrong question: a
-    // touchscreen laptop reports a fine pointer, so a finger on it got the
-    // cursor's 11px target. pointerType says what THIS event came from.
-    const wantPx = event.pointerType === 'touch' ? REACH_PX_COARSE : REACH_PX;
-    const reach = wantPx / perPx;
-    let best: string | null = null;
-    let bestDist = reach * reach;
-    let heldDist = Infinity;
-    for (const s of cloud.current) {
-      const d = (s.x - x) * (s.x - x) + (s.y - y) * (s.y - y);
-      if (s.sectionId === holding && d < heldDist) heldDist = d;
-      if (d < bestDist) {
-        bestDist = d;
-        best = s.sectionId;
+      const svg = svgRef.current;
+      // jsdom draws nothing, so it has no screen to map a point from.
+      if (!svg || typeof svg.getScreenCTM !== 'function') return null;
+      sample();
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return null;
+      const point = svg.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+      const { x, y } = point.matrixTransform(ctm.inverse());
+      // One screen pixel is this many viewBox units at the size we are drawn.
+      const perPx = Math.hypot(ctm.a, ctm.b) || 1;
+      // Ask the event what is pointing, not the device: a touchscreen laptop
+      // reports a fine pointer.
+      const wantPx = event.pointerType === 'touch' ? REACH_PX_COARSE : REACH_PX;
+      const reach = wantPx / perPx;
+      let best: string | null = null;
+      let bestDist = reach * reach;
+      let heldDist = Infinity;
+      for (const s of cloud.current) {
+        const d = (s.x - x) * (s.x - x) + (s.y - y) * (s.y - y);
+        if (s.sectionId === holding && d < heldDist) heldDist = d;
+        if (d < bestDist) {
+          bestDist = d;
+          best = s.sectionId;
+        }
       }
-    }
-    // Keep what is already selected unless the new one is clearly nearer.
-    if (holding && best !== holding && heldDist < bestDist * STICK * STICK && heldDist < reach * reach) {
-      return holding;
-    }
-    return best;
-  }, []);
-
-  const inLeaf = useMemo(
-    () => new Set(tree.limbs.filter((l) => l.solid && !l.fallen).map((l) => l.sectionId)).size,
-    [tree],
+      // Keep what is already selected unless the new one is clearly nearer.
+      if (holding && best !== holding && heldDist < bestDist * STICK * STICK && heldDist < reach * reach) {
+        return holding;
+      }
+      return best;
+    },
+    [sample],
   );
+
+  const inLeaf = useMemo(() => new Set(tree.limbs.filter((l) => l.solid && !l.fallen).map((l) => l.sectionId)).size, [tree]);
 
   const label = `${course.metadata.title}: ${inLeaf} of ${course.sections.length} sections in leaf`;
 
-  const paint = (limb: Limb) => ({
-    d: limb.d,
-    // The lit limb is drawn heavier as well as left at full strength. Dimming
-    // alone had to be so deep to register that the whole crown went to a
-    // ghost, and a tree you cannot see is not locating anything.
-    strokeWidth: active && limb.sectionId === active ? limb.weight * 1.5 : limb.weight,
-    className: limb.solid ? 'lf' : limb.ink ? 'ink' : 'wd',
-    // The trunk is a filled outline in the line colour (see growTree).
-    fill: limb.ink ? 'currentColor' : undefined,
-    stroke: limb.ink ? 'none' : undefined,
-    // Normalised length, so one dash rule can draw on a path of any size
-    // without knowing how long it is.
-    pathLength: animate && !limb.solid && !limb.ink ? 1 : undefined,
-    // Only a section's MAIN LINE is a target.
-    //
-    // Filtering on kind was not enough and this is why: kind comes from
-    // depth, so a section's depth-3 limb and all its depth-2 children are
-    // every one of them `branch`. Nine strokes fanning across the crown,
-    // all sampled, made a section's target a wide ragged region that
-    // overlapped its neighbours' — which is exactly the complaint that
-    // aiming at one branch lands two over. The generator now marks the
-    // unbroken leader chain, so a section is one stroke to point at.
-    //
-    // And only the BRANCH-weight part of that chain. The spine carries on
-    // into twig weight out at the tip, where it is a hair thick and has
-    // wandered in among the limbs it grew past — so those last segments were
-    // claiming pointer that was nowhere near anything you could see.
-    'data-section': tracking && limb.spine && limb.kind === 'branch' ? limb.sectionId : undefined,
-    // Deeper in the large view: there the pointed section's lost leaves are
-    // outlined, and at 0.4 its neighbours' real leaves read as the same
-    // faint marks as that outline.
-    opacity: stepsBack(limb)
-      ? 0.25
-      : active && !isStructural(limb) && limb.sectionId !== active
-        ? tracking
-          ? 0.2
-          : 0.4
-        : undefined,
-  });
-
   /*
-   * The falls playing now. Tested at human speeds, the first version failed
-   * in ways a frame-by-frame look did not show: moving to another branch cut
-   * the first branch's leaves off in mid-air, all fifty at once; returning to
-   * a branch did nothing, because each branch fell only once per opening, so
-   * the same act got a different answer; and the first leaf took half a
-   * second to move.
-   *
-   * So a fall, once started, always finishes, and several can be under way
-   * together. It starts after a short rest — long enough that brushing
-   * quickly across the crown does not shake every branch it crosses, short
-   * enough to feel like an answer to stopping.
-   *
-   * And a leaf falls once. Replaying the fall on every return made it a
-   * hover effect: the branch shed the same leaves however often you chose
-   * it. Now only leaves lost since you last saw that branch fall; the rest
-   * are already on the ground. Which have fallen is kept per course, so it
-   * holds across visits too (see store/fallen).
+   * The falls playing now. A fall, once started, always finishes, and several
+   * can be under way together; it starts after a short rest, so brushing
+   * across the crown does not shake every branch it crosses. A leaf falls
+   * once: only leaves lost since you last saw that branch fall, kept per
+   * course (store/fallen).
    */
   const FALL_REST_MS = 180;
   const FALL_LASTS_MS = 3600;
@@ -534,8 +502,7 @@ export function CourseTree({
   const syncFallen = useFallenStore((s) => s.sync);
 
   // Where each section's lost leaves begin now: the first clump not on the
-  // branch, or null when it has lost nothing. Regrowth moves this up, and
-  // leaves that grew back can fall again.
+  // branch, or null when it has lost nothing.
   const shownBySection = useMemo(() => {
     const out: Record<string, number | null> = {};
     for (const sid of layers.foliage.keys()) out[sid] = null;
@@ -561,17 +528,13 @@ export function CourseTree({
           return {
             d: l.d,
             style: {
-              // Each leaf its own drift, swing, turn and speed: falling
-              // together at one speed read as a column, not as leaves.
+              // Each leaf its own drift, swing, turn and speed.
               '--dx': `${((h >> 3) % 41) - 20}px`,
-              // Which way its first swing goes is its own, too — all to one
-              // side read as a gust carrying the whole lot off.
               '--sway': `${(h & 1 ? 1 : -1) * (6 + ((h >> 9) % 10))}px`,
               '--dy': `${at ? ground - at[1] : 60}px`,
               // A tilt to land at, not a spin: leaves flutter, they do not tumble.
               '--rot': `${((h >> 6) % 70) - 35}deg`,
               animationDuration: `${2200 + ((h >> 12) % 800)}ms`,
-              // The first go almost at once; the rest follow over half a second.
               animationDelay: `${h % 550}ms`,
             } as Record<string, string>,
           };
@@ -600,7 +563,7 @@ export function CourseTree({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
-  const swing = (id: string) => {
+  const swing = (id: string): CSSProperties | undefined => {
     const geo = layers.geometry.get(id);
     if (!geo) return undefined;
     return {
@@ -609,97 +572,255 @@ export function CourseTree({
     };
   };
 
+  /* ---- the reveal (the lecture page) ---- */
+
+  /** Finger down and the tree has it: a hold or a sideways swipe, not a scroll. */
+  const engaged = useRef(false);
+  const down = useRef<{ x: number; y: number; shown: boolean } | null>(null);
+  const holdTimer = useRef<number | undefined>(undefined);
+  const hideTimer = useRef<number | undefined>(undefined);
+
+  const hide = useCallback(() => {
+    window.clearTimeout(hideTimer.current);
+    setRevealed(false);
+    setPointed(null);
+  }, []);
+  const show = useCallback(() => {
+    window.clearTimeout(hideTimer.current);
+    setRevealed(true);
+  }, []);
+  const hideSoon = useCallback(
+    (ms: number) => {
+      window.clearTimeout(hideTimer.current);
+      hideTimer.current = window.setTimeout(hide, ms);
+    },
+    [hide],
+  );
+  useEffect(() => () => {
+    window.clearTimeout(hideTimer.current);
+    window.clearTimeout(holdTimer.current);
+  }, []);
+
+  // Which branch is picked, for the words under the drawing.
+  useEffect(() => {
+    if (reveal) onPoint?.(revealed ? pointed : null);
+  }, [reveal, revealed, pointed, onPoint]);
+
+  // A tap anywhere else puts the numbers away; the words under the tree are
+  // part of it, so their Open can be tapped.
+  useEffect(() => {
+    if (!reveal || !revealed) return;
+    const away = (e: PointerEvent) => {
+      const t = e.target as Element | null;
+      if (svgRef.current?.contains(t) || t?.closest?.('[data-keeps-tree-open]')) return;
+      hide();
+    };
+    document.addEventListener('pointerdown', away, true);
+    return () => document.removeEventListener('pointerdown', away, true);
+  }, [reveal, revealed, hide]);
+
+  // Once the tree has the finger, it keeps it: the page may scroll from an
+  // up-and-down drag that starts on the tree (touch-action: pan-y), but not
+  // from a finger that is already picking branches.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg || !reveal) return;
+    const hold = (e: TouchEvent) => {
+      if (engaged.current && e.cancelable) e.preventDefault();
+    };
+    svg.addEventListener('touchmove', hold, { passive: false });
+    return () => svg.removeEventListener('touchmove', hold);
+  }, [reveal]);
+
+  /** The number under a tap, by where it is drawn now (swung or not). */
+  const keyAt = (x: number, y: number): string | null => {
+    let best: string | null = null;
+    let bestDistance = KEY_REACH_PX;
+    for (const el of svgRef.current?.querySelectorAll<SVGTextElement>('[data-key]') ?? []) {
+      const r = el.getBoundingClientRect();
+      const distance = Math.hypot(r.left + r.width / 2 - x, r.top + r.height / 2 - y);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        best = el.dataset.key ?? null;
+      }
+    }
+    return best;
+  };
+
+  const pickAt = (e: { clientX: number; clientY: number }, pointerType: string) =>
+    setPointed((held) => nearest({ clientX: e.clientX, clientY: e.clientY, pointerType }, held) ?? held);
+
+  const revealHandlers = reveal
+    ? {
+        onPointerDown: (e: ReactPointerEvent<SVGSVGElement>) => {
+          lastPointer.current = e.pointerType;
+          down.current = { x: e.clientX, y: e.clientY, shown: revealed };
+          engaged.current = false;
+          if (e.pointerType === 'mouse') return;
+          window.clearTimeout(hideTimer.current);
+          const at = { clientX: e.clientX, clientY: e.clientY };
+          window.clearTimeout(holdTimer.current);
+          holdTimer.current = window.setTimeout(() => {
+            engaged.current = true;
+            show();
+            pickAt(at, 'touch');
+          }, HOLD_MS);
+        },
+        onPointerMove: (e: ReactPointerEvent<SVGSVGElement>) => {
+          if (e.pointerType === 'mouse') {
+            show();
+            pickAt(e, 'mouse');
+            return;
+          }
+          const d = down.current;
+          if (!d) return;
+          if (!engaged.current) {
+            const dx = e.clientX - d.x;
+            const dy = e.clientY - d.y;
+            if (Math.hypot(dx, dy) <= SLOP_PX) return;
+            window.clearTimeout(holdTimer.current);
+            // Up or down is the page's scroll; sideways is the tree's.
+            if (Math.abs(dx) <= Math.abs(dy)) return;
+            engaged.current = true;
+            show();
+          }
+          pickAt(e, e.pointerType);
+        },
+        onPointerUp: (e: ReactPointerEvent<SVGSVGElement>) => {
+          window.clearTimeout(holdTimer.current);
+          if (e.pointerType !== 'mouse' && engaged.current) hideSoon(LINGER_MS);
+          engaged.current = false;
+        },
+        onPointerCancel: () => {
+          // The page took the finger to scroll.
+          window.clearTimeout(holdTimer.current);
+          if (engaged.current) hideSoon(LINGER_MS);
+          engaged.current = false;
+          down.current = null;
+        },
+        onPointerEnter: (e: ReactPointerEvent<SVGSVGElement>) => {
+          if (e.pointerType === 'mouse') window.clearTimeout(hideTimer.current);
+        },
+        onPointerLeave: (e: ReactPointerEvent<SVGSVGElement>) => {
+          if (e.pointerType === 'mouse') hideSoon(LEAVE_MS);
+        },
+        onClick: (e: React.MouseEvent<SVGSVGElement>) => {
+          // From the keyboard the focused number's own link, or Enter on the
+          // tree, has it.
+          if (e.detail === 0) return;
+          const shownAtDown = down.current ? down.current.shown : revealed;
+          down.current = null;
+          if (!shownAtDown) {
+            // The first touch shows the map: the tap that used to open the
+            // large tree now raises the numbers, so meeting them needs no
+            // telling.
+            show();
+            pickAt(e, lastPointer.current);
+            if (lastPointer.current !== 'mouse') hideSoon(LINGER_MS);
+            return;
+          }
+          const key = keyAt(e.clientX, e.clientY);
+          if (key) navigate(`/study/${courseId}/section/${encodeURIComponent(key)}`);
+          else onExpand?.();
+        },
+        // A finger or a mouse does not focus it: its answer to them is the
+        // numbers, and the focus ring a tap left round the drawing was a box
+        // drawn round a picture. Tab still reaches it, ring and all.
+        onMouseDown: (e: React.MouseEvent<SVGSVGElement>) => e.preventDefault(),
+        onFocus: (e: React.FocusEvent<SVGSVGElement>) => {
+          if (e.target === e.currentTarget) show();
+        },
+        onBlur: (e: React.FocusEvent<SVGSVGElement>) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) hide();
+        },
+        onKeyDown: (e: React.KeyboardEvent<SVGSVGElement>) => {
+          if (e.key === 'Escape') {
+            hide();
+          } else if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            onExpand?.();
+          }
+        },
+      }
+    : {};
+
+  const navigateHandlers =
+    interactive && mode === 'navigate'
+      ? {
+          onPointerDown: (e: ReactPointerEvent<SVGSVGElement>) => {
+            lastPointer.current = e.pointerType;
+            heldAtDown.current = pointed;
+            setPointed((held) => nearest(e, held) ?? held);
+          },
+          // The selection STAYS: moving off a branch, or off the drawing,
+          // keeps the last one selected, so the caption under the tree can be
+          // reached and used. Touch selects by moving too.
+          onPointerMove: (e: ReactPointerEvent<SVGSVGElement>) => setPointed((held) => nearest(e, held) ?? held),
+          onClick: (e: React.MouseEvent<SVGSVGElement>) => {
+            const id = nearest({ clientX: e.clientX, clientY: e.clientY, pointerType: lastPointer.current }, pointed);
+            if (!id) {
+              setPointed(null);
+              return;
+            }
+            // On touch, a tap opens a branch only if it was ALREADY the
+            // selected one when the finger came down; otherwise it selects
+            // it, so you see its name and state before you leave for it.
+            if (lastPointer.current !== 'mouse' && id !== heldAtDown.current) {
+              setPointed(id);
+              return;
+            }
+            navigate(`/study/${courseId}/section/${encodeURIComponent(id)}`);
+          },
+        }
+      : {};
+
   const svg = (
     <svg
       ref={svgRef}
-      viewBox={`0 ${viewTop} ${tree.width} ${tree.height - viewTop}`}
+      viewBox={`${-pad} ${top} ${tree.width + pad * 2} ${tree.height - top}`}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
       strokeLinejoin="round"
       // A drawing with links inside it is not an image: role="img" would hide
       // every one of those links from a screen reader.
-      role={tracking ? 'group' : 'img'}
-      // A finger dragged over the tree selects branches; it must not also
-      // scroll the page underneath it.
-      style={tracking ? { touchAction: 'none' } : undefined}
-      aria-label={label}
-      onPointerDown={
-        tracking
-          ? (e) => {
-              lastPointer.current = e.pointerType;
-              heldAtDown.current = pointed;
-              setPointed((held) => nearest(e, held) ?? held);
-            }
-          : undefined
-      }
-      // The selection STAYS: moving off a branch, or off the drawing, keeps
-      // the last one selected, so the caption under the tree can be reached
-      // and used. It changes only when another branch is selected.
-      //
-      // Touch selects by moving too — dragging a finger across the branches
-      // is the phone's version of moving the mouse over them. An earlier
-      // version ignored touch moves so that a tap could not select and open
-      // in one go; that is handled in onClick instead, and it cost the
-      // gesture that makes the tree worth touching.
-      onPointerMove={tracking ? (e) => setPointed((held) => nearest(e, held) ?? held) : undefined}
-      onClick={
-        tracking
-          ? (e) => {
-              const id = nearest(
-                { clientX: e.clientX, clientY: e.clientY, pointerType: lastPointer.current },
-                pointed,
-              );
-              if (!id) {
-                setPointed(null);
-                return;
-              }
-              // On touch, a tap opens a branch only if it was ALREADY the
-              // selected one when the finger came down. Otherwise the tap —
-              // or the drag that ended on it — just selects it, so you see
-              // its name and state before you leave for it.
-              if (lastPointer.current !== 'mouse' && id !== heldAtDown.current) {
-                setPointed(id);
-                return;
-              }
-              navigate(`/study/${courseId}/section/${encodeURIComponent(id)}`);
-            }
-          : undefined
-      }
+      role={interactive ? 'group' : 'img'}
+      tabIndex={reveal ? 0 : undefined}
+      // The large tree keeps the finger (a drag selects branches); the
+      // lecture page lets an up-and-down drag scroll the page.
+      style={interactive ? { touchAction: reveal ? 'pan-y' : 'none' } : undefined}
+      aria-label={reveal ? `${label}. Touch or focus it to number its sections` : label}
+      {...navigateHandlers}
+      {...revealHandlers}
       // Leaves are filled with the paper they sit on so they hide the wood
-      // behind them. Every tree now sits on the page itself — the library row
-      // that used to be a card is a ruled entry — so there is one fill.
-      className={`w-auto shrink-0 text-text [&_.lf]:fill-[var(--color-bg)] ${animate ? 'tree-grow' : ''} ${
+      // behind them.
+      className={`tree w-auto shrink-0 text-text [&_.lf]:fill-[var(--color-bg)] ${animate ? 'tree-grow' : ''} ${
         grewFrom ? 'tree-spotlight' : ''
-      } ${
-        interactive ? (mode === 'preview' ? 'cursor-zoom-in' : pointed ? 'cursor-pointer' : '') : ''
-      } ${className}`}
+      } ${interactive ? (reveal ? 'cursor-pointer select-none [-webkit-touch-callout:none]' : pointed ? 'cursor-pointer' : '') : ''} ${className}`}
     >
       {/* Wood first, then foliage, so a canopy hides the branches behind it. */}
       <g>
         {layers.structural.map((limb, i) => (
-          <path key={`s${i}`} {...paint(limb)} />
+          <path key={`s${i}`} {...paintLimb(limb, false, animate, false)} />
         ))}
         {[...layers.wood].map(([id, limbs]) => (
-          <g key={id} data-sid={id} data-held={id === active || undefined} className="limb-set" style={swing(id)}>
-            {limbs.map((limb, i) => (
-              <path key={i} {...paint(limb)} />
-            ))}
+          <g key={id} data-sid={id} data-held={id === active || undefined} data-dim={dim(id) || undefined} data-back={stepsBack(id) || undefined} className="limb-set" style={swing(id)}>
+            <LimbPaths limbs={limbs} held={id === active} animate={animate} pointable={interactive} />
           </g>
         ))}
       </g>
       <g>
-        {layers.litter.map((limb, i) => (
-          <path key={`l${i}`} {...paint(limb)} />
+        {[...layers.litter].map(([id, limbs]) => (
+          <g key={`l${id}`} data-dim={(!!id && dim(id)) || undefined} data-back={(!!id && stepsBack(id)) || undefined} className="tree-litter">
+            <LimbPaths limbs={limbs} held={false} animate={animate} pointable={false} />
+          </g>
         ))}
         {layers.structuralFoliage.map((limb, i) => (
-          <path key={`sf${i}`} {...paint(limb)} />
+          <path key={`sf${i}`} {...paintLimb(limb, false, animate, false)} />
         ))}
         {[...layers.foliage].map(([id, limbs]) => (
-          <g key={id} data-sid={id} data-held={id === active || undefined} className="limb-set" style={swing(id)}>
-            {limbs.map((limb, i) => (
-              <path key={i} {...paint(limb)} {...(limb.leafKey ? motion.grow.get(limb.leafKey) : undefined)} />
-            ))}
+          <g key={id} data-sid={id} data-held={id === active || undefined} data-dim={dim(id) || undefined} data-back={stepsBack(id) || undefined} className="limb-set" style={swing(id)}>
+            <LimbPaths limbs={limbs} held={id === active} animate={animate} pointable={false} grow={motion.grow} />
           </g>
         ))}
       </g>
@@ -713,12 +834,9 @@ export function CourseTree({
         </g>
       )}
 
-      {/* The selected section's lost leaves, falling. They start where they
-          grew, hang there a moment, then drop into the pile on the ground —
-          which is the one thing a still drawing could not say: that these
-          fell from here. It replays for each branch you choose. With reduced
-          motion it does not play, and the thinned branch and the pile under
-          it carry the same news. */}
+      {/* The selected section's lost leaves, falling: they start where they
+          grew and drop into the pile on the ground. With reduced motion it
+          does not play, and the thinned branch and the pile carry the news. */}
       {falls.map((f) => (
         <g key={f.at} data-fall={f.sid} aria-hidden="true">
           {f.leaves.map((leaf, i) => (
@@ -727,10 +845,60 @@ export function CourseTree({
         </g>
       ))}
 
-      {/* Keyboard and screen-reader access to the same sections. These carry
-          no pointer events — pointing is handled above, by distance — so they
-          exist to be tabbed to, named, and pressed. */}
-      {tracking &&
+      {/* The numbers (reveal). Each rides in its own section's group, with
+          the same transform as that section's wood and leaves, so a branch
+          swinging aside carries its number: they cannot drift apart because
+          they are never moved apart. Each rises out of its branch's tip along
+          its hairline, a little after the one before. */}
+      {keys.length > 0 && (
+        <g className="tree-keys" data-shown={revealed || undefined}>
+          {keys.map((k, i) => {
+            const s = sectionById.get(k.sectionId);
+            const state = s?.state ?? 'bare';
+            const said = state === 'bare' ? 'not started' : state === 'fading' ? `fading, ${s?.heldPct}% still held` : 'still held';
+            return (
+              <g key={k.sectionId} data-sid={k.sectionId} data-held={k.sectionId === active || undefined} className="limb-set" style={swing(k.sectionId)}>
+                <path className="tree-key-line" data-state={state} d={`M${k.tip.x} ${k.tip.y}L${k.at.x} ${k.at.y}`} pathLength={1} />
+                <a
+                  href={`#/study/${courseId}/section/${encodeURIComponent(k.sectionId)}`}
+                  aria-label={`Section ${k.n}, ${s?.title ?? ''}: ${said}`}
+                  tabIndex={revealed ? 0 : -1}
+                  onFocus={() => {
+                    show();
+                    setPointed(k.sectionId);
+                  }}
+                  // Pointing is by distance (keyAt); these are for the keyboard and a screen reader.
+                  style={{ pointerEvents: 'none' }}
+                >
+                  <text
+                    data-key={k.sectionId}
+                    data-state={state}
+                    className="tree-key-num"
+                    x={k.at.x}
+                    y={k.at.y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    style={
+                      {
+                        '--from': `translate(${(k.tip.x - k.at.x).toFixed(1)}px, ${(k.tip.y - k.at.y).toFixed(1)}px)`,
+                        transitionDelay: revealed ? `${i * 18}ms` : '0ms',
+                      } as CSSProperties
+                    }
+                  >
+                    {k.n}
+                  </text>
+                </a>
+              </g>
+            );
+          })}
+        </g>
+      )}
+
+      {/* The large tree: keyboard and screen-reader access to the same
+          sections. These carry no pointer events — pointing is by distance —
+          so they exist to be tabbed to, named, and pressed. */}
+      {interactive &&
+        mode === 'navigate' &&
         sections.map((section) => (
           <a
             key={section.id}
@@ -749,40 +917,18 @@ export function CourseTree({
     </svg>
   );
 
-  if (!interactive) return svg;
+  if (!interactive || mode === 'reveal') return svg;
 
-  if (mode === 'preview') {
-    return (
-      <button
-        type="button"
-        onClick={onExpand}
-        aria-label={`${label}. Open it`}
-        className="max-w-full shrink-0 cursor-zoom-in rounded transition-opacity hover:opacity-80"
-      >
-        {svg}
-      </button>
-    );
-  }
-
-  /* The plate caption.
+  /* The plate caption of the large tree.
 
      Botanical plates key a drawing with a numbered caption beneath it, and
      that is what this is: the figure number, the section's name in full,
-     one line of plain fact, and the two things worth doing from here. It
-     replaced a line of small grey text holding the name alone — which told
-     you what you were pointing at and nothing you could act on.
-
-     Its height is reserved, so pointing at branches never moves the page. */
+     one line of plain fact, and the two things worth doing from here. Its
+     height is reserved, so pointing at branches never moves the page. */
   const chosen = tracking ? sections.findIndex((s) => s.id === (pointed ?? highlight)) : -1;
   const sel = chosen >= 0 ? sections[chosen] : null;
   const courseDue = sections.reduce((n, s) => n + s.due, 0);
-  const fact = !sel
-    ? null
-    : !sel.studied
-      ? 'not studied yet'
-      : sel.due
-        ? `${sel.due} due for review`
-        : 'nothing due';
+  const fact = !sel ? null : !sel.studied ? 'not studied yet' : sel.due ? `${sel.due} due for review` : 'nothing due';
   const at = (path: string) => `/study/${courseId}${path}`;
 
   return (
@@ -801,10 +947,7 @@ export function CourseTree({
                 Open section
               </Link>
               {sel.due > 0 && (
-                <Link
-                  to={`/session/${courseId}/review?section=${encodeURIComponent(sel.id)}`}
-                  className="text-accent hover:underline"
-                >
+                <Link to={`/session/${courseId}/review?section=${encodeURIComponent(sel.id)}`} className="text-accent hover:underline">
                   Review {sel.due}
                 </Link>
               )}
@@ -812,7 +955,6 @@ export function CourseTree({
           </>
         ) : (
           // Nothing selected: the course's own figures, not an instruction.
-          // How to use the tree lives behind the dialog's info button.
           <span className="mt-6 text-small text-text-3">
             {sections.length} section{sections.length === 1 ? '' : 's'}
             {courseDue > 0 ? ` · ${courseDue} due for review` : ''}

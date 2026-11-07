@@ -222,17 +222,19 @@ const round = (n: number) => Math.round(n * 10) / 10;
  * a wire diagram; a spline through jittered points looks like it was drawn in
  * one stroke.
  */
-function smooth(points: Pt[]): string {
+function smooth(points: Pt[], before?: Pt, after?: Pt): string {
   if (points.length < 2) return '';
-  if (points.length === 2) {
+  if (points.length === 2 && !before && !after) {
     return `M${round(points[0].x)} ${round(points[0].y)}L${round(points[1].x)} ${round(points[1].y)}`;
   }
   let d = `M${round(points[0].x)} ${round(points[0].y)}`;
   for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[i - 1] ?? points[i];
+    // The points either side of a piece, when it is part of a longer line,
+    // so the piece leaves and arrives on the line's own curve.
+    const p0 = points[i - 1] ?? before ?? points[i];
     const p1 = points[i];
     const p2 = points[i + 1];
-    const p3 = points[i + 2] ?? p2;
+    const p3 = points[i + 2] ?? after ?? p2;
     const c1 = { x: p1.x + (p2.x - p0.x) / 6, y: p1.y + (p2.y - p0.y) / 6 };
     const c2 = { x: p2.x - (p3.x - p1.x) / 6, y: p2.y - (p3.y - p1.y) / 6 };
     d += `C${round(c1.x)} ${round(c1.y)},${round(c2.x)} ${round(c2.y)},${round(p2.x)} ${round(p2.y)}`;
@@ -240,14 +242,25 @@ function smooth(points: Pt[]): string {
   return d;
 }
 
+/** The most one piece of a taper may be thinner than the last, in viewBox units: under half a pixel at phone size. */
+export const TAPER_STEP = 0.25;
+
 /**
  * One spine drawn as several sub-paths of decreasing width.
  *
  * This is how a stroke-only drawing tapers. Overlapping the segments by a
  * point and using round caps hides the joins, so it reads as one continuous
  * limb that thins toward its tip.
+ *
+ * Only if the steps are small. Three pieces down a main limb stepped by more
+ * than half a unit each, and a wide piece's round cap stood out past the
+ * narrower one after it: a notch and a bump at every join, worst where the
+ * trunk carries on into the leader (the coordinator, 2026-11-06). So a limb
+ * is cut into as many pieces as its taper needs to keep each step under
+ * TAPER_STEP, and each piece is drawn on the whole line's curve, so the
+ * pieces meet without a kink.
  */
-function taperedLimb(
+export function taperedLimb(
   points: Pt[],
   from: number,
   to: number,
@@ -255,16 +268,22 @@ function taperedLimb(
   sectionId?: string,
   spine?: boolean,
 ): Limb[] {
-  const pieces = Math.min(4, Math.max(2, Math.floor(points.length / 2)));
+  // A twig is a hair at phone size, and the most numerous mark there is:
+  // twice the step there is still under half a pixel, at a fraction of the paths.
+  const step = kind === 'twig' ? TAPER_STEP * 2 : TAPER_STEP;
+  const pieces = Math.min(points.length - 1, Math.max(2, Math.ceil(Math.abs(from - to) / step) + 1));
   const out: Limb[] = [];
   const per = (points.length - 1) / pieces;
+  // Each piece ends on the point the next begins on: on one curve, they need
+  // no overlap to hide the join.
+  const at = (i: number) => Math.round(i * per);
   for (let i = 0; i < pieces; i++) {
-    const start = Math.floor(i * per);
-    const end = Math.min(points.length - 1, Math.ceil((i + 1) * per));
+    const start = at(i);
+    const end = at(i + 1);
     const slice = points.slice(start, end + 1);
     if (slice.length < 2) continue;
     const t = pieces === 1 ? 0 : i / (pieces - 1);
-    out.push({ d: smooth(slice), weight: round(from + (to - from) * t), kind, sectionId, spine });
+    out.push({ d: smooth(slice, points[start - 1], points[end + 1]), weight: Math.round((from + (to - from) * t) * 100) / 100, kind, sectionId, spine });
   }
   return out;
 }
@@ -309,6 +328,9 @@ function leafPath(
 }
 
 const RAD = Math.PI / 180;
+
+/** How wide the leader starts, and so how wide the trunk ends: one width where they meet. */
+export const LEADER_WIDTH = 2.6;
 
 interface Anchor {
   at: Pt;
@@ -539,7 +561,9 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
      crown above — seeded from that stream — is exactly the tree it was. ---- */
   const kept = [rand(), rand(), rand(), rand()];
   const br = rng(hashSeed(`${seed}/base`));
-  limbs.push(trunkOutline(trunkPts, 5.2, 3.1, 3.4 + br() * 2.4, 3.4 + br() * 2.4));
+  // Narrowing to the leader's own width at the top, so the trunk carries on
+  // into it without a step (it ended 3.1 wide under a leader 2.6 wide).
+  limbs.push(trunkOutline(trunkPts, 5.2, LEADER_WIDTH, 3.4 + br() * 2.4, 3.4 + br() * 2.4));
 
   const footW = 5.2 / 2;
   /** Where the ground line runs: a fraction below the foot, so the trunk sits in it. */
@@ -662,7 +686,7 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
     trunkPts[trunkPts.length - 1],
     ta + (rand() - 0.5) * 0.3,
     36 + rand() * 10,
-    2.6,
+    LEADER_WIDTH,
     3,
     !!crown,
   );
@@ -811,6 +835,11 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
   if (k < 1) {
     for (const limb of limbs) {
       limb.d = limb.d.replace(PAIR, (_, x: string, y: string) => `${round(baseX + (Number(x) - baseX) * k)} ${y}`);
+      // The strokes narrow with the outlines. Narrowing the trunk's outline
+      // and not the leader's stroke left the leader wider than the trunk it
+      // grows from: the bulge where they meet, on every tree broad enough to
+      // be fitted (the coordinator, 2026-11-06).
+      limb.weight = Math.round(limb.weight * k * 100) / 100;
     }
   }
 
