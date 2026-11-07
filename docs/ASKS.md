@@ -142,6 +142,19 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   they pop up and move with the branches making a really clean and dynamic
   feel"). To plan first (CLAUDE.md method), build, and show the owner a
   recording before it ships: a screenshot cannot show how it feels.
+  Widened the same day: "you should definitely consider testing the tree
+  out now and seeing where it could be improved … i mean three main things
+  about the tree: how its generated, how it moves and is interacted with
+  and presents info, and how it looks (ai slop svg vs clean app defining
+  feature)". Planned in docs/proposals/tree.md; the reveal and the faults
+  testing found were built on the branch `tree-reveal`, and three looks
+  drawn as stills. On the recording: "the touch and numbers looks really
+  good", and a question on the dimming ("it almost looks like the leaves
+  stay on top of the branches") that showed the pale leaves hiding the
+  branch you touch, now drawn in front. Chosen 2026-11-07 ("yes, c"): the
+  reveal ships, and look C is built (fewer, larger leaves, each with a
+  vein, and limbs at uneven angles, the low ones arching out), shown to the
+  owner, then shipped.
 - **Say when a higher effort setting is worth it, before starting a task**
   (2026-10-29: "I'm wondering if there is a certain time it would be
   beneficial to put you on ultra code mode and maybe if you could suggest
