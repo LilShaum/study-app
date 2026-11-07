@@ -101,6 +101,29 @@ describe('CourseTree', () => {
     expect(container.querySelector('path.ink')!.closest('[data-dim]')).toBeNull();
   });
 
+  it('draws the picked branch again in front of every leaf, and only that one', () => {
+    const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive highlight="sec-a" />);
+    const fronts = [...container.querySelectorAll('g[data-front]')];
+    // Every section has its group in front, so a pick never has to make one.
+    expect(fronts.map((g) => g.getAttribute('data-front'))).toEqual(['sec-a', 'sec b/slash']);
+    const filled = fronts.filter((g) => g.querySelector('path'));
+    expect(filled.map((g) => g.getAttribute('data-front'))).toEqual(['sec-a']);
+    // After every leaf in the drawing, and swinging with its section below.
+    const painted = [...container.querySelectorAll('path')];
+    const lastLeafBelow = painted.reduce((last, el, i) => (el.classList.contains('lf') && !el.closest('[data-front]') ? i : last), -1);
+    expect(painted.indexOf(filled[0].querySelector('path')!)).toBeGreaterThan(lastLeafBelow);
+    const below = container.querySelector('g.limb-set[data-sid="sec-a"]') as SVGElement;
+    expect((filled[0] as SVGElement).style.transform).toBe(below.style.transform);
+    // Not a target, and not read out twice.
+    expect(filled[0].querySelector('[data-section]')).toBeNull();
+    expect(filled[0].closest('[aria-hidden="true"]')).not.toBeNull();
+  });
+
+  it('draws nothing in front with no branch picked', () => {
+    const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
+    expect(container.querySelectorAll('g[data-front] path')).toHaveLength(0);
+  });
+
   it('leaves the paths of a section alone when another is picked', () => {
     const tree = (highlight: string) => (
       <MemoryRouter>

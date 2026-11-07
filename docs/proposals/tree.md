@@ -194,7 +194,15 @@ loosens; one still shows L2 with it.
 
 **Faults.** Per-group dimming in a flat ink (`--color-ink-dim`, both
 themes), switched at once: easing it re-styled every path on every frame
-and measured four times the long frames. Picked-branch changes re-render
+and measured four times the long frames. The flat ink kept the leaves'
+paper fill, and every leaf is painted after every branch, so the other
+sections' pale leaves lay over the picked branch: picking a branch in the
+middle of the crown hid most of it, its own leaves included (the owner saw
+it in the recording, 2026-11-06: "it almost looks like the leaves stay on
+top of the branches"). The picked branch is now drawn again in front of
+the drawing, in a group each section always has, carrying its swing, so
+the copy cannot lag the branch under it. A swipe at a quarter of the CPU:
+long frames 1 to 3 against 2 before, the same within the noise. Picked-branch changes re-render
 two sections (`LimbPaths`, memoised). The joint: the trunk now ends as wide
 as the leader starts, strokes narrow with the outline when a broad tree is
 fitted to its sheet (that was the visible bulge: the outline narrowed and

@@ -670,7 +670,10 @@ wrong ones to the AI to rewrite.
   keyboard: focus, Tab through the numbers, Enter (docs/proposals/tree.md
   §2; on a branch, recorded for the owner). Picking a branch sets the rest
   in a flat lighter ink, never per-stroke see-through (overlaps darkened
-  into dots and scribble), and the large tree starts at its crown.
+  into dots and scribble), and draws the picked branch and its leaves in
+  front of everything, since every leaf is painted over every branch and
+  the pale leaves otherwise hid the branch you were touching. The large
+  tree starts at its crown.
 - **The lecture page** opens on the tree, the title and Today's Start: the
   file's own details (description, code, subject, exam, contents, tags)
   fold behind "About this lecture ▸" (design audit 3C). What the whole

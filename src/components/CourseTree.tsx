@@ -131,6 +131,9 @@ interface Sample {
   sectionId: string;
 }
 
+/** No limbs, one array, so the memo below sees the same props twice. */
+const NONE: Limb[] = [];
+
 /**
  * A limb's own attributes. Nothing here depends on which branch is picked
  * except its weight, and only for the picked branch's own paths: dimming is
@@ -326,6 +329,14 @@ export function CourseTree({
   const stepsBack = (sid: string) => !!grewFrom && spotlight && motion.changed.size > 0 && !motion.changed.has(sid);
   /** Set in the lighter ink because another branch is picked. */
   const dim = (sid: string) => !!active && sid !== active;
+  /**
+   * The picked branch, drawn again in front of the whole drawing. Every leaf
+   * is painted after every branch, so a canopy hides the wood behind it; in
+   * the paler ink that left the other sections' leaves lying over the very
+   * branch you were pointing at. Not while the tree grows or a session's
+   * regrowth plays: a finished copy would stand over leaves still coming in.
+   */
+  const lifted = active && !animate && !(grewFrom && spotlight) ? active : null;
 
   /*
    * The limbs, grouped twice: by layer, then by section. By layer because
@@ -376,7 +387,10 @@ export function CourseTree({
       const cx = starts.reduce((n, p) => n + p[0], 0) / starts.length;
       geometry.set(id, { anchor, cx });
     }
-    return { wood, foliage, ghosts, litter, structural, structuralFoliage, geometry };
+    // Every section with wood or leaves: each has a group in front of the
+    // drawing, for when it is picked.
+    const ids = [...new Set([...wood.keys(), ...foliage.keys()])];
+    return { wood, foliage, ghosts, litter, structural, structuralFoliage, geometry, ids };
   }, [tree]);
 
   /** How far each section swings while another is being pointed at. */
@@ -821,6 +835,24 @@ export function CourseTree({
         {[...layers.foliage].map(([id, limbs]) => (
           <g key={id} data-sid={id} data-held={id === active || undefined} data-dim={dim(id) || undefined} data-back={stepsBack(id) || undefined} className="limb-set" style={swing(id)}>
             <LimbPaths limbs={limbs} held={id === active} animate={animate} pointable={false} grow={motion.grow} />
+          </g>
+        ))}
+      </g>
+
+      {/* The picked branch, its wood then its leaves, over everything else.
+          Each section's group here is always there, empty until it is
+          picked, with the same swing as its wood and leaves below: a group
+          made on the pick would start where the branch ends up while the
+          drawing under it was still settling, two branches for a moment. */}
+      <g aria-hidden="true">
+        {layers.ids.map((id) => (
+          <g key={id} data-front={id} data-held={id === active || undefined} className="limb-set" style={swing(id)}>
+            {id === lifted && (
+              <>
+                <LimbPaths limbs={layers.wood.get(id) ?? NONE} held animate={false} pointable={false} />
+                <LimbPaths limbs={layers.foliage.get(id) ?? NONE} held animate={false} pointable={false} />
+              </>
+            )}
           </g>
         ))}
       </g>
