@@ -166,6 +166,14 @@ app notice other things first, and those decide whether it gets opened
 again tomorrow. Grade them as seriously as the learning logic. Some of
 what that covers, as starting points rather than a checklist:
 
+- **Can it be found, and is it understood?** The owner (2026-11-10):
+  "emphasis on design for things to be intuitive to find and use
+  otherwise they wont be used properly or taken advantage of". For every
+  feature: would a student find it without being told, know from its name
+  what it does, and use it right the first time? A feature nobody finds
+  is a missing feature, however well it works; one used wrongly teaches
+  the wrong habit. History says this happens here: related terms looked
+  like buttons and did nothing for weeks.
 - **The first minutes of someone new.** They open it; then what? A first
   lecture means taking a prompt to an AI chat with their slides and
   bringing the reply back. Walk that as a new student would, with no one
@@ -253,17 +261,55 @@ what counts as evidence, the scale, and the order you will go in. Weigh the
 options for each of those, argue them, pick, and only then grade. Write it
 as section 0 of the report.
 
-## The parts
+## The features, and what each is for
 
-The lecture file and its prompt (New lecture, Add material, Add questions,
-Add explanations, Fix), the narration, the lecture check, Today, Learn,
-Review and the memory model, Practice, the practice test, multiple choice
-(wrong options, Why, Not sure), select all that apply, flip cards (Got it ·
-Hard · Missed it), typed terms, written answers, worked problems,
-explanations, the library, a lecture's page, a class's page and exams, the
-tree, Progress, Browse, the glossary, diagrams, Help, the first run, Sync,
-export and share links, Studies, Set aside, and the design language as a
-whole. Add any part you find that this list misses.
+Don't go looking for features at random: they are all written down.
+`docs/EXPECTATIONS.md` has every feature a student can meet, each with
+its **Goal** (what it is for) and how it is meant to work. On 2026-11-10
+it was checked against the code and the Done list: the stale lines were
+fixed, and the parts that had no entry were given one. Goals still only
+drafted are under "Goals to confirm". Every entry is a feature to grade.
+In short:
+
+- **Getting a lecture in.** New lecture and the prompt it hands out: the
+  student's slides or notes made into a complete, well-weighted lecture,
+  only the kinds of item they ticked, with the teacher's narration. Add
+  material, Add questions, Add explanations: a lecture grows without
+  losing its progress. The lecture check and Fix: what is wrong or
+  missing in a file, shown and put right.
+- **Studying.**
+  - Today: the one thing to press each day, what is fading first and then
+    something new; on the library, one Start for the whole day.
+  - Learn: the first time through a section, in the slides' order: Read,
+    Recall from easy to hard, then Apply, with the narration opening each
+    section.
+  - Practice: study what you choose, how you choose, marked as you go.
+  - The practice test: rehearse the exam. Marked at the end, a timer if
+    wanted, pages and marks like a paper test, and what was missed comes
+    back first.
+  - Review and the memory model: each card back just before it is
+    forgotten.
+  - The kinds of question: multiple choice (wrong options that teach, Why,
+    Not sure), select all that apply, flip cards (Got it · Hard · Missed
+    it), terms to name, written answers, worked problems, explanations.
+  - Exams and classes, Set aside, Studies.
+- **Seeing progress and the material.** The tree: what is held and what
+  is fading, at a glance, with numbers on a touch. Progress: what needs
+  the student now. Browse, the glossary, Plates (the diagrams), a
+  section's page.
+- **The pages**: the library, a lecture's page, a class's page.
+- **Layout and devices.** The owner made a phone view and a desktop view
+  so each device's shape is used. A phone is held upright, and an iPad on
+  its side gets the desktop view. A page opens at its top.
+- **Data**: sync, backup, export, share links, the app updating itself.
+- **Help**: what's new, Share Arborous, the first run.
+- **The design language** as a whole.
+
+Of each, ask what the owner asked (2026-11-10): does it hit its goal; was
+there "a better alternate solution [or] way to pull it off"; how can it be
+improved "to better hit our mark"; and how could it "exceed expectations
+and take the idea to a whole other level". Add any feature you find that
+the document misses, and say that it was missing.
 
 ## How to judge: what it does, not what its code means to do
 

@@ -98,8 +98,8 @@ file in one AI chat.
 screens were "massive blocks of text … not intuitive for new users"): what
 to make, copy the prompt, paste the reply; one line each, the reasons and
 options folded behind a "more" line (`PromptStep`, `More`). What to make
-is a box per kind (multiple choice, flashcards, terms to name, written
-answers, explanations, worked examples, problems to work out, diagrams),
+is a box per kind (multiple choice, select all that apply, flashcards,
+terms to name, written answers, explanations, worked examples, problems to work out, diagrams),
 all ticked; untick one
 and the prompt says to make only the rest and where their content goes
 instead (`lib/makeKinds`, "if they just want flash cards … they will just
@@ -276,7 +276,7 @@ Today is one Start for the whole day ("All 3 lectures", their minutes
 added up), which starts in the first lecture and offers the next at the end
 of each; below it, a row for each lecture studies that one alone and stops
 there ("?single=1"). With one lecture to study, its own row is the day
-(design audit 3A, built 2026-11-05 on a branch, waiting on the owner).
+(design audit 3A, live 2026-11-06).
 
 **Working means.** A sitting ends close to its planned minutes; nothing
 due is starved; new material is reached; the plan follows the exam.
@@ -312,7 +312,7 @@ passage from the notes, before the step's question to write, which stays
 last. On a reading card the passage is open, except on a definition with
 an example sentence: there it is folded behind "From your notes ▸", since
 the card already said the idea twice, and it still opens by itself after
-an answer (design audit 3B; built on a branch, not yet checked on a real
+an answer (design audit 3B, live 2026-11-06; not yet checked on a real
 lecture's sitting). A term defined the same way in two lectures counts
 once. A section with a slide range can start with "read this part of your material" (any source: the range carries its unit, slides or pages; worded for any source, the owner 2026-10-29), then
 everything is asked first. "Skip the reading" asks every card first, for
@@ -672,7 +672,7 @@ wrong ones to the AI to rewrite.
   number opens its section, a tap on the drawing while they show opens the
   large tree, and an up-and-down drag still scrolls the page. Mouse: hover;
   keyboard: focus, Tab through the numbers, Enter (docs/proposals/tree.md
-  §2; on a branch, recorded for the owner). Picking a branch sets the rest
+  §2; live 2026-11-07, look C the same day). Picking a branch sets the rest
   in a flat lighter ink, never per-stroke see-through (overlaps darkened
   into dots and scribble), and draws the picked branch and its leaves in
   front of everything, since every leaf is painted over every branch and
@@ -684,8 +684,8 @@ wrong ones to the AI to rewrite.
   lecture builds to is the first thing inside the fold.
 - **Progress** leads with what is fading, each section with its Review,
   closest to gone first; how well it was answered (accuracy and the least
-  accurate sections and tags) folds below it (design audit 3D, on a
-  branch). It also shows the mix-ups on record: answers that named another term of the lecture
+  accurate sections and tags) folds below it (design audit 3D, live
+  2026-11-06). It also shows the mix-ups on record: answers that named another term of the lecture
   (`lib/mixUps.ts`), typed or picked from the options. Each brings that term
   straight after the card in Review until the card is right on a later day.
 - **Related terms** under a definition, and under a typed term once it is
@@ -696,6 +696,44 @@ wrong ones to the AI to rewrite.
   also" jumps to the entry.
 - **Browse** is the whole lecture to read and edit; **Glossary** every term
   A to Z; **Plates** the diagrams.
+
+## Layout and devices
+
+**Goal.** Use the device's shape (the owner, on the pass that made a phone
+and a desktop view: "so that it takes advantage of the formfactor of the
+device it is being used on"). A phone is held upright in one hand, on a
+bus: one column, the main action in thumb reach. A desktop, or an iPad on
+its side, sits on a desk with room to look around: the page spreads out.
+
+**How it works.**
+- Phone first, designed at 390px. Width alone picks the layout: from
+  1024px (`lib/useMediaQuery` WIDE, Tailwind `lg:`) the desktop one. An
+  iPad on its side (1024 to 1366 wide) gets the desktop layout, upright
+  the phone one (checked at the iPad Mini, 7th generation and Pro 11
+  sizes, 2026-11-10).
+- On a phone: the lecture page pins Start to the foot of the screen while
+  Today's own Start is out of view, and messages rise above it (2026-09-27,
+  `CourseRoute` PinnedBar); tap targets are 44px on touch (`tap-safe`);
+  fields are held at 16px on touch so the iPhone does not zoom into them;
+  Browse's sections scroll in a strip at the top.
+- On a desktop: the lecture page is two columns, the tree and sections on
+  the left, the title and ways to work on the right (2026-09-26); a
+  sitting has a side rail with its parts and where you are in them, the
+  score, hints and the figure (`SessionRail`, 2026-09-27); Browse lists
+  its sections at the side, the glossary has a letter rail.
+- **Held upright on a phone** (the owner, 2026-11-10: "make it so the app
+  cant rotate on the phone"). iOS gives a web page no rotation lock, so a
+  phone on its side (screen's short side under 500px, touch, the screen
+  itself in landscape) is covered by "Turn your phone upright", the page
+  kept under it (`components/UprightOnly`, `lib/sideways`). Read from the
+  screen, never the window, so a keyboard shortening the window never
+  covers typing. A tablet or computer is never covered.
+- **Opening a page** starts at its top, so a lecture shows its tree
+  first; Back returns to where you were (the owner, 2026-11-10).
+
+**Working means.** Every screen fits a 390px phone with its main action on
+the first screen, and uses the room on a desktop rather than stretching a
+phone column across it.
 
 ## Data
 
@@ -732,19 +770,6 @@ wrong ones to the AI to rewrite.
   and the phone's share sheet where there is one. The code is dark on
   light paper in both themes, since inverted codes fail on many cameras;
   its library loads only when opened.
-- **Opening a page** starts at its top, so a lecture shows its tree
-  first; Back returns to where you were (the owner, 2026-11-10).
-- **Held upright on a phone** (the owner, 2026-11-10: "make it so the app
-  cant rotate on the phone"). iOS gives a web page no rotation lock, so a
-  phone on its side (screen's short side under 500px, touch, the screen
-  itself in landscape) is covered by "Turn your phone upright", the page
-  kept under it (`components/UprightOnly`, `lib/sideways`). Read from the
-  screen, never the window, so a keyboard shortening the window never
-  covers typing. A tablet or computer is never covered.
-- **Phone and desktop layouts** switch on width alone, at 1024px
-  (`lib/useMediaQuery` WIDE, Tailwind `lg:`): an iPad on its side (1024
-  to 1366 wide) gets the desktop layout, upright the phone one (checked on
-  the iPad Mini, 7th generation and Pro 11 sizes, 2026-11-10).
 - **Storage**: lectures are kept compressed, one key each
   (`lib/packedStorage.ts`), about an eighth of their plain size; the old
   plain form is still read and converted on load, and backups stay plain
@@ -796,3 +821,26 @@ measured against.
 - **Share links**: a lecture passed to a classmate in one step, safely.
 - **Studies**: where a class's exams ask about empirical studies, every
   card on them found together; where they do not, out of the way.
+
+Drafted 2026-11-10, for parts the feature inventory found with no entry
+at all (each a draft to confirm, as above):
+
+- **A section's page** (Study just this section, Everything in this
+  section): one part alone, for the part that keeps slipping or a quiz on
+  one topic.
+- **Jump to a section** in a sitting: go to the part you want without
+  leaving the sitting.
+- **Today's end, and Keep going**: the day ends on what was done and when
+  to come back; Keep going is there for a student with more time, never a
+  push.
+- **Terms to name** (typed terms): recall the term itself from its
+  meaning, the step after recognising it among options.
+- **Export and Edit details**: keep a copy of one lecture or give it to
+  someone; fix its title, class code and tags without losing progress.
+- **Keyboard shortcuts**: study at a desk without reaching for the mouse.
+- **Dark mode**: follows the device unless the student picks; readable at
+  night.
+- **Installing and offline**: on the home screen like an app, opening
+  with no signal.
+- **What's new** and **Share Arborous** (Help): see what changed without
+  reading the whole of Help; pass the app on with a phone camera.

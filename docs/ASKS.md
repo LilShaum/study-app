@@ -29,19 +29,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   to reimagine something about the app or audit it or improve it, please
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
-- **A lecture opens at the top, the tree first** (2026-11-10: "make it so
-  when u open a lecture u start at the top so u see the tree right away
-  … i have to scroll up to see the tree and i think its less impactful").
-- **Share the app with a QR code in Help** (2026-11-10: "also make it so
-  u can easily share the app with a qr code in the help menu").
-- **What's new, in Help** (2026-11-10: "add update logs in the help area
-  that shows whats new in each version but like really concise and only
-  really things that the user would care about or notice like prompt
-  changes or improvements to the actually teaching system").
-- **The phone does not rotate; an iPad on its side gets the desktop view**
-  (2026-11-10: "idk if its possible to do this but make it so the app cant
-  rotate on the phone and make it so on ipad that if u turn it to the side
-  its like the desktop view rather than the phone view").
 - **A heatmap of study each day** (2026-11-10: "a long time ago i
   suggested a heatmap for user activity each day kinda like that very
   popular anki mod or other study things like leetcode i think"). Asked
@@ -90,7 +77,11 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   double check those too": the goals in EXPECTATIONS checked against
   what shipped. And: "emphasis on design for things to be intuitive to
   find and use otherwise they wont be used properly or taken advantage
-  of".
+  of". Done the same day: EXPECTATIONS checked against the code and the
+  Done list (three design changes marked live, a Layout and devices
+  section, drafted goals for the parts with no entry), and the prompt now
+  lists every feature with its goal, asks of each for a better way and how
+  to take it further, and grades whether each can be found and understood.
 - **Slides are the skeleton of a narrated lecture: the file and the app
   must fill in the narration** (2026-11-03: "the format of slides forces
   the info to be brief and in bullet points or complex diagrams with no
@@ -243,6 +234,27 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- 2026-11-10 A lecture opens at the top, the tree first (2026-11-10: "make
+  it so when u open a lecture u start at the top so u see the tree right
+  away"), live: a page opened from a link starts at its top and Back
+  returns to where you were (RootLayout ScrollRestoration). Checked on the
+  build: a library scrolled 1024px down opened a lecture at 0 with the
+  tree on screen; Back came back to 1024.
+- 2026-11-10 Share the app with a QR code in Help (2026-11-10), live:
+  Share Arborous under the welcome replay, the code dark on light paper
+  in both themes, the address, Copy link and the share sheet. Decoded
+  from screenshots in both themes to the right address. (ShareApp)
+- 2026-11-10 What's new in Help (2026-11-10: "really concise and only
+  really things that the user would care about"), live: the last section
+  of Help and a link beside the version; the lines in lib/whatsNew.ts,
+  added with each change a student would notice (CLAUDE.md).
+- 2026-11-10 The phone does not rotate; an iPad on its side gets the
+  desktop view (2026-11-10: "idk if its possible"), live. iOS gives a web
+  page no rotation lock, so a phone on its side is covered by "Turn your
+  phone upright", the page kept under it (UprightOnly). An iPad on its
+  side already had the desktop layout (1024px and up), checked at three
+  iPad sizes. Real devices not yet tried: the owner's iPhone and iPad.
 
 - 2026-11-10 The tree: numbers on a touch, and look C, live (2026-11-06:
   "can we make it version 1 by default but if u do something the numbers
@@ -425,7 +437,7 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   first", I've read it; Learn's line, Help and the lecture check ("Check in
   your notes") say notes, not slides. (SlidesCard)
 
-- 2026-10-26 Practice test: answers as you go or at the end, chosen on its
+- 2026-10-26 (Superseded 2026-11-03: the test marks at the end, Practice as you go.) Practice test: answers as you go or at the end, chosen on its
   setup (2026-10-26: "MAKE IT SO U CAN CHOOSE IF U GET ANSWERS AT THE END
   OR AT START"); as you go is the default. (TestRoute Setup Answers)
 
@@ -435,7 +447,7 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   miss (2026-10-26: "WITH THE SAME INSIGHT AS IN THE OTHER MODES …
   BY DEFAULT ONLY MULTIPLE CHOICE"). (TestRoute Setup, Taking)
 
-- 2026-10-26 Practice test: right or wrong straight away (2026-10-26:
+- 2026-10-26 (Superseded 2026-11-03: the test marks at the end, Practice as you go.) Practice test: right or wrong straight away (2026-10-26:
   "MAKE IT TELL YOU IF THE QUESTION IS CORRECT OR WRING RIGHT AWAY"): a
   pick or I don't know is marked at once with the right answer and why; a
   written answer's Check shows its points to tick. (TestRoute Taking)
