@@ -144,7 +144,10 @@ this is the intent it serves.
   (2026-11-04). A test course made on a smaller model shows that model's
   limits, not the prompt's; a second model may be tried only to find
   unclear wording, and a fault that shows only there is never patched
-  with more rules.
+  with more rules. **Fable 5.2** (2026-11-10) costs twice as much and has
+  its own, smaller allowance: kept for the grading session, a fresh
+  session at high effort (Anthropic: most of its gain is there; max is
+  slow and costly), never switched into a long chat.
 - **Plans for reimagining, auditing or improving something** (2026-11-03:
   "make well thought out plans, and plan the plans. dont make them in one
   go, debate with urself what is better or worse between certain options

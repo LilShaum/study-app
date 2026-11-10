@@ -29,6 +29,15 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   to reimagine something about the app or audit it or improve it, please
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
+- **A lecture opens at the top, the tree first** (2026-11-10: "make it so
+  when u open a lecture u start at the top so u see the tree right away
+  … i have to scroll up to see the tree and i think its less impactful").
+- **Share the app with a QR code in Help** (2026-11-10: "also make it so
+  u can easily share the app with a qr code in the help menu").
+- **What's new, in Help** (2026-11-10: "add update logs in the help area
+  that shows whats new in each version but like really concise and only
+  really things that the user would care about or notice like prompt
+  changes or improvements to the actually teaching system").
 
 - **A fresh ultracode session that grades the whole app against its goals**
   (2026-11-03: "I want to eventually start a fresh ultra code session for
@@ -45,6 +54,22 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   it after you have finished doing a bunch of the changes I've asked you
   for"). Then it waits on the owner to start it, with the slides of one
   or two real lectures; the session makes their files itself.
+  2026-11-10, on Fable 5.2 ("fable 5.2 just dropped and I wanna ask you
+  how we should use it"): it runs on Fable 5.2 at high effort, a fresh
+  session. And widened: "include in the info we give the fable session
+  all the previous like grades and stuff that has been looked at and
+  changed so it can see the evolution and see if shit could have been
+  better to do another way … or look at shit that humans notice and care
+  about making good in an app that usually our ai app improvement
+  sessions miss, because they tend to focus on more technical things … I
+  want it to really give good insight in actual app ui/ux design and how
+  the code should be written and organized and like the different systems
+  of the app and how they were built and seeing if things can be improved
+  at deeper more fundamental levels whereas usually its like little tweaks
+  … i def want fine tunning too or just any improvements it can argue".
+  The prompt rewritten for it the same day. The design audit's five
+  directions and the tree are live, so it can run now; the second pass's
+  screens are graded in it.
 - **Slides are the skeleton of a narrated lecture: the file and the app
   must fill in the narration** (2026-11-03: "the format of slides forces
   the info to be brief and in bullet points or complex diagrams with no
