@@ -720,6 +720,20 @@ wrong ones to the AI to rewrite.
   a toast offers Reload. An iPhone home-screen app otherwise ran a copy
   days old (the owner, 2026-10-26). Help shows the version running
   (`lib/appUpdate.ts`).
+- **What's new** (Help, last section, and the link beside the version):
+  what a student would notice, day by day, newest first, the last three
+  days open and the rest under Earlier. Only how the app teaches, what the
+  prompt makes, new ways to study and screens that work differently, one
+  plain sentence each (the owner, 2026-11-10: "really concise"); a prompt
+  change says it is for lectures made from now. The lines live in
+  `lib/whatsNew.ts`, added in the commit that ships the change.
+- **Share Arborous** (Help, under the welcome replay): a QR code of the
+  app's own address to scan with a phone camera, the address, Copy link,
+  and the phone's share sheet where there is one. The code is dark on
+  light paper in both themes, since inverted codes fail on many cameras;
+  its library loads only when opened.
+- **Opening a page** starts at its top, so a lecture shows its tree
+  first; Back returns to where you were (the owner, 2026-11-10).
 - **Storage**: lectures are kept compressed, one key each
   (`lib/packedStorage.ts`), about an eighth of their plain size; the old
   plain form is still read and converted on load, and backups stay plain

@@ -38,6 +38,16 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   that shows whats new in each version but like really concise and only
   really things that the user would care about or notice like prompt
   changes or improvements to the actually teaching system").
+- **The phone does not rotate; an iPad on its side gets the desktop view**
+  (2026-11-10: "idk if its possible to do this but make it so the app cant
+  rotate on the phone and make it so on ipad that if u turn it to the side
+  its like the desktop view rather than the phone view").
+- **A heatmap of study each day** (2026-11-10: "a long time ago i
+  suggested a heatmap for user activity each day kinda like that very
+  popular anki mod or other study things like leetcode i think"). Asked
+  before this list began (2026-10-14), so it was never written down until
+  now. To plan first: CLAUDE.md says the reason to come back is what is
+  fading, "not in streaks or guilt".
 
 - **A fresh ultracode session that grades the whole app against its goals**
   (2026-11-03: "I want to eventually start a fresh ultra code session for
@@ -69,7 +79,18 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   … i def want fine tunning too or just any improvements it can argue".
   The prompt rewritten for it the same day. The design audit's five
   directions and the tree are live, so it can run now; the second pass's
-  screens are graded in it.
+  screens are graded in it. Also 2026-11-10: tell it every feature
+  shipped and what each was for ("i did a pass of the app trying to make
+  two different views for the phone and for the desktop … telling it
+  about all the current features and things we have shipped on the app
+  and what the goal was with them so it can check them out and see if
+  there was a better alternate solution ro way to pull it off or if there
+  are just ways to improve it and help it better hit our mark or to exceed
+  expectations and take the idea to a whole other level"), and "maybe
+  double check those too": the goals in EXPECTATIONS checked against
+  what shipped. And: "emphasis on design for things to be intuitive to
+  find and use otherwise they wont be used properly or taken advantage
+  of".
 - **Slides are the skeleton of a narrated lecture: the file and the app
   must fill in the narration** (2026-11-03: "the format of slides forces
   the info to be brief and in bullet points or complex diagrams with no

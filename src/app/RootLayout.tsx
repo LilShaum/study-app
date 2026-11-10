@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
+import { Link, Outlet, ScrollRestoration, useLocation, useParams } from 'react-router-dom';
 import { ThemeEffect } from '@/components/ThemeEffect';
 import { DarkModeToggle } from '@/components/DarkModeToggle';
 import { Toaster } from '@/components/Toaster';
@@ -81,6 +81,11 @@ export function RootLayout() {
 
   return (
     <div className="app-shell paper-grain flex min-h-screen flex-col bg-bg">
+      {/* A page opened from a link starts at its top; Back returns to where
+          you were. Without it the window kept the last page's scroll, so a
+          lecture opened from far down the library landed below its tree
+          (the owner, 2026-11-10: "i have to scroll up to see the tree"). */}
+      <ScrollRestoration />
       <ThemeEffect />
       {/* Behind the phone's clock and signal icons: the page scrolls under
           them in the installed app, so this band keeps it from showing

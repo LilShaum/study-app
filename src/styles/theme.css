@@ -56,6 +56,13 @@
   --color-surface-raised: #fffefa;
   --color-surface-sunken: #e6e3d7;
 
+  /* The plate for a QR code. The same in both themes on purpose: a code
+     scans as dark marks on light paper, and inverted codes fail on many
+     phone cameras, so these do not follow the theme. They are the light
+     theme's paper and ink. */
+  --color-plate: #faf8f0;
+  --color-plate-ink: #1b1d1f;
+
   --color-border: #cfccbc;
   /* A branch set back while another is picked: the ink at about a third,
      flat, so where strokes overlap they do not darken (docs/proposals/tree.md). */

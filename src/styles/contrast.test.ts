@@ -96,6 +96,7 @@ const TEXT_PAIRS: [string, string, string][] = [
   ['--color-easy', '--color-surface', 'the easy badge'],
   ['--color-medium', '--color-surface', 'the medium badge'],
   ['--color-hard', '--color-surface', 'the hard badge'],
+  ['--color-plate-ink', '--color-plate', 'a QR code on its plate'],
 ];
 
 /** Status text sits on its own tinted background as often as on the card. */

@@ -8,6 +8,8 @@ import { useStudyLogStore } from '@/store/studyLog';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
 import { BackupButton, RestoreButton } from '@/components/Backup';
+import { ShareApp } from '@/components/ShareApp';
+import { WhatsNew } from '@/components/WhatsNew';
 import { useOnboardingStore } from '@/store/onboarding';
 import { storageUsage } from '@/lib/safeStorage';
 import { scrollToAnchor } from '@/lib/scrollToAnchor';
@@ -387,6 +389,11 @@ const SECTIONS: HelpSection[] = [
       </>
     ),
   },
+  {
+    id: 'new',
+    title: 'What’s new',
+    body: <WhatsNew />,
+  },
 ];
 
 /**
@@ -527,11 +534,21 @@ export function HelpRoute() {
       </Link>
       <h1 className="mt-3 font-display text-display font-semibold text-text">Help</h1>
       {/* Which copy is running, to check against the live one. */}
-      <p className="mt-1 text-small text-text-3">Version {VERSION}</p>
+      <p className="mt-1 text-small text-text-3">
+        Version {VERSION} ·{' '}
+        <button
+          type="button"
+          onClick={() => scrollToAnchor('new')}
+          className="text-text-3 underline decoration-border underline-offset-2 hover:text-text"
+        >
+          What’s new
+        </button>
+      </p>
       {search.has('devtools') && <TestingTools />}
 
-      <div className="mt-4">
+      <div className="mt-4 space-y-2">
         <ReplayWelcome />
+        <ShareApp />
       </div>
 
       {/*

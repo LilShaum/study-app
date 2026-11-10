@@ -19,6 +19,9 @@ export default {
         // these there was one surface and therefore no visual hierarchy.
         'surface-raised': 'var(--color-surface-raised)',
         'surface-sunken': 'var(--color-surface-sunken)',
+        // Fixed in both themes: a QR code must stay dark on light.
+        plate: 'var(--color-plate)',
+        'plate-ink': 'var(--color-plate-ink)',
         border: 'var(--color-border)',
         'border-light': 'var(--color-border-light)',
         // For the outline of a control, which needs 3:1 (WCAG 1.4.11).

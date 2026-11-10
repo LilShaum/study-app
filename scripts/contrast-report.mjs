@@ -90,6 +90,7 @@ const PAIRS = [
   ['--color-easy', '--color-easy-bg', 4.5, 'easy badge'],
   ['--color-medium', '--color-medium-bg', 4.5, 'medium badge'],
   ['--color-hard', '--color-hard-bg', 4.5, 'hard badge'],
+  ['--color-plate-ink', '--color-plate', 4.5, 'QR code on its plate'],
   ['--color-border-strong', '--color-surface', 3, 'control outline on card'],
   ['--color-border-strong', '--color-bg', 3, 'control outline on page'],
 ];

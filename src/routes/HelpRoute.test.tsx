@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { HelpRoute } from './HelpRoute';
+import { WHATS_NEW } from '@/lib/whatsNew';
 
 afterEach(cleanup);
 
@@ -41,5 +42,33 @@ describe('HelpRoute topics', () => {
     fireEvent.click(topics[1]!);
     expect(scrollIntoView).toHaveBeenCalled();
     expect(focus).toHaveBeenCalled();
+  });
+});
+
+describe("HelpRoute: what's new and sharing", () => {
+  it("lists the newest changes and jumps to them from the version line", () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    render(
+      <MemoryRouter initialEntries={['/help']}>
+        <HelpRoute />
+      </MemoryRouter>,
+    );
+    const section = document.getElementById('new')!;
+    expect(section).toBeTruthy();
+    expect(section.textContent).toContain(WHATS_NEW[0]!.items[0]!);
+
+    fireEvent.click(screen.getByRole('button', { name: 'What’s new' }));
+    expect(scrollIntoView).toHaveBeenCalled();
+    expect(scrollIntoView.mock.contexts[0]).toBe(section);
+  });
+
+  it('offers to share the app', () => {
+    render(
+      <MemoryRouter initialEntries={['/help']}>
+        <HelpRoute />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('button', { name: /Share Arborous/ })).toBeTruthy();
   });
 });

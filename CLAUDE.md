@@ -167,6 +167,10 @@ this is the intent it serves.
   `npx tsc --noEmit -p .` does not), `npx eslint src`, `npx vitest run`.
 - The study simulator (`.claude/skills/simulate`) is for anything that
   changes scheduling, Review, Learn or the memory model.
+- A change a student would notice (how the app teaches, what the prompt
+  makes, a new way to study, a screen that works differently) gets one
+  plain line in `src/lib/whatsNew.ts` in the commit that ships it: Help's
+  What's new (2026-11-10).
 
 ## How to work here
 
