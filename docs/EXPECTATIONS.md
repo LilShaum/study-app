@@ -734,6 +734,17 @@ wrong ones to the AI to rewrite.
   its library loads only when opened.
 - **Opening a page** starts at its top, so a lecture shows its tree
   first; Back returns to where you were (the owner, 2026-11-10).
+- **Held upright on a phone** (the owner, 2026-11-10: "make it so the app
+  cant rotate on the phone"). iOS gives a web page no rotation lock, so a
+  phone on its side (screen's short side under 500px, touch, the screen
+  itself in landscape) is covered by "Turn your phone upright", the page
+  kept under it (`components/UprightOnly`, `lib/sideways`). Read from the
+  screen, never the window, so a keyboard shortening the window never
+  covers typing. A tablet or computer is never covered.
+- **Phone and desktop layouts** switch on width alone, at 1024px
+  (`lib/useMediaQuery` WIDE, Tailwind `lg:`): an iPad on its side (1024
+  to 1366 wide) gets the desktop layout, upright the phone one (checked on
+  the iPad Mini, 7th generation and Pro 11 sizes, 2026-11-10).
 - **Storage**: lectures are kept compressed, one key each
   (`lib/packedStorage.ts`), about an eighth of their plain size; the old
   plain form is still read and converted on load, and backups stay plain

@@ -23,6 +23,7 @@ export const WHATS_NEW: Change[] = [
     items: [
       'A lecture opens at the top, with its tree in view.',
       'Share Arborous with a friend: Help has a code to scan with a phone camera.',
+      'On a phone turned sideways the page waits until you turn it upright; an iPad on its side shows the desktop layout.',
     ],
   },
   {

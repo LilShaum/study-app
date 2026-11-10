@@ -5,6 +5,7 @@ import { DarkModeToggle } from '@/components/DarkModeToggle';
 import { Toaster } from '@/components/Toaster';
 import { Onboarding } from '@/components/Onboarding';
 import { Sprig } from '@/components/Sprig';
+import { UprightOnly } from '@/components/UprightOnly';
 import { useCoursesStore } from '@/store/courses';
 
 /**
@@ -161,6 +162,7 @@ export function RootLayout() {
         <Toaster />
       </div>
       <Onboarding />
+      <UprightOnly />
     </div>
   );
 }
