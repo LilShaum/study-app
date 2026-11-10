@@ -131,30 +131,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   the day, the lecture page's first screen, Progress leading with what is
   fading, the lighter first reading card, and the tree's large version
   (the switch and the other two versions gone). Second pass not started.
-- **The tree: numbers that appear on a touch and move with the branches;
-  better motion** (2026-11-06: "is there a way to cleanly and intuitively
-  make a combo of version 1 and 2? like can we make it version 1 by default
-  but if u do something the numbers pop up cleanly? like can u make it so
-  like when u press ur finger on the tree or smth in some specific way or
-  smth then the numbers pop up? and can u also see if the tree motion code
-  could be made better? it would be cool aswell to make them only pop up
-  when u press ur finger on a branch or swipe across them or smth and then
-  they pop up and move with the branches making a really clean and dynamic
-  feel"). To plan first (CLAUDE.md method), build, and show the owner a
-  recording before it ships: a screenshot cannot show how it feels.
-  Widened the same day: "you should definitely consider testing the tree
-  out now and seeing where it could be improved … i mean three main things
-  about the tree: how its generated, how it moves and is interacted with
-  and presents info, and how it looks (ai slop svg vs clean app defining
-  feature)". Planned in docs/proposals/tree.md; the reveal and the faults
-  testing found were built on the branch `tree-reveal`, and three looks
-  drawn as stills. On the recording: "the touch and numbers looks really
-  good", and a question on the dimming ("it almost looks like the leaves
-  stay on top of the branches") that showed the pale leaves hiding the
-  branch you touch, now drawn in front. Chosen 2026-11-07 ("yes, c"): the
-  reveal ships, and look C is built (fewer, larger leaves, each with a
-  vein, and limbs at uneven angles, the low ones arching out), shown to the
-  owner, then shipped.
 - **Say when a higher effort setting is worth it, before starting a task**
   (2026-10-29: "I'm wondering if there is a certain time it would be
   beneficial to put you on ultra code mode and maybe if you could suggest
@@ -222,6 +198,23 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-11-10 The tree: numbers on a touch, and look C, live (2026-11-06:
+  "can we make it version 1 by default but if u do something the numbers
+  pop up cleanly … when u press ur finger on a branch or swipe across them
+  … and then they pop up and move with the branches"; "how its generated,
+  how it moves and is interacted with and presents info, and how it looks
+  (ai slop svg vs clean app defining feature)"). Planned in
+  docs/proposals/tree.md. A tap, a held press or a sideways swipe on the
+  lecture page's tree raises a number on every branch, each riding its
+  branch; the branch under the finger is named under the tree with Open,
+  and the rest set back in a flat paler ink with the touched branch drawn
+  in front (the owner saw the pale leaves covering it: "it almost looks
+  like the leaves stay on top of the branches"). A rest before a slow
+  scroll lets the page scroll; a sweep is never a tap. Look C, chosen from
+  stills ("yes, c", 2026-11-07): fewer, larger leaves each with a vein,
+  limbs at uneven angles with the low ones reaching out, one hand-drawn
+  ground line with the litter in a band along it. Not yet tried on a real
+  iPhone.
 - 2026-11-05 Multi-select questions ("Select all that apply"), live.
   Planned in docs/proposals/multi-select.md: a new item kind `multi`, marked
   all or nothing, each statement shown with why it is true or false and how
