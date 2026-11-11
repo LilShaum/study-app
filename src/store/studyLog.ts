@@ -49,6 +49,13 @@ export interface CourseLog {
   answers: AnswerEvent[];
   /** Seconds studied, by local date (YYYY-MM-DD). */
   days: Record<string, number>;
+  /**
+   * The lecture was removed from the library: only its days are kept, for
+   * the heatmap (the owner, 2026-11-11: "even if u dont study that anymore
+   * it doesnt mean you didnt spend real time studying it"). Sync keeps a
+   * log so marked after its lecture is gone (lib/syncMerge).
+   */
+  removed?: boolean;
 }
 
 // Sized so a course's log stays under about 100 KB: it shares the browser's
@@ -78,6 +85,8 @@ interface StudyLogState {
   /** Several answers in one write (a practice test's whole batch). */
   logAnswers: (courseId: string, events: AnswerEvent[]) => void;
   clear: (courseId?: string) => void;
+  /** A lecture removed from the library: keep its days of study, drop the rest. */
+  retire: (courseId: string) => void;
 }
 
 export const useStudyLogStore = create<StudyLogState>()(
@@ -110,6 +119,14 @@ export const useStudyLogStore = create<StudyLogState>()(
           return {
             byCourse: { ...state.byCourse, [courseId]: { ...log, answers: [...log.answers, ...events.map(compact)].slice(-MAX_ANSWERS) } },
           };
+        }),
+      retire: (courseId) =>
+        set((state) => {
+          const log = state.byCourse[courseId];
+          const rest = { ...state.byCourse };
+          if (log && Object.keys(log.days ?? {}).length) rest[courseId] = { times: [], answers: [], days: log.days, removed: true };
+          else delete rest[courseId];
+          return { byCourse: rest };
         }),
       clear: (courseId) =>
         set((state) => {

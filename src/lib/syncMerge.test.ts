@@ -92,3 +92,40 @@ describe('mergeSnapshots: when a card was last on a test', () => {
     expect(mergeSnapshots(remote, local).progress.a.q).toMatchObject({ lastSeen: 90, testedAt: 40 });
   });
 });
+
+// The owner, 2026-11-11: a removed lecture's days of study stay on the
+// heatmap, "people finish classes and move on".
+describe('mergeSnapshots — a removed lecture keeps its days', () => {
+  const ans = (at: number) => ({ at, type: 'mcq', got: true, sinceHours: null, afterMiss: false, predicted: null });
+  const full = { times: [{ type: 'mcq', seconds: 9 }], answers: [ans(1)], days: { '2026-10-15': 600 } };
+  const retired = { times: [], answers: [], days: { '2026-10-15': 600, '2026-10-16': 300 }, removed: true };
+
+  it('keeps the days of a lecture removed on this device, and only the days', () => {
+    const local = snap({ deletedAt: { a: 2 }, perCourse: { studyLog: { a: retired } } });
+    const remote = snap({ courses: { a: course('A') }, editedAt: { a: 1 }, perCourse: { studyLog: { a: full } } });
+    const out = mergeSnapshots(local, remote);
+    expect(out.courses.a).toBeUndefined();
+    expect(out.perCourse.studyLog.a).toEqual({ times: [], answers: [], days: { '2026-10-15': 600, '2026-10-16': 300 }, removed: true });
+  });
+
+  it('keeps the days of a lecture removed before this rule, from the device that still had them', () => {
+    const local = snap({ deletedAt: { a: 2 } });
+    const remote = snap({ courses: { a: course('A') }, editedAt: { a: 1 }, perCourse: { studyLog: { a: full } } });
+    expect(mergeSnapshots(local, remote).perCourse.studyLog.a).toEqual({ times: [], answers: [], days: { '2026-10-15': 600 }, removed: true });
+  });
+
+  it('keeps the whole log of a lecture that lives on', () => {
+    const local = snap({ courses: { a: course('A') }, editedAt: { a: 3 }, perCourse: { studyLog: { a: full } } });
+    const remote = snap({ deletedAt: { a: 2 }, perCourse: { studyLog: { a: retired } } });
+    const log = mergeSnapshots(local, remote).perCourse.studyLog.a as { answers: unknown[]; removed?: boolean };
+    expect(log.answers).toHaveLength(1);
+    expect(log.removed).toBeUndefined();
+  });
+
+  it('drops a removed lecture with no days, and other stores of it', () => {
+    const local = snap({ deletedAt: { a: 2 }, perCourse: { studyLog: { a: { times: [], answers: [ans(1)], days: {} } }, plan: { a: { minutes: 20 } } } });
+    const out = mergeSnapshots(local, snap({}));
+    expect(out.perCourse.studyLog.a).toBeUndefined();
+    expect(out.perCourse.plan.a).toBeUndefined();
+  });
+});

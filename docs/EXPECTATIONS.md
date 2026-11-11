@@ -697,6 +697,32 @@ wrong ones to the AI to rewrite.
 - **Browse** is the whole lecture to read and edit; **Glossary** every term
   A to Z; **Plates** the diagrams.
 
+### Days of study (the heatmap)
+
+**Goal.** The student's own study habits at a glance, to see and to show
+(the owner, 2026-11-11: "for users to see their study habits or to flex"),
+like the Anki add-on and LeetCode, without guilt (CLAUDE.md, Today).
+
+**How it works.** Not on a screen yet: the first version (on the library,
+below the lectures) was shown to the owner, who wants its look and its
+place done better (2026-11-11). Built and kept: the grid and its figures
+(`components/StudyHeatmap`, `lib/heatmap`; plan in
+docs/proposals/heatmap.md). A column a week, Sunday at the top, from the
+first week studied (at least 8 weeks, at most 26); each day shaded in the
+ink by minutes (under 10, 25, 45, more); an empty day is a plain ruled
+square, never a colour for "missed"; today outlined. A line: "Studied 47
+of the last 69 days, 31 minutes on an average day of study", counted from
+the first day studied; a tap on a day shows its minutes and lectures.
+Below, four figures: time studied, days studied, longest streak, current
+streak (from yesterday until today is studied). Every lecture's time
+counts, a removed lecture's too: its log keeps its days when it is removed
+and sync keeps them. No streak nudges, no forecast of what is due ahead
+(the owner: "im good for now").
+
+**Working means.** A student who began three days ago reads "2 of the last
+3 days", never "of the last 52"; removing a finished class leaves its days
+on the grid.
+
 ## Layout and devices
 
 **Goal.** Use the device's shape (the owner, on the pass that made a phone

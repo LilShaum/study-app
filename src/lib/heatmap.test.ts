@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayLine, heatmapWeeks, monthLabels, summaryLine, sumDays, type DayTotal } from './heatmap';
+import { dayLine, heatmapWeeks, monthLabels, studyStats, summaryLine, sumDays, timeStudied, type DayTotal } from './heatmap';
 
 // Tuesday 4 November 2025, noon.
 const TODAY = new Date(2025, 10, 4, 12);
@@ -122,5 +122,34 @@ describe('dayLine', () => {
   });
   it('says no study for an empty day', () => {
     expect(dayLine(cell(0, 0))).toBe('Tuesday 4 November: no study.');
+  });
+});
+
+describe('studyStats', () => {
+  // TODAY is Tuesday 4 November 2025.
+  const days = {
+    '2025-10-20': min(30), '2025-10-21': min(30), '2025-10-22': min(30), '2025-10-23': min(30), // 4 in a row
+    '2025-11-01': min(20), '2025-11-02': min(20), '2025-11-03': min(20), // up to yesterday
+    '2025-10-25': { seconds: 30, lectures: 0 }, // under a minute: not a day of study
+  };
+
+  it('counts days, time, and the longest run', () => {
+    const s = studyStats(days, TODAY);
+    expect(s.days).toBe(7);
+    expect(s.longest).toBe(4);
+    expect(s.seconds).toBe((4 * 30 + 3 * 20) * 60 + 30);
+  });
+
+  it('counts the current streak from yesterday until today is studied', () => {
+    expect(studyStats(days, TODAY).current).toBe(3);
+    expect(studyStats({ ...days, '2025-11-04': min(5) }, TODAY).current).toBe(4);
+    expect(studyStats({ '2025-11-01': min(5) }, TODAY).current).toBe(0);
+  });
+
+  it('says the time in words', () => {
+    expect(timeStudied(45 * 60)).toBe('45 minutes');
+    expect(timeStudied(4.5 * 3600)).toBe('4.5 hours');
+    expect(timeStudied(24 * 3600)).toBe('24 hours');
+    expect(timeStudied(3600)).toBe('1 hour');
   });
 });

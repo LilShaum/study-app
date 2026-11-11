@@ -84,7 +84,25 @@ lecture on Progress is cheap later if wanted.
 - Built for screen readers as an image with the summary line as its
   label.
 
-## 4. Questions for the owner
+## 4. The owner's answers (2026-11-11)
+
+1. **Streak counts: yes, as figures.** "streak counts are fine but just as
+   like a tracking statistic a user might be interested in yk? its
+   different if we like play into a lot and are like wait u HAVE TO KEEP UR
+   STREAK in notifications and such." Built as four quiet figures under the
+   grid: time studied, days studied, longest streak, current streak (from
+   yesterday until today is studied, so never 0 first thing in the
+   morning). Never a nudge.
+2. **What comes due ahead: not for now** ("im good for now on that").
+3. **A removed lecture's days stay.** "the whole point of the heatmap is
+   just for users to see their study habits or to flex … even if u dont
+   study that anymore it doesnt mean you didnt spend real time studying
+   it, like people finish classes and move on." A removed lecture's log
+   keeps its days, marked removed (`store/studyLog` retire); sync keeps
+   such a log after its lecture is gone (`lib/syncMerge`); Undo puts the
+   whole log back.
+
+## The questions as they were put
 
 1. **Streak counts** ("current streak", "longest streak") are left out
    because of the line in CLAUDE.md. Do you want them anyway?

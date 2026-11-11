@@ -127,7 +127,11 @@ this is the intent it serves.
   or liberties taken without asking ("if there is a little question hidden
   in there or some liberty you took/decision you decided to make on your
   own, please make it so they are outlined at the bottom because those are
-  SOME of the main things I need to overview").
+  SOME of the main things I need to overview"). The owner often replies
+  partway through reading, so a question their reply leaves unanswered is
+  asked again at the bottom of the next reply, until it is answered or
+  dropped (2026-11-11: "if I dont address something that I need to
+  address then make sure to bring it up again").
 - **Working with the owner:** usage is limited, so ask before expensive
   work. "What's next?" means work you can do without them. Done means
   tested and live.

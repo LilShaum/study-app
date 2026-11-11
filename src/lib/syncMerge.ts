@@ -81,7 +81,8 @@ export function mergeLogs(local: CourseLog | undefined, remote: CourseLog | unde
   answers.splice(0, Math.max(0, answers.length - MAX_ANSWERS));
   const days: Record<string, number> = { ...(remote.days ?? {}) };
   for (const [day, s] of Object.entries(local.days ?? {})) days[day] = Math.max(days[day] ?? 0, s);
-  return { times: Array.isArray(local.times) ? local.times : [], answers, days };
+  const removed = local.removed || remote.removed;
+  return { times: Array.isArray(local.times) ? local.times : [], answers, days, ...(removed ? { removed: true } : {}) };
 }
 
 export function mergeSnapshots(local: Snapshot, remote: Snapshot): Snapshot {
@@ -114,8 +115,21 @@ export function mergeSnapshots(local: Snapshot, remote: Snapshot): Snapshot {
       for (const id of Object.keys(merged))
         merged[id] = mergeLogs(local.perCourse[key]?.[id] as CourseLog | undefined, remote.perCourse[key]?.[id] as CourseLog | undefined);
     }
-    // Nothing kept for a course that no longer exists.
-    for (const id of Object.keys(merged)) if (!(id in out.courses)) delete merged[id];
+    for (const id of Object.keys(merged)) {
+      if (id in out.courses) {
+        // A lecture kept on one device and removed on another: it lives on,
+        // so its whole log does too.
+        if (key === 'studyLog' && (merged[id] as CourseLog | undefined)?.removed) {
+          const { removed: _gone, ...log } = merged[id] as CourseLog;
+          merged[id] = log;
+        }
+        continue;
+      }
+      // A removed lecture keeps only its days of study, for the heatmap.
+      const log = key === 'studyLog' ? (merged[id] as CourseLog | undefined) : undefined;
+      if (log && Object.keys(log.days ?? {}).length) merged[id] = { times: [], answers: [], days: log.days, removed: true };
+      else delete merged[id];
+    }
     out.perCourse[key] = merged;
   }
 

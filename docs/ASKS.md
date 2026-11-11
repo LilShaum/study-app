@@ -29,6 +29,17 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   to reimagine something about the app or audit it or improve it, please
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
+- **A heatmap of study each day** (2026-11-10: "a long time ago i
+  suggested a heatmap for user activity each day kinda like that very
+  popular anki mod or other study things like leetcode i think"). Asked
+  before this list began (2026-10-14). Planned (docs/proposals/heatmap.md);
+  the owner's answers 2026-11-11: streaks as figures only, no forecast for
+  now, a removed lecture's days kept (live: studyLog retire, kept by
+  sync). The first version, on the library below the lectures, shown the
+  same day: "the heatmap is a good start but i am not 100% happy with how
+  it looks and feel like it could be done better and even more so I am not
+  happy with its location". Next: versions of its look and place, argued,
+  for the owner to pick.
 - **The first run, reworked: how it looks and what it covers** (2026-11-11:
   "i think the onboarding could definitely be updated in terms of both
   ui/ux (first impressions matter) but also in terms of the information
@@ -43,13 +54,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   course … idk if there are better ways to solve the same issue so thats
   always for u to explore"). To plan first, options argued, in
   docs/proposals/.
-- **A heatmap of study each day** (2026-11-10: "a long time ago i
-  suggested a heatmap for user activity each day kinda like that very
-  popular anki mod or other study things like leetcode i think"). Asked
-  before this list began (2026-10-14), so it was never written down until
-  now. To plan first: CLAUDE.md says the reason to come back is what is
-  fading, "not in streaks or guilt".
-
 - **A fresh ultracode session that grades the whole app against its goals**
   (2026-11-03: "I want to eventually start a fresh ultra code session for
   this project that will go through and grade the app and every component
@@ -256,6 +260,11 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   sessions"). In CLAUDE.md, so every session on this repo does it. A cloud
   session cannot write the owner's account-wide memory; for other
   projects the same line goes in the PC's ~/.claude/CLAUDE.md.
+  Added 2026-11-11: a question the owner's reply leaves unanswered is
+  asked again at the bottom of the next reply ("sometimes ill be partway
+  through reading a message when ill read something i need to reply to …
+  if I dont address something that I need to address then make sure to
+  bring it up again").
 - 2026-11-11 The phone sideways is no longer cut off; an iPad on its side
   gets the desktop view (2026-11-10: "make it so the app cant rotate on the
   phone"; then "adding a message overtop doesnt help because its already

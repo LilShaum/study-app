@@ -125,3 +125,49 @@ export function dayLine(cell: HeatCell): string {
   if (cell.level === 0) return `${name}: no study.`;
   return `${name}: ${plural(Math.round(cell.seconds / 60), 'minute')}, ${plural(cell.lectures, 'lecture')}.`;
 }
+
+export interface StudyStats {
+  /** Days with at least a minute of study, ever. */
+  days: number;
+  /** All the time studied, in seconds. */
+  seconds: number;
+  /** The most days studied in a row. */
+  longest: number;
+  /**
+   * Days in a row up to now. Counted from yesterday until today is studied,
+   * so it never reads 0 first thing in the morning.
+   */
+  current: number;
+}
+
+/**
+ * Figures to look at, not to keep up (the owner, 2026-11-11: streak counts
+ * "just as like a tracking statistic", never "wait u HAVE TO KEEP UR
+ * STREAK"). Over every day ever studied, not only the weeks shown.
+ */
+export function studyStats(days: Record<string, DayTotal>, today: Date): StudyStats {
+  const studied = new Set(Object.keys(days).filter((k) => days[k].seconds >= MIN_SECONDS));
+  const seconds = Object.values(days).reduce((s, d) => s + d.seconds, 0);
+  let longest = 0;
+  for (const k of studied) {
+    const [y, m, d] = parts(k);
+    if (studied.has(keyOf(new Date(y, m - 1, d - 1)))) continue; // not the start of a run
+    let run = 1;
+    while (studied.has(keyOf(new Date(y, m - 1, d + run)))) run++;
+    longest = Math.max(longest, run);
+  }
+  let current = 0;
+  let day = studied.has(keyOf(today)) ? today : addDays(today, -1);
+  while (studied.has(keyOf(day))) {
+    current++;
+    day = addDays(day, -1);
+  }
+  return { days: studied.size, seconds, longest, current };
+}
+
+/** "45 minutes", "4.5 hours", "24 hours". */
+export function timeStudied(seconds: number): string {
+  if (seconds < 3600) return plural(Math.round(seconds / 60), 'minute');
+  const hours = seconds / 3600;
+  return hours < 10 ? `${Number(hours.toFixed(1))} hour${hours === 1 ? '' : 's'}` : plural(Math.round(hours), 'hour');
+}

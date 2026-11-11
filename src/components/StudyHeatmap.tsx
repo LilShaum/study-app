@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useStudyLogStore } from '@/store/studyLog';
-import { dayLine, heatmapWeeks, monthLabels, summaryLine, sumDays, type HeatCell } from '@/lib/heatmap';
+import { dayLine, heatmapWeeks, monthLabels, studyStats, summaryLine, sumDays, timeStudied, type HeatCell } from '@/lib/heatmap';
 
 const SIZE = 11;
 const PITCH = 13;
@@ -21,7 +21,9 @@ export function StudyHeatmap() {
   const byCourse = useStudyLogStore((s) => s.byCourse);
   const [picked, setPicked] = useState<string | null>(null);
 
-  const weeks = useMemo(() => heatmapWeeks(sumDays(byCourse), new Date()), [byCourse]);
+  const totals = useMemo(() => sumDays(byCourse), [byCourse]);
+  const weeks = useMemo(() => heatmapWeeks(totals, new Date()), [totals]);
+  const stats = useMemo(() => studyStats(totals, new Date()), [totals]);
   const summary = useMemo(() => summaryLine(weeks), [weeks]);
   const labels = useMemo(() => {
     const l = monthLabels(weeks);
@@ -89,6 +91,22 @@ export function StudyHeatmap() {
       <p className="mt-3 text-small text-text-2" aria-live="polite">
         {pickedCell ? dayLine(pickedCell) : summary}
       </p>
+      {/* Figures to look at, never a nudge: no "keep your streak" anywhere. */}
+      <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border pt-3 sm:grid-cols-4">
+        {(
+          [
+            ['Time studied', timeStudied(stats.seconds)],
+            ['Days studied', `${stats.days}`],
+            ['Longest streak', `${stats.longest} day${stats.longest === 1 ? '' : 's'}`],
+            ['Current streak', `${stats.current} day${stats.current === 1 ? '' : 's'}`],
+          ] as const
+        ).map(([label, value]) => (
+          <div key={label}>
+            <dt className="mark text-text-3">{label}</dt>
+            <dd className="mt-0.5 text-body tabular-nums text-text">{value}</dd>
+          </div>
+        ))}
+      </dl>
     </section>
   );
 }

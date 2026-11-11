@@ -13,7 +13,6 @@ import { LazyTree } from '@/components/LazyTree';
 import { scoredEntries } from '@/lib/scored';
 import { isDueFor } from '@/lib/memory';
 import { sectionStats } from '@/lib/sectionStats';
-import { StudyHeatmap } from '@/components/StudyHeatmap';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
 import { examRule } from '@/lib/exam';
 import { clearSavedTests } from '@/lib/practiceTest';
@@ -159,7 +158,8 @@ export function LibraryRoute() {
     removeCourse(id);
     useProgressStore.getState().removeCourseProgress(id);
     useResumeStore.getState().clear(id);
-    useStudyLogStore.getState().clear(id);
+    // Its days of study stay on the heatmap; Undo puts the whole log back.
+    useStudyLogStore.getState().retire(id);
     clearSavedTests(id);
     toast(`"${title}" removed from library.`, {
       type: 'info',
@@ -437,10 +437,6 @@ export function LibraryRoute() {
           )}
         </>
       )}
-
-      {/* The student's own days of study, below the lectures so the day's
-          Start keeps the first screen (docs/proposals/heatmap.md). */}
-      <StudyHeatmap />
 
       {creating && <NewCourseDialog onClose={() => setCreating(false)} />}
     </div>

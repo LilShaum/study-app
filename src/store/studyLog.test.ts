@@ -15,6 +15,14 @@ describe('study log', () => {
   });
   afterEach(() => vi.useRealTimers());
 
+  // The owner, 2026-11-11: removing a lecture keeps its days of study.
+  it('retires a removed lecture to its days alone', () => {
+    useStudyLogStore.setState({ byCourse: { a: { times: [{ type: 'mcq', seconds: 9 }], answers: [], days: { '2026-11-01': 900 } }, b: { times: [], answers: [], days: {} } } });
+    useStudyLogStore.getState().retire('a');
+    useStudyLogStore.getState().retire('b');
+    expect(useStudyLogStore.getState().byCourse).toEqual({ a: { times: [], answers: [], days: { '2026-11-01': 900 }, removed: true } });
+  });
+
   it('keeps built-in guesses until a type has enough samples', () => {
     const times = Array.from({ length: 14 }, () => ({ type: 'mcq', seconds: 50 }));
     expect(measuredPace({ c: { times, answers: [], days: {} } })).toEqual({ again: 0.3 });
