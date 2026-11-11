@@ -38,8 +38,25 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   sync). The first version, on the library below the lectures, shown the
   same day: "the heatmap is a good start but i am not 100% happy with how
   it looks and feel like it could be done better and even more so I am not
-  happy with its location". Next: versions of its look and place, argued,
-  for the owner to pick.
+  happy with its location". Three looks being built on a page of its own
+  (green squares, leaves, calendar; the owner "skeptical of the leaf" but
+  open to see it); its place follows the "My account" plan.
+- **A "My account" page, thought through before it is built** (2026-11-11:
+  "maybe we should make like an account page or like "my account" or
+  something along those lines that shows u the heat map and also like all
+  that other data but organized in some clean way maybe like organized by
+  class … it would be better if we can think of more things that would go
+  there or that could come out of it before commiting to making an account.
+  maybe so you can add friends and choose to make ur courses public to
+  friends so they can see them and get the course too or if its private to
+  friends they cant get it but u can share it to them through the app
+  somehow perhaps … maybe we could think of more things like that"). Also:
+  the heatmap not on the library ("i dont think it should be on the
+  homepage"); per-lecture stats exist (Progress) but the owner could not
+  find them. Next: a plan in docs/proposals/account.md, brainstorm first.
+  Asked in chat, to answer: reminders do not need a new server (an
+  earlier reply said so wrongly); they are new work on the Supabase
+  project the accounts already use (a scheduled function and web push).
 - **The first run, reworked: how it looks and what it covers** (2026-11-11:
   "i think the onboarding could definitely be updated in terms of both
   ui/ux (first impressions matter) but also in terms of the information
@@ -58,7 +75,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   right. like it really has to be clean and pulled off elegantly … a new
   user should know of some of our important QOL features and where they
   can find things … for example where to go to update/fix an already
-  generated and uploaded course".
+  generated and uploaded course". Owner's decisions 2026-11-11: no sample
+  lecture ("using the study stuff is the more intuitive part … we dont
+  want the onboarding to take too long"); the account optional; the class
+  fix built together with the first run, not first.
 - **A fresh ultracode session that grades the whole app against its goals**
   (2026-11-03: "I want to eventually start a fresh ultra code session for
   this project that will go through and grade the app and every component
