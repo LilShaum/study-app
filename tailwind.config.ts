@@ -12,6 +12,18 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      // A phone on its side is a short, wide screen: it gets the wide
+      // layouts a desktop has rather than the upright phone column
+      // stretched across it, which left the card below the fold (the owner,
+      // 2026-11-10: "when it does the view is very cut off"). lib/useMediaQuery
+      // WIDE is the same query, for layout decided in code.
+      screens: {
+        wide: { raw: '(min-width: 1024px), (orientation: landscape) and (max-height: 500px) and (min-width: 600px)' },
+        short: { raw: '(orientation: landscape) and (max-height: 500px)' },
+        // Short and wide enough for a side column: a sitting moves its
+        // section picker there, beside the parts of the sitting.
+        sideways: { raw: '(orientation: landscape) and (max-height: 500px) and (min-width: 600px)' },
+      },
       colors: {
         bg: 'var(--color-bg)',
         surface: 'var(--color-surface)',

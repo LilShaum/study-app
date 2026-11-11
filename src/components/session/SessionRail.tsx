@@ -50,7 +50,7 @@ export function SessionRail({ items, index, course, score, hints, figure, parts:
   const parts = showParts ? partsOf(items, course) : [];
   const answered = score.got + score.missed;
   return (
-    <aside className="hidden text-small lg:block" aria-label="This sitting">
+    <aside className="hidden text-small wide:block" aria-label="This sitting">
       <div className="sticky top-6 space-y-8">
         {figure && <div aria-hidden="true">{figure}</div>}
         {parts.length > 1 && (

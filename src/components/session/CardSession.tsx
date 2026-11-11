@@ -855,7 +855,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   }
 
   return (
-    <div className="mx-auto max-w-2xl py-6 sm:px-6 lg:grid lg:max-w-5xl lg:grid-cols-[minmax(0,1fr)_13rem] lg:gap-12">
+    <div className="mx-auto max-w-2xl py-6 short:py-2 sm:px-6 wide:grid wide:max-w-5xl wide:grid-cols-[minmax(0,1fr)_13rem] wide:gap-12">
       <div className="min-w-0">
       <div className="mb-4 flex items-center justify-between">
         <Link to={home} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
@@ -890,7 +890,13 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       </div>
 
       {/* Sections are a lecture's; a mixed sitting has no runs of one to jump to. */}
-      {!mixedClass && <SectionJump items={items} mode={mode} activeSectionId={activeSectionId} onJump={jumpToSection} />}
+      {/* On a phone held sideways it moves to the side column (below), so the
+          card is on the first screen. */}
+      {!mixedClass && (
+        <div className="sideways:hidden">
+          <SectionJump items={items} mode={mode} activeSectionId={activeSectionId} onJump={jumpToSection} />
+        </div>
+      )}
 
       {resumed && (
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-surface px-4 py-2 text-sm">
@@ -1096,7 +1102,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
 
       {/* Hidden on touch, where there's no keyboard to hint about. */}
       <p
-        className={`mt-4 hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-3 lg:!hidden ${pause ? '' : '[@media(hover:hover)]:flex'}`}
+        className={`mt-4 hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-3 wide:!hidden ${pause ? '' : '[@media(hover:hover)]:flex'}`}
       >
         {hints.map((hint) => (
           <span key={hint.keys.join()} className="flex items-center gap-1">
@@ -1110,6 +1116,12 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         ))}
       </p>
       </div>
+      <div className="hidden min-w-0 wide:block">
+      {!mixedClass && (
+        <div className="hidden sideways:block">
+          <SectionJump items={items} mode={mode} activeSectionId={activeSectionId} onJump={jumpToSection} />
+        </div>
+      )}
       <SessionRail
         items={items}
         index={index}
@@ -1128,6 +1140,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           )
         }
       />
+      </div>
     </div>
   );
 }

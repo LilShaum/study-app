@@ -97,8 +97,10 @@ export function RootLayout() {
           printed page's. Here the viewport IS the sheet: the paper runs to
           every edge and the text block is set inside it by its own margins,
           the way a page is trimmed rather than pasted down. */}
-      <header className={`app-header page-block shrink-0${wide}`}>
-        <div className="flex min-h-header items-end justify-between gap-4 pb-2">
+      {/* A sitting has its own Back; on a short screen held sideways the
+          running head would push the card below the fold. */}
+      <header className={`app-header page-block shrink-0${wide}${pathname.startsWith('/session/') ? ' short:hidden' : ''}`}>
+        <div className="flex min-h-header items-end justify-between gap-4 pb-2 short:min-h-[2.75rem]">
           {/* shrink-0 and whitespace-nowrap are both load-bearing. Without
               them a long location on the right squeezed this side until the
               wordmark wrapped, leaving a lone "s" on a second line and
@@ -119,7 +121,7 @@ export function RootLayout() {
         <div className="rule-oxford" />
       </header>
 
-      <main className={`page-block flex-1 py-8${wide}`}>
+      <main className={`page-block flex-1 py-8 short:py-4${wide}`}>
         <Outlet />
       </main>
 

@@ -29,16 +29,20 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   to reimagine something about the app or audit it or improve it, please
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
-- **The phone does not rotate; an iPad on its side gets the desktop view**
-  (2026-11-10: "idk if its possible to do this but make it so the app cant
-  rotate on the phone and make it so on ipad that if u turn it to the side
-  its like the desktop view rather than the phone view"). The iPad half was
-  already so (the desktop layout from 1024px; checked at three iPad
-  sizes). The phone half: a "Turn your phone upright" cover went live and
-  came out the same day (2026-11-10: "adding a message overtop doesnt help
-  because its already obvious … when it does the view is very cut off").
-  iOS gives a web page no rotation lock, so the fix is a sideways phone
-  layout that is not cut off.
+- **The first run, reworked: how it looks and what it covers** (2026-11-11:
+  "i think the onboarding could definitely be updated in terms of both
+  ui/ux (first impressions matter) but also in terms of the information
+  that would be useful. i feel like making an account would be an obvious
+  thing, i need you to brainstorm others. here is one suggestion I want
+  you to take as food for thought instead of immediately accepting but
+  like getting them to pre input the courses they will be using for the
+  app and that way when u are generating a new course u can tick that
+  classes box so that way if ur notes dont say what class they are from
+  and the ai doesnt put it in the lecture file so it doesnt end up with ur
+  other lectures, it would now know no matter what cuz of the ticked
+  course … idk if there are better ways to solve the same issue so thats
+  always for u to explore"). To plan first, options argued, in
+  docs/proposals/.
 - **A heatmap of study each day** (2026-11-10: "a long time ago i
   suggested a heatmap for user activity each day kinda like that very
   popular anki mod or other study things like leetcode i think"). Asked
@@ -245,6 +249,22 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-11-11 Questions and decisions at the bottom of every reply
+  (2026-11-11: "if there is a little question hidden in there or some
+  liberty you took/decision you decided to make on your own, please make it
+  so they are outlined at the bottom … this is something I want for all
+  sessions"). In CLAUDE.md, so every session on this repo does it. A cloud
+  session cannot write the owner's account-wide memory; for other
+  projects the same line goes in the PC's ~/.claude/CLAUDE.md.
+- 2026-11-11 The phone sideways is no longer cut off; an iPad on its side
+  gets the desktop view (2026-11-10: "make it so the app cant rotate on the
+  phone"; then "adding a message overtop doesnt help because its already
+  obvious … when it does the view is very cut off"). iOS gives a web page
+  no rotation lock, so a phone on its side now gets the wide layouts: the
+  lecture page in two columns, a sitting with the side column and its
+  section picker there, no running head over a sitting; the card is on the
+  first screen at 750x340 and 844x390. The iPad already had the desktop
+  layout from 1024px. Real iPhone and iPad not yet tried by the owner.
 - 2026-11-10 A lecture opens at the top, the tree first (2026-11-10: "make
   it so when u open a lecture u start at the top so u see the tree right
   away"), live: a page opened from a link starts at its top and Back

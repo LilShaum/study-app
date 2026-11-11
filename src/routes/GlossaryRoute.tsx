@@ -129,7 +129,7 @@ export function GlossaryRoute() {
             </p>
           )}
 
-          <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_2rem] lg:gap-10">
+          <div className="mt-6 wide:grid wide:grid-cols-[minmax(0,1fr)_2rem] wide:gap-10">
             <div className="min-w-0">
               {groups.length === 0 && (
                 <p className="border-y border-border py-6 text-center text-text-2">Nothing matches &ldquo;{search}&rdquo;.</p>
@@ -175,7 +175,7 @@ export function GlossaryRoute() {
             </div>
 
             {/* The thumb index: only where there is room for it beside the text. */}
-            <nav aria-label="Jump to letter" className="hidden lg:block">
+            <nav aria-label="Jump to letter" className="hidden wide:block">
               <ol className="sticky top-6 flex flex-col items-center text-small">
                 {LETTERS.map((l) =>
                   present.has(l) ? (

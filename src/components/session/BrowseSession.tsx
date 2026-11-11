@@ -94,7 +94,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
       {hasNav && (
         <nav
           aria-label="Sections"
-          className="sticky top-0 z-10 -mx-6 mb-4 flex gap-2 overflow-x-auto bg-bg px-6 py-2 lg:hidden"
+          className="sticky top-0 z-10 -mx-6 mb-4 flex gap-2 overflow-x-auto bg-bg px-6 py-2 wide:hidden"
         >
           {sections.map((s) => (
             <button
@@ -113,9 +113,9 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
         </nav>
       )}
 
-      <div className={hasNav ? 'lg:flex lg:gap-8' : undefined}>
+      <div className={hasNav ? 'wide:flex wide:gap-8' : undefined}>
         {hasNav && (
-          <aside className="hidden shrink-0 lg:block lg:w-56">
+          <aside className="hidden shrink-0 wide:block wide:w-56">
             <nav aria-label="Sections" className="sticky top-6 space-y-1">
               {sections.map((s) => (
                 <button

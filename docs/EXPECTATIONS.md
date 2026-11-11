@@ -721,6 +721,15 @@ its side, sits on a desk with room to look around: the page spreads out.
   sitting has a side rail with its parts and where you are in them, the
   score, hints and the figure (`SessionRail`, 2026-09-27); Browse lists
   its sections at the side, the glossary has a letter rail.
+- **A phone on its side** (the owner, 2026-11-10: "when it does the view is
+  very cut off"). iOS gives a web page no rotation lock, so a short screen
+  held sideways (landscape, under 500px tall, 600px or wider) gets the
+  wide layouts (Tailwind `wide:`, `lib/useMediaQuery` WIDE): the lecture
+  page in two columns, a sitting with its side column, where the section
+  picker moves (`sideways:`), and no running head over a sitting
+  (`short:`), so the card is on the first screen. A "Turn your phone
+  upright" cover was tried and taken out the same day: it said what was
+  already obvious. Checked at 750x340 (Safari) and 844x390 (home screen).
 - **Opening a page** starts at its top, so a lecture shows its tree
   first; Back returns to where you were (the owner, 2026-11-10).
 

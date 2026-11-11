@@ -121,6 +121,13 @@ this is the intent it serves.
   bias toward what was built: related terms looked like buttons and did
   nothing for weeks (2026-10-26). Use it the way a student does before
   calling it done.
+- **The end of every reply** (2026-11-11): replies run long and the owner
+  may not read all of it, so anything for them to look at goes at the
+  bottom, short and set apart: the questions for them, and the decisions
+  or liberties taken without asking ("if there is a little question hidden
+  in there or some liberty you took/decision you decided to make on your
+  own, please make it so they are outlined at the bottom because those are
+  SOME of the main things I need to overview").
 - **Working with the owner:** usage is limited, so ask before expensive
   work. "What's next?" means work you can do without them. Done means
   tested and live.

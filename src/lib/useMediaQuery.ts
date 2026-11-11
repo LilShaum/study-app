@@ -21,4 +21,5 @@ export function useMediaQuery(query: string): boolean {
 }
 
 /** The width at which the app lays pages out for a desktop screen. */
-export const WIDE = '(min-width: 1024px)';
+/** The desktop layouts: a wide screen, or a phone on its side (tailwind.config `wide:`). */
+export const WIDE = '(min-width: 1024px), (orientation: landscape) and (max-height: 500px) and (min-width: 600px)';

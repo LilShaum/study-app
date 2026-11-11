@@ -157,7 +157,7 @@
   /* A course page on a desktop spreads into two columns (see CourseRoute):
      the one place the app is looked around rather than read, so the one
      place the measure widens. Reading pages keep the single measure. */
-  @media (min-width: 1024px) {
+  @media (min-width: 1024px), (orientation: landscape) and (max-height: 500px) and (min-width: 600px) {
     .page-block.is-wide {
       max-width: 76rem;
     }
