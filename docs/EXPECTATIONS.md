@@ -721,13 +721,6 @@ its side, sits on a desk with room to look around: the page spreads out.
   sitting has a side rail with its parts and where you are in them, the
   score, hints and the figure (`SessionRail`, 2026-09-27); Browse lists
   its sections at the side, the glossary has a letter rail.
-- **Held upright on a phone** (the owner, 2026-11-10: "make it so the app
-  cant rotate on the phone"). iOS gives a web page no rotation lock, so a
-  phone on its side (screen's short side under 500px, touch, the screen
-  itself in landscape) is covered by "Turn your phone upright", the page
-  kept under it (`components/UprightOnly`, `lib/sideways`). Read from the
-  screen, never the window, so a keyboard shortening the window never
-  covers typing. A tablet or computer is never covered.
 - **Opening a page** starts at its top, so a lecture shows its tree
   first; Back returns to where you were (the owner, 2026-11-10).
 
