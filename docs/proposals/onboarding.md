@@ -64,9 +64,11 @@ For each idea: what it changes, and whether to ask now or later.
    the prompt reads the material, and the kinds are ticked per lecture.
    Later, if at all.
 9. **Reminders when things fade.** The app's reason to come back, as a
-   notification. Possible for an installed app (iOS 16.4 and later), but
-   it needs a server to send them, which the app does not have. A project
-   of its own, not part of this.
+   notification. Possible for an installed app (iOS 16.4 and later). It is
+   new work on the Supabase project the accounts already use (a scheduled
+   function and web push), for signed-in students. A project of its own,
+   not part of this. (An earlier draft said it needed a server the app
+   lacks; that was wrong, corrected 2026-11-11.)
 10. **A tour of the screens.** First ruled out here (learning by doing
     shows more than a tour tells); the owner disagreed, 2026-11-11: "a
     tour for the onboarding could be good if done right … it really has to
