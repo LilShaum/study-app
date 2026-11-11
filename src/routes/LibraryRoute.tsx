@@ -13,6 +13,7 @@ import { LazyTree } from '@/components/LazyTree';
 import { scoredEntries } from '@/lib/scored';
 import { isDueFor } from '@/lib/memory';
 import { sectionStats } from '@/lib/sectionStats';
+import { StudyHeatmap } from '@/components/StudyHeatmap';
 import { NewCourseDialog } from '@/components/NewCourseDialog';
 import { examRule } from '@/lib/exam';
 import { clearSavedTests } from '@/lib/practiceTest';
@@ -436,6 +437,10 @@ export function LibraryRoute() {
           )}
         </>
       )}
+
+      {/* The student's own days of study, below the lectures so the day's
+          Start keeps the first screen (docs/proposals/heatmap.md). */}
+      <StudyHeatmap />
 
       {creating && <NewCourseDialog onClose={() => setCreating(false)} />}
     </div>
