@@ -124,6 +124,22 @@ const CONTROL_PAIRS: [string, string, string][] = [
   ['--color-focus', '--color-surface-raised', 'the focus ring on a raised card'],
 ];
 
+/**
+ * Marks that carry meaning without being text or a control: a graphic's
+ * parts need 3:1 against what they sit on (WCAG 1.4.11).
+ */
+const GRAPHIC_PAIRS: [string, string, string][] = [
+  ['--color-heat-4', '--color-bg', 'the busiest day of study on the page'],
+];
+
+/** A day's number printed on its green, in the calendar look of Days of study. */
+const ON_HEAT_PAIRS: [string, string, string][] = [
+  ['--color-text', '--color-heat-1', "a day's number on the palest green"],
+  ['--color-text', '--color-heat-2', "a day's number on the second green"],
+  ['--color-text', '--color-heat-3', "a day's number on the third green"],
+  ['--color-bg', '--color-heat-4', "a day's number, in the paper, on the deepest green"],
+];
+
 describe.each(MODES)('%s', (mode) => {
   {
     const p = palette(mode);
@@ -139,6 +155,14 @@ describe.each(MODES)('%s', (mode) => {
 
     it.each(CONTROL_PAIRS)('%s vs %s — %s reaches 3:1', (fg, bg) => {
       expect(ratio(fg, bg)).toBeGreaterThanOrEqual(3);
+    });
+
+    it.each(GRAPHIC_PAIRS)('%s vs %s — %s reaches 3:1', (fg, bg) => {
+      expect(ratio(fg, bg)).toBeGreaterThanOrEqual(3);
+    });
+
+    it.each(ON_HEAT_PAIRS)('%s vs %s — %s reaches AA (4.5:1)', (fg, bg) => {
+      expect(ratio(fg, bg)).toBeGreaterThanOrEqual(4.5);
     });
   }
 });

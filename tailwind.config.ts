@@ -66,6 +66,13 @@ export default {
         easy: { DEFAULT: 'var(--color-easy)', bg: 'var(--color-easy-bg)' },
         medium: { DEFAULT: 'var(--color-medium)', bg: 'var(--color-medium-bg)' },
         hard: { DEFAULT: 'var(--color-hard)', bg: 'var(--color-hard-bg)' },
+        // Days of study, by time: pale sage to deep leaf (theme.css).
+        heat: {
+          1: 'var(--color-heat-1)',
+          2: 'var(--color-heat-2)',
+          3: 'var(--color-heat-3)',
+          4: 'var(--color-heat-4)',
+        },
       },
       fontFamily: {
         sans: 'var(--font)',

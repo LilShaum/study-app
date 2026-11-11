@@ -45,6 +45,12 @@ const keyOf = (d: Date) => dayKey(d.getTime());
 /** Calendar arithmetic on local dates (safe across daylight saving). */
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 
+const cellOf = (date: string, days: Record<string, DayTotal>, todayKey: string): HeatCell => {
+  const t = days[date];
+  const seconds = t?.seconds ?? 0;
+  return { date, seconds, lectures: t?.lectures ?? 0, level: levelOf(seconds), today: date === todayKey, future: date > todayKey };
+};
+
 /** Week columns, Sunday to Saturday, ending with today's week. */
 export function heatmapWeeks(
   days: Record<string, DayTotal>,
@@ -71,17 +77,7 @@ export function heatmapWeeks(
   for (let w = 0; w < count; w++) {
     const col: HeatCell[] = [];
     for (let i = 0; i < 7; i++) {
-      const date = keyOf(addDays(start, w * 7 + i));
-      const t = days[date];
-      const seconds = t?.seconds ?? 0;
-      col.push({
-        date,
-        seconds,
-        lectures: t?.lectures ?? 0,
-        level: levelOf(seconds),
-        today: date === todayKey,
-        future: date > todayKey,
-      });
+      col.push(cellOf(keyOf(addDays(start, w * 7 + i)), days, todayKey));
     }
     weeks.push(col);
   }
@@ -170,4 +166,95 @@ export function timeStudied(seconds: number): string {
   if (seconds < 3600) return plural(Math.round(seconds / 60), 'minute');
   const hours = seconds / 3600;
   return hours < 10 ? `${Number(hours.toFixed(1))} hour${hours === 1 ? '' : 's'}` : plural(Math.round(hours), 'hour');
+}
+
+export interface ClassTime {
+  /** The class code, "Other" or "Removed lectures". */
+  label: string;
+  seconds: number;
+  kind: 'class' | 'other' | 'removed';
+}
+
+/**
+ * All the time studied, by class: each class code with its total, most first,
+ * then the lectures with no code ("Other"), then the lectures no longer in the
+ * library ("Removed lectures"). A log whose lecture is gone counts as removed
+ * whether or not it was marked so: its time is real, and it has no code left
+ * to go under. One whose lecture is back in the library counts under it.
+ */
+export function timeByClass(
+  byCourse: Record<string, Pick<CourseLog, 'days' | 'removed'>>,
+  courses: Record<string, { metadata: { course_code?: string } }>,
+): ClassTime[] {
+  const byCode = new Map<string, number>();
+  let other = 0;
+  let removed = 0;
+  for (const [id, log] of Object.entries(byCourse)) {
+    const seconds = Object.values(log.days ?? {}).reduce((s, x) => s + x, 0);
+    if (!(seconds > 0)) continue;
+    const course = courses[id];
+    const code = course?.metadata.course_code?.trim();
+    if (!course) removed += seconds;
+    else if (!code) other += seconds;
+    else byCode.set(code, (byCode.get(code) ?? 0) + seconds);
+  }
+  const rows: ClassTime[] = [...byCode]
+    .map(([label, seconds]): ClassTime => ({ label, seconds, kind: 'class' }))
+    .sort((a, b) => b.seconds - a.seconds || a.label.localeCompare(b.label));
+  rows.push({ label: 'Other', seconds: other, kind: 'other' }, { label: 'Removed lectures', seconds: removed, kind: 'removed' });
+  // Under a minute would read "0 minutes": a row with nothing to say.
+  return rows.filter((r) => r.seconds >= MIN_SECONDS);
+}
+
+export interface CalendarMonth {
+  /** YYYY-MM. */
+  key: string;
+  /** "October", with the year when it is not this year's. */
+  name: string;
+  /** Rows of seven, Sunday first; null before the 1st and after the month's last day. */
+  weeks: (HeatCell | null)[][];
+  seconds: number;
+  /** Days with a minute of study. */
+  days: number;
+}
+
+/**
+ * Months set like a printed calendar, newest first: from the month of the
+ * first day studied to this one, at most `maxMonths`.
+ */
+export function calendarMonths(days: Record<string, DayTotal>, today: Date, { maxMonths = 12 }: { maxMonths?: number } = {}): CalendarMonth[] {
+  const todayKey = keyOf(today);
+  const first = Object.keys(days)
+    .filter((k) => days[k].seconds >= MIN_SECONDS)
+    .sort()[0];
+  const [fy, fm] = first ? parts(first) : [today.getFullYear(), today.getMonth() + 1];
+  const span = (today.getFullYear() - fy) * 12 + today.getMonth() - (fm - 1) + 1;
+  const count = Math.max(1, Math.min(maxMonths, span));
+  const out: CalendarMonth[] = [];
+  for (let i = 0; i < count; i++) {
+    const start = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const y = start.getFullYear();
+    const m = start.getMonth();
+    const length = new Date(y, m + 1, 0).getDate();
+    const cells: (HeatCell | null)[] = Array.from({ length: start.getDay() }, () => null);
+    for (let d = 1; d <= length; d++) cells.push(cellOf(keyOf(new Date(y, m, d)), days, todayKey));
+    while (cells.length % 7) cells.push(null);
+    const weeks: (HeatCell | null)[][] = [];
+    for (let w = 0; w < cells.length; w += 7) weeks.push(cells.slice(w, w + 7));
+    const inMonth = cells.filter((c): c is HeatCell => !!c);
+    out.push({
+      key: `${y}-${String(m + 1).padStart(2, '0')}`,
+      name: y === today.getFullYear() ? MONTHS[m] : `${MONTHS[m]} ${y}`,
+      weeks,
+      seconds: inMonth.reduce((s, c) => s + c.seconds, 0),
+      days: inMonth.filter((c) => c.level >= 1).length,
+    });
+  }
+  return out;
+}
+
+/** "9 days, 4.5 hours"; null for a month with no study, which says nothing. */
+export function monthLine(month: Pick<CalendarMonth, 'days' | 'seconds'>): string | null {
+  if (!month.days) return null;
+  return `${plural(month.days, 'day')}, ${timeStudied(month.seconds)}`;
 }

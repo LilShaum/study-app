@@ -93,6 +93,11 @@ const PAIRS = [
   ['--color-plate-ink', '--color-plate', 4.5, 'QR code on its plate'],
   ['--color-border-strong', '--color-surface', 3, 'control outline on card'],
   ['--color-border-strong', '--color-bg', 3, 'control outline on page'],
+  ['--color-heat-4', '--color-bg', 3, 'busiest study day on page'],
+  ['--color-text', '--color-heat-1', 4.5, 'day number on heat 1'],
+  ['--color-text', '--color-heat-2', 4.5, 'day number on heat 2'],
+  ['--color-text', '--color-heat-3', 4.5, 'day number on heat 3'],
+  ['--color-bg', '--color-heat-4', 4.5, 'day number on heat 4'],
 ];
 
 const onlyFails = process.argv.includes('--fails');

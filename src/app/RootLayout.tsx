@@ -30,6 +30,7 @@ function useLocationName(): string {
 
   if (pathname === '/help') return 'Using Arborous';
   if (pathname === '/sync') return 'Sync';
+  if (pathname === '/days') return 'Days of study';
   if (pathname.startsWith('/shared/')) return 'Shared lecture';
   if (pathname.startsWith('/class/') && params.code) {
     if (/^\/class\/[^/]+\/test$/.test(pathname)) return `${params.code} · Practice test`;

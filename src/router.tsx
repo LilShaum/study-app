@@ -15,6 +15,7 @@ import { SyncRoute } from '@/routes/SyncRoute';
 import { SharedRoute } from '@/routes/SharedRoute';
 import { ClassRoute } from '@/routes/ClassRoute';
 import { TestRoute } from '@/routes/TestRoute';
+import { DaysRoute } from '@/routes/DaysRoute';
 
 // Hash routing (createHashRouter) is required, not a preference — GitHub
 // Pages serves this as a static site with no server-side rewrite, so a
@@ -40,6 +41,7 @@ export const router = createHashRouter([
       { path: 'class/:code/practice', element: <PracticeRoute /> },
       { path: 'help', element: <HelpRoute /> },
       { path: 'sync', element: <SyncRoute /> },
+      { path: 'days', element: <DaysRoute /> },
       { path: 'shared/:id', element: <SharedRoute /> },
       { path: 'session/:id/:mode', element: <SessionRoute /> },
       { path: '*', element: <LibraryRoute /> },

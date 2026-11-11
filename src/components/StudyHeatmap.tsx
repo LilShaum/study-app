@@ -1,81 +1,109 @@
-import { useMemo, useState } from 'react';
-import { useStudyLogStore } from '@/store/studyLog';
-import { dayLine, heatmapWeeks, monthLabels, studyStats, summaryLine, sumDays, timeStudied, type HeatCell } from '@/lib/heatmap';
+import { useMemo, type Dispatch, type SetStateAction } from 'react';
+import { monthLabels, type HeatCell } from '@/lib/heatmap';
+import { dayLeaf } from '@/lib/dayLeaf';
+
+/** The two looks drawn as a grid of weeks; the calendar look is StudyCalendar. */
+export type WeekLook = 'green' | 'leaves';
 
 const SIZE = 11;
 const PITCH = 13;
-const LABEL_H = 14;
-/** The widest a week's column may be drawn, in CSS pixels. */
-const GROWN_PITCH = 22;
-/** Ink mixed toward the paper, one share of ink per level. */
-const INK = [0, 22, 45, 68, 90];
+/** The month names above the grid. */
+const TOP = 14;
+/** The weekday names at its left. */
+const LEFT = 24;
+/** The most the grid is scaled up when there are few weeks to show. */
+const GROW = 1.4;
+const WEEKDAYS: [number, string][] = [
+  [1, 'Mon'],
+  [3, 'Wed'],
+  [5, 'Fri'],
+];
+/** A leaf's green by level: size already tells the time, so the smallest leaves start a step deep enough to be seen. */
+const LEAF_HEAT = [0, 2, 3, 3, 4];
 
-const fillOf = (level: number) => (level ? `color-mix(in oklab, var(--color-text) ${INK[level]}%, var(--color-bg))` : 'none');
+const heat = (n: number) => `var(--color-heat-${n})`;
 
 /**
- * The student's own days of study: a calendar of small squares, darker for
- * more minutes (docs/proposals/heatmap.md). Nothing until there is a day of
- * study, no streak, and an empty day is plain paper.
+ * The student's days of study as a grid: a column a week, Sunday at the top,
+ * today's week last (docs/proposals/heatmap.md). An empty day is a hairline
+ * square or a small bud, never a colour for "missed". A tap on a day (or the
+ * mouse over it) shows its line, which the page sets under the grid.
  */
-export function StudyHeatmap() {
-  const byCourse = useStudyLogStore((s) => s.byCourse);
-  const [picked, setPicked] = useState<string | null>(null);
-
-  const totals = useMemo(() => sumDays(byCourse), [byCourse]);
-  const weeks = useMemo(() => heatmapWeeks(totals, new Date()), [totals]);
-  const stats = useMemo(() => studyStats(totals, new Date()), [totals]);
-  const summary = useMemo(() => summaryLine(weeks), [weeks]);
-  const labels = useMemo(() => {
+export function StudyHeatmap({
+  weeks,
+  look,
+  label,
+  picked,
+  setPicked,
+}: {
+  weeks: HeatCell[][];
+  look: WeekLook;
+  /** What the grid says, for a screen reader: the summary line. */
+  label: string;
+  picked: string | null;
+  setPicked: Dispatch<SetStateAction<string | null>>;
+}) {
+  const months = useMemo(() => {
     const l = monthLabels(weeks);
     // The first column's name would run into a name one column on.
     if (l[1]) l[0] = null;
     return l;
   }, [weeks]);
 
-  if (!summary) return null;
-
-  // The last column ends a square short of a full pitch; one pixel more each
+  // The last column ends a square short of a full pitch; a pixel more each
   // side keeps today's outline (half outside its square) from being clipped.
-  const width = weeks.length * PITCH - (PITCH - SIZE) + 2;
-  const height = LABEL_H + 7 * PITCH - (PITCH - SIZE) + 1;
-  const pickedCell: HeatCell | undefined = picked ? weeks.flat().find((c) => c.date === picked) : undefined;
+  const width = LEFT + weeks.length * PITCH - (PITCH - SIZE) + 2;
+  const height = TOP + 7 * PITCH - (PITCH - SIZE) + 2;
 
   return (
-    <section className="mt-10" aria-label="Days of study">
-      <h2 className="mark text-text-3">Days of study</h2>
-      <svg
-        role="img"
-        aria-label={summary}
-        viewBox={`-1 0 ${width} ${height}`}
-        // Squares grow to fill the column, up to about 19px, so a few weeks
-        // of history is not a postage stamp and half a year still fits a phone.
-        style={{ maxWidth: weeks.length * GROWN_PITCH }}
-        className="mt-3 block h-auto w-full select-none [-webkit-touch-callout:none]"
-        onPointerLeave={(e) => {
-          if (e.pointerType === 'mouse') setPicked(null);
-        }}
-      >
-        {labels.map((name, w) =>
-          name ? (
-            <text key={`m${w}`} x={w * PITCH} y={9} fontSize={9} fill="currentColor" className="text-text-3">
-              {name}
-            </text>
-          ) : null,
-        )}
-        {weeks.map((col, w) =>
-          col.map((c, d) =>
-            c.future ? null : (
+    <svg
+      role="img"
+      aria-label={label}
+      viewBox={`-1 -1 ${width} ${height}`}
+      // Squares grow with the space up to GROW times, so a few weeks of
+      // history is not a postage stamp and a year still fits the page.
+      style={{ maxWidth: width * GROW }}
+      className="block h-auto w-full select-none [-webkit-touch-callout:none]"
+      data-look={look}
+      onPointerLeave={(e) => {
+        if (e.pointerType === 'mouse') setPicked(null);
+      }}
+    >
+      {months.map((name, w) =>
+        name ? (
+          <text key={`m${w}`} x={LEFT + w * PITCH} y={9} fontSize={9} fill="currentColor" className="text-text-3">
+            {name}
+          </text>
+        ) : null,
+      )}
+      {WEEKDAYS.map(([d, name]) => (
+        <text key={name} x={0} y={TOP + d * PITCH + 8.5} fontSize={8.5} fill="currentColor" className="text-text-3">
+          {name}
+        </text>
+      ))}
+      {weeks.map((col, w) =>
+        col.map((c, d) => {
+          if (c.future) return null;
+          const x = LEFT + w * PITCH;
+          const y = TOP + d * PITCH;
+          return (
+            <g key={c.date}>
+              {look === 'green' ? (
+                <Square cell={c} x={x} y={y} picked={picked === c.date} />
+              ) : (
+                <Leaf cell={c} x={x} y={y} picked={picked === c.date} />
+              )}
+              {/* The whole pitch takes the tap, gaps included: a square is
+                  11px on a phone, and a bud far less. Not drawn. */}
               <rect
-                key={c.date}
-                x={w * PITCH}
-                y={LABEL_H + d * PITCH}
-                width={SIZE}
-                height={SIZE}
+                x={x - 1}
+                y={y - 1}
+                width={PITCH}
+                height={PITCH}
+                fill="transparent"
                 data-date={c.date}
                 data-level={c.level}
-                fill={fillOf(c.level)}
-                stroke={c.today ? 'var(--color-accent)' : c.level === 0 ? 'var(--color-border)' : 'none'}
-                strokeWidth={1}
+                aria-current={picked === c.date ? 'date' : undefined}
                 onPointerEnter={(e) => {
                   if (e.pointerType === 'mouse') setPicked(c.date);
                 }}
@@ -84,29 +112,53 @@ export function StudyHeatmap() {
                   else setPicked((held) => (held === c.date ? null : c.date));
                 }}
               />
-            ),
-          ),
-        )}
-      </svg>
-      <p className="mt-3 text-small text-text-2" aria-live="polite">
-        {pickedCell ? dayLine(pickedCell) : summary}
-      </p>
-      {/* Figures to look at, never a nudge: no "keep your streak" anywhere. */}
-      <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border pt-3 sm:grid-cols-4">
-        {(
-          [
-            ['Time studied', timeStudied(stats.seconds)],
-            ['Days studied', `${stats.days}`],
-            ['Longest streak', `${stats.longest} day${stats.longest === 1 ? '' : 's'}`],
-            ['Current streak', `${stats.current} day${stats.current === 1 ? '' : 's'}`],
-          ] as const
-        ).map(([label, value]) => (
-          <div key={label}>
-            <dt className="mark text-text-3">{label}</dt>
-            <dd className="mt-0.5 text-body tabular-nums text-text">{value}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
+            </g>
+          );
+        }),
+      )}
+    </svg>
+  );
+}
+
+/** What outlines a day: the day picked in the ink, today in the accent. */
+const outline = (cell: HeatCell, picked: boolean) => (picked ? 'var(--color-text)' : cell.today ? 'var(--color-accent)' : null);
+
+/** L2: a square of herbarium green, deeper for more time; an empty day is a hairline. */
+function Square({ cell, x, y, picked }: { cell: HeatCell; x: number; y: number; picked: boolean }) {
+  const filled = cell.level > 0;
+  const ring = outline(cell, picked);
+  // An outline is drawn on the edge, half outside; an empty day's hairline
+  // is set in by half its width so it is the same size as a filled one.
+  const inset = filled || ring ? 0 : 0.5;
+  return (
+    <rect
+      x={x + inset}
+      y={y + inset}
+      width={SIZE - 2 * inset}
+      height={SIZE - 2 * inset}
+      rx={1}
+      fill={filled ? heat(cell.level) : 'none'}
+      stroke={ring ?? (filled ? 'none' : 'var(--color-border)')}
+      strokeWidth={ring ? 1.4 : 1}
+      pointerEvents="none"
+    />
+  );
+}
+
+/**
+ * L3: a drawn leaf, larger and deeper for more time; a day without is a bud.
+ * Today's leaf is edged in the accent and the day picked in the ink; a bud
+ * is drawn in that colour instead.
+ */
+function Leaf({ cell, x, y, picked }: { cell: HeatCell; x: number; y: number; picked: boolean }) {
+  const leaf = dayLeaf(cell.date, cell.level, SIZE);
+  const ring = outline(cell, picked);
+  const color = cell.level ? heat(LEAF_HEAT[cell.level]) : (ring ?? 'var(--color-border)');
+  return (
+    <g transform={`translate(${x} ${y})`} style={{ color }} pointerEvents="none">
+      <path d={leaf.stalk} fill="none" stroke="currentColor" strokeWidth={0.7} strokeLinecap="round" />
+      <path d={leaf.blade} fill="currentColor" stroke={cell.level && ring ? ring : 'none'} strokeWidth={0.9} strokeLinejoin="round" />
+      {leaf.vein && <path d={leaf.vein} fill="none" stroke="var(--color-bg)" strokeWidth={0.45} strokeLinecap="round" />}
+    </g>
   );
 }

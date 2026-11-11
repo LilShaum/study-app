@@ -103,6 +103,17 @@
   --color-hard: #9c3030;
   --color-hard-bg: #f0dede;
 
+  /* ---- days of study ----
+     Four steps of a herbarium green, from pale sage to deep leaf, for the
+     heatmap (docs/proposals/heatmap.md §6): the green of a pressed leaf,
+     greyed and a little yellow, not a dashboard's bright green. The deepest
+     clears 3:1 against the page (a graphic, WCAG 1.4.11). A day's number
+     printed on a step reads in the ink on 1 to 3 and in the paper on 4. */
+  --color-heat-1: #dde3ca;
+  --color-heat-2: #bcc9a5;
+  --color-heat-3: #829971;
+  --color-heat-4: #486545;
+
   /* ---- type ----
      A display face carries the identity; the UI stays on the system
      stack, which costs no bytes and renders instantly. */
@@ -215,6 +226,12 @@
     --color-hard: #ef8f84;
     --color-hard-bg: #2e1614;
 
+    /* On dark stock more study is a brighter leaf. */
+    --color-heat-1: #232f21;
+    --color-heat-2: #36492f;
+    --color-heat-3: #526c46;
+    --color-heat-4: #93b077;
+
     --shadow: 0 1px 0 #0f1113, 2px 3px 0 -1px rgba(0, 0, 0, 0.5);
     --shadow-md: 0 1px 0 #0f1113, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
 
@@ -269,6 +286,11 @@
   --color-medium-bg: #2a2008;
   --color-hard: #ef8f84;
   --color-hard-bg: #2e1614;
+
+  --color-heat-1: #232f21;
+  --color-heat-2: #36492f;
+  --color-heat-3: #526c46;
+  --color-heat-4: #93b077;
 
   --shadow: 0 1px 0 #0f1113, 2px 3px 0 -1px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 1px 0 #0f1113, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);

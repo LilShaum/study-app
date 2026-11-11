@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { dayLine, heatmapWeeks, monthLabels, studyStats, summaryLine, sumDays, timeStudied, type DayTotal } from './heatmap';
+import {
+  calendarMonths,
+  dayLine,
+  heatmapWeeks,
+  monthLabels,
+  monthLine,
+  studyStats,
+  summaryLine,
+  sumDays,
+  timeByClass,
+  timeStudied,
+  type DayTotal,
+} from './heatmap';
 
 // Tuesday 4 November 2025, noon.
 const TODAY = new Date(2025, 10, 4, 12);
@@ -151,5 +163,96 @@ describe('studyStats', () => {
     expect(timeStudied(4.5 * 3600)).toBe('4.5 hours');
     expect(timeStudied(24 * 3600)).toBe('24 hours');
     expect(timeStudied(3600)).toBe('1 hour');
+  });
+});
+
+describe('timeByClass', () => {
+  const lecture = (course_code?: string) => ({ metadata: { course_code } });
+  const log = (...seconds: number[]) => ({ days: Object.fromEntries(seconds.map((x, i) => [`2025-10-${String(i + 1).padStart(2, '0')}`, x])) });
+
+  it('totals each class code, most first, then Other, then removed lectures', () => {
+    const rows = timeByClass(
+      {
+        a: log(600, 1200), // BIOL 1800
+        b: log(3000), // CHEM 3000
+        c: log(900), // BIOL again: 2700 in all
+        d: log(400), // no code
+        e: { ...log(700), removed: true },
+        f: log(300), // its lecture is gone, though not marked removed
+      },
+      { a: lecture('BIOL'), b: lecture('CHEM'), c: lecture(' BIOL '), d: lecture() },
+    );
+    expect(rows).toEqual([
+      { label: 'CHEM', seconds: 3000, kind: 'class' },
+      { label: 'BIOL', seconds: 2700, kind: 'class' },
+      { label: 'Other', seconds: 400, kind: 'other' },
+      { label: 'Removed lectures', seconds: 1000, kind: 'removed' },
+    ]);
+  });
+
+  it('counts a removed log under its lecture when the lecture is back in the library', () => {
+    const rows = timeByClass({ a: { days: { '2025-10-01': 600 }, removed: true } }, { a: lecture('BIOL') });
+    expect(rows).toEqual([{ label: 'BIOL', seconds: 600, kind: 'class' }]);
+  });
+
+  it('leaves out a row under a minute, and an empty code is no code', () => {
+    expect(timeByClass({ a: log(30), b: log(120) }, { a: lecture('BIOL'), b: lecture('  ') })).toEqual([
+      { label: 'Other', seconds: 120, kind: 'other' },
+    ]);
+    expect(timeByClass({}, {})).toEqual([]);
+  });
+
+  it('breaks a tie by name, so the order does not change between visits', () => {
+    const rows = timeByClass({ a: log(600), b: log(600) }, { a: lecture('PHYS'), b: lecture('ANAT') });
+    expect(rows.map((r) => r.label)).toEqual(['ANAT', 'PHYS']);
+  });
+});
+
+describe('calendarMonths', () => {
+  // TODAY is Tuesday 4 November 2025.
+  it('runs newest first from this month back to the month first studied', () => {
+    const months = calendarMonths({ '2025-08-20': min(5) }, TODAY);
+    expect(months.map((m) => m.key)).toEqual(['2025-11', '2025-10', '2025-09', '2025-08']);
+    expect(months[0].name).toBe('November');
+  });
+
+  it('shows only this month before any study, and at most a year', () => {
+    expect(calendarMonths({}, TODAY).map((m) => m.key)).toEqual(['2025-11']);
+    const months = calendarMonths({ '2023-01-10': min(5) }, TODAY);
+    expect(months).toHaveLength(12);
+    expect(months[11].key).toBe('2024-12');
+    expect(months[11].name).toBe('December 2024'); // another year names its year
+  });
+
+  it('sets each month in Sunday-first rows of seven, blank before the 1st and after the last day', () => {
+    const [nov, oct] = calendarMonths({ '2025-10-01': min(5) }, TODAY);
+    // 1 November 2025 is a Saturday; 1 October a Wednesday.
+    expect(nov.weeks[0].slice(0, 6)).toEqual([null, null, null, null, null, null]);
+    expect(nov.weeks[0][6]?.date).toBe('2025-11-01');
+    expect(oct.weeks[0][3]?.date).toBe('2025-10-01');
+    for (const m of [nov, oct]) for (const w of m.weeks) expect(w).toHaveLength(7);
+    expect(oct.weeks.flat().filter(Boolean)).toHaveLength(31);
+    const last = oct.weeks[oct.weeks.length - 1];
+    expect(last.filter(Boolean).pop()?.date).toBe('2025-10-31');
+    expect(last[6]).toBeNull();
+  });
+
+  it('marks levels, today and the days still to come, and totals each month', () => {
+    const [nov, oct] = calendarMonths({ '2025-10-01': min(50), '2025-10-02': min(5), '2025-10-03': { seconds: 30, lectures: 0 }, '2025-11-03': min(20) }, TODAY);
+    const cell = (m: typeof nov, d: string) => m.weeks.flat().find((c) => c?.date === d)!;
+    expect(cell(oct, '2025-10-01').level).toBe(4);
+    expect(cell(oct, '2025-10-02').level).toBe(1);
+    expect(cell(oct, '2025-10-03').level).toBe(0);
+    expect(cell(nov, '2025-11-04').today).toBe(true);
+    expect(cell(nov, '2025-11-05').future).toBe(true);
+    expect(cell(nov, '2025-11-03').future).toBe(false);
+    expect(oct).toMatchObject({ days: 2, seconds: 55 * 60 + 30 });
+    expect(nov).toMatchObject({ days: 1, seconds: 20 * 60 });
+  });
+
+  it('says a month in a line, and nothing for a month without study', () => {
+    expect(monthLine({ days: 9, seconds: 4.5 * 3600 })).toBe('9 days, 4.5 hours');
+    expect(monthLine({ days: 1, seconds: 20 * 60 })).toBe('1 day, 20 minutes');
+    expect(monthLine({ days: 0, seconds: 30 })).toBeNull();
   });
 });
