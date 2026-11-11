@@ -159,7 +159,7 @@ export function LibraryRoute() {
     useProgressStore.getState().removeCourseProgress(id);
     useResumeStore.getState().clear(id);
     // Its days of study stay on the heatmap; Undo puts the whole log back.
-    useStudyLogStore.getState().retire(id);
+    useStudyLogStore.getState().retire(id, { code: courseSnapshot?.metadata.course_code, title: courseSnapshot?.metadata.title });
     clearSavedTests(id);
     toast(`"${title}" removed from library.`, {
       type: 'info',

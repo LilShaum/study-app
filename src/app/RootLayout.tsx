@@ -6,6 +6,7 @@ import { Toaster } from '@/components/Toaster';
 import { Onboarding } from '@/components/Onboarding';
 import { Sprig } from '@/components/Sprig';
 import { useCoursesStore } from '@/store/courses';
+import { pageName, useProfileStore } from '@/store/profile';
 
 /**
  * What the running head says on the right — where in the work you are.
@@ -18,6 +19,7 @@ import { useCoursesStore } from '@/store/courses';
  */
 function useLocationName(): string {
   const { pathname } = useLocation();
+  const name = useProfileStore((s) => s.name);
   const params = useParams();
   const id = params.id;
   // Select the one string the head shows. Subscribing to the whole courses
@@ -30,7 +32,7 @@ function useLocationName(): string {
 
   if (pathname === '/help') return 'Using Arborous';
   if (pathname === '/sync') return 'Sync';
-  if (pathname === '/days') return 'Days of study';
+  if (pathname === '/account') return pageName(name);
   if (pathname.startsWith('/shared/')) return 'Shared lecture';
   if (pathname.startsWith('/class/') && params.code) {
     if (/^\/class\/[^/]+\/test$/.test(pathname)) return `${params.code} · Practice test`;
@@ -76,6 +78,7 @@ export function RootLayout() {
   const here = useLocationName();
   useTabTitle(here);
   const { pathname } = useLocation();
+  const name = useProfileStore((s) => s.name);
   // The course page and the study screen are laid out in two columns on a
   // desktop; head, page and colophon widen together so the rules still line up.
   const wide = /^\/study\/[^/]+$/.test(pathname) || pathname.startsWith('/session/') ? ' is-wide' : '';
@@ -148,8 +151,9 @@ export function RootLayout() {
             <Link to="/help" className="press press-quiet">
               Help
             </Link>
-            <Link to="/sync" className="press press-quiet">
-              Sync
+            {/* The student's own page (Sync is reached from it), named for them. */}
+            <Link to="/account" className="press press-quiet">
+              {pageName(name)}
             </Link>
             <DarkModeToggle />
           </div>

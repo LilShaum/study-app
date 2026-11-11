@@ -29,34 +29,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   to reimagine something about the app or audit it or improve it, please
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
-- **A heatmap of study each day** (2026-11-10: "a long time ago i
-  suggested a heatmap for user activity each day kinda like that very
-  popular anki mod or other study things like leetcode i think"). Asked
-  before this list began (2026-10-14). Planned (docs/proposals/heatmap.md);
-  the owner's answers 2026-11-11: streaks as figures only, no forecast for
-  now, a removed lecture's days kept (live: studyLog retire, kept by
-  sync). The first version, on the library below the lectures, shown the
-  same day: "the heatmap is a good start but i am not 100% happy with how
-  it looks and feel like it could be done better and even more so I am not
-  happy with its location". Three looks being built on a page of its own
-  (green squares, leaves, calendar; the owner "skeptical of the leaf" but
-  open to see it); its place follows the "My account" plan.
-- **A "My account" page, thought through before it is built** (2026-11-11:
-  "maybe we should make like an account page or like "my account" or
-  something along those lines that shows u the heat map and also like all
-  that other data but organized in some clean way maybe like organized by
-  class … it would be better if we can think of more things that would go
-  there or that could come out of it before commiting to making an account.
-  maybe so you can add friends and choose to make ur courses public to
-  friends so they can see them and get the course too or if its private to
-  friends they cant get it but u can share it to them through the app
-  somehow perhaps … maybe we could think of more things like that"). Also:
-  the heatmap not on the library ("i dont think it should be on the
-  homepage"); per-lecture stats exist (Progress) but the owner could not
-  find them. Next: a plan in docs/proposals/account.md, brainstorm first.
-  Asked in chat, to answer: reminders do not need a new server (an
-  earlier reply said so wrongly); they are new work on the Supabase
-  project the accounts already use (a scheduled function and web push).
+- **Friends** (2026-11-11, from the account plan: "do friends separately
+  cuz i dont have too many people using it rn so its not pressing but its
+  def a cool feature I wanna have"). Ideas in docs/proposals/account.md
+  (invites, sending lectures, class groups sharing lectures, fixes that
+  travel, friends' days of study); a plan of its own when the owner wants
+  it.
 - **The first run, reworked: how it looks and what it covers** (2026-11-11:
   "i think the onboarding could definitely be updated in terms of both
   ui/ux (first impressions matter) but also in terms of the information
@@ -278,6 +256,14 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-11-11 Your own page with the heatmap (2026-11-10 heatmap ask;
+  2026-11-11: an account page "organized by class", "probably the users
+  name … if not then just account", leaves "fuck it do the leaves",
+  friends later), live: #/account, linked from the foot of every page by
+  the student's name or Account; days of study as leaves, the figures,
+  time by class; Sync and Back up. A removed lecture keeps its days, class
+  code and title (2026-11-11: "only make the sacrifice if we need that
+  extra storage"), synced.
 - 2026-11-11 Questions and decisions at the bottom of every reply
   (2026-11-11: "if there is a little question hidden in there or some
   liberty you took/decision you decided to make on your own, please make it

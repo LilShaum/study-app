@@ -3,18 +3,18 @@ import { useState } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { dayKey } from '@/store/studyLog';
 import { dayLine, heatmapWeeks, type DayTotal } from '@/lib/heatmap';
-import { StudyHeatmap, type WeekLook } from './StudyHeatmap';
+import { StudyHeatmap } from './StudyHeatmap';
 
 const today = () => dayKey(Date.now());
 
 /** The grid with the page's line under it, as DaysRoute sets it. */
-function Harness({ days, look }: { days: Record<string, DayTotal>; look: WeekLook }) {
+function Harness({ days }: { days: Record<string, DayTotal> }) {
   const [picked, setPicked] = useState<string | null>(null);
   const weeks = heatmapWeeks(days, new Date());
   const cell = weeks.flat().find((c) => c.date === picked);
   return (
     <>
-      <StudyHeatmap weeks={weeks} look={look} label="the summary" picked={picked} setPicked={setPicked} />
+      <StudyHeatmap weeks={weeks} label="the summary" picked={picked} setPicked={setPicked} />
       <p data-testid="line">{cell ? dayLine(cell) : 'the summary'}</p>
     </>
   );
@@ -23,21 +23,10 @@ function Harness({ days, look }: { days: Record<string, DayTotal>; look: WeekLoo
 afterEach(cleanup);
 
 describe('StudyHeatmap', () => {
-  it('draws the green look as squares, one per day so far, labelled for a screen reader', () => {
-    const { container } = render(<Harness days={{ [today()]: { seconds: 1200, lectures: 1 } }} look="green" />);
+  it('draws a leaf for a day studied and a bud for the rest, with paths only, labelled for a screen reader', () => {
+    const { container } = render(<Harness days={{ [today()]: { seconds: 3000, lectures: 1 } }} />);
     expect(screen.getByRole('img').getAttribute('aria-label')).toBe('the summary');
-    expect(container.querySelector(`[data-date="${today()}"]`)?.getAttribute('data-level')).toBe('2');
-    expect(container.querySelectorAll('[data-date]').length).toBeGreaterThanOrEqual(8 * 7 - 6);
-    // Today's green square, outlined in the accent.
-    const marks = [...container.querySelectorAll('rect[fill^="var(--color-heat"]')];
-    expect(marks).toHaveLength(1);
-    expect(marks[0].getAttribute('fill')).toBe('var(--color-heat-2)');
-    expect(marks[0].getAttribute('stroke')).toBe('var(--color-accent)');
-  });
-
-  it('draws the leaves look with paths only, a leaf for a day studied and a bud for the rest', () => {
-    const { container } = render(<Harness days={{ [today()]: { seconds: 3000, lectures: 1 } }} look="leaves" />);
-    const svg = container.querySelector('svg[data-look="leaves"]')!;
+    const svg = container.querySelector('svg')!;
     expect(svg.querySelectorAll('circle, ellipse, polygon, line').length).toBe(0);
     // Every rect is a tap target, not a drawn thing.
     for (const r of svg.querySelectorAll('rect')) expect(r.getAttribute('fill')).toBe('transparent');
@@ -48,10 +37,11 @@ describe('StudyHeatmap', () => {
   });
 
   it('shows a tapped day and restores the summary on a second tap', () => {
-    const { container } = render(<Harness days={{ [today()]: { seconds: 2100, lectures: 1 } }} look="green" />);
+    const { container } = render(<Harness days={{ [today()]: { seconds: 2100, lectures: 1 } }} />);
     const line = screen.getByTestId('line');
     const day = container.querySelector(`[data-date="${today()}"]`)!;
-    const square = () => day.previousElementSibling!;
+    // The leaf's blade (after its stalk) carries the outline.
+    const square = () => day.previousElementSibling!.querySelectorAll('path')[1];
     expect(square().getAttribute('stroke')).toBe('var(--color-accent)'); // today
     fireEvent.pointerDown(day);
     expect(line.textContent).toMatch(/: 35 minutes, 1 lecture\.$/);

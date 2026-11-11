@@ -23,6 +23,12 @@ describe('study log', () => {
     expect(useStudyLogStore.getState().byCourse).toEqual({ a: { times: [], answers: [], days: { '2026-11-01': 900 }, removed: true } });
   });
 
+  it('keeps a removed lecture\'s class and title, so its time still counts under its class', () => {
+    useStudyLogStore.setState({ byCourse: { a: { times: [], answers: [], days: { '2026-11-01': 900 } } } });
+    useStudyLogStore.getState().retire('a', { code: ' BIOL 365 ', title: 'Lecture 4' });
+    expect(useStudyLogStore.getState().byCourse.a).toEqual({ times: [], answers: [], days: { '2026-11-01': 900 }, removed: true, code: 'BIOL 365', title: 'Lecture 4' });
+  });
+
   it('keeps built-in guesses until a type has enough samples', () => {
     const times = Array.from({ length: 14 }, () => ({ type: 'mcq', seconds: 50 }));
     expect(measuredPace({ c: { times, answers: [], days: {} } })).toEqual({ again: 0.3 });

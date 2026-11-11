@@ -105,13 +105,18 @@ describe('mergeSnapshots — a removed lecture keeps its days', () => {
     const remote = snap({ courses: { a: course('A') }, editedAt: { a: 1 }, perCourse: { studyLog: { a: full } } });
     const out = mergeSnapshots(local, remote);
     expect(out.courses.a).toBeUndefined();
-    expect(out.perCourse.studyLog.a).toEqual({ times: [], answers: [], days: { '2026-10-15': 600, '2026-10-16': 300 }, removed: true });
+    expect(out.perCourse.studyLog.a).toEqual({ times: [], answers: [], days: { '2026-10-15': 600, '2026-10-16': 300 }, removed: true, title: 'A' });
   });
 
-  it('keeps the days of a lecture removed before this rule, from the device that still had them', () => {
+  it('keeps the days of a lecture removed before this rule, with its title from the lecture', () => {
     const local = snap({ deletedAt: { a: 2 } });
     const remote = snap({ courses: { a: course('A') }, editedAt: { a: 1 }, perCourse: { studyLog: { a: full } } });
-    expect(mergeSnapshots(local, remote).perCourse.studyLog.a).toEqual({ times: [], answers: [], days: { '2026-10-15': 600 }, removed: true });
+    expect(mergeSnapshots(local, remote).perCourse.studyLog.a).toEqual({ times: [], answers: [], days: { '2026-10-15': 600 }, removed: true, title: 'A' });
+  });
+
+  it('keeps the class code a removed lecture kept', () => {
+    const local = snap({ deletedAt: { a: 2 }, perCourse: { studyLog: { a: { ...retired, code: 'BIOL 365' } } } });
+    expect((mergeSnapshots(local, snap({})).perCourse.studyLog.a as { code?: string }).code).toBe('BIOL 365');
   });
 
   it('keeps the whole log of a lecture that lives on', () => {

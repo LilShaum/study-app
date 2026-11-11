@@ -2,9 +2,6 @@ import { useMemo, type Dispatch, type SetStateAction } from 'react';
 import { monthLabels, type HeatCell } from '@/lib/heatmap';
 import { dayLeaf } from '@/lib/dayLeaf';
 
-/** The two looks drawn as a grid of weeks; the calendar look is StudyCalendar. */
-export type WeekLook = 'green' | 'leaves';
-
 const SIZE = 11;
 const PITCH = 13;
 /** The month names above the grid. */
@@ -25,19 +22,18 @@ const heat = (n: number) => `var(--color-heat-${n})`;
 
 /**
  * The student's days of study as a grid: a column a week, Sunday at the top,
- * today's week last (docs/proposals/heatmap.md). An empty day is a hairline
- * square or a small bud, never a colour for "missed". A tap on a day (or the
+ * today's week last (docs/proposals/heatmap.md). Each day a drawn leaf, larger
+ * and deeper for more time (the owner chose leaves, 2026-11-11); a day without
+ * is a small bud, never a colour for "missed". A tap on a day (or the
  * mouse over it) shows its line, which the page sets under the grid.
  */
 export function StudyHeatmap({
   weeks,
-  look,
   label,
   picked,
   setPicked,
 }: {
   weeks: HeatCell[][];
-  look: WeekLook;
   /** What the grid says, for a screen reader: the summary line. */
   label: string;
   picked: string | null;
@@ -64,7 +60,6 @@ export function StudyHeatmap({
       // history is not a postage stamp and a year still fits the page.
       style={{ maxWidth: width * GROW }}
       className="block h-auto w-full select-none [-webkit-touch-callout:none]"
-      data-look={look}
       onPointerLeave={(e) => {
         if (e.pointerType === 'mouse') setPicked(null);
       }}
@@ -88,11 +83,7 @@ export function StudyHeatmap({
           const y = TOP + d * PITCH;
           return (
             <g key={c.date}>
-              {look === 'green' ? (
-                <Square cell={c} x={x} y={y} picked={picked === c.date} />
-              ) : (
-                <Leaf cell={c} x={x} y={y} picked={picked === c.date} />
-              )}
+              <Leaf cell={c} x={x} y={y} picked={picked === c.date} />
               {/* The whole pitch takes the tap, gaps included: a square is
                   11px on a phone, and a bud far less. Not drawn. */}
               <rect
@@ -123,30 +114,8 @@ export function StudyHeatmap({
 /** What outlines a day: the day picked in the ink, today in the accent. */
 const outline = (cell: HeatCell, picked: boolean) => (picked ? 'var(--color-text)' : cell.today ? 'var(--color-accent)' : null);
 
-/** L2: a square of herbarium green, deeper for more time; an empty day is a hairline. */
-function Square({ cell, x, y, picked }: { cell: HeatCell; x: number; y: number; picked: boolean }) {
-  const filled = cell.level > 0;
-  const ring = outline(cell, picked);
-  // An outline is drawn on the edge, half outside; an empty day's hairline
-  // is set in by half its width so it is the same size as a filled one.
-  const inset = filled || ring ? 0 : 0.5;
-  return (
-    <rect
-      x={x + inset}
-      y={y + inset}
-      width={SIZE - 2 * inset}
-      height={SIZE - 2 * inset}
-      rx={1}
-      fill={filled ? heat(cell.level) : 'none'}
-      stroke={ring ?? (filled ? 'none' : 'var(--color-border)')}
-      strokeWidth={ring ? 1.4 : 1}
-      pointerEvents="none"
-    />
-  );
-}
-
 /**
- * L3: a drawn leaf, larger and deeper for more time; a day without is a bud.
+ * A drawn leaf, larger and deeper for more time; a day without is a bud.
  * Today's leaf is edged in the accent and the day picked in the ink; a bud
  * is drawn in that colour instead.
  */

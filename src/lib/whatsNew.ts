@@ -19,6 +19,13 @@ export interface Change {
 
 export const WHATS_NEW: Change[] = [
   {
+    date: '2026-11-11',
+    items: [
+      'Your own page, at the foot of every page: your days of study as leaves, your streaks and total time, and time by class.',
+      'Time on a lecture you remove still counts, under its class.',
+    ],
+  },
+  {
     date: '2026-11-10',
     items: [
       'A lecture opens at the top, with its tree in view.',

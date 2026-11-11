@@ -354,7 +354,7 @@ const SECTIONS: HelpSection[] = [
           browser&rsquo;s data, your lectures go with it.
         </p>
         <p className="mt-2">
-          <strong>Sync</strong> (at the foot of every page) is optional: sign in with an email and a
+          <strong>Sync</strong> (on your page, at the foot of every page under your name or Account) is optional: sign in with an email and a
           password on each device you study on, and your lectures and progress follow you between
           them. Without it nothing leaves this device. <strong>Share</strong> on a lecture page makes
           a link anyone can open to add that lecture to their own library; it needs you signed in,

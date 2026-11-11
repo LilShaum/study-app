@@ -697,31 +697,32 @@ wrong ones to the AI to rewrite.
 - **Browse** is the whole lecture to read and edit; **Glossary** every term
   A to Z; **Plates** the diagrams.
 
-### Days of study (the heatmap)
+### Your page (Account) and its days of study
 
-**Goal.** The student's own study habits at a glance, to see and to show
-(the owner, 2026-11-11: "for users to see their study habits or to flex"),
-like the Anki add-on and LeetCode, without guilt (CLAUDE.md, Today).
+**Goal.** The student's own place (docs/proposals/account.md): their study
+habits to see and to show (the owner, 2026-11-11: "for users to see their
+study habits or to flex"), and their account and things, without guilt
+(CLAUDE.md, Today). Named for them ("probably the users name … if not then
+just account"). Friends are a plan of their own, later.
 
-**How it works.** Not on a screen yet: the first version (on the library,
-below the lectures) was shown to the owner, who wants its look and its
-place done better (2026-11-11). Built and kept: the grid and its figures
-(`components/StudyHeatmap`, `lib/heatmap`; plan in
-docs/proposals/heatmap.md). A column a week, Sunday at the top, from the
-first week studied (at least 8 weeks, at most 26); each day shaded in the
-ink by minutes (under 10, 25, 45, more); an empty day is a plain ruled
-square, never a colour for "missed"; today outlined. A line: "Studied 47
-of the last 69 days, 31 minutes on an average day of study", counted from
-the first day studied; a tap on a day shows its minutes and lectures.
-Below, four figures: time studied, days studied, longest streak, current
-streak (from yesterday until today is studied). Every lecture's time
-counts, a removed lecture's too: its log keeps its days when it is removed
-and sync keeps them. No streak nudges, no forecast of what is due ahead
-(the owner: "im good for now").
+**How it works.** `#/account` (`routes/AccountRoute`), reached from the
+foot of every page, where the link carries the student's name or
+"Account" (it replaced Sync's link; Sync is reached from the page). A
+name field ("Your name", kept on this device, not synced yet). Days of
+study: a column a week, Sunday at the top, half a year on a phone, up to a
+year from 640px, from the first week studied; each day a drawn leaf,
+larger and deeper green for more time, a day without a small bud, never a
+colour for "missed"; today edged in the accent (`components/StudyHeatmap`,
+`lib/dayLeaf`, `lib/heatmap`). A line counted from the first day studied;
+a tap shows a day's minutes and lectures. Four figures: time studied, days
+studied, longest and current streak (from yesterday until today is
+studied). Time by class, most first, then Other, then Removed lectures. A
+removed lecture keeps its days, class code and title (studyLog `retire`,
+kept by sync), so its time stays under its class. Then Sync (a link) and
+Back up. No streak nudges, no forecast ahead.
 
-**Working means.** A student who began three days ago reads "2 of the last
-3 days", never "of the last 52"; removing a finished class leaves its days
-on the grid.
+**Working means.** "2 of the last 3 days" for a student who began three
+days ago; a finished class removed from the library still counts.
 
 ## Layout and devices
 

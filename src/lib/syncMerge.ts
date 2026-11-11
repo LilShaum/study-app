@@ -1,6 +1,6 @@
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
-import { MAX_ANSWERS, type AnswerEvent, type CourseLog } from '@/store/studyLog';
+import { pickKept, MAX_ANSWERS, type AnswerEvent, type CourseLog } from '@/store/studyLog';
 
 /**
  * Two devices' saved state, merged. Pure, so it can be tested without either.
@@ -82,7 +82,8 @@ export function mergeLogs(local: CourseLog | undefined, remote: CourseLog | unde
   const days: Record<string, number> = { ...(remote.days ?? {}) };
   for (const [day, s] of Object.entries(local.days ?? {})) days[day] = Math.max(days[day] ?? 0, s);
   const removed = local.removed || remote.removed;
-  return { times: Array.isArray(local.times) ? local.times : [], answers, days, ...(removed ? { removed: true } : {}) };
+  const kept = pickKept({ code: local.code ?? remote.code, title: local.title ?? remote.title });
+  return { times: Array.isArray(local.times) ? local.times : [], answers, days, ...(removed ? { removed: true } : {}), ...kept };
 }
 
 export function mergeSnapshots(local: Snapshot, remote: Snapshot): Snapshot {
@@ -127,7 +128,10 @@ export function mergeSnapshots(local: Snapshot, remote: Snapshot): Snapshot {
       }
       // A removed lecture keeps only its days of study, for the heatmap.
       const log = key === 'studyLog' ? (merged[id] as CourseLog | undefined) : undefined;
-      if (log && Object.keys(log.days ?? {}).length) merged[id] = { times: [], answers: [], days: log.days, removed: true };
+      // Its class and title too, from the lecture itself where the log has none.
+      const meta = (local.courses[id] ?? remote.courses[id])?.metadata;
+      if (log && Object.keys(log.days ?? {}).length)
+        merged[id] = { times: [], answers: [], days: log.days, removed: true, ...pickKept({ code: log.code ?? meta?.course_code, title: log.title ?? meta?.title }) };
       else delete merged[id];
     }
     out.perCourse[key] = merged;

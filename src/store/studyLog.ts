@@ -56,6 +56,13 @@ export interface CourseLog {
    * log so marked after its lecture is gone (lib/syncMerge).
    */
   removed?: boolean;
+  /**
+   * A removed lecture's class code and title, kept so its time still counts
+   * under its class (the owner, 2026-11-11: "even if ur done with a lecture
+   * that doesnt mean you didnt spend 500 hours studying it"). A few bytes.
+   */
+  code?: string;
+  title?: string;
 }
 
 // Sized so a course's log stays under about 100 KB: it shares the browser's
@@ -67,6 +74,12 @@ export const MAX_ANSWERS = 800;
 const MIN_CARD_SECONDS = 1;
 /** A card left open longer than this was not being studied. */
 const MAX_CARD_SECONDS = 180;
+
+/** Only the fields set, so a log without a code carries no empty key. */
+export const pickKept = (k: { code?: string; title?: string }) => ({
+  ...(k.code?.trim() ? { code: k.code.trim() } : {}),
+  ...(k.title?.trim() ? { title: k.title.trim() } : {}),
+});
 
 const EMPTY: CourseLog = { times: [], answers: [], days: {} };
 
@@ -86,7 +99,7 @@ interface StudyLogState {
   logAnswers: (courseId: string, events: AnswerEvent[]) => void;
   clear: (courseId?: string) => void;
   /** A lecture removed from the library: keep its days of study, drop the rest. */
-  retire: (courseId: string) => void;
+  retire: (courseId: string, kept?: { code?: string; title?: string }) => void;
 }
 
 export const useStudyLogStore = create<StudyLogState>()(
@@ -120,11 +133,11 @@ export const useStudyLogStore = create<StudyLogState>()(
             byCourse: { ...state.byCourse, [courseId]: { ...log, answers: [...log.answers, ...events.map(compact)].slice(-MAX_ANSWERS) } },
           };
         }),
-      retire: (courseId) =>
+      retire: (courseId, kept = {}) =>
         set((state) => {
           const log = state.byCourse[courseId];
           const rest = { ...state.byCourse };
-          if (log && Object.keys(log.days ?? {}).length) rest[courseId] = { times: [], answers: [], days: log.days, removed: true };
+          if (log && Object.keys(log.days ?? {}).length) rest[courseId] = { times: [], answers: [], days: log.days, removed: true, ...pickKept(kept) };
           else delete rest[courseId];
           return { byCourse: rest };
         }),
