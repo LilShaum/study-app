@@ -67,8 +67,13 @@ For each idea: what it changes, and whether to ask now or later.
    notification. Possible for an installed app (iOS 16.4 and later), but
    it needs a server to send them, which the app does not have. A project
    of its own, not part of this.
-10. **A tour of the screens.** Learning by doing (5) shows more than a
-    tour tells. No tour.
+10. **A tour of the screens.** First ruled out here (learning by doing
+    shows more than a tour tells); the owner disagreed, 2026-11-11: "a
+    tour for the onboarding could be good if done right … it really has to
+    be clean and pulled off elegantly … a new user should know of some of
+    our important QOL features and where they can find things … for
+    example where to go to update/fix an already generated and uploaded
+    course". Argued in section 3a.
 
 ## 2. The class problem, and the ways to solve it
 
@@ -117,12 +122,47 @@ one. With B in place, a student who skips it loses nothing.
   6. **Start**: "Try a short sample lecture" or "Make your first lecture"
      (the class picked if there is one).
 
+## 3a. The tour
+
+What it is for: a new student finds the features that make the app worth
+using and that they would not go looking for: fixing or adding to a
+lecture already made, Not sure and Why, I don't know, picking up where
+they left off, jumping to a section, Practice's ticks, What's new. The
+owner's emphasis (2026-11-10): what cannot be found is not used.
+
+- **T1. A slideshow in the first run**: pictures of screens, before the
+  student has seen any. Told at the wrong time, and forgotten by the time
+  it matters. A box of slides is also the look the app avoids.
+- **T2. Notes in the margin, where and when they matter.** The first time
+  a student reaches a screen, one or two short notes point at the real
+  controls on it: on a lecture's page, "Something wrong in this lecture?
+  Fix and Add live here", pointing at them; in a first sitting, "Not
+  sure?" and "Why". Set as a printed book's marginal gloss: a hairline to
+  the control, a line of italic, "Got it". Once each, never two at once,
+  never over the thing being studied. Help replays them ("Show the notes
+  again") and lists them as "Where things are".
+- **T3. A guided first sitting** on the sample lecture, notes at the key
+  moments. Good, but it only covers studying, not where things live.
+- **T4. A "Where things are" page in Help.** Useful, but only to a
+  student who goes looking, which is the problem.
+
+**T2, with T4 as its index and T3's notes inside the sample lecture's
+sitting if there is one.** It points at the real control at the moment it
+can be used, so it is learnt rather than told; it is the book look's own
+device (a gloss in the margin); and it never stands between a student and
+studying. The first run's last page says one line about it: notes will
+point things out as you go.
+
+What each note says, and where, is written out before building, one
+sentence each, read as a new student would: no more than one or two per
+screen, and only for what a student would not find alone.
+
 ## 4. Build order
 
 1. **The class fix (B and C)**, on its own. It is useful now, while the
    owner is generating lectures, and needs no first run.
 2. **The new first run**: the pages above, account, classes, time, and the
-   start page; screenshots at phone size, both themes, to the owner before
+   start page, then the margin notes (3a); screenshots at phone size, both themes, to the owner before
    it goes live (a first impression is taste as much as reasoning).
 3. **The sample lecture**, if the owner wants one: written on Opus 5.5 at
    high effort, checked against docs/evidence.md, kept in the app's own

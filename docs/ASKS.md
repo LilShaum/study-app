@@ -53,7 +53,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   other lectures, it would now know no matter what cuz of the ticked
   course … idk if there are better ways to solve the same issue so thats
   always for u to explore"). To plan first, options argued, in
-  docs/proposals/.
+  docs/proposals/. Planned 2026-11-11 (docs/proposals/onboarding.md). Then
+  (2026-11-11): "I think a tour for the onboarding could be good if done
+  right. like it really has to be clean and pulled off elegantly … a new
+  user should know of some of our important QOL features and where they
+  can find things … for example where to go to update/fix an already
+  generated and uploaded course".
 - **A fresh ultracode session that grades the whole app against its goals**
   (2026-11-03: "I want to eventually start a fresh ultra code session for
   this project that will go through and grade the app and every component
