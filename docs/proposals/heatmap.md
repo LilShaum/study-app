@@ -119,3 +119,45 @@ lectures; phone and desktop screenshots in both themes to the owner
 before it goes live (a new element on the daily screen is taste as much
 as reasoning, as the design audit's directions were); then EXPECTATIONS,
 What's new, and live.
+
+## 6. Second round: its look and its place (2026-11-11)
+
+The owner, on the first version (grey squares at the foot of the library):
+"a good start but i am not 100% happy with how it looks and feel like it
+could be done better and even more so I am not happy with its location".
+
+**Place.**
+- **P1. A page of its own, "Days of study"**, for the whole library, with
+  a line on the library's first screen that leads to it ("47 days of
+  study ▸"). There is room to do it well: a full year, the figures, time
+  by class. It is the page to show someone, which is what a heatmap is
+  for ("to flex"). The cost is one more page to find, so the entry line
+  has to be on the library's first screen, where the owner will see it
+  every day.
+- **P2. A strip at the top of the library.** Seen daily, but it takes the
+  first screen, which the design audit gave to the day's Start.
+- **P3. At the end of a sitting**: today's square inks in as the sitting
+  ends. It is the moment the record means most, and it comes after
+  studying, never before. It cannot be looked at any time, so it goes
+  with P1 rather than in its place.
+- **P4. Each lecture's Progress.** Ruled out by the owner: the record is
+  of the student, not of a lecture.
+
+**P1, with P3 as a later touch** if the owner likes it. P2 spends the one
+screen that has to stay the day's.
+
+**Look.** All the references the owner gave (the Anki add-on, LeetCode,
+GitHub) are colour, and grey ink on paper read as dead. Three versions,
+for the owner to see side by side:
+- **L2. Squares in a herbarium green**, from pale sage to deep leaf, made
+  as theme tokens for both modes. Familiar and easy to read, alive, and
+  still the plate's palette rather than GitHub's.
+- **L3. Leaves**: each day a small drawn leaf that grows with the time
+  studied (a bud for a day without). It belongs to Arborous and its tree
+  alone, and is less exact to read than a square.
+- **L4. Calendar pages**: a month at a time, set like a printed calendar,
+  each day's number inked over a green wash by time. It reads best for
+  "what did I do on the 4th", and gives the long view up for months.
+
+Each version on the P1 page, with the figures and the tap-a-day line,
+phone and desktop, both themes. The owner picks; the rest are removed.
