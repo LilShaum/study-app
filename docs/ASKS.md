@@ -56,7 +56,8 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   generated and uploaded course". Owner's decisions 2026-11-11: no sample
   lecture ("using the study stuff is the more intuitive part … we dont
   want the onboarding to take too long"); the account optional; the class
-  fix built together with the first run, not first.
+  fix built together with the first run, not first. On hold (2026-11-13: "leave
+  the onboarding for now").
 - **A fresh ultracode session that grades the whole app against its goals**
   (2026-11-03: "I want to eventually start a fresh ultra code session for
   this project that will go through and grade the app and every component
