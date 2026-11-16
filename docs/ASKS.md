@@ -29,6 +29,13 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   to reimagine something about the app or audit it or improve it, please
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
+- **The AI hands back a file, never pasted text** (2026-11-16: "another
+  change that is long overdue is making it so the output is only a file
+  instead of telling it to output the code as text. thus the area to copy
+  paste straight code as text in the add lecture part should be removed
+  too. dont do it rn just add to list"). The prompts ask for a
+  downloadable .study.json file; New lecture and the Add dialogs keep only
+  "upload a file". Not started: the owner is generating lectures now.
 - **Friends** (2026-11-11, from the account plan: "do friends separately
   cuz i dont have too many people using it rn so its not pressing but its
   def a cool feature I wanna have"). Ideas in docs/proposals/account.md
