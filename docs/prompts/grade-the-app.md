@@ -363,11 +363,14 @@ push it as the repo's rules say.
 
 ## How to run it
 
-- **Models.** You (Fable 5.2, high) plan, judge and write the report. Name
-  the model on every agent (CLAUDE.md, Models): Opus 5.5 to grade a part
-  or anything a student reads, Sonnet 5.5 for searches and mechanical
-  reads. Each lecture's file is made by an agent on Opus 5.5 at high
-  effort, following `prompts/generator.md` as the app hands it out.
+- **Models.** Every judgment and grade is yours (Fable 5.2, high): that is
+  why this runs on Fable (the owner, 2026-11-16, on a run that handed the
+  grading of parts to Opus agents: "didnt we want fable itself to do it").
+  Read the important code yourself. Agents only gather, on Sonnet 5.5:
+  summarise the history, find code, run checks, take screenshots. Name the
+  model on every agent (CLAUDE.md, Models). A lecture's file made from
+  slides is made by an agent on Opus 5.5 at high effort, following
+  `prompts/generator.md`, unless the owner gives you the files they made.
 - **Agents cost a cold start.** Each one rereads what it needs, so one is
   worth it where a piece splits off cleanly (a system's code, a group of
   screens, a lecture file against its slides) and you don't need the
