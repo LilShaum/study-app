@@ -181,3 +181,17 @@ describe('lectureName', () => {
     expect(lectureName('Enzymes', null)).toBe('Enzymes');
   });
 });
+
+// The owner, 2026-11-16: the class page sorted by title, so "BIOL 365: …"
+// jumped above lectures added before it while the library kept it last.
+describe('lecturesOf', () => {
+  it('keeps the order the lectures were added, as the library does', () => {
+    const courses = {
+      a: lecture('Cell Signaling', { course_code: 'BIOL 365' }),
+      b: lecture('Endocrinology', { course_code: 'BIOL 365' }),
+      x: lecture('Other class', { course_code: 'PSYC 351C' }),
+      c: lecture('BIOL 365: Muscles and Movement', { course_code: 'BIOL 365' }),
+    };
+    expect(lecturesOf(courses, 'BIOL 365').map(([id]) => id)).toEqual(['a', 'b', 'c']);
+  });
+});

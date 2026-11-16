@@ -29,6 +29,9 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   to reimagine something about the app or audit it or improve it, please
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
+- **Rearrange lectures, and fold each class's lectures on the library**
+  (2026-11-16: "also i should be able to rearrange them and also collapse
+  all the lectures of each course on the home page"). Later.
 - **The AI hands back a file, never pasted text** (2026-11-16: "another
   change that is long overdue is making it so the output is only a file
   instead of telling it to output the code as text. thus the area to copy
@@ -264,6 +267,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-11-16 Lectures in the same order on the library and the class page
+  (2026-11-16: "when i put midterm 2 in the title it moved to the top with
+  the other one on the course page"), live: the class page sorted by full
+  title, so a title beginning "BIOL 365:" jumped to the top; it now keeps
+  the order lectures were added, as the library does (classExams
+  lecturesOf), also in class Practice and the exam dialog.
 - 2026-11-16 The prompt never drops an idea to vary a select-all's count
   (a generated lecture swapped out its only card on STOPs to vary how
   many statements were true; the owner left the call to me: "i actually

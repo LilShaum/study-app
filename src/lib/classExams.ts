@@ -97,10 +97,14 @@ export function lectureName(title: string, code: string | null | undefined): str
 }
 
 /** The lectures of one class, in library order (by title). */
+/**
+ * A class's lectures in the order they were added, as the library lists
+ * them. They were sorted by title, so a title the AI began with the class
+ * code ("BIOL 365: …") jumped above the rest on the class page while the
+ * library kept it last (the owner, 2026-11-16).
+ */
 export function lecturesOf(courses: Record<string, Course>, code: string): [string, Course][] {
-  return Object.entries(courses)
-    .filter(([, c]) => classOf(c) === code)
-    .sort(([, a], [, b]) => a.metadata.title.localeCompare(b.metadata.title, undefined, { numeric: true }));
+  return Object.entries(courses).filter(([, c]) => classOf(c) === code);
 }
 
 /** What one exam covers in one lecture: every section, or these. */
