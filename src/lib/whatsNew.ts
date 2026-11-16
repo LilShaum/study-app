@@ -21,6 +21,7 @@ export const WHATS_NEW: Change[] = [
   {
     date: '2026-11-16',
     items: [
+      'On a computer, Glossary beside a sitting opens the lecture\'s terms next to the card, to check a meaning without leaving.',
       'Clearer names on New lecture: Step-by-step examples, and Problem sets (any method to work out, not only math: code, reactions, proofs).',
     ],
   },

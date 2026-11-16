@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
@@ -13,6 +13,8 @@ import { answered, EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
 import type { ComesBack } from '@/components/items/FlashcardCard';
 import { SectionJump } from './SectionJump';
+import { SessionGlossary } from './SessionGlossary';
+import { glossaryOf } from '@/lib/glossary';
 import { SessionRail } from './SessionRail';
 import { MixedLectures } from './MixedLectures';
 import { CATCH_UP_HOURS, inWords, missedThisSitting, nextDueAt, whenLabel, type Grade } from '@/lib/memory';
@@ -338,6 +340,10 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   const mixedClass = practiceClass && mixed && !single ? practiceClass : undefined;
   const home = practiceClass ? `/class/${encodeURIComponent(practiceClass)}/practice` : `/study/${courseId}`;
   const homeLabel = practiceClass ? 'Back to Practice' : 'Back to lecture';
+  // The lecture's glossary, beside the card on a wide screen. A mixed sitting
+  // spans several lectures, so it has none.
+  const glossary = useMemo(() => (mixedClass ? [] : glossaryOf(course)), [course, mixedClass]);
+  const [glossaryOpen, setGlossaryOpen] = useState(false);
   // Read after the session has recorded its results, so the tree on the
   // finish screen is the tree this session just grew.
   const progress = useProgressStore((s) => s.getProgress(courseId) ?? EMPTY_PROGRESS);
@@ -855,7 +861,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   }
 
   return (
-    <div className="mx-auto max-w-2xl py-6 short:py-2 sm:px-6 wide:grid wide:max-w-5xl wide:grid-cols-[minmax(0,1fr)_13rem] wide:gap-12">
+    <div className={`mx-auto max-w-2xl py-6 short:py-2 sm:px-6 wide:grid wide:max-w-5xl wide:gap-12 ${glossaryOpen ? 'wide:grid-cols-[minmax(0,1fr)_20rem]' : 'wide:grid-cols-[minmax(0,1fr)_13rem]'}`}>
       <div className="min-w-0">
       <div className="mb-4 flex items-center justify-between">
         <Link to={home} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
@@ -1117,6 +1123,21 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       </p>
       </div>
       <div className="hidden min-w-0 wide:block">
+      {/* The lecture's glossary, opened beside the card (a wide screen only). */}
+      {glossary.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setGlossaryOpen((o) => !o)}
+          aria-expanded={glossaryOpen}
+          className="press press-quiet tap-safe mb-4"
+        >
+          {glossaryOpen ? '← This sitting' : 'Glossary'}
+        </button>
+      )}
+      {glossaryOpen ? (
+        <SessionGlossary entries={glossary} />
+      ) : (
+      <>
       {!mixedClass && (
         <div className="hidden sideways:block">
           <SectionJump items={items} mode={mode} activeSectionId={activeSectionId} onJump={jumpToSection} />
@@ -1140,6 +1161,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           )
         }
       />
+      </>
+      )}
       </div>
     </div>
   );

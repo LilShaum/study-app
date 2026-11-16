@@ -67,7 +67,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   lecture ("using the study stuff is the more intuitive part … we dont
   want the onboarding to take too long"); the account optional; the class
   fix built together with the first run, not first. On hold (2026-11-13: "leave
-  the onboarding for now").
+  the onboarding for now"). The owner's idea for it (2026-11-16): "it could do smth
+  like opening up with like the tree branches unfurling … and the name of
+  the app arborous appears and then it could like explain what the app is
+  for generally and give a demonstration of moving your finger across the
+  branches to show how it works … ill leave that up to you to plan and
+  mess around with". For the onboarding plan when it resumes.
 - **A fresh ultracode session that grades the whole app against its goals**
   (2026-11-03: "I want to eventually start a fresh ultra code session for
   this project that will go through and grade the app and every component
@@ -267,6 +272,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-11-16 The glossary beside a sitting, on a computer (2026-11-16: "i
+  dont wanna have to exit the mode"), live: Glossary in the sitting's side
+  column, search and every term with its meaning; shortcuts ignore typing
+  in it. (SessionGlossary)
 - 2026-11-16 Lectures in the same order on the library and the class page
   (2026-11-16: "when i put midterm 2 in the title it moved to the top with
   the other one on the course page"), live: the class page sorted by full

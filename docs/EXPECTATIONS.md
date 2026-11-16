@@ -750,7 +750,11 @@ its side, sits on a desk with room to look around: the page spreads out.
   the left, the title and ways to work on the right (2026-09-26); a
   sitting has a side rail with its parts and where you are in them, the
   score, hints and the figure (`SessionRail`, 2026-09-27); Browse lists
-  its sections at the side, the glossary has a letter rail.
+  its sections at the side, the glossary has a letter rail. In a sitting,
+  "Glossary" at the top of the side column swaps it for the lecture's
+  terms and meanings, with a search, the column widened; "← This sitting"
+  swaps back; the card does not move (the owner, 2026-11-16: "i dont wanna
+  have to exit the mode"). Not in a sitting that mixes lectures.
 - **A phone on its side** (the owner, 2026-11-10: "when it does the view is
   very cut off"). iOS gives a web page no rotation lock, so a short screen
   held sideways (landscape, under 500px tall, 600px or wider) gets the
