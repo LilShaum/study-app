@@ -804,6 +804,9 @@ Every key idea gets at least one medium or hard MCQ.
    role ("the cells that open the pore") unless the relationship is the
    point. Keep
    each flashcard's back and each explanation to its own card's fact.
+   Fix an overlap by rewording the card that gives the answer away, never
+   by dropping a card: every card the material calls for stays, and a
+   question that joins two ideas is not an overlap.
 3. **Nothing a stranger could answer.** If someone who never took the course
    could answer from everyday English or from the question's own words ("the
    cell that guards the pore is called the…"), the card tests nothing. Ask

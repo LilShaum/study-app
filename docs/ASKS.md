@@ -264,6 +264,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-11-16 The prompt fixes an overlap by rewording, never by dropping a
+  card (2026-11-16: a generated lecture said "I took out cards whose
+  answer was given away by another card's definition or explanation";
+  the owner: "if this wasnt implemented properly i can see it removing
+  questions that are otherwise good for dumb reasons … add the line"),
+  live: generator.md section 4, rule 2.
 - 2026-11-16 New lecture: the explainer line gone, two kinds renamed
   (2026-11-16: "that little explainer text \"Untick what you don't want.
   Fewer kinds is a shorter reply.\" i think is unnecessary and is one of the
