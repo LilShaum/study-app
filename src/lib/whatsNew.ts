@@ -19,6 +19,12 @@ export interface Change {
 
 export const WHATS_NEW: Change[] = [
   {
+    date: '2026-11-16',
+    items: [
+      'Clearer names on New lecture: Step-by-step examples, and Problems to solve (any method, not only math: code, reactions, proofs).',
+    ],
+  },
+  {
     date: '2026-11-11',
     items: [
       'Your own page, at the foot of every page: your days of study as leaves, your streaks and total time, and time by class.',

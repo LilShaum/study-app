@@ -180,7 +180,6 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
         <div className="space-y-6 px-5 py-4">
           <PromptStep n={1} title="What to make">
             <MakeKindsField value={kinds} onChange={setKinds} />
-            <p className="mt-1 text-xs text-text-3">Untick what you don&rsquo;t want. Fewer kinds is a shorter reply.</p>
             <div className="mt-3">
               <StudiesField checked={studies} onChange={setStudies} />
             </div>

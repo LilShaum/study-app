@@ -257,6 +257,15 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-11-16 New lecture: the explainer line gone, two kinds renamed
+  (2026-11-16: "that little explainer text \"Untick what you don't want.
+  Fewer kinds is a shorter reply.\" i think is unnecessary and is one of the
+  classic vibe coded tells … some of the question types that are not as
+  common are a little unclear so maybe they need better names"), live:
+  "Step-by-step examples" and "Problems to solve". Answered in chat: a
+  problem is any method to carry out (calculation, code, a reaction to
+  predict, a proof), organic chemistry included; a lecture with none gets
+  none.
 - 2026-11-11 Your own page with the heatmap (2026-11-10 heatmap ask;
   2026-11-11: an account page "organized by class", "probably the users
   name … if not then just account", leaves "fuck it do the leaves",

@@ -99,7 +99,10 @@ screens were "massive blocks of text … not intuitive for new users"): what
 to make, copy the prompt, paste the reply; one line each, the reasons and
 options folded behind a "more" line (`PromptStep`, `More`). What to make
 is a box per kind (multiple choice, select all that apply, flashcards,
-terms to name, written answers, explanations, worked examples, problems to work out, diagrams),
+terms to name, written answers, explanations, step-by-step examples, problems to solve, diagrams;
+renamed 2026-11-16 from "worked examples" and "problems to work out",
+which the owner could not tell apart; a problem is any method to carry
+out, not only math: a calculation, code, a reaction, a proof),
 all ticked; untick one
 and the prompt says to make only the rest and where their content goes
 instead (`lib/makeKinds`, "if they just want flash cards … they will just
