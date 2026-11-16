@@ -512,7 +512,9 @@ part 3): the neighbour's property, the reversal, the qualifier swap, the
 one detail off, the misconception. The true ones are as specific as the
 false ones, and none is true by being vague. At least one true and at
 least one false; vary how many are true across a lecture, never the same
-number every time, so the count gives nothing away. The app never says how
+number every time, so the count gives nothing away. Vary it by adding or
+turning a statement, never by swapping out a true one whose idea no other
+card asks: every idea a `multi` covered stays covered. The app never says how
 many are true. `option_rationale` has one entry per option, in order: for
 a true one why it holds, for a false one what is wrong with it. Where the
 source gives one fact to know, write an `mcq`, not a `multi`. `correct` is

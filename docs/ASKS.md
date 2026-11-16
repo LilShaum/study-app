@@ -264,6 +264,11 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- 2026-11-16 The prompt never drops an idea to vary a select-all's count
+  (a generated lecture swapped out its only card on STOPs to vary how
+  many statements were true; the owner left the call to me: "i actually
+  have no clue the best way to go about ur question"), live:
+  generator.md, the `multi` rules.
 - 2026-11-16 The prompt fixes an overlap by rewording, never by dropping a
   card (2026-11-16: a generated lecture said "I took out cards whose
   answer was given away by another card's definition or explanation";
