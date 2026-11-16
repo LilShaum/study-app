@@ -21,7 +21,7 @@ export const WHATS_NEW: Change[] = [
   {
     date: '2026-11-16',
     items: [
-      'Clearer names on New lecture: Step-by-step examples, and Problems to solve (any method, not only math: code, reactions, proofs).',
+      'Clearer names on New lecture: Step-by-step examples, and Problem sets (any method to work out, not only math: code, reactions, proofs).',
     ],
   },
   {

@@ -262,7 +262,8 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   Fewer kinds is a shorter reply.\" i think is unnecessary and is one of the
   classic vibe coded tells … some of the question types that are not as
   common are a little unclear so maybe they need better names"), live:
-  "Step-by-step examples" and "Problems to solve". Answered in chat: a
+  "Step-by-step examples" and, after the owner's second look,
+  "Problem sets" (2026-11-16: "lets do problem sets"). Answered in chat: a
   problem is any method to carry out (calculation, code, a reaction to
   predict, a proof), organic chemistry included; a lecture with none gets
   none.

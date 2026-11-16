@@ -19,11 +19,12 @@ export const MAKE_KINDS: { value: MakeKind; label: string }[] = [
   { value: 'written', label: 'Written answers' },
   { value: 'explain', label: 'Explanations' },
   // Named for what the student gets (the owner, 2026-11-16, could not tell
-  // "worked examples" from "problems to work out"). A problem is not only
+  // "worked examples" from "problems to work out"; "Problem sets", the
+  // classroom word, chosen the same day). A problem is not only
   // math: a calculation, code, a reaction to predict, a proof; a lecture
   // with no method to carry out gets none, so the tick costs nothing there.
   { value: 'example', label: 'Step-by-step examples' },
-  { value: 'problem', label: 'Problems to solve' },
+  { value: 'problem', label: 'Problem sets' },
   { value: 'graphic', label: 'Diagrams' },
 ];
 
