@@ -132,7 +132,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   double check those too": the goals in EXPECTATIONS checked against
   what shipped. And: "emphasis on design for things to be intuitive to
   find and use otherwise they wont be used properly or taken advantage
-  of". Done the same day: EXPECTATIONS checked against the code and the
+  of". After the first run (2026-11-17): "i jsut wanted the big smart ai
+  to not focus on the smallest shit and instead focus on the most
+  impactful improvements and fundamental reworks and updates of the app".
+  Done the same day: EXPECTATIONS checked against the code and the
   Done list (three design changes marked live, a Layout and devices
   section, drafted goals for the parts with no entry), and the prompt now
   lists every feature with its goal, asks of each for a better way and how
