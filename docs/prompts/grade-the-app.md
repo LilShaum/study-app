@@ -363,17 +363,21 @@ push it as the repo's rules say.
 
 ## How to run it
 
-- **Models.** You (Fable 5.2, high) plan, judge and write the report. Name
-  the model on every agent (CLAUDE.md, Models): Opus 5.5 to grade a part
-  or anything a student reads, Sonnet 5.5 for searches and mechanical
-  reads. Each lecture's file is made by an agent on Opus 5.5 at high
-  effort, following `prompts/generator.md` as the app hands it out.
+- **Every judgment and grade is yours** (the owner, 2026-11-16: "every
+  judgment and grade is yours. Don't hand grading of a part to Opus agents.
+  Use agents (Sonnet 5.5) only to gather: summarise the commit history,
+  find code, run checks, take screenshots. Read the important code
+  yourself, especially for the systems lens"). You (Fable 5.2, high) plan,
+  read, judge and write the report. Name the model on every agent
+  (CLAUDE.md, Models).
+- **The lecture files are the owner's own** (2026-11-16: "don't generate
+  any lecture files. Grade the ones I actually made and am studying
+  with"), attached with their slides and kept in the scratchpad. This
+  replaces "Attach" above for a run where the owner sends files.
 - **Agents cost a cold start.** Each one rereads what it needs, so one is
-  worth it where a piece splits off cleanly (a system's code, a group of
-  screens, a lecture file against its slides) and you don't need the
-  reading yourself. Don't start agents to re-check your own grading. Five
-  at once once used a session's usage in ten minutes (CLAUDE.md), so stay
-  below that.
+  worth it where gathering splits off cleanly (a history to summarise, a
+  set of screens to shoot, slides to write out as text). Five at once once
+  used a session's usage in ten minutes (CLAUDE.md), so stay below that.
 - **No approval needed** to read anything, build, run the tests and the
   simulator, take screenshots and videos, start agents within the plan
   above, and write, commit and push the report. Ask the owner only about

@@ -114,6 +114,27 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   section, drafted goals for the parts with no entry), and the prompt now
   lists every feature with its goal, asks of each for a better way and how
   to take it further, and grades whether each can be found and understood.
+  Started 2026-11-16, and changed by the owner as it began: "don't
+  generate any lecture files. Grade the ones I actually made and am
+  studying with. I'll attach them here (BIOL 365: Nervous System Parts
+  2–4, Muscles and Movement Parts 1–5, and Circulatory System), with their
+  slides if I can. Keep them in your scratchpad, never in the repo. Until
+  they arrive, grade the rest of the app." So the session makes no file of
+  its own and does not grade the made-up test lectures in their place; the
+  lecture files' grade waits on the owner's files. The files and their
+  slides came the same hour. Then: "Change to the brief: every judgment and
+  grade is yours. Don't hand grading of a part to Opus agents. Use agents
+  (Sonnet 5.5) only to gather: summarise the commit history, find code, run
+  checks, take screenshots. Read the important code yourself, especially
+  for the systems lens." The brief's "How to run it" says so now.
+  2026-11-17, as the slide agents ran out of usage: "looking at the notes
+  and comparing them to the outputs takes a lot more usage so maybe work
+  on other parts of the app first". So the slides were compared closely on
+  about 40 of 313, and counted on all.
+  **Report written 2026-11-17: docs/proposals/grade-2026-11-16.md.** Now
+  waits on the owner: reading it, the six questions at its end (the goals
+  to confirm among them, still unanswered), and which gap to build first.
+  Nothing in the app was changed.
 - **Slides are the skeleton of a narrated lecture: the file and the app
   must fill in the narration** (2026-11-03: "the format of slides forces
   the info to be brief and in bullet points or complex diagrams with no
@@ -200,6 +221,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   the day, the lecture page's first screen, Progress leading with what is
   fading, the lighter first reading card, and the tree's large version
   (the switch and the other two versions gone). Second pass not started.
+  Second pass, 2026-11-17: its screens were graded in the grading session
+  (docs/proposals/grade-2026-11-16.md: the first run, New lecture, Help,
+  Glossary, Diagrams, Account, desktop widths; Sync and the Add dialogs
+  were not exercised). Its findings wait on the owner with that report.
 - **Say when a higher effort setting is worth it, before starting a task**
   (2026-10-29: "I'm wondering if there is a certain time it would be
   beneficial to put you on ultra code mode and maybe if you could suggest
