@@ -29,6 +29,24 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   to reimagine something about the app or audit it or improve it, please
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
+- **The prompt tells the AI how the app uses what it makes** (2026-11-17:
+  "wouldnt it be good to make it so in the prompt it briefly explains how
+  each of the question types are done in the app? maybe more info than
+  that would be good too on other parts of the app … letting it know a
+  little about what its making could help it make better things. im sure
+  the prompt does it to some extent but would be good to look into").
+- **The glossary closed while a question is asked** (2026-11-17, on the
+  term being asked showing in the glossary: "the specific term should be
+  hidden and maybe somehow intuitively let the user know that its hidden
+  so they dont feel crazy … maybe the whole glossary gets greyed out
+  during questions of all types and is only available to open when ur in
+  non question phases. just spit balling here").
+- Noted 2026-11-17 (not an ask): Learn alongside the notes took far longer
+  than the AI chats' study plans assumed ("they all massively
+  underestimated how long it would take to go through the learn mode when
+  going through the notes and considering the time it takes to double
+  check and figure some things out"). Evidence for the grading run and for
+  how the app sizes and tells a sitting's time.
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Later.
