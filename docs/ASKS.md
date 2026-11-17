@@ -161,6 +161,25 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   waits on the owner: reading it, the six questions at its end (the goals
   to confirm among them, still unanswered), and which gap to build first.
   Nothing in the app was changed.
+  **Round two** (2026-11-17: "Second round, with a different focus. Leave
+  the prompt and the lecture files out entirely: no generation, no file
+  structure, no slides. Spend this round only on the app itself, and only
+  on the most impactful improvements and fundamental reworks: its major
+  systems and whether each rests on the right idea for what the app is for
+  … how Learn, Today, Review, Practice and the practice test teach and
+  schedule; the memory model; how the screens are laid out and found …;
+  how the code is organised; and data and sync. Take each lecture file as
+  given. For each of your top 5–7 reworks give: what's wrong at the root;
+  the options, a full rework among them, argued for and against; your pick
+  and why; what it unlocks for a student; rough cost; and a path that
+  keeps the app working at each step. Skip small fixes. Every judgment is
+  yours; agents only gather, on Sonnet 5.5. Build nothing. Add it to the
+  report as a new section and push.") Written 2026-11-17 as section 10
+  of the report: seven reworks (the plan runs to the exam; Learn teaches
+  ideas through questions; home is the student's term; one engine for
+  every sitting; keep what happened; storage and sync; code by what the
+  app does), each with its root, options, pick, cost and path, and four
+  more questions for the owner. Waits on the owner's reading.
 - **Slides are the skeleton of a narrated lecture: the file and the app
   must fill in the narration** (2026-11-03: "the format of slides forces
   the info to be brief and in bullet points or complex diagrams with no
