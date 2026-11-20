@@ -289,6 +289,11 @@ due is starved; new material is reached; the plan follows the exam.
 **Goal.** The first time through a section: teach it in small steps so it
 sticks.
 
+Enter checks an answer and never moves on, so a second press cannot skip
+the feedback; → moves on (the owner, 2026-11-20). The pause between steps
+and sections has ← Back, to the card that ended the step, beside Next and
+Stop here (the owner, 2026-11-20).
+
 Prev (in any sitting) goes back to a card as it was left: the option
 picked in the order shown, the words written, the verdict and the why, for
 the last 15 or so answered cards (the owner, 2026-11-17). A flip card goes
@@ -345,7 +350,8 @@ asked (Learn, Today, Review, Practice, the practice test): open under the
 answer after a miss, folded as "Why ▸" after a right one, before the
 passage from the notes. **Not sure**, beside Check answer and tapped
 before it, opens the why and the passage after a right answer too, as a
-miss does (feedback doubled what was kept of right answers given unsure:
+miss does; **I wasn't sure**, under the verdict, does the same after
+checking and logs the answer as unsure (the owner, 2026-11-20) (feedback doubled what was kept of right answers given unsure:
 Butler, Karpicke & Roediger 2008). In the practice test a question still
 marked "?" when handed in is the unsure one, listed under Right, but
 marked ? with its why. Sureness is logged, never scheduled on: both rules

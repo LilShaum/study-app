@@ -29,6 +29,8 @@ interface ItemRendererProps {
   onOverride?: (correct: boolean) => void;
   /** A typed answer named a different term; its definition's id. */
   onConfused?: (otherDefinitionId: string) => void;
+  /** "I wasn't sure", after a multiple-choice or select-all answer. */
+  onUnsure?: () => void;
   /** True only for the one card in a study session — Browse renders many at once. */
   keyboardEnabled?: boolean;
   /** 'sheet' in a session, where the page is the item's boundary. See frame.ts. */
@@ -52,6 +54,7 @@ export function ItemRenderer({
   idea,
   onOverride,
   onConfused,
+  onUnsure,
   keyboardEnabled,
   frame = 'card',
   learning = false,
@@ -74,11 +77,11 @@ export function ItemRenderer({
       );
     case 'mcq':
       return (
-        <McqCard item={item} onAnswered={onAnswered} onNext={onNext} keyboardEnabled={keyboardEnabled} frame={frame} learning={learning} idea={idea} />
+        <McqCard item={item} onAnswered={onAnswered} onNext={onNext} onUnsure={onUnsure} keyboardEnabled={keyboardEnabled} frame={frame} learning={learning} idea={idea} />
       );
     case 'multi':
       return (
-        <MultiCard item={item} onAnswered={onAnswered} onNext={onNext} keyboardEnabled={keyboardEnabled} frame={frame} learning={learning} idea={idea} />
+        <MultiCard item={item} onAnswered={onAnswered} onNext={onNext} onUnsure={onUnsure} keyboardEnabled={keyboardEnabled} frame={frame} learning={learning} idea={idea} />
       );
     case 'flashcard':
       return (

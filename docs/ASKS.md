@@ -41,6 +41,26 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   going through the notes and considering the time it takes to double
   check and figure some things out"). Evidence for the grading run and for
   how the app sizes and tells a sitting's time.
+- **Use what generating the PSYC midterm 2 lectures taught** (2026-11-20:
+  "use the stuff learned from generating psyc midterm 2 files"). Waits on
+  what that chat found; it was in the owner's own AI chat, not here.
+- **Enter only checks the answer** (2026-11-20: "make enter only be check
+  answer on items that have answers checked that way you don't
+  accidentally go next").
+- **The prompt tells the AI how the app works and what each thing is for**
+  (2026-11-20: "gives the ai more context about how the app works and how
+  all the info it's giving will be used and what it's for"). Same as the
+  2026-11-17 ask above.
+- **A continuous mode** (2026-11-20: "make a zen/continuous/mahoraga mode
+  that gives questions in batches of 10 and adapts to give questions that
+  are things you haven't learned yet, things you got wrong on the last
+  quiz, or things gotten wrong in the past or things that need to get
+  reviewed: based on quiz prompt"). To plan first (docs/proposals).
+- **Not sure after answering** (2026-11-20: "make it so you can hit I
+  wasn't sure also after question is answered").
+- **Back on the pause between sections** (2026-11-20: "in between section
+  pages that there is an option to go back beside next section and stop
+  here").
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Later.

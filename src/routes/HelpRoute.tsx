@@ -66,7 +66,8 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
 const SHORTCUTS: { keys: string; what: string }[] = [
   { keys: '1 – 4', what: 'Choose an option' },
   { keys: '1 – 6', what: 'Tick a statement, in Select all that apply' },
-  { keys: 'Enter', what: 'Check your answer, or go to the next item' },
+  { keys: 'Enter', what: 'Check your answer (it never moves on, so a second press cannot skip the feedback)' },
+  { keys: '→ / ←', what: 'Next or previous item' },
   { keys: 'Space', what: 'Flip a flashcard' },
   { keys: 'G / H / M', what: 'Mark a flashcard got it, hard (right, but it took effort: it comes back sooner) or missed it' },
   { keys: '1 – 9', what: 'Tick a point of a written answer; Enter when done' },

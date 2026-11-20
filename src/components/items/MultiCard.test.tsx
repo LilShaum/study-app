@@ -125,7 +125,7 @@ describe('MultiCard', () => {
     expect(screen.getByText(/one cause/).closest('details')!.open).toBe(true);
   });
 
-  it('ticks with the number keys, checks with Enter, then moves on with Enter', () => {
+  it('ticks with the number keys and checks with Enter; a second Enter does not move on (the owner, 2026-11-20)', () => {
     const onAnswered = vi.fn();
     const onNext = vi.fn();
     render(<MultiCard item={item()} onAnswered={onAnswered} onNext={onNext} keyboardEnabled />);
@@ -137,7 +137,18 @@ describe('MultiCard', () => {
     expect(onAnswered).toHaveBeenCalledWith(true, undefined, true);
     expect(onNext).not.toHaveBeenCalled();
     fireEvent.keyDown(window, { key: 'Enter' });
-    expect(onNext).toHaveBeenCalled();
+    expect(onNext).not.toHaveBeenCalled();
+  });
+
+  it("takes I wasn't sure after checking, opening the why", () => {
+    const onUnsure = vi.fn();
+    render(<MultiCard item={item()} onUnsure={onUnsure} />);
+    tick('alpha', 'beta');
+    check();
+    fireEvent.click(screen.getByRole('button', { name: 'I wasn’t sure' }));
+    expect(onUnsure).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Marked not sure')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'I wasn’t sure' })).toBeNull();
   });
 
   it('shows the statements in a new order across showings, the key moving with them', () => {

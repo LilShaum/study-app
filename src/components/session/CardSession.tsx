@@ -100,14 +100,14 @@ const NAV_HINTS: KeyHint[] = [
 /** A select-all question: a number ticks or unticks its statement. */
 const MULTI_HINTS: KeyHint[] = [
   { keys: ['1', '–', '6'], label: 'tick' },
-  { keys: ['Enter'], label: 'check / next' },
+  { keys: ['Enter'], label: 'check' },
   ...NAV_HINTS,
 ];
 
 const ALL_CARD_KEYS: KeyHint[] = [
   { keys: ['1', '–', '4'], label: 'select' },
   { keys: ['Space'], label: 'flip' },
-  { keys: ['Enter'], label: 'check / next' },
+  { keys: ['Enter'], label: 'check' },
   { keys: ['G'], label: 'got' },
   { keys: ['H'], label: 'hard' },
   { keys: ['M'], label: 'missed' },
@@ -150,7 +150,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
   today: ALL_CARD_KEYS,
   quiz: [
     { keys: ['1', '–', '4'], label: 'select' },
-    { keys: ['Enter'], label: 'check / next' },
+    { keys: ['Enter'], label: 'check' },
     ...NAV_HINTS,
   ],
   flashcards: [
@@ -160,13 +160,13 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
     { keys: ['M'], label: 'missed it' },
     ...NAV_HINTS,
   ],
-  definitions: [{ keys: ['Enter'], label: 'check / next' }, ...NAV_HINTS],
-  problems: [{ keys: ['Enter'], label: 'check / next' }, ...NAV_HINTS],
+  definitions: [{ keys: ['Enter'], label: 'check' }, ...NAV_HINTS],
+  problems: [{ keys: ['Enter'], label: 'check' }, ...NAV_HINTS],
   practice: ALL_CARD_KEYS,
   mixed: [
     { keys: ['1', '–', '4'], label: 'select' },
     { keys: ['Space'], label: 'flip' },
-    { keys: ['Enter'], label: 'check / next' },
+    { keys: ['Enter'], label: 'check' },
     { keys: ['G'], label: 'got' },
     { keys: ['H'], label: 'hard' },
     { keys: ['M'], label: 'missed' },
@@ -175,7 +175,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
   missed: [
     { keys: ['1', '–', '4'], label: 'select' },
     { keys: ['Space'], label: 'flip' },
-    { keys: ['Enter'], label: 'check / next' },
+    { keys: ['Enter'], label: 'check' },
     ...NAV_HINTS,
   ],
 };
@@ -384,7 +384,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     : current?.type === 'problem'
       ? answerKind(current) === 'self'
         ? STEPS_HINTS
-        : [{ keys: ['Enter'], label: 'check / next' }, ...NAV_HINTS]
+        : [{ keys: ['Enter'], label: 'check' }, ...NAV_HINTS]
       : current?.type === 'multi'
         ? [{ keys: ['1', '–', String(Math.min(9, current.options.length))], label: 'tick' }, ...MULTI_HINTS.slice(1)]
         : KEY_HINTS[mode];
@@ -658,6 +658,12 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     handleNext();
   };
 
+  /** The pause between steps, left backwards: the card that ended the step, as it was left. */
+  const backFromPause = () => {
+    setPause(null);
+    prev();
+  };
+
   const handleNext = () => {
     const stop = pauseAfter();
     if (next()) {
@@ -714,6 +720,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           e.preventDefault();
           setPause(null);
           restartCardTimer();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          backFromPause();
         }
         return;
       }
@@ -1028,6 +1037,11 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
             </p>
           )}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
+            {/* Back to the card just answered (the owner, 2026-11-20: "an
+                option to go back beside next section and stop here"). */}
+            <button type="button" onClick={backFromPause} className="press tap-safe">
+              ← Back
+            </button>
             <button type="button" onClick={() => {
               setPause(null);
               restartCardTimer();
@@ -1083,6 +1097,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
               }}
               onReadThem={() => useSessionStore.getState().askFirst(it._sectionId)}
               onOverride={setResult}
+              onUnsure={() => useSessionStore.getState().markUnsure()}
               onConfused={(otherId) => useProgressStore.getState().noteConfusion(lectureOf(it, courseId), it.id, otherId)}
               onNext={handleNext}
               learning={it._step !== undefined}

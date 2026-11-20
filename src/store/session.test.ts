@@ -520,6 +520,28 @@ describe('session store: a miss set aside is not still missed', () => {
   });
 });
 
+describe("session store: I wasn't sure after the answer", () => {
+  it('logs the answer just given as not sure', async () => {
+    const { useStudyLogStore } = await import('./studyLog');
+    const c = {
+      schema_version: '1.0',
+      metadata: { title: 'U' },
+      sections: [{ id: 's1', title: 'One', items: [mcq('q1', 'A?'), mcq('q2', 'B?')] }],
+    } as Course;
+    useProgressStore.setState({ byCourse: {} });
+    useStudyLogStore.setState({ byCourse: {} });
+    const s = () => useSessionStore.getState();
+    s().init('unsure', c, 'quiz');
+    const id = s().current()!.id;
+    s().markUnsure(); // nothing answered yet: nothing to mark
+    s().record(true, undefined, true);
+    const last = () => useStudyLogStore.getState().byCourse.unsure.answers.at(-1)!;
+    expect(last()).toMatchObject({ item: id, sure: true });
+    s().markUnsure();
+    expect(last()).toMatchObject({ item: id, sure: false });
+  });
+});
+
 describe('session store: one term in two lectures', () => {
   const lecture = (id: string, definition: string) =>
     ({

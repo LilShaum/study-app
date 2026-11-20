@@ -68,7 +68,6 @@ export function RecallCard({
   /** Said "I don't know" rather than guess: shown the answer, counted as a miss. */
   const [dontKnow, setDontKnow] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const nextRef = useRef<HTMLButtonElement>(null);
 
   // In a session the card is for typing, so the cursor starts on the line.
   // Not once answered: a card gone back to (Prev) is shown as it was left.
@@ -78,14 +77,13 @@ export function RecallCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyboardEnabled]);
 
-  // Once graded, Enter should move on: focus goes to Next, where Enter lands.
-  // On a phone that Next is hidden (the bar below has one), so focus just
-  // leaves the answer line instead — which is also what puts the on-screen
-  // keyboard away so the verdict can be read.
+  // Once graded, focus leaves the answer line, which puts a phone's keyboard
+  // away so the verdict can be read. Not onto Next: Enter checks and never
+  // moves on, so a second press cannot skip the feedback (the owner,
+  // 2026-11-20: "that way you don't accidentally go next"). → moves on.
   useEffect(() => {
     if (!verdict || !keyboardEnabled) return;
-    if (nextRef.current?.offsetParent) nextRef.current.focus();
-    else inputRef.current?.blur();
+    inputRef.current?.blur();
   }, [verdict, keyboardEnabled]);
 
   const check = (e: FormEvent) => {
@@ -202,8 +200,8 @@ export function RecallCard({
           <div className="mt-3 flex flex-wrap items-center gap-3">
             {onNext && (
               // Hidden on a phone, where the Prev/Next bar below does the job
-              // (see McqCard). On a desktop it stays: it is where Enter lands.
-              <button ref={nextRef} type="button" onClick={onNext} className="press tap-safe hidden sm:inline-flex">
+              // (see McqCard). On a desktop it stays.
+              <button type="button" onClick={onNext} className="press tap-safe hidden sm:inline-flex">
                 Next
               </button>
             )}

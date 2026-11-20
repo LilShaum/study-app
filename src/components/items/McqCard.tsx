@@ -18,6 +18,8 @@ interface McqCardProps {
   onNext?: () => void;
   /** Only true for the single card in a study session, never in Browse. */
   keyboardEnabled?: boolean;
+  /** "I wasn't sure", tapped after checking (the owner, 2026-11-20). */
+  onUnsure?: () => void;
   frame?: ItemFrame;
   /** Learn: the passage opens after every answer, right or wrong (see SourceNote). */
   learning?: boolean;
@@ -25,7 +27,7 @@ interface McqCardProps {
   idea?: { title: string; text: string } | null;
 }
 
-export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = false, frame = 'card', learning = false, idea }: McqCardProps) {
+export function McqCard({ item: written, onAnswered, onNext, onUnsure, keyboardEnabled = false, frame = 'card', learning = false, idea }: McqCardProps) {
   // A new order at every showing, the key and notes following (lib/optionOrder).
   const [seed] = useState(() => Math.random().toString(36));
   const order = useMemo(() => orderForShowing(written.id, written.options ?? [], written.correct_index, seed), [written, seed]);
@@ -93,8 +95,7 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
     if (!keyBroken) onAnswered?.(false);
   };
 
-  // 1-9 picks an option, Enter checks, then Enter advances. Matches the
-  // vanilla app's shortcuts.
+  // 1-9 picks an option, Enter checks. → moves on.
   useKeyboardShortcuts((e) => {
     if (!revealed) {
       const n = Number(e.key);
@@ -107,12 +108,9 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
         e.preventDefault();
         check();
       }
-      return;
     }
-    if (e.key === 'Enter' && onNext) {
-      e.preventDefault();
-      onNext();
-    }
+    // Enter only checks: once checked it does nothing, so a second press
+    // cannot skip the feedback (the owner, 2026-11-20). → moves on.
   }, keyboardEnabled);
 
   const correct = selected === item.correct_index;
@@ -240,14 +238,32 @@ export function McqCard({ item: written, onAnswered, onNext, keyboardEnabled = f
             </div>
           )}
           {item.explanation && <div className="mt-1 text-sm text-text-2"><RichText text={item.explanation} /></div>}
-          {onNext && (
-            // Desktop only. On a phone the Prev/Next bar sits just below and
-            // two Next buttons one above the other read as a mistake; on a
-            // desktop this one stays, beside the explanation you just read.
-            <button type="button" onClick={onNext} className="press tap-safe mt-3 hidden sm:inline-flex">
-              Next
-            </button>
-          )}
+          <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-2 empty:hidden">
+            {onNext && (
+              // Desktop only. On a phone the Prev/Next bar sits just below and
+              // two Next buttons one above the other read as a mistake; on a
+              // desktop this one stays, beside the explanation you just read.
+              <button type="button" onClick={onNext} className="press tap-safe hidden sm:inline-flex">
+                Next
+              </button>
+            )}
+            {/* Not sure, after the answer too: a right guess is said to be one,
+                and its why opens, as Not sure before checking does. */}
+            {!dontKnow && !keyBroken && (unsure ? (
+              <span className="text-small text-text-3">Marked not sure</span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setUnsure(true);
+                  onUnsure?.();
+                }}
+                className="tap-safe text-small text-text-3 underline-offset-4 hover:text-text hover:underline"
+              >
+                I wasn&rsquo;t sure
+              </button>
+            ))}
+          </div>
         </div>
       )}
       {/* After a miss the why is open, then the passage: the lesson again, not only the right option. */}

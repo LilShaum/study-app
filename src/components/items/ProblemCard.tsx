@@ -81,7 +81,6 @@ export function ProblemCard({
   const [ticked, setTicked] = useState<boolean[]>(() => steps.map(() => false));
   const [nudge, setNudge] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const nextRef = useRef<HTMLButtonElement>(null);
   const answered = verdict !== null || dontKnow || shown;
   // The last step usually is the answer: never offered as a hint.
   const canHint = !answered && hints < steps.length - 1;
@@ -94,11 +93,10 @@ export function ProblemCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyboardEnabled, kind]);
 
-  // Once checked, Enter moves on (see RecallCard).
+  // Once checked, focus leaves the answer line; Enter never moves on (see RecallCard).
   useEffect(() => {
     if ((verdict === null && !dontKnow) || !keyboardEnabled) return;
-    if (nextRef.current?.offsetParent) nextRef.current.focus();
-    else inputRef.current?.blur();
+    inputRef.current?.blur();
   }, [verdict, dontKnow, keyboardEnabled]);
 
   const check = (e: FormEvent) => {
@@ -359,7 +357,7 @@ export function ProblemCard({
             <div className="mt-4 flex flex-wrap items-center gap-3">
               {onNext && (
                 // Hidden on a phone, where the bar below has Next (see RecallCard).
-                <button ref={nextRef} type="button" onClick={onNext} className="press tap-safe hidden sm:inline-flex">
+                <button type="button" onClick={onNext} className="press tap-safe hidden sm:inline-flex">
                   Next
                 </button>
               )}

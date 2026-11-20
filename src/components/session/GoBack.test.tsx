@@ -84,3 +84,32 @@ describe('going back in a sitting', () => {
     expect(screen.getByText(/shut while a question is asked/)).toBeTruthy();
   });
 });
+
+describe('the pause between steps', () => {
+  it('has Back beside Next and Stop here, to the card that ended the step (the owner, 2026-11-20)', () => {
+    const section = (n: number) => ({
+      id: `s${n}`,
+      title: `Part ${n}`,
+      items: [
+        { id: `d${n}`, type: 'definition', term: `Term ${n}`, definition: `What term ${n} means, in a sentence.` },
+        mcq(`m${n}`, `Question ${n}?`),
+      ],
+    });
+    const two = { schema_version: '1.0', metadata: { title: 'Steps' }, sections: [section(1), section(2)] } as unknown as Course;
+    useCoursesStore.setState({ courses: { steps: two } });
+    render(
+      <MemoryRouter initialEntries={['/session/steps/learn']}>
+        <Routes>
+          <Route path="/session/:id/:mode" element={<SessionRoute />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    const pauseButton = () => screen.queryByRole('button', { name: /^Next (section|step)$/ });
+    for (let i = 0; i < 30 && !pauseButton(); i++) fireEvent.click(screen.getByRole('button', { name: 'Next →' }));
+    expect(pauseButton()).toBeTruthy();
+    const after = useSessionStore.getState().index;
+    fireEvent.click(screen.getByRole('button', { name: '← Back' }));
+    expect(pauseButton()).toBeNull();
+    expect(useSessionStore.getState().index).toBe(after - 1);
+  });
+});

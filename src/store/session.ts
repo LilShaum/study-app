@@ -139,6 +139,8 @@ interface SessionState {
    * of adding a second one. Records normally if nothing was recorded yet.
    */
   setResult: (got: boolean) => void;
+  /** "I wasn't sure", after the current card was answered: its logged answer becomes not sure. */
+  markUnsure: () => void;
   jumpToSection: (sectionId: string) => void;
   /**
    * Learn: the student has read this section in their own slides. Its
@@ -522,6 +524,13 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     else get().requeue(index);
   },
 
+  markUnsure: () => {
+    const { courseId, index } = get();
+    const item = get().current();
+    if (!item || !courseId || !get().answeredIndices.has(index)) return;
+    useStudyLogStore.getState().markUnsure(lectureOf(item, courseId), item.id);
+  },
+
   jumpToSection: (sectionId) => {
     const idx = get().items.findIndex((i) => i._sectionId === sectionId);
     if (idx < 0) return;
@@ -640,6 +649,7 @@ export function recordAnswers(answers: { courseId: string; item: { id: string; t
       scale,
       ...(got && grade === 'hard' ? { grade: 'hard' as const } : !got && grade === 'firm' ? { grade: 'firm' as const } : {}),
       ...(sure != null ? { sure } : {}),
+      item: item.id,
     });
     add(results, courseId, { itemId: item.id, got, ...(grade ? { grade } : {}) });
     // The same term in the student's other lectures (lib/linkedTerms).

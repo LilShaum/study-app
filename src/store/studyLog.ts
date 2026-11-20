@@ -42,6 +42,8 @@ export interface AnswerEvent {
   grade?: 'hard' | 'firm';
   /** A multiple-choice answer: whether it was given as sure (Not sure left untapped). Absent elsewhere. */
   sure?: boolean;
+  /** The card answered, so "I wasn't sure" after the answer can find it (markUnsure). Absent on older entries. */
+  item?: string;
 }
 
 export interface CourseLog {
@@ -97,6 +99,11 @@ interface StudyLogState {
   logAnswer: (courseId: string, event: AnswerEvent) => void;
   /** Several answers in one write (a practice test's whole batch). */
   logAnswers: (courseId: string, events: AnswerEvent[]) => void;
+  /**
+   * "I wasn't sure", tapped after the answer (the owner, 2026-11-20): the
+   * card's latest answer is logged as not sure, as Not sure before checking is.
+   */
+  markUnsure: (courseId: string, itemId: string) => void;
   clear: (courseId?: string) => void;
   /** A lecture removed from the library: keep its days of study, drop the rest. */
   retire: (courseId: string, kept?: { code?: string; title?: string }) => void;
@@ -132,6 +139,16 @@ export const useStudyLogStore = create<StudyLogState>()(
           return {
             byCourse: { ...state.byCourse, [courseId]: { ...log, answers: [...log.answers, ...events.map(compact)].slice(-MAX_ANSWERS) } },
           };
+        }),
+      markUnsure: (courseId, itemId) =>
+        set((state) => {
+          const log = state.byCourse[courseId];
+          if (!log) return state;
+          let at = -1;
+          for (let i = log.answers.length - 1; i >= 0; i--) if (log.answers[i].item === itemId) { at = i; break; }
+          if (at < 0 || log.answers[at].sure === false) return state;
+          const answers = log.answers.map((a, i) => (i === at ? { ...a, sure: false } : a));
+          return { byCourse: { ...state.byCourse, [courseId]: { ...log, answers } } };
         }),
       retire: (courseId, kept = {}) =>
         set((state) => {
