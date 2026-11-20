@@ -89,15 +89,17 @@ export function ProblemCard({
   // On a keyboard the cursor starts on the answer line. Not on a phone,
   // where the keyboard would cover the problem before it is read.
   useEffect(() => {
-    if (keyboardEnabled && kind !== 'self' && window.matchMedia?.('(pointer: fine)').matches) inputRef.current?.focus();
+    if (keyboardEnabled && !answered && kind !== 'self' && window.matchMedia?.('(pointer: fine)').matches) inputRef.current?.focus();
+    // Only on coming into view: a card gone back to (Prev) keeps its answer.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyboardEnabled, kind]);
 
   // Once checked, Enter moves on (see RecallCard).
   useEffect(() => {
-    if (verdict === null && !dontKnow) return;
+    if ((verdict === null && !dontKnow) || !keyboardEnabled) return;
     if (nextRef.current?.offsetParent) nextRef.current.focus();
     else inputRef.current?.blur();
-  }, [verdict, dontKnow]);
+  }, [verdict, dontKnow, keyboardEnabled]);
 
   const check = (e: FormEvent) => {
     e.preventDefault();

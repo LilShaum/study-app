@@ -19,6 +19,15 @@ export interface Change {
 
 export const WHATS_NEW: Change[] = [
   {
+    date: '2026-11-20',
+    items: [
+      'Going back with Prev shows a card as you left it: your answer, the verdict and why.',
+      'A question you got wrong and set aside as not on your exam no longer comes back in that sitting.',
+      'The glossary beside a sitting is shut while a question is asked, so it cannot give the answer away, and opens after you answer.',
+      'For lectures made from now: hard questions join ideas taught apart, and select-all questions can ask which do NOT apply.',
+    ],
+  },
+  {
     date: '2026-11-16',
     items: [
       'On a computer, Glossary beside a sitting opens the lecture\'s terms next to the card, to check a meaning without leaving.',

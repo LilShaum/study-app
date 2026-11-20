@@ -5,7 +5,7 @@ import { recordAnswers } from '@/store/session';
 import { isMissed, useProgressStore } from '@/store/progress';
 import { classExams, lecturesOf } from '@/lib/classExams';
 import { answeredRight, DONT_KNOW, drawTest, isMulti, isMultiAnswer, isProblem, isWritten, lecturesIn, scoreTest, testPool, TEST_LENGTHS, type CheckedProblem, type TestAnswer, type TestQuestion, type TestScope } from '@/lib/practiceTest';
-import { multiKey, multiReasons, pickedList, statementsRight } from '@/lib/multiKey';
+import { multiKey, multiReasons, pickedList, statementsRight, negativeMulti } from '@/lib/multiKey';
 import { answerKind, checkAnswer, shownAnswer, unitOf } from '@/lib/problemAnswer';
 import { answerPoints } from '@/lib/answerPoints';
 import { optionOrder } from '@/lib/optionOrder';
@@ -972,6 +972,7 @@ function MultiAsk({
           reasons={reasons ? order.map((k) => reasons[k]) : undefined}
           dontKnow={chosen === DONT_KNOW}
           onToggle={shown ? undefined : (i) => onPick(toggled(chosen, order[i]))}
+          question={item.question}
         />
       </div>
       {shown && <MultiMarked item={item} chosen={chosen} />}
@@ -990,7 +991,9 @@ function MultiMarked({ item, chosen }: { item: MultiItem; chosen: TestAnswer }) 
         {right
           ? '✓ Correct'
           : chosen === DONT_KNOW || !key
-            ? 'The true statements are marked ✓.'
+            ? negativeMulti(item.question)
+              ? 'The ones to tick are marked ✓.'
+              : 'The true statements are marked ✓.'
             : `✗ Not this time: ${statementsRight(key, Array.isArray(chosen) ? chosen : [], n)} of ${n} statements right.`}
       </p>
       {item.explanation && <p className="mt-1 text-sm text-text-2"><RichText text={item.explanation} /></p>}
@@ -1419,6 +1422,7 @@ function Results({
                     <div className="mt-2">
                       <MultiStatements
                         options={q.item.options}
+                        question={q.item.question}
                         trueOnes={key}
                         picked={new Set(ticked)}
                         marked
@@ -1481,6 +1485,7 @@ function Results({
                   <div className="mt-2">
                     <MultiStatements
                       options={q.item.options}
+                      question={q.item.question}
                       trueOnes={multiKey(q.item)}
                       picked={new Set(Array.isArray(chose) ? chose : [])}
                       marked

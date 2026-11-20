@@ -54,3 +54,14 @@ export function multiReasons(item: Pick<MultiItem, 'options' | 'option_rationale
 
 /** A picked answer kept as the student's: the statements' indices in the file, each once, in order. */
 export const pickedList = (picked: Iterable<number>): number[] => [...new Set(picked)].sort((a, b) => a - b);
+
+/**
+ * A select-all question framed in the negative ("Which do NOT apply…",
+ * "All of these EXCEPT…"): its key names the statements to tick, which are
+ * the ones that do not hold, so the marking says "to tick" rather than
+ * "true" (the owner, 2026-11-17, asked that the framing be allowed). The
+ * prompt writes the word in capitals; a lower-case "not" is ordinary prose.
+ */
+export function negativeMulti(question: string | undefined): boolean {
+  return /\b(NOT|EXCEPT)\b/.test(question ?? '');
+}

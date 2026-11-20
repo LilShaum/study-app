@@ -498,6 +498,28 @@ describe('session store: a card set aside leaves the sitting', () => {
   });
 });
 
+describe('session store: a miss set aside is not still missed', () => {
+  it('leaves stillMissed once set aside, and returns on Undo', async () => {
+    const { useCoursesStore } = await import('./courses');
+    const c = {
+      schema_version: '1.0',
+      metadata: { title: 'D' },
+      sections: [{ id: 's1', title: 'One', items: [mcq('q1', 'A?'), mcq('q2', 'B?')] }],
+    } as Course;
+    useCoursesStore.setState({ courses: { aside: c } });
+    useProgressStore.setState({ byCourse: {} });
+    const s = () => useSessionStore.getState();
+    s().init('aside', c, 'quiz');
+    const missed = s().current()!.id;
+    s().record(false);
+    expect(s().stillMissed()).toEqual([missed]);
+    useCoursesStore.getState().setAside('aside', 's1', missed, 'not-needed');
+    expect(s().stillMissed()).toEqual([]);
+    useCoursesStore.getState().setAside('aside', 's1', missed, null);
+    expect(s().stillMissed()).toEqual([missed]);
+  });
+});
+
 describe('session store: one term in two lectures', () => {
   const lecture = (id: string, definition: string) =>
     ({

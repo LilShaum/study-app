@@ -4,7 +4,7 @@ import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Course } from '@/schema/course';
 import { buildSessionItems, type SessionItem, type StudyMode } from '@/lib/buildSessionItems';
 import { explanationFor, phaseOfItem, type LearnPhase } from '@/lib/learnSteps';
-import { useSessionStore, restartCardTimer, fileItemOf, lectureOf, cardKey, AGAIN_MAX } from '@/store/session';
+import { useSessionStore, restartCardTimer, fileItemOf, isSetAside, lectureOf, cardKey, AGAIN_MAX } from '@/store/session';
 import { onlyStudies } from '@/lib/studies';
 import { toast } from '@/store/toast';
 import { resumesOnOpen, useResumeStore } from '@/store/resume';
@@ -34,6 +34,20 @@ import { answerKind } from '@/lib/problemAnswer';
 import { termPicked } from '@/lib/mixUps';
 
 type CardMode = Exclude<StudyMode, 'browse'>;
+
+/** The cards that ask: while one is unanswered the glossary stays shut. */
+const QUESTION_TYPES = new Set<SessionItem['type']>(['mcq', 'multi', 'flashcard', 'recall', 'problem']);
+
+/** How far back (and ahead, after Prev) answered cards stay as they were left. */
+const KEEP_NEAR = 15;
+const uids = new WeakMap<SessionItem, number>();
+let lastUid = 0;
+/** A card's key for the sitting: the object, so it holds while cards are added or dropped around it. */
+function cardUid(item: SessionItem): number {
+  let uid = uids.get(item);
+  if (uid === undefined) uids.set(item, (uid = ++lastUid));
+  return uid;
+}
 
 interface CardSessionProps {
   courseId: string;
@@ -359,6 +373,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   const questionsFirst = useLearnStore((s) => s.questionsFirst);
   const items = useSessionStore((s) => s.items);
   const index = useSessionStore((s) => s.index);
+  const answeredIndices = useSessionStore((s) => s.answeredIndices);
   const score = useSessionStore((s) => s.score);
   const current = useSessionStore((s) => s.current());
   const written = current?.type === 'flashcard' ? answerPoints(current) : null;
@@ -393,6 +408,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   const stillMissed = useSessionStore((s) => s.stillMissed);
   /** Learn: the pause between two steps, while it is showing. */
   const [pause, setPause] = useState<Pause | null>(null);
+  /** A question on screen, not yet answered: the glossary is shut, as it would hold the answer. */
+  const questionUp = !pause && !!current && QUESTION_TYPES.has(current.type) && !answeredIndices.has(index);
 
   useEffect(() => {
     // Read the bookmark rather than subscribing to it: this session writes one
@@ -570,7 +587,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
 
   /** The step that ends at the current card, summed up for the pause. */
   const pauseAfter = (): Pause | null => {
-    const { items: all, index: at, results } = useSessionStore.getState();
+    const { items: all, index: at, results, courseId: sittingId } = useSessionStore.getState();
     const here = all[at];
     const after = all[at + 1];
     if ((mode !== 'learn' && mode !== 'today') || !here?._block || !after || after._block === here._block) return null;
@@ -603,7 +620,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       // The latest answer to each card in the step, copies included.
       shaky: [
         ...inStep
-          .filter(({ n }) => results.has(n))
+          // Set aside as not on the exam: not one that "comes back".
+          .filter(({ item, n }) => results.has(n) && !isSetAside(item, sittingId))
           .reduce((last, { item, n }) => last.set(item.id, { item, got: results.get(n)! }), new Map<string, { item: SessionItem; got: boolean }>())
           .values(),
       ]
@@ -1023,44 +1041,56 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         </div>
       )}
 
-      {current && !pause && (
-        <ItemRenderer
-          // By position as well as id: a missed card that comes back is the
-          // same item, and must start unanswered.
-          key={`${current.id}@${index}`}
-          item={current}
-          courseId={lectureOf(current, courseId)}
-          frame="sheet"
-          onAnswered={(got, picked, sure) => {
-            record(got, undefined, sure);
-            // A wrong pick that is another term of the lecture is a mix-up,
-            // kept so Review asks that term beside this question (lib/mixUps).
-            if (got || picked == null || current.type !== 'mcq') return;
-            const lecture = lectureOf(current, courseId);
-            const lectureCourse = useCoursesStore.getState().courses[lecture];
-            const other = lectureCourse && termPicked(lectureCourse, current, picked);
-            if (other) useProgressStore.getState().noteConfusion(lecture, current.id, other);
-          }}
-          // Grading a flashcard also advances it, as the vanilla app did —
-          // otherwise the card just flips back and looks like nothing happened.
-          onGot={(grade) => {
-            record(true, grade);
-            handleNext();
-          }}
-          comesBack={comesBackFor(current, lectureOf(current, courseId), lectureFor(current)?.course, mode)}
-          idea={ideaFor(current, lectureFor(current)?.course)}
-          onMissed={() => {
-            record(false);
-            handleNext();
-          }}
-          onReadThem={() => useSessionStore.getState().askFirst(current._sectionId)}
-          onOverride={setResult}
-          onConfused={(otherId) => useProgressStore.getState().noteConfusion(lectureOf(current, courseId), current.id, otherId)}
-          onNext={handleNext}
-          learning={current._step !== undefined}
-          keyboardEnabled
-        />
-      )}
+      {/*
+        * Going back shows the answer given (the owner, 2026-11-17: going back
+        * in Learn showed the card reset). Each answered card nearby stays
+        * mounted, hidden, so Prev finds it as it was left: the option picked
+        * in the order it was shown, the words written, the verdict and the
+        * why. Keyed by the card object, which a copy of a missed card is not,
+        * so a card that comes back starts unanswered.
+        */}
+      {items.map((it, n) => {
+        const here = n === index;
+        if (!here && (!answeredIndices.has(n) || Math.abs(n - index) > KEEP_NEAR)) return null;
+        const lecture = lectureFor(it);
+        return (
+          <div key={cardUid(it)} hidden={!here || !!pause}>
+            <ItemRenderer
+              item={it}
+              courseId={lectureOf(it, courseId)}
+              frame="sheet"
+              onAnswered={(got, picked, sure) => {
+                record(got, undefined, sure);
+                // A wrong pick that is another term of the lecture is a mix-up,
+                // kept so Review asks that term beside this question (lib/mixUps).
+                if (got || picked == null || it.type !== 'mcq') return;
+                const lectureId = lectureOf(it, courseId);
+                const lectureCourse = useCoursesStore.getState().courses[lectureId];
+                const other = lectureCourse && termPicked(lectureCourse, it, picked);
+                if (other) useProgressStore.getState().noteConfusion(lectureId, it.id, other);
+              }}
+              // Grading a flashcard also advances it, as the vanilla app did —
+              // otherwise the card just flips back and looks like nothing happened.
+              onGot={(grade) => {
+                record(true, grade);
+                handleNext();
+              }}
+              comesBack={comesBackFor(it, lectureOf(it, courseId), lecture?.course, mode)}
+              idea={ideaFor(it, lecture?.course)}
+              onMissed={() => {
+                record(false);
+                handleNext();
+              }}
+              onReadThem={() => useSessionStore.getState().askFirst(it._sectionId)}
+              onOverride={setResult}
+              onConfused={(otherId) => useProgressStore.getState().noteConfusion(lectureOf(it, courseId), it.id, otherId)}
+              onNext={handleNext}
+              learning={it._step !== undefined}
+              keyboardEnabled={here && !pause}
+            />
+          </div>
+        );
+      })}
 
       <div className={`mt-4 flex justify-between ${pause ? 'hidden' : ''}`}>
         <button
@@ -1125,16 +1155,31 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       <div className="hidden min-w-0 wide:block">
       {/* The lecture's glossary, opened beside the card (a wide screen only). */}
       {glossary.length > 0 && (
-        <button
-          type="button"
-          onClick={() => setGlossaryOpen((o) => !o)}
-          aria-expanded={glossaryOpen}
-          className="press press-quiet tap-safe mb-4"
-        >
-          {glossaryOpen ? '← This sitting' : 'Glossary'}
-        </button>
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => setGlossaryOpen((o) => !o)}
+            aria-expanded={glossaryOpen && !questionUp}
+            aria-describedby={questionUp ? 'glossary-shut' : undefined}
+            disabled={questionUp && !glossaryOpen}
+            className="press press-quiet tap-safe"
+          >
+            {glossaryOpen ? '← This sitting' : 'Glossary'}
+          </button>
+          {questionUp && !glossaryOpen && (
+            <p id="glossary-shut" className="mt-1 text-small text-text-3">
+              Opens after you answer.
+            </p>
+          )}
+        </div>
       )}
-      {glossaryOpen ? (
+      {glossaryOpen && questionUp ? (
+        /* Shut while a question is asked: the term asked would be in it
+           (the owner, 2026-11-17). Said so, so it does not look broken. */
+        <p id="glossary-shut" className="border-t border-border pt-3 text-small text-text-3">
+          The glossary is shut while a question is asked, so it cannot give the answer away. It opens again after you answer.
+        </p>
+      ) : glossaryOpen ? (
         <SessionGlossary entries={glossary} />
       ) : (
       <>

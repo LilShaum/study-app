@@ -71,8 +71,11 @@ export function RecallCard({
   const nextRef = useRef<HTMLButtonElement>(null);
 
   // In a session the card is for typing, so the cursor starts on the line.
+  // Not once answered: a card gone back to (Prev) is shown as it was left.
   useEffect(() => {
-    if (keyboardEnabled) inputRef.current?.focus();
+    if (keyboardEnabled && !verdict) inputRef.current?.focus();
+    // Only on coming into view, not on grading (the effect below moves focus then).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyboardEnabled]);
 
   // Once graded, Enter should move on: focus goes to Next, where Enter lands.
@@ -80,10 +83,10 @@ export function RecallCard({
   // leaves the answer line instead — which is also what puts the on-screen
   // keyboard away so the verdict can be read.
   useEffect(() => {
-    if (!verdict) return;
+    if (!verdict || !keyboardEnabled) return;
     if (nextRef.current?.offsetParent) nextRef.current.focus();
     else inputRef.current?.blur();
-  }, [verdict]);
+  }, [verdict, keyboardEnabled]);
 
   const check = (e: FormEvent) => {
     e.preventDefault();

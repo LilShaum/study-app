@@ -50,6 +50,17 @@ describe('MultiCard', () => {
     expect(screen.getByText('✓ Correct: all 4 statements right.')).toBeTruthy();
   });
 
+  it('marks a question asked in the negative as "to tick", not "true" (the owner, 2026-11-17)', () => {
+    render(<MultiCard item={item({ question: 'Which are NOT true of cyclic AMP?' })} />);
+    tick('alpha');
+    check();
+    expect(screen.getByLabelText('right to tick, you ticked it').closest('button')!.textContent).toContain('alpha');
+    expect(screen.getByLabelText('right to tick, you left it').closest('button')!.textContent).toContain('beta');
+    expect(screen.getByText(/^Also one to tick/)).toBeTruthy();
+    expect(screen.getAllByLabelText('not one to tick')).toHaveLength(2);
+    expect(screen.queryByText(/^Also true/)).toBeNull();
+  });
+
   it('counts a true statement left out as a miss, and marks it Also true with its reason', () => {
     const onAnswered = vi.fn();
     render(<MultiCard item={item()} onAnswered={onAnswered} />);

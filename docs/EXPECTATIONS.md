@@ -289,6 +289,11 @@ due is starved; new material is reached; the plan follows the exam.
 **Goal.** The first time through a section: teach it in small steps so it
 sticks.
 
+Prev (in any sitting) goes back to a card as it was left: the option
+picked in the order shown, the words written, the verdict and the why, for
+the last 15 or so answered cards (the owner, 2026-11-17). A flip card goes
+back to its front, its grade kept.
+
 **How it works.** Steps of at most 12 cards, each Read, Recall, Apply (the
 owner, 2026-10-26): read a few definitions (and explanations, examples);
 recall them easy to hard, an easy multiple choice first, then the
@@ -521,6 +526,9 @@ in multiple choice. Got it only when every true statement is ticked and no
 false one is (all or nothing, as a written answer needs every point); each
 statement is then marked (ticked and true, ticked but false with why,
 "Also true" for one missed), with a count ("3 of 4 statements right"),
+or, where the question is asked in the negative (NOT or EXCEPT in
+capitals; the owner, 2026-11-17), "right to tick" and "Also one to tick"
+in place of true;
 the explanation, Why and the passage. In Learn it is with the Apply
 questions; in Practice and the practice test it counts as Multiple choice
 (the test marks it at the end, the "?" as Not sure). Making a lecture,
@@ -648,7 +656,10 @@ after that has passed.
 
 **How it works.** "Not needed?" under any card: not on my exam, or wrong or
 badly written. The Set aside page lists them with Put back; Fix sends the
-wrong ones to the AI to rewrite.
+wrong ones to the AI to rewrite. A missed card set aside leaves the sitting with
+its copies still to come, and is not in the step's "Not yet", "Try the
+ones you missed" or anything else that brings misses back (the owner,
+2026-11-17); Undo puts it back in them.
 
 ## Seeing progress and the material
 
@@ -754,7 +765,11 @@ its side, sits on a desk with room to look around: the page spreads out.
   "Glossary" at the top of the side column swaps it for the lecture's
   terms and meanings, with a search, the column widened; "← This sitting"
   swaps back; the card does not move (the owner, 2026-11-16: "i dont wanna
-  have to exit the mode"). Not in a sitting that mixes lectures.
+  have to exit the mode"). Not in a sitting that mixes lectures. It is shut
+  while a question is on screen and not yet answered, as the term asked
+  would be in it; the button says "Opens after you answer", and open, it
+  says it is shut and why (the owner, 2026-11-17). Reading cards and an
+  answered card have it.
 - **A phone on its side** (the owner, 2026-11-10: "when it does the view is
   very cut off"). iOS gives a web page no rotation lock, so a short screen
   held sideways (landscape, under 500px tall, 600px or wider) gets the

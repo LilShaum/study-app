@@ -191,6 +191,19 @@ export function fileItemOf(item: SessionItem): string {
   return item.id;
 }
 
+/**
+ * Whether a card is set aside in its lecture now. A miss set aside as not on
+ * the exam is not one to go over again (the owner, 2026-11-17: "when i hit
+ * not on exam on a question i got wrong, it shows up again in the review what
+ * you got wrong section"). Read live, so Undo on the toast puts it back.
+ */
+export function isSetAside(item: SessionItem, sessionCourseId: string | null): boolean {
+  if (!sessionCourseId) return false;
+  const course = useCoursesStore.getState().courses[lectureOf(item, sessionCourseId)];
+  const id = fileItemOf(item);
+  return !!course?.sections.some((s) => s.items.some((i) => i.id === id && i.set_aside));
+}
+
 const isGradable = (item: SessionItem) =>
   item.type === 'mcq' || item.type === 'multi' || item.type === 'flashcard' || item.type === 'recall' || item.type === 'problem';
 
@@ -557,11 +570,11 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   },
 
   stillMissed: () => {
-    const { items, results } = get();
+    const { items, results, courseId } = get();
     const last = new Map<string, boolean>();
     for (const [i, got] of [...results].sort((a, b) => a[0] - b[0])) {
       const item = items[i];
-      if (item) last.set(cardKey(item), got);
+      if (item && !isSetAside(item, courseId)) last.set(cardKey(item), got);
     }
     return [...last].filter(([, got]) => !got).map(([id]) => id);
   },

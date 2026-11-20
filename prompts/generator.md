@@ -511,7 +511,8 @@ shows. Each false statement is one of the wrong-option kinds (Quality bar,
 part 3): the neighbour's property, the reversal, the qualifier swap, the
 one detail off, the misconception. The true ones are as specific as the
 false ones, and none is true by being vague. At least one true and at
-least one false; vary how many are true across a lecture, never the same
+least one false; exactly one true is allowed where each false one is a real
+misconception. Vary how many are true across a lecture, never the same
 number every time, so the count gives nothing away. Vary it by adding or
 turning a statement, never by swapping out a true one whose idea no other
 card asks: every idea a `multi` covered stays covered. The app never says how
@@ -519,7 +520,13 @@ many are true. `option_rationale` has one entry per option, in order: for
 a true one why it holds, for a false one what is wrong with it. Where the
 source gives one fact to know, write an `mcq`, not a `multi`. `correct` is
 0-based, as `correct_index` is. Medium or hard: judging several statements
-is never easy.
+is never easy. The question may be asked in the negative, "Which of these
+do NOT apply to …" or "… EXCEPT", with NOT or EXCEPT in capitals (the app
+reads the capitals to mark it). Then `correct` names the statements to
+tick, the ones that do not hold, and each `option_rationale` says why a
+statement is or is not one to tick. Use it where what something does not
+do is the point, not to vary for its own sake. No statement points at the
+others ("all of the above", "both 1 and 3").
 
 **`flashcard`** — one atomic fact, front as a question/prompt (not just a bare term).
 ```
@@ -791,9 +798,18 @@ it: test it. Vehicle: test what it showed.
 |---|---|---|
 | `easy` | Recognise a fact as stated | **At most one in four.** Never a term asked straight from its definition |
 | `medium` | Use one fact on a case, tell two neighbours apart, or apply a qualifier or exception | The rest |
-| `hard` | Chain two or more facts (block this, so that, so this), predict an outcome the source does not state outright, or explain a why. Each distractor is the answer of one specific wrong chain | **At least one MCQ in four is hard** |
+| `hard` | Join what the source taught apart to reach what it never states: trace one change through two mechanisms to where they meet, predict what a block or loss at one step does several steps on, or tell which of two chains explains a result. Knowing each fact alone is not enough; putting them together is. Each distractor is the answer of one specific wrong chain | **At least one MCQ in four is hard** |
 
 Every key idea gets at least one medium or hard MCQ.
+
+Hard is about the join, not the number of arrows. One pathway's own
+steps read off in the order the source gave them (this inhibits that, so
+the next is released) is medium, however many steps it has: the source
+already joined them. Hard is the join the source left to the student,
+such as a single injury traced through two pathways that cross at
+different places, so the effect differs on each side. If a student who
+had memorised the slide's diagram could answer without thinking, it is
+not hard.
 
 ### 4. Wording
 
@@ -882,8 +898,9 @@ wrong thing. For every MCQ:
 - Build distractors from this lecture's own terms and facts, so a student
   who only recognises words from the slides cannot strike them out. Each
   must be wrong for a reason the source gives, not wrong by being invented,
-  absurd, a joke or a trick, and never "All of the above" / "None of the
-  above".
+  absurd, a joke or a trick, and never an option that points at the
+  others: "All of the above", "None of the above", "Both A and B", "A and
+  C only". Where more than one answer holds, it is a `multi`.
 - **Nothing outside the material eliminates an option.** All four are the
   same kind of thing (four structures, four results, four mechanisms), fit
   the stem's grammar, and are equally specific. Absolutes ("always",
@@ -1010,7 +1027,10 @@ Check your own draft:
    Does every section have at least one that asks for more than retrieval?
 6. **Count the MCQs** (Quality bar, part 3). Write down the number that are
    easy, medium and hard. More than one in four easy, or fewer than one in
-   four hard: rewrite until it holds. Then check each MCQ against the
+   four hard: rewrite until it holds. Read each hard one again: could a
+   student who memorised the slide's diagram answer it without joining two
+   things? Then it is medium; mark it so and write a real hard one. Then
+   check each MCQ against the
    table: does any ask a term back from its own definition, or test a
    detail that only belongs to how an example or figure was drawn (a taught pathway is not that)? Rewrite or delete it.
    Does every key idea have a medium or hard MCQ?

@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import type { MultiItem } from '@/schema/course';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { multiInOrder, orderForShowing } from '@/lib/optionOrder';
-import { multiKey, multiReasons, multiRight, statementsRight } from '@/lib/multiKey';
+import { multiKey, multiReasons, multiRight, negativeMulti, statementsRight } from '@/lib/multiKey';
 import { DifficultyBadge } from './DifficultyBadge';
 import { FRAME, type ItemFrame } from './frame';
 import { SourceNote } from './SourceNote';
@@ -126,6 +126,7 @@ export function MultiCard({ item: written, onAnswered, onNext, keyboardEnabled =
         reasons={reasons}
         dontKnow={dontKnow}
         onToggle={revealed ? undefined : toggle}
+        question={item.question}
       />
 
       {!revealed ? (
@@ -159,7 +160,9 @@ export function MultiCard({ item: written, onAnswered, onNext, keyboardEnabled =
           ) : (
             <div className={`font-medium ${dontKnow ? 'text-text' : got ? 'text-success' : 'text-error'}`}>
               {dontKnow
-                ? 'The true statements are marked ✓.'
+                ? negativeMulti(item.question)
+                  ? 'The ones to tick are marked ✓.'
+                  : 'The true statements are marked ✓.'
                 : got
                   ? `✓ Correct: all ${n} statements right.`
                   : `✗ Not this time: ${right} of ${n} statements right.`}
@@ -195,6 +198,7 @@ export function MultiStatements({
   reasons,
   dontKnow = false,
   onToggle,
+  question,
 }: {
   options: readonly string[];
   /** The true statements; null when the key cannot be trusted, and then nothing is coloured. */
@@ -208,7 +212,13 @@ export function MultiStatements({
   dontKnow?: boolean;
   /** Absent once the list is fixed: marked, or a review. */
   onToggle?: (i: number) => void;
+  /** The question: one asked in the negative is marked as "to tick", not "true" (lib/multiKey). */
+  question?: string;
 }) {
+  const negative = negativeMulti(question);
+  // What a statement in the key is called: in a NOT question it is one that does not hold.
+  const yes = negative ? 'right to tick' : 'true';
+  const no = negative ? 'not one to tick' : 'false';
   return (
     <div role="group" aria-label="Statements" data-statements="" className="space-y-2">
       {options.map((text, i) => {
@@ -242,8 +252,8 @@ export function MultiStatements({
           if (isTrue && (ticked || dontKnow)) {
             tone = 'border-success text-success';
             mark = '✓';
-            label = ticked ? 'true, you ticked it' : 'true';
-            note = quiet('True');
+            label = ticked ? `${yes}, you ticked it` : yes;
+            note = quiet(negative ? 'Right to tick' : 'True');
           } else if (isTrue) {
             // True but left: a statement judged wrong, set to be read, plainly.
             // The box stays empty, as it was left: a tick there read as one
@@ -251,17 +261,17 @@ export function MultiStatements({
             tone = 'border-success text-text';
             box = 'border-dashed border-success';
             mark = '';
-            label = 'true, you left it';
-            note = loud('border-success', 'text-success', 'Also true');
+            label = `${yes}, you left it`;
+            note = loud('border-success', 'text-success', negative ? 'Also one to tick' : 'Also true');
           } else if (ticked) {
             tone = 'border-error text-error';
             mark = '✗';
-            label = 'false, you ticked it';
+            label = `${no}, you ticked it`;
             note = reason ? loud('border-error', 'text-error', 'Why that is wrong') : null;
           } else {
             tone = 'border-border text-text-2';
             mark = '';
-            label = 'false';
+            label = no;
             note = quiet('Why not');
           }
         } else if (ticked) {

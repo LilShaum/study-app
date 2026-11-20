@@ -47,6 +47,28 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   going through the notes and considering the time it takes to double
   check and figure some things out"). Evidence for the grading run and for
   how the app sizes and tells a sitting's time.
+- **Going back in Learn shows the answer given** (2026-11-17: "if u go back
+  to a previous question in the learn mode for example, your submitted
+  answer isnt there and the question looks reset although I think the
+  first answer was recorded, it can just be annoying").
+- **Not on exam takes a missed card out of the step's review** (2026-11-17:
+  "when i hit not on exam on a question i got wrong, it shows up again in
+  the review what you got wrong section of that learning block").
+- **Hard questions that are hard** (2026-11-17, on a question marked hard:
+  "in no universe is this a hard question. ive been noticing hard
+  questions usually arent hard"; and on another, a spinal cord cut
+  traced through two pathways' crossing points: "this is an example of an
+  actually good hard question").
+- **Select all that apply: a negative framing, and one true allowed**
+  (2026-11-17: "idk if … any of the select all that apply questions have
+  ever asked like a negative framing of like which of these dont apply …
+  I am enjoying how the multi selects so far dont always have the same
+  amount of correct answers, id even say to allow multi select questions
+  with 1 correct answer … there were multi selects that were rutheless
+  with only one correct answer which really prays on the assumption that
+  because its multi select that more than 1 has to be right"). Not "all
+  of the above" options in multiple choice: "I think those are kinda
+  round about ways to get multi select questions".
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Later.
