@@ -35,40 +35,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   that would be good too on other parts of the app … letting it know a
   little about what its making could help it make better things. im sure
   the prompt does it to some extent but would be good to look into").
-- **The glossary closed while a question is asked** (2026-11-17, on the
-  term being asked showing in the glossary: "the specific term should be
-  hidden and maybe somehow intuitively let the user know that its hidden
-  so they dont feel crazy … maybe the whole glossary gets greyed out
-  during questions of all types and is only available to open when ur in
-  non question phases. just spit balling here").
 - Noted 2026-11-17 (not an ask): Learn alongside the notes took far longer
   than the AI chats' study plans assumed ("they all massively
   underestimated how long it would take to go through the learn mode when
   going through the notes and considering the time it takes to double
   check and figure some things out"). Evidence for the grading run and for
   how the app sizes and tells a sitting's time.
-- **Going back in Learn shows the answer given** (2026-11-17: "if u go back
-  to a previous question in the learn mode for example, your submitted
-  answer isnt there and the question looks reset although I think the
-  first answer was recorded, it can just be annoying").
-- **Not on exam takes a missed card out of the step's review** (2026-11-17:
-  "when i hit not on exam on a question i got wrong, it shows up again in
-  the review what you got wrong section of that learning block").
-- **Hard questions that are hard** (2026-11-17, on a question marked hard:
-  "in no universe is this a hard question. ive been noticing hard
-  questions usually arent hard"; and on another, a spinal cord cut
-  traced through two pathways' crossing points: "this is an example of an
-  actually good hard question").
-- **Select all that apply: a negative framing, and one true allowed**
-  (2026-11-17: "idk if … any of the select all that apply questions have
-  ever asked like a negative framing of like which of these dont apply …
-  I am enjoying how the multi selects so far dont always have the same
-  amount of correct answers, id even say to allow multi select questions
-  with 1 correct answer … there were multi selects that were rutheless
-  with only one correct answer which really prays on the assumption that
-  because its multi select that more than 1 has to be right"). Not "all
-  of the above" options in multiple choice: "I think those are kinda
-  round about ways to get multi select questions".
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Later.
@@ -358,6 +330,35 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   simulator, the three-cards-per-term limit, weighting by importance.
 
 ## Done
+
+- **The glossary closed while a question is asked** (2026-11-17, on the
+  term being asked showing in the glossary: "the specific term should be
+  hidden and maybe somehow intuitively let the user know that its hidden
+  so they dont feel crazy … maybe the whole glossary gets greyed out
+  during questions of all types and is only available to open when ur in
+  non question phases. just spit balling here"). Live 2026-11-20 (d5e26a5).
+- **Going back in Learn shows the answer given** (2026-11-17: "if u go back
+  to a previous question in the learn mode for example, your submitted
+  answer isnt there and the question looks reset although I think the
+  first answer was recorded, it can just be annoying"). Live 2026-11-20 (d5e26a5).
+- **Not on exam takes a missed card out of the step's review** (2026-11-17:
+  "when i hit not on exam on a question i got wrong, it shows up again in
+  the review what you got wrong section of that learning block"). Live 2026-11-20 (d5e26a5).
+- **Hard questions that are hard** (2026-11-17, on a question marked hard:
+  "in no universe is this a hard question. ive been noticing hard
+  questions usually arent hard"; and on another, a spinal cord cut
+  traced through two pathways' crossing points: "this is an example of an
+  actually good hard question"). Live 2026-11-20 (d5e26a5).
+- **Select all that apply: a negative framing, and one true allowed**
+  (2026-11-17: "idk if … any of the select all that apply questions have
+  ever asked like a negative framing of like which of these dont apply …
+  I am enjoying how the multi selects so far dont always have the same
+  amount of correct answers, id even say to allow multi select questions
+  with 1 correct answer … there were multi selects that were rutheless
+  with only one correct answer which really prays on the assumption that
+  because its multi select that more than 1 has to be right"). Not "all
+  of the above" options in multiple choice: "I think those are kinda
+  round about ways to get multi select questions". Live 2026-11-20 (d5e26a5).
 
 - 2026-11-16 The glossary beside a sitting, on a computer (2026-11-16: "i
   dont wanna have to exit the mode"), live: Glossary in the sitting's side
