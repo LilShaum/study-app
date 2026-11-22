@@ -82,6 +82,20 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   plan: a note marking the slide wrong wins; a note contradicting the slide
   or the field without such a mark is not used silently, and is reported to
   the student with the file.
+- **The prompt lean and the question types used well** (2026-11-22: "go
+  to 5 options, it can be a max limit tho, I think that forcing too many
+  things on the ai generating the file can force it to do suboptimal
+  things. we need to emphasize the various types of questions it can and
+  should make and to figure out what would be the best ways to test
+  certain things … without pressuring it too hard … while not being so lax
+  that it ignores most the question options and uses the same types of
+  questions to test everything. … make sure the prompt is efficient, and
+  that there isnt anything that is useless in there … too vague …
+  contradicting details … unnecessary and go too much into detail …
+  overly specific … uses specific examples from things that I gave when
+  talking to the ai and planning"). With it: up to five options, both All
+  and None of the other options only in a five-option question. In
+  docs/proposals/prompt-rewrite.md.
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Later.

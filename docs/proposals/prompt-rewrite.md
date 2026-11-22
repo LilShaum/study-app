@@ -229,10 +229,59 @@ two slide numberings (the student's own file's numbering).
   not taken for the next section's figure.
 - **What's new** gets one line; Help's New lecture text loses the paste.
 
+## Second round: the owner's principles (2026-11-22)
+
+The owner's words are in docs/ASKS.md. Three changes to the plan follow.
+
+**A prune pass comes first, before anything is added.** Every passage of
+the prompt is read against one question: does it change what the model
+makes? A passage goes, or is cut down, when it is:
+- too vague to act on ("make good questions");
+- in conflict with another passage (the audit found "JSON and nothing
+  else" against "say so in one line");
+- detail past what the model needs, or a rule restated in three places;
+- specific where it should be general: an example lifted from one of the
+  owner's classes or from a planning conversation, which teaches the model
+  that class's habits instead of the principle. Examples stay where they
+  show a principle better than words can, and are made up and varied
+  across subjects.
+
+Each cut is listed with its reason in the commit, so a rule taken out by
+mistake is easy to find.
+
+**Question types: a guide to choosing, not quotas.** Options:
+- *A. Quotas per type* (so many select-all, so many None). Against: the
+  owner's point. A model meeting a count writes a select-all where an
+  mcq fits better.
+- *B. Free choice.* Against: the other half of the owner's point. Left
+  alone, a model writes the same plain mcq for everything.
+- *C. A short table of what each type tests best*, with one line of when
+  to reach for it (a set of properties that get confused: select-all; a
+  bundle with one subtle error: None of the other options; whether every
+  part belongs: All of the other options; a method: a problem; a full
+  explanation the exam asks for: a written answer). One check in Before
+  you output: "Does any type that fits this material appear nowhere?"
+  Caps only where a pattern would give answers away (All or None as the
+  answer).
+
+**C wins.** It points the model at the right tool for each idea and
+catches the "same type for everything" failure, without counts that force
+bad questions. The existing quotas get the same test: the difficulty mix
+stays (the audit found it useful once hard meant hard), and any count that
+only forces padding goes.
+
+**Five options, as a maximum.** Four stays the usual; a fifth is allowed
+where it earns its place (a fifth plausible misconception, or both All and
+None of the other options, which only fit together in five). The app shows
+up to five (letters A to E, keys 1 to 5), and its lecture check stops
+expecting exactly four.
+
 ## The build, in order
 
-1. App changes above (Sonnet 5.5 to an exact spec; I review the diff).
-2. The prompt edits (mine: it is what a student's courses are made from).
+1. App changes above, and five options (Sonnet 5.5 to an exact spec; I
+   review the diff).
+2. The prune pass, then the additions (mine: it is what a student's
+   courses are made from).
 3. The test: one course from the made-up source with the new prompt, Opus
    5.5 on high effort, checked on: the None and All shares and how often
    each is right; every wrong option's named belief; facts taught before
@@ -246,9 +295,5 @@ generation is the costly part (an Opus 5.5 run on a whole source).
 ## Questions for the owner
 
 1. **The test generation** (step 3): run it, or skip it and judge the
-   prompt on your next real lecture?
-2. **"All of the other options" and "None …" together**: can a question
-   offer both (five shapes in four slots get crowded)? I would say one or
-   the other per question.
-3. **Five options**: the teacher's test used five; the app's files always
-   have four. Keep four?
+   prompt on your next real lecture? (Answered in part 2026-11-22: both
+   only in five options; five as a maximum.)
