@@ -82,14 +82,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   plan: a note marking the slide wrong wins; a note contradicting the slide
   or the field without such a mark is not used silently, and is reported to
   the student with the file.
-- **Skip the reading reworked** (2026-11-22: "whenever i pressed ive read
-  it hear/teach me here instead, i never noticed a difference … the skip
-  the reading/read first however I would notice a difference but I dont
-  think it should apply to every lecture … it should be asked every time
-  at the start or something. plus when you do click skip the reading the
-  explanations still show up before questions. I dont think this should
-  happen. I do however think it should show when you get a question
-  wrong/when you arent sure").
 - **Less AI explainer text in the app** (2026-11-22: "I really want this
   app to not look like vibe coded slop so reducing the signature ai
   explainer text would be great if possible").
@@ -383,6 +375,15 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- **Skip the reading reworked** (2026-11-22: "whenever i pressed ive read
+  it hear/teach me here instead, i never noticed a difference … the skip
+  the reading/read first however I would notice a difference but I dont
+  think it should apply to every lecture … it should be asked every time
+  at the start or something. plus when you do click skip the reading the
+  explanations still show up before questions. I dont think this should
+  happen. I do however think it should show when you get a question
+  wrong/when you arent sure"). Live 2026-11-22 (da8b2ad): one choice on every
+  section's first card, Read it here first or Questions first.
 - **Course codes always "BIOL 365", never "BIOL365"** (2026-11-22). Live 2026-11-22 (a3700de).
 - **Enter only checks the answer** (2026-11-20: "make enter only be check
   answer on items that have answers checked that way you don't
