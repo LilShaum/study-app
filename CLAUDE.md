@@ -57,6 +57,14 @@ this is the intent it serves.
   conceptual multiple choice and the write-the-answer questions
   (2026-10-26). Never read and then name straight away: it "accomplish[es]
   no teaching and slows shit down" (2026-10-26).
+- **Continuous adaptive quiz** (2026-11-22, planned in
+  `docs/proposals/zen.md`): for once a lot has been covered, questions
+  that keep coming, ordered by what was just missed, what is not learned,
+  past misses and unsure answers; marked as you go ("the time it took
+  reviewing all the answers" was the slowest part of the master prompt),
+  with every miss to be seen at once. Learn keeps Skip the reading: Learn
+  is "paralell to the lecture notes", the quiz is "for if someone just
+  wants to have that adaptive quizzing".
 - **Practice:** mixed lectures, closer to an exam, as the exam gets near
   (2026-10-19). Study whatever you want however you want: boxes to tick
   for kinds and sections, not one-of choices, and easy to find ("having

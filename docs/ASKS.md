@@ -42,8 +42,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   check and figure some things out"). Evidence for the grading run and for
   how the app sizes and tells a sitting's time.
 - **Use what generating the PSYC midterm 2 lectures taught** (2026-11-20:
-  "use the stuff learned from generating psyc midterm 2 files"). Waits on
-  what that chat found; it was in the owner's own AI chat, not here.
+  "use the stuff learned from generating psyc midterm 2 files"). The
+  chat's audit came 2026-11-22 (kept outside the repo: it names the
+  course). Triaged in chat; its prompt changes go with the "prompt tells
+  the AI how the app works" plan; its app fixes are listed there too.
 - **The prompt tells the AI how the app works and what each thing is for**
   (2026-11-20: "gives the ai more context about how the app works and how
   all the info it's giving will be used and what it's for"). Same as the
@@ -52,7 +54,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   that gives questions in batches of 10 and adapts to give questions that
   are things you haven't learned yet, things you got wrong on the last
   quiz, or things gotten wrong in the past or things that need to get
-  reviewed: based on quiz prompt"). To plan first (docs/proposals).
+  reviewed: based on quiz prompt"). To plan first (docs/proposals). 2026-11-22, the owner's answers: marked as you
+  go, "Continuous adaptive quiz", no stops between batches but planned in
+  tens, Learn keeps Skip the reading. Plan revised; waits on the button
+  name, what it draws new cards from, and the go-ahead.
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Later.

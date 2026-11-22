@@ -1,4 +1,4 @@
-# Zen: the master prompt as a way to study
+# Continuous adaptive quiz: the master prompt as a way to study
 
 For the owner. Questions at the bottom.
 
@@ -104,76 +104,124 @@ The four ways, each with one use:
 D stays a question: once Zen exists, Learn's "Skip the reading" may be
 redundant. That would leave Learn as teach-first only, but that is your call.
 
-## How Zen works (the build plan)
+## The owner's answers (2026-11-22)
 
-**Where.** A row on a lecture's page and a class's page, under Today:
-"Zen: test first, until you stop". For a class, its lectures are taken in
-order, or mixed in the last week before an exam, as Practice does.
+- **Marked as you go.** "one of the things that would take the most time
+  with the prompt was the time it took reviewing all the answers, plus I
+  think it would be easier to do that implementing a way to see them all
+  at once."
+- **Name:** "Continuous adaptive quiz is the most descriptive name."
+- **No batches to stop at:** "what if there are no batches because if we
+  hypothetically arent stopping at the end of the batch to show the user
+  their results … infinite questions … the order of them adjusts …
+  maybe it should be continuous but the method of deciding what questions
+  show up still thinks of it in batches of 10."
+- **Learn keeps Skip the reading** (D is dropped): "learn is meant to be
+  paralell to the lecture notes whereas zen will just be mixed
+  essentially when a lot of content has been covered."
 
-**A batch** is 10 questions plus the re-tests, built in this order (the
-master prompt's §3, with the app's memory model in place of counting
-quizzes):
+## Second round: marking, batches, the name
 
-1. **Re-test (on top of the 10).** Each miss from the last batch, asked
-   by a different card on the same idea where the lecture has one (the
-   same term or concept), else the same card. This is the master prompt's
-   "freshly rephrased". At most 4, so a bad batch does not snowball.
-2. **Review slots: min(sections mastered, 3) of the 10.** Cards whose
-   memory has faded most (the memory model), then past mistakes, from
-   sections already mastered, Apply-phase cards first (the master prompt's
-   Part B is Stage 2).
-3. **Forward slots: the rest.** In the slides' order: the current
-   section's Recall cards (Stage 1), then its Apply cards (Stage 2:
-   vertical pull), then the next section's Recall cards (horizontal pull).
-   Reading cards are not asked; a definition is asked as its term.
+**Marking as you go or at the end.** For the end: delayed feedback has
+done as well or better than immediate in some lab studies of
+multiple-choice learning (Butler, Karpicke & Roediger 2007), and a batch
+marked together feels like a test. Against: in an adaptive loop the next
+card depends on the last answer, and a re-test of a miss means nothing if
+the student has not yet learned it was wrong; a misconception left
+standing for nine more questions is practised nine more times; and the
+owner names reviewing all answers at the end as the slowest part of the
+master prompt. The practice test already rehearses end-of-test marking.
+**As you go wins**, with the misses gathered so they can be seen at once
+(below). No pushback.
 
-**Stages.** A section's Stage 1 is passed when every Recall card in it has
-been answered right once (a miss comes back in the next batch's re-test
-until it is). Stage 2 is the same for its Apply cards. Mastered = both. A
-section never goes back a stage (the master prompt's "never move
-backward"); a miss goes to the re-test instead.
+**Batches or a stream.** Three ways:
+1. *Stops every 10* (the master prompt): a natural place to put it down,
+   and a map. But it is the break in the flow the owner no longer wants,
+   and every stop is a chance to quit.
+2. *A pure stream, the next card picked after every answer*: the most
+   adaptive. But a miss could come straight back, which teaches nothing
+   (the app's rule: never straight after itself), and nothing guarantees a
+   mix: a run of ten misses' re-tests, or ten new cards in a row.
+3. *A stream planned in windows of 10*: the next ten are planned with the
+   mix (re-tests, review, new); a miss changes the plan of the window
+   still ahead (its re-test placed 3 to 6 cards on, by another card on the
+   same idea); when a window is used up the next is planned from the
+   state then. The student sees no seams.
 
-**Marking.** Each answer is marked as it is given, with the why and the
-passage, as Practice does. The master prompt marked the batch at the end,
-but that was a limit of a chat. The question below asks if you want
-end-of-batch marking anyway.
+**3 wins**: the stream the owner asked for, the mix of the master prompt
+kept, and the spacing rules the app already has.
 
-**I don't know.** As in the master prompt: on a card never met, it shows
-the answer, the why and the passage, and it is not counted against a
-stage; on a card from a passed stage, it counts as a miss.
+**The name.** "Continuous adaptive quiz" is the clearest, and long for a
+button on a phone. The row's title: **Adaptive quiz**, with "Continuous:
+questions keep coming, picked for where you need them" under it. The
+mode's heading in a sitting: "Adaptive quiz". (A question below.)
 
-**Between batches**, a pause like Learn's:
-- "7 of 10 right", and the misses by name ("Not yet: …").
-- The map: each section with S1 and S2 marks (passed, under way, not
-  started), and a "due" mark for a mastered section that is fading. The
-  tree beside it, the current section lit.
-- Buttons: Next 10, ← Back, Stop here.
-- On a map row: "I know this" (the master prompt's !skip_chunk: marks the
-  section's stages passed, and its cards still come back in review).
+## How it works (the build plan)
 
-**Leaving and coming back.** Zen keeps the map's state (the stages passed)
-per lecture, so the next evening it carries on. The batch itself is not
-resumed: the next one is built fresh.
+**Where.** A row on a lecture's page and on a class's page, under Today
+and Learn. For a class, its lectures are drawn from together: it is for
+once a lot has been covered.
+
+**What it draws from**, every window of 10 planned in this order:
+
+1. **Re-tests of misses** from the window before, each by another card on
+   the same idea where there is one (the same term, the same concept, the
+   same study), else the same card; placed 3 to 6 cards after the miss,
+   and once more in a later window. "I wasn't sure" on a right answer
+   counts as half a miss: re-tested once, later. At most 4 a window.
+2. **What is fading and past mistakes**, by the memory model (most faded
+   first), then cards marked unsure before: about 3 of 10, more as an
+   exam nears (as Today shifts).
+3. **What is not learned yet**, the rest: cards never answered, in the
+   slides' order, a lecture's easier questions before its harder ones on
+   the same idea (Stage 1 then Stage 2). Only from sections already met
+   in Learn, or all of them if the student picks "include what I have not
+   learned" (a question below).
+4. **Never** the same idea twice in a row, a card twice in one window
+   unless as its re-test, or a reading card.
+
+**Stages.** Each section's Stage 1 (Recall cards) and Stage 2 (Apply
+cards) are passed when every card in them has been answered right once.
+They show on the map. A miss never moves a stage back; it goes to the
+re-tests.
+
+**I don't know** shows the answer, the why and the passage, as now, and
+counts as a miss for the re-test.
+
+**Seeing it all at once** (the owner's "a way to see them all at once"),
+without stopping:
+- The side rail (a phone: a line above the card): "34 answered · 27
+  right", and a **Missed (7)** button.
+- Missed opens a list of every question missed or marked unsure in this
+  sitting: the question, your answer, the right one, and the why, one tap
+  each to open. It closes back to the card where you were.
+- Every 10 answered, a quiet line on the card's top edge for a moment:
+  "10 more · 8 right". No stop.
+- The map (sections with S1 and S2) is on the lecture page and in the
+  rail, not between questions.
+- Stop at any time: the sitting ends on a summary like any other, with
+  the misses list and the tree.
+
+**Coming back.** The stages and the misses' re-tests are kept per
+lecture, so tomorrow it carries on where the plan was. Nothing to resume
+beyond that: the next window is planned fresh.
 
 ## Before building
 
-- **The simulator** (CLAUDE.md: a new way to study is modelled as a policy
-  first). Zen as a policy against Today and Learn for a month: does it
-  reach new material as fast, and does what it teaches last as well when
-  review is mixed in rather than first? If Zen does worse on what lasts,
-  the review slots are retuned before anything is built.
-- **Cost.** The simulator policy and the build are each about a session's
-  worth of work. Agents: Sonnet 5.5 for the batch builder and the map
-  component to an exact spec; Opus 5.5 reviews, judges the simulator
-  results and writes the copy.
+- **The simulator** (CLAUDE.md): the stream as a policy against Today and
+  Practice over a month: does mixing review into new cost what lasts, and
+  is 3 of 10 the right share? The share is retuned before the build if
+  not.
+- **Cost.** The simulator policy and the build are each about a session.
+  Sonnet 5.5 builds the window planner and the Missed list to an exact
+  spec; Opus 5.5 judges the simulator results, reviews the diff and
+  writes the copy.
 
 ## Questions for the owner
 
-1. **Marking:** each answer as it is given (as Practice), or the whole
-   batch at the end (as the master prompt did in a chat)?
-2. **The name:** "Zen" or something else ("Continuous", "Keep going")? On
-   the page it would read "Zen: test first, until you stop".
-3. **Batch size:** 10 as asked, with up to 4 re-tests on top?
-4. **D:** once Zen is in, take "Skip the reading" out of Learn, so Learn
-   is teach-first only and Zen is the test-first way? (Later.)
-5. **Go ahead** with the simulator first, then the build?
+1. **The button:** "Adaptive quiz", with "Continuous: …" under it, or the
+   full "Continuous adaptive quiz"?
+2. **What it draws new cards from:** only sections already met in Learn
+   (your "when a lot of content has been covered"), with a tick to include
+   the rest? Or everything from the start?
+3. **Go ahead** with the simulator, then the build?
