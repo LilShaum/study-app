@@ -389,7 +389,7 @@ export function CourseRoute() {
                     </span>
                   )}
                 </span>
-                <span className="mt-0.5 block text-small text-text-3">A bit every day: what is fading first, then something new, sized to your time.</span>
+                <span className="mt-0.5 block text-small text-text-3">What is fading, then something new.</span>
                 <span className="mt-0.5 block text-small text-text-2">{todaySummary}</span>
                 {partLine && <span className="mt-1 block text-small text-text-3">{partLine}</span>}
                 <button
@@ -414,7 +414,7 @@ export function CourseRoute() {
               to: nextUp ? `learn?section=${encodeURIComponent(nextUp.section.id)}` : 'learn',
               label: 'Learn',
               unit: nextUp ? `section ${nextUp.index + 1}` : plural(counts.total + counts.definition, 'item'),
-              use: 'The lecture in the order it was taught, a few terms at a time. Follow along in your own notes or slides.',
+              use: 'In the order it was taught, beside your notes.',
             },
             {
               to: null,

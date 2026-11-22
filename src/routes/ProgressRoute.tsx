@@ -181,7 +181,6 @@ export function ProgressRoute() {
       {fading.length > 0 && (
         <div className="mt-8">
           <h2 className="mark mb-1 text-text-3">Still remembered</h2>
-          <p className="mb-3 text-small text-text-2">How much of what you learned is still there, closest to fading first.</p>
           <div className="space-y-3">
             {fading.map(({ section, due, held }) => (
               <div key={section.id}>
@@ -215,8 +214,7 @@ export function ProgressRoute() {
         <div className="mt-8">
           <h2 className="mark mb-1 text-text-3">Mixed up</h2>
           <p className="mb-2 text-small text-text-2">
-            Answers that named another term of this lecture. Review asks the two side by side until you get it right on a
-            later day.
+            Review asks these side by side.
           </p>
           <ul className="border-t border-border">
             {mixed.slice(0, MIXUPS_SHOWN).map((m) => (

@@ -52,8 +52,7 @@ export function SyncRoute() {
       </Link>
       <h1 className="mt-3 font-display text-display text-text">Sync</h1>
       <p className="mt-2 text-small text-text-2">
-        Sign in on each device you study on, and your lectures and progress follow you between them. Without an account,
-        everything stays on this device, as before.
+        Sign in to keep your lectures and progress on every device. Without an account, everything stays on this device.
       </p>
 
       {email === undefined ? (

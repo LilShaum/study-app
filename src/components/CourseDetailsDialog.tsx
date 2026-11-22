@@ -205,8 +205,7 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
           </div>
 
           <p className="text-xs text-text-3">
-            Renaming a lecture keeps its progress: the id it is stored under was fixed when you added
-            it and doesn&rsquo;t change here.
+            Renaming keeps its progress.
           </p>
         </div>
 

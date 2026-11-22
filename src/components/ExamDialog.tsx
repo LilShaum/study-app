@@ -177,7 +177,6 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
           ) : (
             <fieldset>
               <legend className="mb-1 text-sm font-medium text-text">Time a day</legend>
-              <p className="mb-2 text-xs text-text-3">Today&rsquo;s session is sized to this.</p>
               <div role="radiogroup" aria-label="Minutes a day" className="flex flex-wrap gap-x-4 gap-y-2">
                 {MINUTE_CHOICES.map((m) => (
                   <button

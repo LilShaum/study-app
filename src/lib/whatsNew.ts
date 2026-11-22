@@ -23,6 +23,7 @@ export const WHATS_NEW: Change[] = [
     items: [
       'Each section in Learn starts by asking: Read it here first, or Questions first. Questions first explains nothing before it asks.',
       'A class code is always written with a space, as BIOL 365, so lectures saved as BIOL365 join their class.',
+      'Fewer words on the screens: the lines that explained what a button already says are gone.',
     ],
   },
   {

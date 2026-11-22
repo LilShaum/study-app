@@ -346,7 +346,7 @@ export function LibraryRoute() {
 
           {filteredIds.length === 0 ? (
             <div className="border-y border-border py-12 text-center text-text-2">
-              No matching lectures. Try a different search, or clear the class or tag you picked.
+              No matching lectures.
             </div>
           ) : (
             /* A contents list, not a card grid.
@@ -502,7 +502,7 @@ function DailyTime() {
   return (
     <div className="w-full">
       <p className="mb-1 text-xs text-text-3">
-        Shared between lectures by how soon each exam is, so the nearest gets the most.
+        Shared by how soon each exam is.
       </p>
       <div role="radiogroup" aria-label="Minutes a day, all lectures" className="flex flex-wrap gap-x-4 gap-y-2">
         {DAILY_CHOICES.map((m) => (

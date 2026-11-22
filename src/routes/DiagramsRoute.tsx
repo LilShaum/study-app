@@ -170,11 +170,6 @@ export function DiagramsRoute() {
             <Icon name="diagram" size={28} />
           </span>
           <p className="mt-3 text-text-2">This lecture has no diagrams.</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-text-3">
-            The generator only draws one where a picture genuinely clarifies something: a cycle, a
-            structure, a flowchart. If your notes have figures it skipped, &ldquo;Add
-            questions&rdquo; on the lecture page can ask for them.
-          </p>
         </div>
       ) : (
         <>

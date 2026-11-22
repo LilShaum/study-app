@@ -128,8 +128,7 @@ export function CourseHealthPanel({ course, onFix, onEvenOut }: CourseHealthPane
               {showMinor && (
                 <>
                   <p className="mt-1.5 text-text-3">
-                    None of these stops you studying. The app already never asks a term whose definition spells it
-                    out, and keeps two cards on one fact apart.
+                    None of these stops you studying.
                   </p>
                   <ul className="mt-1.5 space-y-1.5">{minor.map(item)}</ul>
                 </>

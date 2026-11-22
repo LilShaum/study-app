@@ -70,13 +70,12 @@ export function SetAsideRoute() {
       </Link>
       <h1 className="mt-4 font-display text-display font-semibold text-text">Set aside</h1>
       <p className="mt-2 max-w-prose text-small text-text-2">
-        Cards you set aside with <span className="text-text">Not needed?</span> while studying. They are kept in the
-        lecture, just out of study.
+        Kept in the lecture, out of study.
       </p>
 
       {aside.length === 0 ? (
         <p className="mt-8 border-y border-border py-5 text-center text-small text-text-2">
-          Nothing set aside. Under any card while you study, Not needed? sets it aside here.
+          Nothing set aside.
         </p>
       ) : (
         GROUPS.map(({ reason, title, note }) => {

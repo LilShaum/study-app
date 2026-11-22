@@ -297,16 +297,15 @@ function PracticePage() {
         </p>
       )}
       <p className="mt-2 max-w-prose text-small text-text-2">
-        Study what you choose, the way you choose: each answer is marked as you give it. Today still decides what comes back
-        when.
+        Each answer is marked as you give it.
       </p>
       {nothingStudied && (
         <p className="mt-3 max-w-prose text-small text-text-2">
-          Nothing here has been studied yet.{' '}
+          Nothing studied yet. Start with{' '}
           <Link to={id ? `/session/${id}/learn` : `/class/${encodeURIComponent(code!)}`} className="text-accent underline-offset-4 hover:underline">
             {id ? 'Learn' : 'Today'}
-          </Link>{' '}
-          teaches it a few terms at a time; Practice is for after, or for material you have met already.
+          </Link>
+          .
         </p>
       )}
       {id && classCode && classSize > 1 && (
@@ -454,8 +453,7 @@ function PracticePage() {
       <section className="mt-10 border-t border-border pt-5">
         <h2 className="mark text-text-3">Practice test</h2>
         <p className="mt-2 max-w-prose text-small text-text-2">
-          A rehearsal for the exam: the questions that ask you to use what you know, answers held to the end, then your score and
-          every question you missed.{' '}
+          Answers held to the end, then your score.{' '}
           <span className="tabular-nums text-text-3">
             {test.count} question{test.count === 1 ? '' : 's'}.
           </span>

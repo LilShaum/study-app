@@ -106,8 +106,7 @@ export function ClassEvenOutDialog({ code, lectures, onClose }: { code: string; 
             <h3 className="mark mb-1.5 text-text-3">Step 1: copy the prompt</h3>
             <p className="mb-2 text-text-2">
               In {plural(total, 'question')} across {plural(todo.length, 'lecture')} the right answer is the longest option, or
-              tied for it, so you could pick it without knowing the material. One prompt asks for new wrong answers to all of them. Each
-              question carries the passage from your notes it came from, so any chat can answer it. The questions, their right
+              tied for it, so you could pick it without knowing the material. The questions, their right
               answers and your scores stay as they are.
             </p>
             <ul className="mb-3 border-y border-border">

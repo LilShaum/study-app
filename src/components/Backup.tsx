@@ -168,7 +168,7 @@ function RestoreDialog({ backup, onClose }: { backup: Backup; onClose: () => voi
           </dl>
 
           {saved ? (
-            <p className="text-text-2">Backed up just now: everything on this device is in that file, to restore later if you want it back.</p>
+            <p className="text-text-2">Backed up just now.</p>
           ) : losing.length > 0 ? (
             <div className="border-l-2 border-warning py-1 pl-3 text-text-2">
               <p>

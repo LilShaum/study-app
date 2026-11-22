@@ -108,8 +108,7 @@ export function AccountRoute() {
           Sync
         </h2>
         <p className="mt-2 text-small text-text-2">
-          Sign in on each device you study on, and your lectures and progress follow you. Optional: without it,
-          nothing leaves this device.
+          Sign in to keep your lectures and progress on every device. Optional.
         </p>
         <Link to="/sync" className="press tap-safe mt-3">
           Sign in and sync
@@ -121,7 +120,7 @@ export function AccountRoute() {
           Back up
         </h2>
         <p className="mt-2 text-small text-text-2">
-          Every lecture, all your progress and your settings as one file, to keep or to restore on another device.
+          Everything as one file, to keep or restore.
         </p>
         <div className="mt-3 flex flex-wrap gap-3">
           <BackupButton />

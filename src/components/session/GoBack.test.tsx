@@ -81,7 +81,7 @@ describe('going back in a sitting', () => {
     expect(useSessionStore.getState().items.map((i) => i.type).every((t) => t !== 'definition')).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Next →' }));
     expect(screen.queryByText('Fatty sheath around an axon.')).toBeNull();
-    expect(screen.getByText(/shut while a question is asked/)).toBeTruthy();
+    expect(screen.getByText(/Shut while a question is asked/)).toBeTruthy();
   });
 });
 

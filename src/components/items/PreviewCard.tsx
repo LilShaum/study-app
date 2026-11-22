@@ -44,7 +44,7 @@ export function PreviewCard({ item, keyboardEnabled = false, onNext, frame = 'sh
           ))}
         </ol>
         <p className="mt-3 text-small text-text-2">
-          Read the points now. The cards that follow teach them, and you write the whole answer from memory later.
+          Read the points now; you write the whole answer later.
         </p>
         <SourceNote excerpt={card.source_excerpt} />
       </div>

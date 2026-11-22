@@ -9,8 +9,7 @@ export function TeacherNotesField({ value, onChange }: { value: string; onChange
         What your teacher said (optional)
       </span>
       <span className="mb-1.5 block text-sm text-text-2">
-        Anything about what is or isn&rsquo;t needed. The AI follows it over its own judgement, and it is kept with this
-        lecture for later prompts.
+        The AI follows it over its own judgement, and it is kept for later prompts.
       </span>
       <textarea
         value={value}

@@ -316,7 +316,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
               <>
                 <p className="text-sm text-text-2">
                   In {plural(rework.length, 'question')} the right answer is the longest option, so it can be guessed.
-                  This asks only for new wrong answers. <strong>Paste it into the chat that made this lecture.</strong>
+                  <strong>Paste it into the chat that made this lecture.</strong>
                 </p>
                 <More label="More about this">
                   <p>
@@ -371,9 +371,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             {mode === 'fix' &&
               (fixes.empty ? (
                 <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
-                  The check found nothing to fix. Every term the generator listed has a definition,
-                  every definition is tested somewhere, and no question has a broken answer key. The
-                  prompt would be asking for nothing.
+                  Nothing to fix.
                 </div>
               ) : (
                 <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">

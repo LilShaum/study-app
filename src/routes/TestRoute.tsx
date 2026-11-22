@@ -95,7 +95,6 @@ export function TestRoute() {
       pool={pool}
       header={header}
       back={back}
-      practiceTo={id ? `/study/${id}/practice` : `/class/${encodeURIComponent(code ?? '')}/practice`}
     />
   );
 }
@@ -191,7 +190,7 @@ function loadTest(key: string, pool: TestQuestion[]): (Omit<SavedTest, 'refs'> &
   }
 }
 
-function TestRun({ storageKey, pool, header, back, practiceTo }: { storageKey: string; pool: TestQuestion[]; header: ReactNode; back: string; practiceTo: string }) {
+function TestRun({ storageKey, pool, header, back }: { storageKey: string; pool: TestQuestion[]; header: ReactNode; back: string }) {
   // Read once: re-reading the store as answers are recorded must not
   // reshuffle the questions under the student.
   const [saved] = useState(() => loadTest(storageKey, pool));
@@ -366,7 +365,6 @@ function TestRun({ storageKey, pool, header, back, practiceTo }: { storageKey: s
         pool={pool}
         missedLast={missedLast}
         fresh={(q) => !missedLast(q) && !recordOf(q)?.testedAt}
-        practiceTo={practiceTo}
         onStart={(chosen, n, even, minutes) => start(drawTest(chosen, n, even, firstBy), minutes)}
       />
     );
@@ -487,14 +485,12 @@ const PACE_SECONDS: Record<TestKind, number> = { mcq: 75, problem: 180, written:
 function Setup({
   header,
   pool: all,
-  practiceTo,
   missedLast,
   fresh: isFresh,
   onStart,
 }: {
   header: ReactNode;
   pool: TestQuestion[];
-  practiceTo: string;
   missedLast: (q: TestQuestion) => boolean;
   fresh: (q: TestQuestion) => boolean;
   onStart: (chosen: TestQuestion[], n?: number, even?: boolean, minutes?: number) => void;
@@ -552,18 +548,10 @@ function Setup({
     <div>
       {header}
       <p className="mt-4 max-w-prose text-small text-text-2">
-        A rehearsal for the exam: the questions that ask you to use what you know, answers held to the end as an exam holds them,
-        then your score, each section, and every question you missed with why.
+        Answers held to the end, then your score and every question you missed.
         {kinds.includes('written') && ' Short and long answers are written, then you tick each point of the model answer you made.'}
         {kinds.includes('problem') && ' Problems are worked out: a number or a short answer is checked, anything else you check against the steps.'}
         {firstLine(pool.length, missed, fresh)}
-      </p>
-      <p className="mt-2 max-w-prose text-small text-text-3">
-        Want each answer marked as you give it?{' '}
-        <Link to={practiceTo} className="text-accent underline-offset-4 hover:underline">
-          That is Practice
-        </Link>
-        .
       </p>
       <div className="mt-6 border-t border-border">
         {present.length > 1 && (
@@ -1469,7 +1457,6 @@ function Results({
           <h2 className="mark mb-1 text-text-3">Right, but marked ?</h2>
           {/* Feedback on a right answer given unsure doubled what was kept of
               it (Butler, Karpicke & Roediger 2008): the why, as for a miss. */}
-          <p className="mb-2 text-small text-text-3">You were not sure of these. Here is why each is right.</p>
           <ol className="border-t border-border">
             {unsureRight.map(({ q, chose }) => (
               <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
@@ -1539,8 +1526,7 @@ function Marking({
     <div>
       {header}
       <p className="mt-4 max-w-prose text-small text-text-2">
-        Before your score: tick each point of the model answer that your answer made. A question counts as right with
-        every point, as full marks would.
+        Tick each point of the model answer your answer made.
       </p>
       <ol className="mt-6 border-t border-border">
         {written.map(({ q, i, item }) => {

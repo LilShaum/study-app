@@ -111,9 +111,8 @@ describe('practice test: a rehearsal, answers at the end', () => {
     expect(screen.getByText('Right, but marked ?')).toBeTruthy();
   });
 
-  it('points to Practice for marking as you go', () => {
+  it('has no marking-as-you-go choice on its setup', () => {
     open();
-    expect(screen.getByRole('link', { name: 'That is Practice' }).getAttribute('href')).toBe('/study/c/practice');
     expect(screen.queryByRole('button', { name: 'As you go' })).toBeNull();
   });
 

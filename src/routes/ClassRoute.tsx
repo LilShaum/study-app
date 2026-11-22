@@ -145,12 +145,12 @@ export function ClassRoute() {
             {
               to: `/class/${encodeURIComponent(code)}/practice`,
               label: 'Practice',
-              use: 'Study what you choose across the class: tick the kinds, the cards and the sections, each answer marked as you go.',
+              use: 'Pick the kinds, cards and sections.',
             },
             {
               to: `/class/${encodeURIComponent(code)}/test`,
               label: 'Practice test',
-              use: 'A rehearsal for the exam, over the whole class or one exam: answers held to the end, then your score.',
+              use: 'Answers held to the end, then your score.',
             },
           ].map((m) => (
             <li key={m.label} className="border-b border-border pb-3">
@@ -194,8 +194,7 @@ export function ClassRoute() {
           </ul>
         ) : (
           <p className="border-y border-border py-3 text-small text-text-2">
-            No exams set. Add each one (a midterm, the final) and tick what it covers: each lecture is then planned
-            for the next exam it is on.
+            No exams set. Add each one and tick what it covers.
           </p>
         )}
         <button type="button" onClick={() => setEditing('new')} className="press tap-safe mt-3">

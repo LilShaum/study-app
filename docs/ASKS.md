@@ -82,9 +82,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   plan: a note marking the slide wrong wins; a note contradicting the slide
   or the field without such a mark is not used silently, and is reported to
   the student with the file.
-- **Less AI explainer text in the app** (2026-11-22: "I really want this
-  app to not look like vibe coded slop so reducing the signature ai
-  explainer text would be great if possible").
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Later.
@@ -375,6 +372,11 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- **Less AI explainer text in the app** (2026-11-22: "I really want this
+  app to not look like vibe coded slop so reducing the signature ai
+  explainer text would be great if possible"). First pass 2026-11-22: about 45 lines cut or
+  shortened across the screens (Help, the first run and the tree dialog
+  left for the design and onboarding work).
 - **Skip the reading reworked** (2026-11-22: "whenever i pressed ive read
   it hear/teach me here instead, i never noticed a difference … the skip
   the reading/read first however I would notice a difference but I dont

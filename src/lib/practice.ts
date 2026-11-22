@@ -18,10 +18,10 @@ export type Kind = 'all' | CardKind;
 
 /** Each choice has one use the others do not (CLAUDE.md, the owner's picture), said under the row. */
 export const CARDS: { value: Cards; label: string; use: string }[] = [
-  { value: 'due', label: 'Due now', use: 'What is fading now: Today’s review on its own, with no new material.' },
-  { value: 'weakest', label: 'Weakest first', use: 'Every card, the ones you know least first: for extra time after Today.' },
-  { value: 'missed', label: 'Mistakes', use: 'Cards you got wrong, until you get them right on a later day.' },
-  { value: 'everything', label: 'Everything', use: 'Every card shuffled, studied or not, mixed the way an exam mixes them.' },
+  { value: 'due', label: 'Due now', use: 'Today’s review on its own.' },
+  { value: 'weakest', label: 'Weakest first', use: 'What you know least first.' },
+  { value: 'missed', label: 'Mistakes', use: 'Kept until you get them right on a later day.' },
+  { value: 'everything', label: 'Everything', use: 'Shuffled, the way an exam mixes them.' },
 ];
 
 export const KINDS: { value: Kind; label: string }[] = [

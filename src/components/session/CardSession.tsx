@@ -204,7 +204,7 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
   learn: { title: 'Nothing to learn yet', text: 'This lecture has no items to walk through.' },
   weakest: {
     title: 'Nothing to rank',
-    text: 'Weakest First orders the questions and flashcards you can be scored on, and this lecture has none yet.',
+    text: 'Nothing to score yet in this lecture.',
   },
   quiz: { title: 'No MCQ items', text: "This lecture doesn't have any MCQ items yet. Try Browse or Mixed mode." },
   flashcards: {
@@ -225,17 +225,16 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
   },
   review: {
     title: 'Nothing is due',
-    text: 'Everything you have studied is still fresh. Review brings items back as they start to fade. New material comes through Learn.',
+    text: 'Everything you have studied is still fresh.',
   },
   mixed: { title: 'No items', text: 'This lecture has no items yet.' },
   today: {
     title: 'Nothing for today',
-    text: 'Nothing is due and everything here has been studied. Add material after your next lecture, or practise with Quiz or Mixed.',
+    text: 'Nothing is due, and everything here has been studied.',
   },
   missed: {
     title: 'Nothing to review',
-    text:
-      "You haven't missed anything yet, or you've already nailed it on a retry. Study some Quiz or Flashcards to build up practice history.",
+    text: 'Nothing missed yet.',
   },
 };
 
@@ -259,7 +258,7 @@ function StepLine({ item }: { item: SessionItem }) {
     return (
       <div className="mb-4 flex items-baseline gap-3 border-b border-border pb-2 text-small">
         <span className="mark shrink-0 whitespace-nowrap text-text-3">Review</span>
-        <span className="min-w-0 text-text-2">what you have studied and are starting to lose</span>
+        <span className="min-w-0 text-text-2">fading, faintest first</span>
         {item._again ? <span className="ml-auto whitespace-nowrap text-text-2">Again, from earlier</span> : null}
       </div>
     );
@@ -932,7 +931,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         // No lecture is named on a card: which one it is from is part of the question.
         <p className="mb-4 text-xs text-text-3">
           {mode === 'review'
-            ? 'What you have studied and are starting to lose, every lecture mixed together, each one’s faintest early.'
+            ? 'Fading, every lecture mixed together.'
             : mode === 'weakest'
               ? 'Every lecture mixed together, each one’s likeliest to be forgotten early.'
               : 'Every lecture mixed together.'}
@@ -941,7 +940,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         <>
           {mode === 'review' && (
             <p className="mb-4 text-xs text-text-3">
-              What you have studied and are starting to lose, faintest first.
+              Fading, faintest first.
             </p>
           )}
           {mode === 'weakest' && (
@@ -1166,7 +1165,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         /* Shut while a question is asked: the term asked would be in it
            (the owner, 2026-11-17). Said so, so it does not look broken. */
         <p id="glossary-shut" className="border-t border-border pt-3 text-small text-text-3">
-          The glossary is shut while a question is asked, so it cannot give the answer away. It opens again after you answer.
+          Shut while a question is asked. It opens after you answer.
         </p>
       ) : glossaryOpen ? (
         <SessionGlossary entries={glossary} />
