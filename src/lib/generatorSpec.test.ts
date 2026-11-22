@@ -39,8 +39,8 @@ describe('the sections the prompts quote from prompts/generator.md', () => {
   it('carries how the app uses each card, so every prompt plans for it', () => {
     // In the Quality bar, so the new, add, more-practice and fix prompts all
     // have it (docs/proposals/content-quality.md).
-    expect(QUALITY_BAR_SPEC).toMatch(/How the app uses what you write/);
-    expect(QUALITY_BAR_SPEC).toMatch(/Flashcards are asked cold/);
+    expect(QUALITY_BAR_SPEC).toMatch(/How the student meets what you write/);
+    expect(QUALITY_BAR_SPEC).toMatch(/read it here first, or questions/);
     expect(QUALITY_BAR_SPEC).toMatch(/Plan each idea before you write it/);
     expect(QUALITY_BAR_SPEC).toMatch(/each from a different side/);
     expect(QUALITY_BAR_SPEC).toMatch(/Never the same sentence twice/);

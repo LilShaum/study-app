@@ -96,9 +96,34 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   talking to the ai and planning"). With it: up to five options, both All
   and None of the other options only in a five-option question. In
   docs/proposals/prompt-rewrite.md.
+- **The ways to study fit together, audited as a whole** (2026-11-22: "make
+  sure it fits nicely into the ecosystem with the other modes and the daily
+  things … would the daily studying be more fitting to be the learn daily
+  thing we have or the continuous mode. I feel a lot of auditing the apps
+  current state is probably necessary to make sure things dont feel tacked
+  on and that instead everything feels like it has its own place and use
+  case and they are clear and this comes down to both how they function
+  and also the ui/ux … harmonious, now like features stappled on one after
+  the other with overlap causing confusion"). Before the adaptive quiz is
+  built. What the owner wants such audits to catch: "these are the kinds
+  of things ive been wanting these audits to catch like the fable one but
+  it kept focusing on the smallest things that didnt matter".
+- **Today on the library, reworked** (2026-11-22: "one thing I dont see
+  ever being used is the today studying all lectures. there will never be
+  a day when I need to review everything I have, or even want to do so …
+  the one lecture instead is the time selected divided between like all
+  the lectures, so the more lectures you have the less time it is per
+  lecture, which is stupid. it should be replaced with some sort of
+  suggestion with what to study today").
+- **Lectures numbered within their class** (2026-11-22: "rn the lectures on
+  the main page are in a running count but they should be numbered based
+  on each class, so each class starts from 1").
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
-  all the lectures of each course on the home page"). Later.
+  all the lectures of each course on the home page"). Later. 2026-11-22:
+  "the whole thing that I asked for that I think you forgot to do about
+  making the home page not show every single lecture under every course
+  and so that you have to open the course to see the lectures under them".
 - **The AI hands back a file, never pasted text** (2026-11-16: "another
   change that is long overdue is making it so the output is only a file
   instead of telling it to output the code as text. thus the area to copy
@@ -326,30 +351,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   task that needs it. The settings, low to high: high, extra, max,
   ultracode (2026-10-29: "max … is only one step higher than extra and
   it's one step below ultracode"). Worked problems started on max.
-- **Answers in a new place from the very first showing** (2026-10-26: "I'm
-  doing multiple choice problems for the first time and they all had the
-  answer A. Make sure the answers are shuffled whenever the question is
-  shown even the first time"). The live app shuffles at every showing,
-  the first included (checked on the live site 2026-10-26: right answers at
-  B D C D B B B A A C B A A in one sitting). The owner's phone was running
-  an old copy: an iPhone home-screen app keeps the page it loaded. Fixed
-  (lib/appUpdate): the app looks for a new version whenever it comes back
-  into view and reloads where that loses nothing; Help shows the version.
-  Live; waits on the owner checking Help's version after reopening.
-- **"I don't know" on a name-the-term card with Read first** (2026-10-26:
-  "I'm doing a name the term question and don't see a don't know option.
-  Is it because I am on the not skip the reading mode?"). It is there in
-  both modes on the live site (screenshot at phone width); the same old
-  copy. Waits on the same check.
-- **The order in a step, with the write-the-answer cards on an unfixed
-  lecture** (2026-10-26: "they now show up as flash cards but after the
-  multiple choice questions … there is now another multiple choice after it
-  so now I'm confused on what's happening with this order"). Nothing in the
-  app turns a written question into a flashcard; an old copy shows written
-  questions as plain flashcards. The multiple choice after it was a missed
-  question coming back ("Again, from earlier"); it now comes back before
-  the step's question to write, so writing stays last (store/session
-  requeue). Live; waits on the owner's look.
 - **Say when to regenerate the lectures or use Fix** (2026-10-26: "Let me
   know when I'm good to regenerate the lectures or use the fix mode").
   Answered 2026-10-26: now, once the app on the phone shows the current
@@ -386,6 +387,30 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- **The order in a step, with the write-the-answer cards on an unfixed
+  lecture** (2026-10-26: "they now show up as flash cards but after the
+  multiple choice questions … there is now another multiple choice after it
+  so now I'm confused on what's happening with this order"). Nothing in the
+  app turns a written question into a flashcard; an old copy shows written
+  questions as plain flashcards. The multiple choice after it was a missed
+  question coming back ("Again, from earlier"); it now comes back before
+  the step's question to write, so writing stays last (store/session
+  requeue). Live; waits on the owner's look. Closed 2026-11-22 (the owner: "sure").
+- **"I don't know" on a name-the-term card with Read first** (2026-10-26:
+  "I'm doing a name the term question and don't see a don't know option.
+  Is it because I am on the not skip the reading mode?"). It is there in
+  both modes on the live site (screenshot at phone width); the same old
+  copy. Waits on the same check. Closed 2026-11-22 (the owner: "sure").
+- **Answers in a new place from the very first showing** (2026-10-26: "I'm
+  doing multiple choice problems for the first time and they all had the
+  answer A. Make sure the answers are shuffled whenever the question is
+  shown even the first time"). The live app shuffles at every showing,
+  the first included (checked on the live site 2026-10-26: right answers at
+  B D C D B B B A A C B A A in one sitting). The owner's phone was running
+  an old copy: an iPhone home-screen app keeps the page it loaded. Fixed
+  (lib/appUpdate): the app looks for a new version whenever it comes back
+  into view and reloads where that loses nothing; Help shows the version.
+  Live; waits on the owner checking Help's version after reopening. Closed 2026-11-22 (the owner: "sure").
 - **Less AI explainer text in the app** (2026-11-22: "I really want this
   app to not look like vibe coded slop so reducing the signature ai
   explainer text would be great if possible"). First pass 2026-11-22: about 45 lines cut or

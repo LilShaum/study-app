@@ -24,6 +24,9 @@ import { dayAcross, dayLine, todayAcrossCourses, todayLine } from '@/lib/library
 import { plannedMinutes, studiedToday } from '@/lib/todaySitting';
 import { roman } from '@/lib/roman';
 
+/** The classes open on the library, on this device. */
+const OPEN_KEY = 'arborous:library-open';
+
 /** The most courses the Today block names; the list below carries the rest. */
 const TODAY_ROWS = 3;
 
@@ -92,6 +95,33 @@ export function LibraryRoute() {
   );
 
   const isFiltering = search.trim() !== '' || selectedTags.size > 0 || selectedClass !== null;
+  // Each class folded under its name, its lectures shown when opened (the
+  // owner, 2026-11-22: the library should not "show every single lecture
+  // under every course"). Which ones are open is remembered on this device.
+  const [openClasses, setOpenClasses] = useState<Set<string>>(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(OPEN_KEY) ?? '[]') as string[]);
+    } catch {
+      return new Set();
+    }
+  });
+  const toggleClass = (code: string) =>
+    setOpenClasses((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      try {
+        localStorage.setItem(OPEN_KEY, JSON.stringify([...next]));
+      } catch {
+        // Not remembered, still open.
+      }
+      return next;
+    });
+  /** Lecture number within its class (the owner, 2026-11-22: "each class starts from 1"), or among those with none. */
+  const numberIn = (id: string) => {
+    const code = courses[id].metadata.course_code?.trim() ?? '';
+    return ids.filter((i) => (courses[i].metadata.course_code?.trim() ?? '') === code).indexOf(id) + 1;
+  };
 
   const filteredIds = ids.filter((id) => {
     const c = courses[id];
@@ -363,26 +393,39 @@ export function LibraryRoute() {
                 // A class opens its own page: lectures, exams, Today for all of
                 // it. Its name heads its lectures like a part title in a book.
                 const opensClass = code && (index === 0 || courses[filteredIds[index - 1]].metadata.course_code?.trim() !== code);
-                const inClass = code ? ids.filter((i) => courses[i].metadata.course_code?.trim() === code).length : 0;
+                const inClass = code ? ids.filter((i) => courses[i].metadata.course_code?.trim() === code) : [];
+                // A search or a filter shows what it found, folded or not.
+                const open = !code || isFiltering || openClasses.has(code);
+                const classDue = opensClass
+                  ? inClass.reduce((n, i) => n + courseTotals(courses[i], allProgress[i] ?? EMPTY_PROGRESS, now).due, 0)
+                  : 0;
                 return [
                   opensClass && (
-                    <li key={`class:${code}`} className="border-b border-border">
-                      <Link
-                        to={`/class/${encodeURIComponent(code)}`}
-                        className="group tap-safe flex items-baseline gap-3 pb-2 pt-5"
+                    <li key={`class:${code}`} className="flex items-baseline gap-3 border-b border-border">
+                      <button
+                        type="button"
+                        onClick={() => toggleClass(code)}
+                        aria-expanded={open}
+                        className="group tap-safe flex min-w-0 flex-1 items-baseline gap-3 pb-3 pt-5 text-left"
                       >
+                        <span className="mark w-3 text-text-3" aria-hidden="true">
+                          {open ? '▾' : '▸'}
+                        </span>
                         <span className="mark text-text group-hover:text-accent">{code}</span>
                         <span className="text-small text-text-3">
-                          {inClass} lecture{inClass === 1 ? '' : 's'}
+                          {inClass.length} lecture{inClass.length === 1 ? '' : 's'}
+                          {classDue > 0 && <span className="text-text"> · {classDue} due</span>}
                         </span>
-                        <span className="mark ml-auto text-text-3 group-hover:text-text">The class ▸</span>
+                      </button>
+                      <Link to={`/class/${encodeURIComponent(code)}`} className="mark tap-safe shrink-0 text-text-3 hover:text-text">
+                        The class
                       </Link>
                     </li>
                   ),
-                  <li key={id} className="group relative border-b border-border">
+                  open && <li key={id} className="group relative border-b border-border">
                     <Link to={`/study/${id}`} className="entry py-4 pr-8">
                       <span className="entry-num mark text-right text-text-3">
-                        {roman(index + 1)}
+                        {roman(numberIn(id))}
                       </span>
                       <LazyTree
                         courseId={id}

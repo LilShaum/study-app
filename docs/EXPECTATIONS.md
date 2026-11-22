@@ -861,6 +861,10 @@ measured against.
 - **The library**: open the app and start today's studying in one tap,
   every lecture and class in view as a contents page; no choosing what to
   study unless the student wants to.
+  Each class is folded under its name, with its count of lectures and what
+  is due; a tap opens it, and which are open is remembered on the device.
+  A search or filter shows what it found, folded or not. Lectures are
+  numbered within their class, each class from I (the owner, 2026-11-22).
 - **A lecture's page**: one place to start studying a lecture the right way
   (Today first, then Learn and Practice, each with one clear use) and to
   find everything else about it, without the rest crowding the first
