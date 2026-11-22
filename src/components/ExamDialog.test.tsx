@@ -68,7 +68,7 @@ describe('ExamDialog', () => {
       );
       expect(screen.getByText('Final')).toBeTruthy();
       expect(screen.queryByLabelText('Exam date')).toBeNull();
-      expect(screen.getByText('Set the exams for BIOC301').getAttribute('href')).toBe('/class/BIOC301');
+      expect(screen.getByText('Set the exams for BIOC 301').getAttribute('href')).toBe('/class/BIOC%20301');
     });
 
     it('saves the time a day without touching the lecture', () => {

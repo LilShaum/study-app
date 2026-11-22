@@ -1,3 +1,4 @@
+import { withNormalCode } from '@/lib/courseCode';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Course, StudyItem } from '@/schema/course';
@@ -46,7 +47,8 @@ export const useCoursesStore = create<CoursesState>()(
         return { ok: true, id, course: result.course, warning: result.warning };
       },
 
-      addCourse: (course) => {
+      addCourse: (written) => {
+        const course = withNormalCode(written);
         const baseId = slugifyCourseId(course);
         const existing = get().courses;
 
@@ -70,7 +72,7 @@ export const useCoursesStore = create<CoursesState>()(
       },
 
       updateCourse: (id, course) => {
-        set((state) => ({ courses: { ...state.courses, [id]: course } }));
+        set((state) => ({ courses: { ...state.courses, [id]: withNormalCode(course) } }));
       },
 
       removeCourse: (id) => {
@@ -165,6 +167,13 @@ export const useCoursesStore = create<CoursesState>()(
       // Compressed, a key per lecture (lib/packedStorage.ts).
       storage: packedCourseStorage(),
       partialize: (state) => ({ courses: state.courses }),
+      // Lectures saved before codes were written one way: "BIOL365" becomes
+      // "BIOL 365", so it joins its class (lib/courseCode).
+      merge: (persisted, current) => {
+        const saved = (persisted as { courses?: Record<string, Course> } | undefined)?.courses ?? {};
+        const courses = Object.fromEntries(Object.entries(saved).map(([id, c]) => [id, withNormalCode(c)]));
+        return { ...current, courses };
+      },
     },
   ),
 );

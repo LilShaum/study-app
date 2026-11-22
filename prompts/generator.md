@@ -410,7 +410,7 @@ out item counts and totals as well; the app counts.
   "schema_version": "1.0",
   "metadata": {
     "title": string,               // required
-    "course_code": string?,        // e.g. "BIOC301"
+    "course_code": string?,        // e.g. "BIOC 301": letters, a space, the number
     "subject": string?,            // e.g. "Biochemistry"
     "description": string?,
     "builds_to": string?,          // what the whole lecture builds to (Pass 3, "Writing the narration")

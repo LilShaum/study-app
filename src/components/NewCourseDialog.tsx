@@ -1,3 +1,5 @@
+import { normalizeCourseCode } from '@/lib/courseCode';
+import { classOf } from '@/lib/classExams';
 import { useMemo, useState, type ChangeEvent } from 'react';
 import { useDialog } from '@/lib/useDialog';
 import { useNavigate } from 'react-router-dom';
@@ -63,7 +65,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   // In a class, the lecture added last is the likeliest one this deck follows.
   const [after, setAfter] = useState(() => {
     if (!classCode) return '';
-    const inClass = Object.entries(lectures).filter(([, c]) => c.metadata.course_code?.trim() === classCode);
+    const inClass = Object.entries(lectures).filter(([, c]) => classOf(c) === normalizeCourseCode(classCode));
     return inClass.at(-1)?.[0] ?? '';
   });
   const addCourse = useCoursesStore((s) => s.addCourse);

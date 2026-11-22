@@ -57,7 +57,43 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   reviewed: based on quiz prompt"). To plan first (docs/proposals). 2026-11-22, the owner's answers: marked as you
   go, "Continuous adaptive quiz", no stops between batches but planned in
   tens, Learn keeps Skip the reading. Plan revised; waits on the button
-  name, what it draws new cards from, and the go-ahead.
+  name, what it draws new cards from, and the go-ahead. 2026-11-22: new cards mixed by
+  default, not in the lecture's order ("its adaptive but when selecting
+  certain questions for different parts of the batch of 10, they are
+  someone randomly picked"); the button without explainer text.
+- **"None of the other options" and "All of the other options"** (2026-11-22,
+  the owner's decision, with three PSYC files and a teacher's test as
+  examples, kept outside the repo): allowed in every class. "None": right
+  about half the time, every listed option right but for one detail; the
+  other half one listed option is fully right. "All of the other options":
+  each option one part or property of a concept, the question also asked
+  in the negative, the answer All, None or one option. Still banned:
+  options pointing at two others ("Both X and Y", "A and C only"). Needs
+  the prompt, the lecture check (it flags all/none of the above) and the
+  option shuffle (lib/optionOrder) changed. For the prompt plan.
+- **Wrong slides and wrong notes handled, not obeyed blindly** (2026-11-22,
+  on "always obey notes you wrote to Arborous": "there are times when the
+  slides have been wrong … which usually I will mark in my notes in a
+  certain way … or times when my annotated note are factually wrong
+  because I misheard the teacher … these are issues that should be
+  addressed and actually were when I was studying for my biol midterm 2
+  when the arborous files generated would be accompanied by a bunch of
+  notes of like what my notes got wrong in the report"). For the prompt
+  plan: a note marking the slide wrong wins; a note contradicting the slide
+  or the field without such a mark is not used silently, and is reported to
+  the student with the file.
+- **Course codes always "BIOL 365", never "BIOL365"** (2026-11-22).
+- **Skip the reading reworked** (2026-11-22: "whenever i pressed ive read
+  it hear/teach me here instead, i never noticed a difference … the skip
+  the reading/read first however I would notice a difference but I dont
+  think it should apply to every lecture … it should be asked every time
+  at the start or something. plus when you do click skip the reading the
+  explanations still show up before questions. I dont think this should
+  happen. I do however think it should show when you get a question
+  wrong/when you arent sure").
+- **Less AI explainer text in the app** (2026-11-22: "I really want this
+  app to not look like vibe coded slop so reducing the signature ai
+  explainer text would be great if possible").
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Later.

@@ -19,6 +19,10 @@ export interface Change {
 
 export const WHATS_NEW: Change[] = [
   {
+    date: '2026-11-22',
+    items: ['A class code is always written with a space, as BIOL 365, so lectures saved as BIOL365 join their class.'],
+  },
+  {
     date: '2026-11-20',
     items: [
       'Going back with Prev shows a card as you left it, and the pause between steps has Back too.',

@@ -1,3 +1,4 @@
+import { normalizeCourseCode } from './courseCode';
 import { dayKey, type CourseLog } from '@/store/studyLog';
 
 /** A day counts as studied from one minute. */
@@ -194,7 +195,7 @@ export function timeByClass(
     if (!(seconds > 0)) continue;
     const course = courses[id];
     // A removed lecture still counts under its class, if it kept one.
-    const code = course ? course.metadata.course_code?.trim() : log.code?.trim();
+    const code = normalizeCourseCode(course ? course.metadata.course_code : log.code);
     if (!course && !code) removed += seconds;
     else if (!code) other += seconds;
     else byCode.set(code, (byCode.get(code) ?? 0) + seconds);

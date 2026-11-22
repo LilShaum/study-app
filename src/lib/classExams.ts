@@ -1,3 +1,4 @@
+import { normalizeCourseCode } from './courseCode';
 import { ClassExamSchema, type ClassExam, type Course } from '@/schema/course';
 import { examTime } from './memory';
 import { sortedSections } from './sortedSections';
@@ -83,7 +84,7 @@ export function withExamSections(course: Course, sections: string[], now: number
 }
 
 /** The class a lecture belongs to: its class code, trimmed. Null without one. */
-export const classOf = (course: Course): string | null => course.metadata.course_code?.trim() || null;
+export const classOf = (course: Course): string | null => normalizeCourseCode(course.metadata.course_code) || null;
 
 /**
  * A lecture's title inside its class, without the class code it opens with:
@@ -104,7 +105,7 @@ export function lectureName(title: string, code: string | null | undefined): str
  * library kept it last (the owner, 2026-11-16).
  */
 export function lecturesOf(courses: Record<string, Course>, code: string): [string, Course][] {
-  return Object.entries(courses).filter(([, c]) => classOf(c) === code);
+  return Object.entries(courses).filter(([, c]) => classOf(c) === normalizeCourseCode(code));
 }
 
 /** What one exam covers in one lecture: every section, or these. */

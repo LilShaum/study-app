@@ -8,7 +8,7 @@ import { persisted } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
 import { Link } from 'react-router-dom';
-import { classExams, lecturesOf } from '@/lib/classExams';
+import { classExams, classOf, lecturesOf } from '@/lib/classExams';
 import { examLabel } from '@/lib/examLabel';
 
 const MINUTE_CHOICES = [15, 20, 30, 45, 60, 90];
@@ -49,7 +49,7 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
   const [minutes, setMinutesDraft] = useState(minutesNow);
 
   const allCourses = useCoursesStore((s) => s.courses);
-  const code = course.metadata.course_code?.trim();
+  const code = classOf(course) ?? undefined;
 
   const toggle = (id: string) =>
     setCovered((prev) => {
