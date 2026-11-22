@@ -29,27 +29,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   to reimagine something about the app or audit it or improve it, please
   make well thought out plans, and plan the plans"). Standing; the method
   is in CLAUDE.md, the plans in docs/proposals/.
-- **The prompt tells the AI how the app uses what it makes** (2026-11-17:
-  "wouldnt it be good to make it so in the prompt it briefly explains how
-  each of the question types are done in the app? maybe more info than
-  that would be good too on other parts of the app … letting it know a
-  little about what its making could help it make better things. im sure
-  the prompt does it to some extent but would be good to look into").
 - Noted 2026-11-17 (not an ask): Learn alongside the notes took far longer
   than the AI chats' study plans assumed ("they all massively
   underestimated how long it would take to go through the learn mode when
   going through the notes and considering the time it takes to double
   check and figure some things out"). Evidence for the grading run and for
   how the app sizes and tells a sitting's time.
-- **Use what generating the PSYC midterm 2 lectures taught** (2026-11-20:
-  "use the stuff learned from generating psyc midterm 2 files"). The
-  chat's audit came 2026-11-22 (kept outside the repo: it names the
-  course). Triaged in chat; its prompt changes go with the "prompt tells
-  the AI how the app works" plan; its app fixes are listed there too.
-- **The prompt tells the AI how the app works and what each thing is for**
-  (2026-11-20: "gives the ai more context about how the app works and how
-  all the info it's giving will be used and what it's for"). Same as the
-  2026-11-17 ask above.
 - **A continuous mode** (2026-11-20: "make a zen/continuous/mahoraga mode
   that gives questions in batches of 10 and adapts to give questions that
   are things you haven't learned yet, things you got wrong on the last
@@ -61,41 +46,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   default, not in the lecture's order ("its adaptive but when selecting
   certain questions for different parts of the batch of 10, they are
   someone randomly picked"); the button without explainer text.
-- **"None of the other options" and "All of the other options"** (2026-11-22,
-  the owner's decision, with three PSYC files and a teacher's test as
-  examples, kept outside the repo): allowed in every class. "None": right
-  about half the time, every listed option right but for one detail; the
-  other half one listed option is fully right. "All of the other options":
-  each option one part or property of a concept, the question also asked
-  in the negative, the answer All, None or one option. Still banned:
-  options pointing at two others ("Both X and Y", "A and C only"). Needs
-  the prompt, the lecture check (it flags all/none of the above) and the
-  option shuffle (lib/optionOrder) changed. For the prompt plan.
-- **Wrong slides and wrong notes handled, not obeyed blindly** (2026-11-22,
-  on "always obey notes you wrote to Arborous": "there are times when the
-  slides have been wrong … which usually I will mark in my notes in a
-  certain way … or times when my annotated note are factually wrong
-  because I misheard the teacher … these are issues that should be
-  addressed and actually were when I was studying for my biol midterm 2
-  when the arborous files generated would be accompanied by a bunch of
-  notes of like what my notes got wrong in the report"). For the prompt
-  plan: a note marking the slide wrong wins; a note contradicting the slide
-  or the field without such a mark is not used silently, and is reported to
-  the student with the file.
-- **The prompt lean and the question types used well** (2026-11-22: "go
-  to 5 options, it can be a max limit tho, I think that forcing too many
-  things on the ai generating the file can force it to do suboptimal
-  things. we need to emphasize the various types of questions it can and
-  should make and to figure out what would be the best ways to test
-  certain things … without pressuring it too hard … while not being so lax
-  that it ignores most the question options and uses the same types of
-  questions to test everything. … make sure the prompt is efficient, and
-  that there isnt anything that is useless in there … too vague …
-  contradicting details … unnecessary and go too much into detail …
-  overly specific … uses specific examples from things that I gave when
-  talking to the ai and planning"). With it: up to five options, both All
-  and None of the other options only in a five-option question. In
-  docs/proposals/prompt-rewrite.md.
 - **The ways to study fit together, audited as a whole** (2026-11-22: "make
   sure it fits nicely into the ecosystem with the other modes and the daily
   things … would the daily studying be more fitting to be the learn daily
@@ -115,22 +65,13 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   the lectures, so the more lectures you have the less time it is per
   lecture, which is stupid. it should be replaced with some sort of
   suggestion with what to study today").
-- **Lectures numbered within their class** (2026-11-22: "rn the lectures on
-  the main page are in a running count but they should be numbered based
-  on each class, so each class starts from 1").
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
-  all the lectures of each course on the home page"). Later. 2026-11-22:
+  all the lectures of each course on the home page"). Folding live
+  2026-11-22 (2e35940); rearranging not started. 2026-11-22:
   "the whole thing that I asked for that I think you forgot to do about
   making the home page not show every single lecture under every course
   and so that you have to open the course to see the lectures under them".
-- **The AI hands back a file, never pasted text** (2026-11-16: "another
-  change that is long overdue is making it so the output is only a file
-  instead of telling it to output the code as text. thus the area to copy
-  paste straight code as text in the add lecture part should be removed
-  too. dont do it rn just add to list"). The prompts ask for a
-  downloadable .study.json file; New lecture and the Add dialogs keep only
-  "upload a file". Not started: the owner is generating lectures now.
 - **Friends** (2026-11-11, from the account plan: "do friends separately
   cuz i dont have too many people using it rn so its not pressing but its
   def a cool feature I wanna have"). Ideas in docs/proposals/account.md
@@ -387,6 +328,66 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- **The prompt tells the AI how the app works and what each thing is for**
+  (2026-11-20: "gives the ai more context about how the app works and how
+  all the info it's giving will be used and what it's for"). Same as the
+  2026-11-17 ask above. Live 2026-11-22 (2e35940): "How the student meets what you write" in the prompt.
+- **The prompt tells the AI how the app uses what it makes** (2026-11-17:
+  "wouldnt it be good to make it so in the prompt it briefly explains how
+  each of the question types are done in the app? maybe more info than
+  that would be good too on other parts of the app … letting it know a
+  little about what its making could help it make better things. im sure
+  the prompt does it to some extent but would be good to look into"). Live 2026-11-22 (2e35940): "How the student meets what you write" in the prompt.
+- **The prompt lean and the question types used well** (2026-11-22: "go
+  to 5 options, it can be a max limit tho, I think that forcing too many
+  things on the ai generating the file can force it to do suboptimal
+  things. we need to emphasize the various types of questions it can and
+  should make and to figure out what would be the best ways to test
+  certain things … without pressuring it too hard … while not being so lax
+  that it ignores most the question options and uses the same types of
+  questions to test everything. … make sure the prompt is efficient, and
+  that there isnt anything that is useless in there … too vague …
+  contradicting details … unnecessary and go too much into detail …
+  overly specific … uses specific examples from things that I gave when
+  talking to the ai and planning"). With it: up to five options, both All
+  and None of the other options only in a five-option question. In
+  docs/proposals/prompt-rewrite.md. Live 2026-11-22 (2e35940): a prune pass, a guide to types, five options at most. Not yet tested on a generation (the owner: hold off).
+- **Use what generating the PSYC midterm 2 lectures taught** (2026-11-20:
+  "use the stuff learned from generating psyc midterm 2 files"). The
+  chat's audit came 2026-11-22 (kept outside the repo: it names the
+  course). Triaged in chat; its prompt changes go with the "prompt tells
+  the AI how the app works" plan; its app fixes are listed there too. Live 2026-11-22 (2e35940): the prompt round in docs/proposals/prompt-rewrite.md.
+- **The AI hands back a file, never pasted text** (2026-11-16: "another
+  change that is long overdue is making it so the output is only a file
+  instead of telling it to output the code as text. thus the area to copy
+  paste straight code as text in the add lecture part should be removed
+  too. dont do it rn just add to list"). The prompts ask for a
+  downloadable .study.json file; New lecture and the Add dialogs keep only
+  "upload a file". Not started: the owner is generating lectures now. Live 2026-11-22 (2e35940): the prompts ask for a file; the paste boxes are gone.
+- **Wrong slides and wrong notes handled, not obeyed blindly** (2026-11-22,
+  on "always obey notes you wrote to Arborous": "there are times when the
+  slides have been wrong … which usually I will mark in my notes in a
+  certain way … or times when my annotated note are factually wrong
+  because I misheard the teacher … these are issues that should be
+  addressed and actually were when I was studying for my biol midterm 2
+  when the arborous files generated would be accompanied by a bunch of
+  notes of like what my notes got wrong in the report"). For the prompt
+  plan: a note marking the slide wrong wins; a note contradicting the slide
+  or the field without such a mark is not used silently, and is reported to
+  the student with the file. Live 2026-11-22 (2e35940): the prompt rule and notes_for_student, shown on import.
+- **"None of the other options" and "All of the other options"** (2026-11-22,
+  the owner's decision, with three PSYC files and a teacher's test as
+  examples, kept outside the repo): allowed in every class. "None": right
+  about half the time, every listed option right but for one detail; the
+  other half one listed option is fully right. "All of the other options":
+  each option one part or property of a concept, the question also asked
+  in the negative, the answer All, None or one option. Still banned:
+  options pointing at two others ("Both X and Y", "A and C only"). Needs
+  the prompt, the lecture check (it flags all/none of the above) and the
+  option shuffle (lib/optionOrder) changed. For the prompt plan. Live 2026-11-22 (2e35940): prompt, lecture check, shuffle.
+- **Lectures numbered within their class** (2026-11-22: "rn the lectures on
+  the main page are in a running count but they should be numbered based
+  on each class, so each class starts from 1"). Live 2026-11-22 (2e35940).
 - **The order in a step, with the write-the-answer cards on an unfixed
   lecture** (2026-10-26: "they now show up as flash cards but after the
   multiple choice questions … there is now another multiple choice after it
