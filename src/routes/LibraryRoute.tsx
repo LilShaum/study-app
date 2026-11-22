@@ -23,6 +23,7 @@ import { usePlanStore } from '@/store/plan';
 import { dayAcross, dayLine, todayAcrossCourses, todayLine } from '@/lib/libraryToday';
 import { plannedMinutes, studiedToday } from '@/lib/todaySitting';
 import { roman } from '@/lib/roman';
+import { toastNotesFromAI } from '@/lib/notesFromAI';
 
 /** The classes open on the library, on this device. */
 const OPEN_KEY = 'arborous:library-open';
@@ -175,6 +176,7 @@ export function LibraryRoute() {
       // a student re-uploading a fixed file wants to know it didn't duplicate.
       const title = imported.course.metadata.title || 'Lecture';
       toast(had.has(imported.id) ? `"${title}" updated. Your progress on it is kept.` : `"${title}" uploaded.`, { type: 'success' });
+      toastNotesFromAI(imported.course);
     } else {
       toast(STORAGE_FULL, { type: 'error', duration: 12000 });
     }

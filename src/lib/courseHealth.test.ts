@@ -71,8 +71,27 @@ describe('analyseCourseHealth — structural problems', () => {
     expect(find(h, 'option-count')).toMatchObject({ severity: 'warning', items: ['q1'] });
   });
 
-  it('does not flag the contract\u2019s four options', () => {
+  it('does not flag the contract\u2019s four or five options', () => {
     expect(find(analyseCourseHealth(course([mcq('q1', 'A?')])), 'option-count')).toBeUndefined();
+    const five = mcq('q2', 'B?', { options: ['a', 'b', 'c', 'd', 'e'], distractor_rationale: ['', 'x', 'y', 'z', 'w'] });
+    expect(find(analyseCourseHealth(course([five])), 'option-count')).toBeUndefined();
+  });
+
+  it('flags six options, and says four or five', () => {
+    const six = mcq('q1', 'A?', { options: ['a', 'b', 'c', 'd', 'e', 'f'], distractor_rationale: ['', 'x', 'y', 'z', 'w', 'v'] });
+    expect(find(analyseCourseHealth(course([six])), 'option-count')?.message).toContain('something other than four or five options');
+  });
+
+  it('lets "None of the other options" and "All of the other options" stand, but not "of the above" or letter pointers', () => {
+    const f = (last: string) => find(analyseCourseHealth(course([mcq('q1', 'A?', { options: ['a', 'b', 'c', last] })])), 'filler-options');
+    expect(f('None of the other options')).toBeUndefined();
+    expect(f('all of the other options.')).toBeUndefined();
+    expect(f('None of the above')).toBeDefined();
+    expect(f('A and C')).toBeDefined();
+    expect(f('C & D')).toBeDefined();
+    expect(f('Both A and B')).toBeDefined();
+    expect(f('Aldosterone and cortisol')).toBeUndefined();
+    expect(f('A and C')?.message).toContain('or a letter combination as an option');
   });
 
   it('flags a stale total_items claim', () => {
@@ -198,6 +217,19 @@ describe('analyseCourseHealth — what a sitting would ask', () => {
       ]),
     );
     expect(find(h, 'same-fact')?.items).toEqual(['q1']);
+  });
+
+  it('leaves written cards out of the same-fact check, on both sides', () => {
+    const written = (id: string, front: string) =>
+      ({ id, type: 'flashcard', front, back: '(1) Km rises. (2) Vmax is unchanged.' }) as StudyItem;
+    const h = analyseCourseHealth(
+      course([
+        written('w1', 'What does a competitive inhibitor do to apparent Km and Vmax?'),
+        written('w2', 'What does a competitive inhibitor do to apparent Km and Vmax?'),
+        mcq('q1', 'What does a competitive inhibitor do to apparent Km and Vmax?', { options: ['(1) Km rises. (2) Vmax is unchanged.', 'b', 'c', 'd'] }),
+      ]),
+    );
+    expect(find(h, 'same-fact')).toBeUndefined();
   });
 
   it('leaves a contrast alone', () => {

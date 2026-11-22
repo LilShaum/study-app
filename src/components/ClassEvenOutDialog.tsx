@@ -129,33 +129,20 @@ export function ClassEvenOutDialog({ code, lectures, onClose }: { code: string; 
           </section>
 
           <section>
-            <label className="block">
-              <span className="mark mb-1.5 block text-text-3">Step 2: paste the reply</span>
-              <textarea
-                value={pasted}
-                onChange={(e) => setPasted(e.target.value)}
-                rows={6}
-                spellCheck={false}
-                placeholder={'{\n"<lecture id>": {\n"<question id>": {"wrong": […], "why": […]},\n…'}
-                className="field w-full font-mono text-xs"
+            <span className="mark mb-1.5 block text-text-3">Step 2: upload the file</span>
+            <label className="cursor-pointer text-accent hover:underline">
+              Upload the file the AI made
+              <input
+                type="file"
+                accept=".json,.txt,application/json,text/plain"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = '';
+                  if (file) setPasted(await file.text());
+                }}
               />
             </label>
-            <div className="mt-2 text-text-3">
-              …or{' '}
-              <label className="cursor-pointer text-accent hover:underline">
-                upload a file instead
-                <input
-                  type="file"
-                  accept=".json,.txt,application/json,text/plain"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = '';
-                    if (file) setPasted(await file.text());
-                  }}
-                />
-              </label>
-            </div>
           </section>
 
           {result && 'error' in result && (

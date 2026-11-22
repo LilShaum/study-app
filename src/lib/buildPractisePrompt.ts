@@ -7,6 +7,7 @@ import { ITEM_TYPES_SPEC, QUALITY_BAR_SPEC } from './generatorSpec';
 import { sectionDensity } from './sectionDensity';
 import { teacherNotesBlock } from './teacherNotes';
 import { kindsOf, makeOnlyBlock, type MakeKind } from './makeKinds';
+import { FILE_FALLBACK, handBackFile } from './handBack';
 
 /** Keeps a very large course's prompt inside a sane clipboard paste. */
 const MAX_EXCERPTS_PER_SECTION = 40;
@@ -150,9 +151,9 @@ What I want back:
   under each section below so you can check.
 
 ${priorities.length ? `Priorities for this round — the app worked these out from the course itself:\n\n${priorities.join('\n')}\n` : ''}
-Return ONLY JSON in this shape — just the sections you are adding to, each
+${handBackFile('practice-items')}, in this shape: just the sections you are adding to, each
 holding ONLY the new items, compact (no indentation, each item on one line
-of its own). Do not return the whole course:
+of its own). Do not return the whole course. ${FILE_FALLBACK}
 
 {
   "sections": [

@@ -151,7 +151,7 @@ export function McqCard({ item: written, onAnswered, onNext, onUnsure, keyboardE
           }
           // Once revealed the mark says what the letter cannot: this one is
           // the answer, this one was yours and wrong.
-          const mark = revealed && !keyBroken && isCorrectOpt ? '✓' : chosenWrongOf(i) ? '✗' : ('ABCD'[i] ?? String(i + 1));
+          const mark = revealed && !keyBroken && isCorrectOpt ? '✓' : chosenWrongOf(i) ? '✗' : ('ABCDE'[i] ?? String(i + 1));
           const rationale = revealed ? rationales?.[i] || undefined : undefined;
           const chosenWrong = chosenWrongOf(i);
           return (
@@ -167,7 +167,7 @@ export function McqCard({ item: written, onAnswered, onNext, onUnsure, keyboardE
               >
                 <span
                   className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold"
-                  aria-label={mark === '✓' ? `${'ABCD'[i] ?? i + 1}, the answer` : mark === '✗' ? `${'ABCD'[i] ?? i + 1}, your answer` : undefined}
+                  aria-label={mark === '✓' ? `${'ABCDE'[i] ?? i + 1}, the answer` : mark === '✗' ? `${'ABCDE'[i] ?? i + 1}, your answer` : undefined}
                 >
                   {mark}
                 </span>
@@ -231,10 +231,10 @@ export function McqCard({ item: written, onAnswered, onNext, onUnsure, keyboardE
             <div className={`font-medium ${dontKnow ? 'text-text' : correct ? 'text-success' : 'text-error'}`}>
               {/* The answer is marked in the list above; naming its letter is enough. */}
               {dontKnow
-                ? `The answer is ${'ABCD'[item.correct_index] ?? item.correct_index + 1}.`
+                ? `The answer is ${'ABCDE'[item.correct_index] ?? item.correct_index + 1}.`
                 : correct
                   ? '✓ Correct'
-                  : `✗ Not this time: the answer is ${'ABCD'[item.correct_index] ?? item.correct_index + 1}.`}
+                  : `✗ Not this time: the answer is ${'ABCDE'[item.correct_index] ?? item.correct_index + 1}.`}
             </div>
           )}
           {item.explanation && <div className="mt-1 text-sm text-text-2"><RichText text={item.explanation} /></div>}

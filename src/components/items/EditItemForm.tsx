@@ -122,9 +122,9 @@ function McqOptions({ draft, onChange }: { draft: McqDraft; onChange: (d: McqDra
         >
           + Add option
         </button>
-        {options.length !== 4 && (
+        {(options.length < 4 || options.length > 5) && (
           <span className="text-xs text-text-3">
-            {options.length} options, but the generator&rsquo;s contract asks for four.
+            {options.length} options, but the generator&rsquo;s contract asks for four or five.
           </span>
         )}
       </div>

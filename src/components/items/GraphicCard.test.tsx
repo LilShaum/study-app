@@ -25,6 +25,15 @@ describe('a figure on a card', () => {
     expect(screen.queryByRole('img')).toBeNull();
   });
 
+  it('names its section in the header when it has one, and leaves it out when not', () => {
+    const { unmount } = render(<GraphicCard item={figure({ purpose: 'know' })} sectionTitle="Membrane transport" />);
+    expect(screen.getByText(/Membrane transport/)).toBeTruthy();
+    expect(screen.getByText(/to know/)).toBeTruthy();
+    unmount();
+    render(<GraphicCard item={figure()} />);
+    expect(screen.queryByText(/Membrane transport/)).toBeNull();
+  });
+
   it('with a drawing, shows it and sends the student nowhere', () => {
     render(<GraphicCard item={figure({ svg: '<svg viewBox="0 0 1 1"></svg>', alt_text: 'Two curves' })} />);
     expect(screen.getByRole('img', { name: 'Two curves' })).toBeTruthy();

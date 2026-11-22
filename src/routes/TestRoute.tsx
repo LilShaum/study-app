@@ -852,7 +852,7 @@ function Taking({
                     className={`flex w-full items-center gap-3 border-0 border-b px-1 py-3 text-left text-small transition-colors disabled:cursor-default ${tone}`}
                   >
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-semibold">
-                      {shown && right ? '✓' : pickedWrong ? '✗' : ('ABCD'[i] ?? i + 1)}
+                      {shown && right ? '✓' : pickedWrong ? '✗' : ('ABCDE'[i] ?? i + 1)}
                     </span>
                     <span><RichText text={opt} /></span>
                   </button>
@@ -1194,7 +1194,7 @@ function ProblemMarked({ item, chosen }: { item: CheckedProblem; chosen: TestAns
 
 /** A question marked as it was answered: right, or the answer and why the pick was wrong. */
 function McqMarked({ item, chosen, order }: { item: Extract<TestQuestion['item'], { type: 'mcq' }>; chosen: TestAnswer; order: number[] }) {
-  const letter = 'ABCD'[order.indexOf(item.correct_index)] ?? '';
+  const letter = 'ABCDE'[order.indexOf(item.correct_index)] ?? '';
   const right = chosen === item.correct_index;
   return (
     <div className="mt-4" aria-live="polite">

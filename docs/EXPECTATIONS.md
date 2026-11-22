@@ -94,9 +94,20 @@ These hold for every feature.
 **Goal.** Turn a student's slides into a complete, well-weighted lecture
 file in one AI chat.
 
+The file can carry `metadata.notes_for_student`: what the AI needs the
+student to check (a note that disagreed with its slide and which was used,
+slides missing from what was sent). Shown once as "Notes from the AI" on
+import, and under About this lecture. Questions have four options, five at
+most; "None of the other options" and "All of the other options" are
+allowed and shown last (prompt round of 2026-11-22,
+docs/proposals/prompt-rewrite.md).
+
 **How it works.** Three short steps (the owner, 2026-10-29: the prompt
 screens were "massive blocks of text … not intuitive for new users"): what
-to make, copy the prompt, paste the reply; one line each, the reasons and
+to make, copy the prompt, upload the file the AI made (the paste box went
+2026-11-22: the prompts ask for a downloadable file, or the JSON alone in
+one code block to save as one; the upload shows the same preview before
+Add lecture); one line each, the reasons and
 options folded behind a "more" line (`PromptStep`, `More`). What to make
 is a box per kind (multiple choice, select all that apply, flashcards,
 terms to name, written answers, explanations, step-by-step examples, problem sets, diagrams;

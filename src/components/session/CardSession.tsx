@@ -385,7 +385,11 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         : [{ keys: ['Enter'], label: 'check' }, ...NAV_HINTS]
       : current?.type === 'multi'
         ? [{ keys: ['1', '–', String(Math.min(9, current.options.length))], label: 'tick' }, ...MULTI_HINTS.slice(1)]
-        : KEY_HINTS[mode];
+        : current?.type === 'mcq'
+          ? KEY_HINTS[mode].map((h) =>
+              h.keys.length === 3 && h.keys[2] === '4' ? { ...h, keys: ['1', '–', String(Math.min(9, current.options.length))] } : h,
+            )
+          : KEY_HINTS[mode];
   const total = useSessionStore((s) => s.total());
   const hasNext = useSessionStore((s) => s.hasNext());
   const hasPrev = useSessionStore((s) => s.hasPrev());

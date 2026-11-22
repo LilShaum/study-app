@@ -43,6 +43,8 @@ interface ItemRendererProps {
   onTeachHere?: () => void;
   /** The lecture the item is in (a definition opens its related terms from it). */
   courseId?: string;
+  /** The section a session card comes from, named on a figure (defaults to the session item's own). */
+  sectionTitle?: string;
 }
 
 /** Routes to the right card by item.type — the one place that needs to know them all. */
@@ -63,6 +65,7 @@ export function ItemRenderer({
   onReadThem,
   onTeachHere,
   courseId,
+  sectionTitle,
 }: ItemRendererProps) {
   switch (item.type) {
     case 'slides':
@@ -108,7 +111,12 @@ export function ItemRenderer({
     case 'example':
       return <ExampleCard item={item} frame={frame} notesOpen={learning} />;
     case 'graphic':
-      return <GraphicCard item={item} frame={frame} notesOpen={learning} />;
+      return <GraphicCard
+          item={item}
+          frame={frame}
+          notesOpen={learning}
+          sectionTitle={sectionTitle ?? ('_sectionTitle' in item ? String(item._sectionTitle) : undefined)}
+        />;
     case 'problem':
       return (
         <ProblemCard

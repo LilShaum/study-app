@@ -60,6 +60,14 @@ export function parseCourse(raw: unknown): ParseCourseResult {
     else delete metadata.inventory;
     course = { ...course, metadata };
   }
+  // The AI's notes to the student: a list of strings, or dropped.
+  if ('notes_for_student' in course.metadata) {
+    const list: unknown = course.metadata.notes_for_student;
+    const notes = Array.isArray(list) && list.every((n) => typeof n === 'string') ? (list as string[]).slice(0, 20) : [];
+    const metadata: Course['metadata'] = { ...course.metadata, notes_for_student: notes };
+    if (!notes.length) delete metadata.notes_for_student;
+    course = { ...course, metadata };
+  }
   if ('exams' in course.metadata) {
     const list: unknown = course.metadata.exams;
     const exams = (Array.isArray(list) ? list : []).flatMap((e) => {

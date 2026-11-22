@@ -8,6 +8,7 @@ import type { Course } from '@/schema/course';
 import { allItems } from '@/schema/fragment';
 import { sortedSections } from './sortedSections';
 import { freshIdPrefix } from './idPrefix';
+import { FILE_FALLBACK, handBackFile } from './handBack';
 
 /**
  * Builds the prompt a student pastes into their AI chat to generate items for
@@ -67,12 +68,12 @@ now walked through), is new content: write the items the spec asks for at
 that depth. Where it adds to a lecture already here, put the new items in
 that lecture's existing section.
 
-Return ONLY JSON in this shape — just the sections I'm adding to or creating,
+${handBackFile('new-items')}, in this shape: just the sections I'm adding to or creating,
 each holding ONLY the new items, plus the inventory of what you added. Do not
 repeat items the course already has, and do not return the whole course.
 Where the spec below describes the output as a whole course file
 (schema_version, metadata), this shape replaces it. Compact, as the spec
-says: no indentation, each item on one line of its own.
+says: no indentation, each item on one line of its own. ${FILE_FALLBACK}
 
 {
   "sections": [

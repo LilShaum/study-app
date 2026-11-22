@@ -4,6 +4,7 @@ import { freshIdPrefix } from './idPrefix';
 import { EXPLAIN_SPEC, NARRATION_SPEC } from './generatorSpec';
 import { kindsOf } from './makeKinds';
 import { teacherNotesBlock } from './teacherNotes';
+import { FILE_FALLBACK, handBackFile } from './handBack';
 
 /** Enough of a section's questions to show what its explanations prepare for. */
 const MAX_QUESTIONS_PER_SECTION = 60;
@@ -114,8 +115,8 @@ not give it and you are sure of it: a reason only, never a new fact to learn.
 Where the rules at the end say "part 2's table", they mean the key ideas
 above; where they say "obligation 1", the paragraph just above.
 
-Return ONLY JSON in this shape, compact (each item on one line of its own),
-holding only the sections you add to:
+${handBackFile('explanations')} in this shape, compact (each item
+on one line of its own), holding only the sections you add to. ${FILE_FALLBACK}
 
 {
   "sections": [

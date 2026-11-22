@@ -112,8 +112,11 @@ describe('buildFixPrompt', () => {
     expect(prompt).toMatch(/Do NOT return the whole course/);
   });
 
-  it('asks for a plain-text verdict before the JSON', () => {
-    expect(buildFixPrompt(dirty)).toMatch(/verdict list, before the JSON/);
+  it('asks for a plain-text verdict in the message, and the JSON as a file', () => {
+    const p = buildFixPrompt(dirty);
+    expect(p).toMatch(/verdict list, in your message/);
+    expect(p).toContain('downloadable file named like `corrections.json`');
+    expect(p).toContain('put the JSON alone in one code block');
   });
 
   it('tells the model to prefer the original notes over the excerpts', () => {

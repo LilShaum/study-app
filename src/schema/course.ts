@@ -306,6 +306,8 @@ export const CourseMetadataSchema = z.looseObject({
   /** The kinds of item the student chose to have made (lib/makeKinds); every kind when absent. */
   make: z.array(z.string()).max(20).optional().catch(undefined),
   description: z.string().optional(),
+  /** What the AI wants the student to know about this lecture (gaps, choices it made); a malformed list is dropped. */
+  notes_for_student: z.array(z.string()).max(20).optional().catch(undefined),
   /**
    * What the whole lecture builds to: the thread that joins its sections, as
    * a teacher says where the hour is going (docs/proposals/narration.md).

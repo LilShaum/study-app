@@ -33,6 +33,15 @@ function course(): Course {
   } as Course;
 }
 
+describe('buildAddPrompt, the way back', () => {
+  it('asks for a downloadable JSON file, with a code block as the fallback', () => {
+    const p = buildAddPrompt(course(), '', false);
+    expect(p).toContain('downloadable file named like `new-items.json`');
+    expect(p).toContain('If you cannot make a downloadable file, put the JSON alone in one code block, to be saved as a file.');
+    expect(p).not.toContain('Return ONLY JSON');
+  });
+});
+
 describe('buildAddPrompt', () => {
   const prompt = buildAddPrompt(course());
 

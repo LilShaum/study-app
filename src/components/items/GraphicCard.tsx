@@ -22,7 +22,18 @@ export function FigureElsewhere({ where }: { where?: string }) {
   );
 }
 
-export function GraphicCard({ item, frame = 'card', notesOpen = false }: { item: GraphicItem; frame?: ItemFrame; notesOpen?: boolean }) {
+export function GraphicCard({
+  item,
+  frame = 'card',
+  notesOpen = false,
+  sectionTitle,
+}: {
+  item: GraphicItem;
+  frame?: ItemFrame;
+  notesOpen?: boolean;
+  /** The section the figure belongs to, so one met at a section's edge is not taken for the next one's. */
+  sectionTitle?: string;
+}) {
   // Sanitized + theme-adapted; see prepareSvg for why raw markup isn't used.
   const svg = useMemo(() => prepareSvg(item.svg), [item.svg]);
   const purpose = purposeLabel(item.purpose);
@@ -31,6 +42,7 @@ export function GraphicCard({ item, frame = 'card', notesOpen = false }: { item:
     <div className={FRAME[frame]}>
       <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-text-3">
         Diagram
+        {sectionTitle?.trim() && <span className="font-normal normal-case tracking-normal">· {sectionTitle.trim()}</span>}
         {purpose && <span className="font-normal normal-case tracking-normal">· {purpose}</span>}
         <DifficultyBadge difficulty={item.difficulty} />
       </div>

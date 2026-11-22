@@ -21,6 +21,22 @@ const answer = (optionText: string) => {
 
 afterEach(cleanup);
 
+describe('McqCard, five options', () => {
+  it('letters them up to E and picks the fifth with the 5 key', () => {
+    const onAnswered = vi.fn();
+    render(<McqCard item={item({ options: ['a1', 'b1', 'c1', 'd1', 'e1'], correct_index: 4 })} onAnswered={onAnswered} keyboardEnabled />);
+    expect(screen.getAllByRole('radio').length).toBe(5);
+    expect(document.body.textContent).toContain('E');
+    const fifth = screen.getAllByRole('radio')[4].textContent ?? '';
+    fireEvent.keyDown(document, { key: '5' });
+    fireEvent.click(screen.getByRole('button', { name: 'Check answer' }));
+    // The fifth shown, whatever order the shuffle gave.
+    const picked = ['a1', 'b1', 'c1', 'd1', 'e1'].findIndex((o) => fifth.includes(o));
+    expect(onAnswered).toHaveBeenCalledWith(picked === 4, picked, true);
+    expect(screen.getByLabelText(/^E, /)).toBeTruthy();
+  });
+});
+
 describe('McqCard', () => {
   it('marks the right answer right and the wrong one wrong', () => {
     const onAnswered = vi.fn();

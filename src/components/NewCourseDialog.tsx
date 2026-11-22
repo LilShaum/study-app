@@ -7,7 +7,7 @@ import type { Course } from '@/schema/course';
 import { parseCourse } from '@/schema/parseCourse';
 import { buildNewCoursePrompt } from '@/lib/buildNewCoursePrompt';
 import { useCoursesStore } from '@/store/courses';
-import { beginWriteCheck, persisted, writesLanded } from '@/lib/safeStorage';
+import { persisted } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
 import { TeacherNotesField } from './TeacherNotesField';
@@ -16,6 +16,7 @@ import { MakeKindsField } from './MakeKindsField';
 import { More, PromptStep } from './PromptStep';
 import { ALL_KINDS, storedKinds, type MakeKind } from '@/lib/makeKinds';
 import { cutMessage, readReply } from '@/lib/readReply';
+import { toastNotesFromAI } from '@/lib/notesFromAI';
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
@@ -49,9 +50,7 @@ function plural(n: number, word: string): string {
  * existed only as a file in the repo, so you had to already know about
  * prompts/generator.md to get started at all. This hands you the prompt.
  *
- * Step 2 accepts a paste as well as a file, because the generator returns JSON
- * in a chat window — making you save it to disk first is a step that buys
- * nothing.
+ * Step 3 takes the file the AI made; the prompt asks it to hand one back.
  */
 export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   useDialog(onClose);
@@ -69,7 +68,6 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
     return inClass.at(-1)?.[0] ?? '';
   });
   const addCourse = useCoursesStore((s) => s.addCourse);
-  const importCourse = useCoursesStore((s) => s.importCourse);
   const navigate = useNavigate();
 
   // Parsed on every keystroke so the preview and the error both track the box.
@@ -108,10 +106,11 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
     }
   };
 
-  const openCourse = (id: string, title: string, saved: boolean) => {
+  const openCourse = (id: string, title: string, saved: boolean, notesCourse?: Course) => {
     // Never announce a save that didn't happen — see safeStorage.persisted.
     if (saved) toast(`"${title || 'Lecture'}" added.`, { type: 'success' });
     else toast(STORAGE_FULL, { type: 'error', duration: 12000 });
+    if (notesCourse) toastNotesFromAI(notesCourse);
     onClose();
     navigate(`/study/${id}`);
   };
@@ -130,27 +129,16 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
       },
     };
     const { result: id, ok } = persisted(() => addCourse(placed));
-    openCourse(id, course.metadata.title, ok);
+    openCourse(id, course.metadata.title, ok, course);
   };
 
+  // The file's text goes through the same reader as a copied reply did
+  // (lib/readReply), so the student sees the same preview before adding.
   const handleFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    beginWriteCheck();
-    const imported = await importCourse(file);
-    const ok = writesLanded();
-    const make = storedKinds(kinds);
-    if (imported.ok && (classCode || make)) {
-      const added = useCoursesStore.getState().courses[imported.id];
-      if (added)
-        useCoursesStore.getState().updateCourse(imported.id, {
-          ...added,
-          metadata: { ...added.metadata, ...(classCode ? { course_code: classCode } : {}), ...(make ? { make } : {}) },
-        });
-    }
-    if (imported.ok) openCourse(imported.id, imported.course.metadata.title, ok);
-    else toast(imported.error, { type: 'error' });
+    setPasted(await file.text());
   };
 
   const counts: Record<string, number> = {};
@@ -228,25 +216,12 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
             </More>
           </PromptStep>
 
-          <PromptStep n={3} title="Paste the reply">
-            <label className="block">
-              <span className="sr-only">The AI&rsquo;s reply</span>
-              <textarea
-                value={pasted}
-                onChange={(e) => setPasted(e.target.value)}
-                rows={6}
-                spellCheck={false}
-                placeholder="Paste the AI’s whole reply here"
-                className="field w-full font-mono text-xs"
-              />
+          <PromptStep n={3} title="Upload the file">
+            <label className="press tap-safe inline-flex cursor-pointer">
+              <Icon name="upload" size={13} />
+              Upload the file the AI made
+              <input type="file" accept=".json,.study.json" className="hidden" onChange={handleFile} />
             </label>
-            <div className="mt-2 text-sm text-text-3">
-              …or{' '}
-              <label className="cursor-pointer text-accent hover:underline">
-                upload a file instead
-                <input type="file" accept=".json,.study.json" className="hidden" onChange={handleFile} />
-              </label>
-            </div>
           </PromptStep>
 
           {result && 'error' in result && (

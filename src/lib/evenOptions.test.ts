@@ -39,6 +39,14 @@ describe('evenOptions', () => {
     expect(p).toContain('"wrong"');
   });
 
+  it('asks for a file, not a pasted reply', () => {
+    const p = buildEvenOptionsPrompt(c);
+    expect(p).toContain('downloadable file named like `wrong-options.json`');
+    expect(p).toContain('put the JSON alone in one code block, to be saved as a file');
+    expect(p).not.toContain('Reply with only');
+    expect(p).toContain('All the options are the same kind of thing');
+  });
+
   it('puts new wrong options round the untouched right answer', () => {
     const reply = { l0: { wrong: ['the leaves take water in through their open stomata', 'the stem draws it up by capillary action alone', 'the bark soaks it in from rain'], why: ['p', 'q', 'r'] } };
     expect(optionsToRework(c).some((q) => q.id === 'l0')).toBe(true);

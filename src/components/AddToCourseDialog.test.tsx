@@ -4,6 +4,12 @@ import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
 import { AddToCourseDialog } from './AddToCourseDialog';
 
+/** The file the AI handed back, uploaded as the only way in. */
+const upload = (text: string) =>
+  fireEvent.change(screen.getByLabelText('Upload the file the AI made'), {
+    target: { files: [new File([text], 'items.json', { type: 'application/json' })] },
+  });
+
 const course = {
   schema_version: '1.0',
   metadata: { title: 'Bio' },
@@ -14,7 +20,7 @@ describe('AddToCourseDialog, explanations', () => {
   beforeEach(() => useCoursesStore.setState({ courses: { bio: course } }));
   afterEach(cleanup);
 
-  it('adds only the explanations in a reply, and says what it left out', () => {
+  it('adds only the explanations in a reply, and says what it left out', async () => {
     render(<AddToCourseDialog courseId="bio" course={course} initialMode="explain" onClose={() => {}} />);
     const reply = {
       sections: [
@@ -27,19 +33,19 @@ describe('AddToCourseDialog, explanations', () => {
         },
       ],
     };
-    fireEvent.change(screen.getByRole('textbox', { name: /reply/i }), { target: { value: JSON.stringify(reply) } });
-    expect(screen.getByText('Left out 1 item that is not an explanation.')).toBeTruthy();
+    upload(JSON.stringify(reply));
+    expect(await screen.findByText('Left out 1 item that is not an explanation.')).toBeTruthy();
     // One item, the explanation: the question in the reply is not added.
     fireEvent.click(screen.getByRole('button', { name: 'Add 1 item' }));
     const items = useCoursesStore.getState().courses.bio.sections[0].items;
     expect(items.map((i) => i.id)).toEqual(['q1', 'exp1_a']);
   });
 
-  it('says so when a reply has no explanations at all', () => {
+  it('says so when a reply has no explanations at all', async () => {
     render(<AddToCourseDialog courseId="bio" course={course} initialMode="explain" onClose={() => {}} />);
     const reply = { sections: [{ id: 's1', items: [{ id: 'x', type: 'flashcard', front: 'F', back: 'B' }] }] };
-    fireEvent.change(screen.getByRole('textbox', { name: /reply/i }), { target: { value: JSON.stringify(reply) } });
-    expect(screen.getByText(/no explanations in it/)).toBeTruthy();
+    upload(JSON.stringify(reply));
+    expect(await screen.findByText(/no explanations in it/)).toBeTruthy();
   });
 });
 

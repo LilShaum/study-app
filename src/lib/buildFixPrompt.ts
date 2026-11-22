@@ -5,6 +5,7 @@ import { analyseCourseHealth } from './courseHealth';
 import { QUALITY_BAR_SPEC } from './generatorSpec';
 import { teacherNotesBlock } from './teacherNotes';
 import { kindsOf, makeOnlyBlock } from './makeKinds';
+import { FILE_FALLBACK, handBackFile } from './handBack';
 
 /** Keeps a very large course's prompt inside a sane clipboard paste. */
 const MAX_EXCERPTS = 60;
@@ -69,8 +70,9 @@ const FAULT_LABELS: Record<string, string> = {
   'written-many':
     'its section has more questions to write out than its key ideas need. Keep a written question only for an idea my notes explain in connected points; turn this one into an MCQ or a one-fact flashcard, keeping the id',
   'no-explanation': 'there is no explanation shown after answering',
-  'filler-options': 'it uses "all/none of the above" as an option',
-  'option-count': "it doesn't have the four options the contract asks for",
+  'filler-options':
+    'it uses "all/none of the above" or a letter combination ("A and C") as an option, which the shuffle breaks. Use "None of the other options" or "All of the other options" instead, or make it a select-all question',
+  'option-count': "it doesn't have the four or five options the contract asks for",
   'length-tell':
     'the right answer is longer than every wrong one, so a student can pick it without knowing the material. Keep the question and the right answer; rewrite the wrong options so at least one is as long or longer, usually by giving them the qualifier the right answer has. Make each a mistake a student who studied would really make (the neighbouring term or study, the fact turned round, the step before or after, what is true of a different case), using this lecture\'s own terms, and update distractor_rationale to match',
   'lopsided-options': 'one option is more than twice the length of the others, which draws the eye whether or not it is right',
@@ -305,12 +307,12 @@ ${blocks.join('\n\n')}
 
 Two things, in this order:
 
-1. **A short plain-text verdict list, before the JSON** — one line per term
+1. **A short plain-text verdict list, in your message** — one line per term
    you were asked about, saying either what you wrote for it or why you
    skipped it. This is the part I actually read to decide whether the course
    was missing something real. Keep it short.
 
-2. **Then the JSON, and nothing after it**, in exactly this shape:
+2. **Then the JSON as a file.** ${handBackFile('corrections')}, in exactly this shape. ${FILE_FALLBACK}
 
 \`\`\`json
 {
@@ -330,7 +332,7 @@ Both keys are optional — send only the ones you have something for.
 - Every NEW item needs an \`id\` starting with "${freshIdPrefix(course, 'fix')}" (no id in the
   course starts that way), a \`type\`, and a \`source_excerpt\` quoting
   the passage it comes from.
-- Every \`mcq\` needs exactly four \`options\`, a 0-based \`correct_index\`, an
+- Every \`mcq\` needs four or five \`options\`, a 0-based \`correct_index\`, an
   \`explanation\`, and a \`distractor_rationale\` with one entry per option in the
   same order, with an empty string in the correct answer's slot.
 - Every \`multi\` needs four to six \`options\` (statements), a \`correct\` list of

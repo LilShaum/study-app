@@ -246,25 +246,36 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     });
   }
 
-  // The generator's contract asks for exactly four options. Fewer is a
+  // The generator's contract asks for four or five options. Fewer is a
   // weaker question rather than a broken one — a two-option MCQ is a coin
-  // flip — and it is now fixable in place, so it is worth saying.
-  const wrongOptionCount = mcqs.filter((m) => (m.options?.length ?? 0) !== 4);
+  // flip — and it is fixable in place, so it is worth saying.
+  const wrongOptionCount = mcqs.filter((m) => {
+    const n = m.options?.length ?? 0;
+    return n < 4 || n > 5;
+  });
   if (wrongOptionCount.length) {
     findings.push({
       id: 'option-count',
       severity: 'warning',
-      message: `${wrongOptionCount.length} question${wrongOptionCount.length === 1 ? ' has' : 's have'} something other than four options, which the generator's contract asks for. You can add or remove options in Browse.`,
+      message: `${wrongOptionCount.length} question${wrongOptionCount.length === 1 ? ' has' : 's have'} something other than four or five options, which the generator's contract asks for. You can add or remove options in Browse.`,
       items: wrongOptionCount.map((m) => m.id),
     });
   }
 
-  const filler = mcqs.filter((m) => m.options?.some((o) => /^(all|none) of the above$/i.test(String(o).trim())));
+  // "None of the other options" and "All of the other options" are allowed
+  // wordings; "of the above" depends on where the option lands, and a
+  // letter combination points at options that get shuffled.
+  const filler = mcqs.filter((m) =>
+    m.options?.some((o) => {
+      const t = String(o).trim().replace(/[.\s]+$/, '');
+      return /^(all|none) of the above$/i.test(t) || /^(?:[Bb]oth\s+)?[A-E](?:\s*,\s*(?:and\s+)?|\s*&\s*|\s+and\s+|\s+or\s+)[A-E](?:(?:\s*,\s*(?:and\s+)?|\s*&\s*|\s+and\s+|\s+or\s+)[A-E])*$/.test(t);
+    }),
+  );
   if (filler.length) {
     findings.push({
       id: 'filler-options',
       severity: 'warning',
-      message: `${filler.length} question${filler.length === 1 ? ' uses' : 's use'} "all/none of the above" as an option.`,
+      message: `${filler.length} question${filler.length === 1 ? ' uses' : 's use'} "all/none of the above" or a letter combination as an option.`,
       items: filler.map((m) => m.id),
     });
   }
@@ -554,7 +565,10 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     i.type === 'mcq'
       ? { question: i.question, answer: i.options?.[i.correct_index] ?? '' }
       : i.type === 'flashcard'
-        ? { question: i.front, answer: i.back }
+        ? // Written cards repeat facts on purpose: a point-by-point answer is the exam's wording.
+          answerPoints(i)
+          ? null
+          : { question: i.front, answer: i.back }
         : i.type === 'definition' && !givesAway(i.term, i.definition)
           ? { question: i.definition, answer: i.term }
           : null;

@@ -89,3 +89,24 @@ describe('the tree on the lecture page', () => {
     expect(screen.queryByRole('button', { name: /^Version \d$/ })).toBeNull();
   });
 });
+
+describe('CourseRoute: notes from the AI', () => {
+  it('lists them inside About this lecture when the file has them', () => {
+    const withNotes = { ...course, metadata: { ...course.metadata, notes_for_student: ['Slide 4 was blank.'] } } as Course;
+    useCoursesStore.setState({ courses: { cell: withNotes } });
+    render(
+      <MemoryRouter initialEntries={['/study/cell']}>
+        <Routes>
+          <Route path="/study/:id" element={<CourseRoute />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('Notes from the AI')).toBeTruthy();
+    expect(screen.getByText('Slide 4 was blank.')).toBeTruthy();
+  });
+
+  it('shows nothing when there are none', () => {
+    open();
+    expect(screen.queryByText('Notes from the AI')).toBeNull();
+  });
+});

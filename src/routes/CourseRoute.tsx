@@ -29,6 +29,7 @@ import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 import { usePlanStore } from '@/store/plan';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { ExamDialog } from '@/components/ExamDialog';
+import { notesFromAI } from '@/lib/notesFromAI';
 import { examLabel, ranges } from '@/lib/examLabel';
 import { classOf, lectureExam } from '@/lib/classExams';
 
@@ -286,6 +287,16 @@ export function CourseRoute() {
         {course.metadata.builds_to && <p className="mt-3 max-w-prose text-body text-text">{course.metadata.builds_to}</p>}
         {course.metadata.description && (
           <p className="mt-3 max-w-prose text-small text-text-2">{course.metadata.description}</p>
+        )}
+        {notesFromAI(course).length > 0 && (
+          <div className="mt-3 max-w-prose text-small text-text-2">
+            <div className="mark text-text-3">Notes from the AI</div>
+            <ul className="mt-1 list-disc space-y-1 pl-5">
+              {notesFromAI(course).map((n, i) => (
+                <li key={i}>{n}</li>
+              ))}
+            </ul>
+          </div>
         )}
         <SpecimenLabel
           className="mt-3"

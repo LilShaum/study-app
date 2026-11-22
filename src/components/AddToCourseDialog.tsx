@@ -489,36 +489,20 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             </More>
           </PromptStep>
 
-          <PromptStep n={2} title="Paste the reply">
-            <label className="block">
-              <span className="sr-only">The AI&rsquo;s reply</span>
-              <textarea
-                value={pasted}
-                onChange={(e) => setPasted(e.target.value)}
-                rows={8}
-                spellCheck={false}
-                placeholder="Paste the AI’s whole reply here"
-                className="field w-full font-mono text-xs"
+          <PromptStep n={2} title="Upload the file">
+            <label className="cursor-pointer text-sm text-accent hover:underline">
+              Upload the file the AI made
+              <input
+                type="file"
+                accept=".json,.txt,application/json,text/plain"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = '';
+                  if (file) setPasted(await file.text());
+                }}
               />
             </label>
-            {/* A long reply is easier to save and open than to select and
-                copy on a phone. The file's text goes through the same box. */}
-            <div className="mt-2 text-sm text-text-3">
-              …or{' '}
-              <label className="cursor-pointer text-accent hover:underline">
-                upload a file instead
-                <input
-                  type="file"
-                  accept=".json,.txt,application/json,text/plain"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = '';
-                    if (file) setPasted(await file.text());
-                  }}
-                />
-              </label>
-            </div>
           </PromptStep>
 
           {/* Feedback */}

@@ -24,6 +24,19 @@ const validCourse = {
   ],
 };
 
+describe('notes_for_student', () => {
+  it('keeps a list of strings', () => {
+    const r = parseCourse({ ...validCourse, metadata: { title: 'T', notes_for_student: ['One.', 'Two.'] } });
+    expect(r.ok && r.course.metadata.notes_for_student).toEqual(['One.', 'Two.']);
+  });
+
+  it('drops a malformed value rather than refusing the file', () => {
+    const r = parseCourse({ ...validCourse, metadata: { title: 'T', notes_for_student: 'not a list' } });
+    expect(r.ok).toBe(true);
+    expect(r.ok && r.course.metadata.notes_for_student).toBeUndefined();
+  });
+});
+
 describe('parseCourse', () => {
   it('accepts a well-formed course', () => {
     const result = parseCourse(validCourse);
