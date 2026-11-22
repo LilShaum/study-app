@@ -100,8 +100,8 @@ const SECTIONS: HelpSection[] = [
             diagram is dense, attach a screenshot of that slide too.
           </li>
           <li>
-            Copy the reply and paste it into the New lecture box. Or save it as a{' '}
-            <span className="font-mono">.study.json</span> file and open that.
+            The AI hands back a <span className="font-mono">.study.json</span> file. Upload it in
+            New lecture.
           </li>
           <li>Check the preview, then add the lecture.</li>
         </ol>
@@ -263,7 +263,7 @@ const SECTIONS: HelpSection[] = [
           </li>
         </ul>
         <p className="mt-2">
-          Each time, you paste the AI&rsquo;s reply back in and see what will change before
+          Each time, you upload the file the AI hands back and see what will change before
           anything is added. Your scores are kept.
         </p>
       </>

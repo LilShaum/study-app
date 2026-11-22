@@ -334,13 +334,17 @@ Both keys are optional — send only the ones you have something for.
   the passage it comes from.
 - Every \`mcq\` needs four or five \`options\`, a 0-based \`correct_index\`, an
   \`explanation\`, and a \`distractor_rationale\` with one entry per option in the
-  same order, with an empty string in the correct answer's slot.
+  same order, with an empty string in the correct answer's slot. Each
+  rationale names the belief that picks that option; the explanation says
+  why the right answer is right, never the answer said again. "None of the
+  other options" and "All of the other options" are allowed, written so and
+  last; never an option that names others by letter ("A and C").
 - Every \`multi\` needs four to six \`options\` (statements), a \`correct\` list of
   the 0-based indices of the true ones (at least one true and at least one
   false), an \`explanation\`, and an \`option_rationale\` with one reason per
   statement in the same order: why it is true, or why it is false.
 - A corrected question must still pass the rules below. Fixing a broken key by
-  adding a long, qualified right answer beside three short wrong ones swaps one
+  adding a long, qualified right answer beside short wrong ones swaps one
   fault for another.
 
 ════════ QUALITY RULES ════════

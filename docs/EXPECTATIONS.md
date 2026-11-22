@@ -100,7 +100,12 @@ slides missing from what was sent). Shown once as "Notes from the AI" on
 import, and under About this lecture. Questions have four options, five at
 most; "None of the other options" and "All of the other options" are
 allowed and shown last (prompt round of 2026-11-22,
-docs/proposals/prompt-rewrite.md).
+docs/proposals/prompt-rewrite.md). Example questions the student gives
+(a past test, a study guide) set the types and style of the questions; an
+explanation says why the answer is right, never the answer again; the
+prompt's guide to types is guidance the AI may depart from where another
+type tests better (the owner, 2026-11-22). The same rules reach the Add,
+Add questions, Fix and even-out prompts.
 
 **How it works.** Three short steps (the owner, 2026-10-29: the prompt
 screens were "massive blocks of text … not intuitive for new users"): what

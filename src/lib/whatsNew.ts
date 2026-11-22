@@ -23,7 +23,7 @@ export const WHATS_NEW: Change[] = [
     items: [
       'The library folds each class under its name, its lectures numbered from I, and class codes always read like BIOL 365.',
       'Each section in Learn starts by asking: Read it here first, or Questions first. Change it partway on the step line.',
-      'For lectures made from now: up to five options, None or All of the other options, and the AI\'s notes to you shown on opening the file.',
+      'For lectures made from now: up to five options, None or All of the other options, explanations that say why, and the AI\'s notes to you.',
       'Fewer words on the screens: the lines that explained what a button already says are gone.',
       'Options are shuffled every time a question appears; All of the above and None of the above stay last.',
     ],

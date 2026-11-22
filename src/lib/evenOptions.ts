@@ -98,9 +98,9 @@ const RULES = `Rules:
 - Keep each question and its right answer exactly as they are. Send only the wrong options.
 - Each wrong option is a mistake a student who studied would really make: the neighbouring term, structure or study; the right fact turned round (raises for lowers, before for after); the step before or after; what is true of a different case; or a misconception my notes warn about. Use the lecture's own terms, so recognising words from the slides cannot rule one out.
 - At least one wrong option is longer than the right answer, and none is much shorter. Give the wrong options the same kind of qualifier or "because" clause the right one has; do not shorten the right one.
-- All the options are the same kind of thing, fit the question's grammar and are equally specific. Nothing invented, no jokes, no "all of the above".
+- All the options are the same kind of thing, fit the question's grammar and are equally specific. Nothing invented, no jokes, no option that names others by letter ("A and C"); a "None of the other options" or "All of the other options" stays as it is.
 - Use my notes if this chat has them; if not, the passage under each question is from my notes. Nothing that is not in them. If a question has no passage and you do not have my notes, leave it out of your reply rather than guess.
-- If the explanation names a wrong option you replaced, send a new explanation too ("explanation"), saying why the right answer is right; otherwise leave it out.`;
+- If the explanation names a wrong option you replaced, send a new explanation too ("explanation"), saying why the right answer is right, not the answer said again; otherwise leave it out.`;
 
 const ENTRY = `{"wrong": ["<wrong 1>", "<wrong 2>", "<wrong 3>"], "why": ["<why a student might pick wrong 1, and why it is wrong>", "<… 2>", "<… 3>"], "explanation": "<only if needed>"}`;
 

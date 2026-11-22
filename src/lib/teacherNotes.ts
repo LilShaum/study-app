@@ -17,8 +17,9 @@ These are my own notes from class about what matters. They outrank your
 judgement of what is examinable. Where they say something does not need to
 be memorised, write no items on it (list its terms under
 inventory.mentioned). Where they say something must be known, cover it fully,
-even if it looks like an illustration. Slide and page numbers refer to my
-source material.
+even if it looks like an illustration. Example questions here (a past test,
+a study guide) set the types and style of your questions, as your
+instructions say. Slide and page numbers refer to my source material.
 
 ${text}
 

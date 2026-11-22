@@ -24,8 +24,10 @@ describe('buildNewCoursePrompt', () => {
     expect(prompt).toMatch(/attach your slides/i);
   });
 
-  it('asks for JSON only', () => {
-    expect(prompt).toMatch(/and nothing else/i);
+  it('asks for the course back as a file, never pasted text (the owner, 2026-11-16)', () => {
+    expect(prompt).toMatch(/hand back the\s+`\.study\.json` file/);
+    expect(prompt).toMatch(/one downloadable file/);
+    expect(prompt).not.toMatch(/JSON and nothing else/);
   });
 
   it('is substantial enough to be the real spec', () => {

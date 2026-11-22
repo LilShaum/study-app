@@ -65,6 +65,40 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   the lectures, so the more lectures you have the less time it is per
   lecture, which is stupid. it should be replaced with some sort of
   suggestion with what to study today").
+- **A protocol for ripples** (2026-11-22, on the prompt describing an order
+  Learn no longer used: "we need a protocol that deals with shit like
+  this. any time some part of the app is changes, all the other parts of
+  the app that relate to it need to be checked to see how they need to be
+  changed accordingly").
+- **Prompt: example questions set the types, explanations explain, the
+  type guide is guidance** (2026-11-22: "just make it a small rule that is
+  something like if the user provides example questions, make question
+  types that match the provided example question's type/style"; "make it
+  so the answers to why the correct answer was correct doesnt just restate
+  the question/correct answer and that it actually explains why"; "make
+  sure the guide isnt too concrete … if the ai wants to use a question type
+  in a way thats different to the guide that it can if it thinks its
+  valuable"; "make sure you changed all the prompts accordingly and not
+  just the main generating prompt").
+- **Phone and computer each use their format; a design update with the
+  onboarding** (2026-11-22: "the difference between the phone view and pc
+  view is not good enough, meaning that both do not fully take advantage
+  of the format … on the phone, I want it so when you open a lecture, the
+  tree unfurls in the same way/shakes or something and thats when the
+  leaves fall rather than when you run your fingers over them … for the pc
+  view … taking better use of the space … the course page is
+  innefficiently and unimaginatively using the space … in learning mode …
+  the tree should be bigger and interactable in some way maybe showing it
+  gain leaves as you study, the keybinds should be repositioned, the
+  glossary should have its own section of the screen so it doesnt cover
+  shit when it opens … intuitive and cleaner more elegant feel, everything
+  should look and feel intentional. start with a plan building on my
+  ideas and it will go through in the design update along with the
+  onboarding").
+- **A code audit** (2026-11-22: "the code itself needs a big audit on how
+  efficient it is, how many redundant or useless sections there are, how
+  well its annotated for ai to understand the code, how well its
+  organized, etc").
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Folding live

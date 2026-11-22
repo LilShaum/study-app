@@ -58,7 +58,7 @@ function plural(n: number, word: string): string {
 
 /**
  * Two-step "add material to this course": copy a context-loaded prompt out to
- * your AI chat, paste the JSON back in.
+ * your AI chat, upload the file it hands back.
  *
  * The paste is never applied sight-unseen. Parsing produces a plan, the plan
  * is rendered as a preview, and only the confirm button commits it — so the

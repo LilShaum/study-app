@@ -131,11 +131,11 @@ export function readReply(reply: string): ReadReply {
 
 /** What to ask the chat for, when a reply was cut off: the rest, in a shape Add material takes. */
 export const CONTINUE_ASK =
-  'You were cut off. Send only the items you had not written yet, as {"sections":[{"id":"…","title":"…","items":[…]}]}, and nothing else.';
+  'You were cut off. Send only the items you had not written yet, as {"sections":[{"id":"…","title":"…","items":[…]}]}, in a downloadable file holding only that JSON.';
 
 /** The line to show when a reply was cut off and only its complete part was kept. */
 export function cutMessage(cut: { lastSection: string | null }): string {
   return `The reply was cut off before the end, so only its complete part is here${
     cut.lastSection ? `. Section "${cut.lastSection}" may be missing its last items, and any sections after it are missing` : ''
-  }. Add this, then in the same chat send: ${CONTINUE_ASK} Paste what comes back into Add material on the lecture.`;
+  }. Add this, then in the same chat send: ${CONTINUE_ASK} Upload the file it sends into Add material on the lecture.`;
 }

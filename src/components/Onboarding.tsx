@@ -105,7 +105,7 @@ export function Onboarding() {
             Paste it into an AI chat with your slides or notes attached. It writes the lecture.
           </Step>
           <Step n={3}>
-            Paste the lecture back here and study it. The app keeps track of what is fading and
+            Upload the file it makes here and study it. The app keeps track of what is fading and
             brings it back before you lose it.
           </Step>
         </ol>

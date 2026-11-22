@@ -276,7 +276,7 @@ suggestions:
 | Each figure the lecture turns on | a `graphic` carrying `why` and `purpose`, with your own drawing in `svg` only if it makes the relationship clearer than the source's own figure does |
 | Each run of slides that builds to one point (Pass 1) | the section's `builds_to` |
 | Each handwritten note that says more than its slide | wherever it belongs, as "Writing the narration" below says |
-| Past questions, a study guide or assignments the student gave that ask for written answers | written flashcards in their format (Item types, "A written flashcard") |
+| Example questions the student gave (past questions, a study guide, assignments) | questions of their types and style (Item types, "Which type for what") |
 
 A term the source only *names* — used in passing, a label on a diagram, a
 caption, never explained — goes in `inventory.mentioned` and gets no
@@ -497,10 +497,18 @@ Every item, of any type, carries these common fields:
 | see a structure, cycle or pathway | `graphic` |
 | explain a mechanism, comparison or argument in several connected points | a written `flashcard` (below) |
 
-Use every type the material calls for, and none for its own sake. A lecture
-asked only in plain one-answer questions has left tools unused; a type
-forced onto an idea it does not fit teaches less than the plain question
-would.
+This is a guide, not a rule: where another type, or a type used another
+way, tests an idea better, use it. Use every type the material calls for,
+and none for its own sake. A lecture asked only in plain one-answer
+questions has left tools unused; a type forced onto an idea it does not fit
+teaches less than the plain question would.
+
+**Example questions from the student set the style.** Past questions, a
+study guide or assignments show what this class's exam asks: write
+questions of the same types and style (their format, their labelled parts
+and mark split, how their options are built), on the topics they cover and
+on the others the same kind of question would reach, with the types this
+app has.
 
 **`mcq`** — one question, four options (five at most, where a fifth earns
 its place), one correct answer.
@@ -583,18 +591,14 @@ others ("all of the above", "both 1 and 3"): each is judged on its own.
 **A written flashcard** has its `back` as numbered points, "(1) … (2) …",
 and is tagged `short-answer` (or `long-answer`). The app asks it as "Write
 the answer" and the student ticks each point they made: the hardest and
-slowest card. Without exam material from the student, write one only for a
-key idea the lecture itself explains in connected points (the steps of a
+slowest card. Unless the student's example questions ask for written
+answers (above), write one only for a key idea the lecture itself explains in connected points (the steps of a
 mechanism, the two sides of a comparison, reasons each with its because),
 only where other items teach each point first, and usually no more than one
 or two in a section. Each point is a full sentence that carries its reason, never a
 bare word. Never write one for a list of names or examples ("give three
 sources of…"): a list is tested by an MCQ that tells its members from
-near-misses, or each member where it is taught. Where the student gave past
-questions, a study guide or assignments that ask for written answers, they
-show what this class's exam asks: write a set for the lecture in that
-format (its labelled parts, its mark split, its kind of question), on the
-topics they cover and on the others that kind of question would reach.
+near-misses, or each member where it is taught.
 
 **`explain`** — a key idea explained the way a good tutor says it in class,
 to read before the questions on it. Not scored.
@@ -979,8 +983,12 @@ wrong thing. For every MCQ:
   it ("not described as…" teaches nothing). If you can't write a real
   rationale for an option, or name no belief that picks it, replace that
   option: it is not a good distractor.
-- `explanation` states why the correct answer is right, grounded in the
-  source, not just "because it's correct." One or two sentences: the
+- `explanation` says **why** the correct answer is right: the reason, the
+  mechanism or the step that makes it so, grounded in the source, so a
+  student who guessed now understands it. Never the question or the right
+  option said again in other words ("It is X, because X is the one that
+  does this"). The same holds for a select-all's explanation and reasons, a
+  problem's steps and a written answer's points. One or two sentences: the
   explanations and rationales are most of a course's length, and a reply
   that runs out of room is cut off.
 
@@ -1118,9 +1126,10 @@ Check your own draft:
    family? Could a stranger answer any card from plain English? Fix each.
 10. **The types.** Is there an idea a type you used nowhere would test
    better (confusable properties: select-all; a bundle with one wrong
-   detail: None of the other options; a method: a problem; the exam's own
-   kind of written question)? Write it. Is any type there only for variety?
-   Make it the plain question. Does `metadata.notes_for_student` tell the
+   detail: None of the other options; a method: a problem; the kind of
+   question the student's examples ask)? Write it. Is any type there only
+   for variety? Make it the plain question. Does any explanation only
+   restate its answer? Say why instead. Does `metadata.notes_for_student` tell the
    student what to check: notes that disagreed with the slides, parts of
    the source missing or unreadable?
 11. **Work every problem** from its question alone, as a student would. Do

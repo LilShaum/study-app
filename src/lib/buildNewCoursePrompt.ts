@@ -21,8 +21,8 @@ export function buildNewCoursePrompt(notes?: string, previous?: Course, studies 
   return `I want you to turn my course notes into an Arborous study course.
 
 Your full instructions are below. Follow them exactly — especially the
-four-pass reading procedure and the coverage obligations — and reply with the
-\`.study.json\` file's JSON and nothing else.
+four-pass reading procedure and the coverage obligations — and hand back the
+\`.study.json\` file they describe.
 
 ════════ YOUR INSTRUCTIONS ════════
 
