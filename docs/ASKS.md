@@ -82,7 +82,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   plan: a note marking the slide wrong wins; a note contradicting the slide
   or the field without such a mark is not used silently, and is reported to
   the student with the file.
-- **Course codes always "BIOL 365", never "BIOL365"** (2026-11-22).
 - **Skip the reading reworked** (2026-11-22: "whenever i pressed ive read
   it hear/teach me here instead, i never noticed a difference … the skip
   the reading/read first however I would notice a difference but I dont
@@ -384,6 +383,7 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- **Course codes always "BIOL 365", never "BIOL365"** (2026-11-22). Live 2026-11-22 (a3700de).
 - **Enter only checks the answer** (2026-11-20: "make enter only be check
   answer on items that have answers checked that way you don't
   accidentally go next"). Live 2026-11-20 (8844c86).
