@@ -20,6 +20,7 @@ import { MixedLectures } from './MixedLectures';
 import { CATCH_UP_HOURS, inWords, missedThisSitting, nextDueAt, whenLabel, type Grade } from '@/lib/memory';
 import { examRule } from '@/lib/exam';
 import { useCoursesStore } from '@/store/courses';
+import { useLearnStore } from '@/store/learn';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { todayAcrossCourses, type CourseToday } from '@/lib/libraryToday';
 import { plannedMinutes, studiedToday, todaySitting } from '@/lib/todaySitting';
@@ -251,7 +252,7 @@ const PHASES: { key: LearnPhase; label: string }[] = [
  * naming one of three stages that each lasted forty cards, so it said the
  * same thing for minutes at a time.
  */
-function StepLine({ item }: { item: SessionItem }) {
+function StepLine({ item, questionsFirst, onSwitch }: { item: SessionItem; questionsFirst: boolean; onSwitch: () => void }) {
   const phase = item._phase ?? phaseOfItem(item);
   // Today's sitting opens with what is due; say so, the way a step is named.
   if (item._block === 'review') {
@@ -283,6 +284,17 @@ function StepLine({ item }: { item: SessionItem }) {
         ))}
       </span>
       {item._again ? <span className="whitespace-nowrap text-text-2">Again, from earlier</span> : null}
+      {/* The section's choice, changed partway (the owner, 2026-11-22). Not
+          on the section's first card, which asks it. */}
+      {item.type !== 'slides' && (
+        <button
+          type="button"
+          onClick={onSwitch}
+          className="tap-safe ml-auto whitespace-nowrap text-text-3 underline-offset-4 hover:text-text hover:underline"
+        >
+          {questionsFirst ? 'Read it here first' : 'Questions first'}
+        </button>
+      )}
     </div>
   );
 }
@@ -395,6 +407,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   /** Learn: the pause between two steps, while it is showing. */
   const [pause, setPause] = useState<Pause | null>(null);
   /** A question on screen, not yet answered: the glossary is shut, as it would hold the answer. */
+  // Subscribed, so the step line's switch follows the section's choice.
+  const sectionQuestionsFirst = useLearnStore((s) => (current ? s.startedQuestionsFirst(lectureOf(current, courseId), current._sectionId) : false));
   const questionUp = !pause && !!current && QUESTION_TYPES.has(current.type) && !answeredIndices.has(index);
 
   useEffect(() => {
@@ -926,7 +940,13 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         </div>
       )}
 
-      {(mode === 'learn' || mode === 'today') && current && !pause && <StepLine item={current} />}
+      {(mode === 'learn' || mode === 'today') && current && !pause && (
+        <StepLine
+          item={current}
+          questionsFirst={sectionQuestionsFirst}
+          onSwitch={() => useSessionStore.getState().switchReading(!sectionQuestionsFirst)}
+        />
+      )}
       {mixedClass ? (
         // No lecture is named on a card: which one it is from is part of the question.
         <p className="mb-4 text-xs text-text-3">

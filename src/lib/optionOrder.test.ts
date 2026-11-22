@@ -24,12 +24,26 @@ describe('optionOrder', () => {
     expect([...where].sort()).toEqual([0, 1, 2, 3]);
   });
 
-  it('keeps the written order when an option points at the others', () => {
-    for (const last of ['All of the above', 'None of these', 'Both of the above', 'A and C', '(B) or (D)'])
+  it('keeps the written order when an option names others by letter', () => {
+    for (const last of ['A and C', '(B) or (D)', 'C & D', 'A and C only', 'Both A and B'])
       expect(optionOrder(['a', 'b', 'c', last], 'x')).toEqual([0, 1, 2, 3]);
     // Letters inside an answer are not pointers.
     const dna = ['T attaches to A and C to G', 'b', 'c', 'd'];
     expect(new Set(['x', 'y', 'z', 'w'].map((s) => optionOrder(dna, s).join())).size).toBeGreaterThan(1);
+  });
+});
+
+describe('an option that speaks of all the others (the owner, 2026-11-22)', () => {
+  it('goes last, with the rest shuffled above it, from the first showing', () => {
+    for (const last of ['All of the above', 'None of these', 'None of the other options', 'All of the other options', 'Both of the above']) {
+      const orders = new Set(['x', 'y', 'z', 'w', 'v', 'u'].map((s) => optionOrder([last, 'a', 'b', 'c'], s)));
+      for (const o of orders) expect(o[3]).toBe(0);
+      expect(orders.size).toBeGreaterThan(1);
+    }
+  });
+  it('leaves a content option that only mentions both alone', () => {
+    const orders = new Set(['x', 'y', 'z', 'w', 'v', 'u'].map((s) => optionOrder(['Both procedural memory and priming', 'a', 'b', 'c'], s).join()));
+    expect(orders.size).toBeGreaterThan(1);
   });
 });
 
@@ -64,7 +78,7 @@ describe('orderForShowing', () => {
   });
 
   it('leaves a fixed order fixed', () => {
-    const fixed = ['a', 'b', 'c', 'All of the above'];
+    const fixed = ['a', 'b', 'c', 'A and C'];
     orderForShowing('fixed', fixed, 3, 'one');
     expect(orderForShowing('fixed', fixed, 3, 'two')).toEqual([0, 1, 2, 3]);
   });

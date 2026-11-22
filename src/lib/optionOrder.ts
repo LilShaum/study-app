@@ -12,13 +12,15 @@ import { multiKey, multiReasons } from './multiKey';
  * it is. So the options are shuffled at every showing, the key and each
  * option's "why not" following.
  *
- * An option that points at the others ("all of the above", "A and C") keeps
- * the written order, or it would point at the wrong ones.
+ * An option that names other options by letter ("A and C") keeps the
+ * written order, or it would point at the wrong ones. One that speaks of
+ * all of them ("All of the above", "None of the other options") goes last
+ * and the rest are shuffled above it: it reads as the last word, and it
+ * means the same wherever the others sit (the owner, 2026-11-22: shuffled
+ * "every time the question appears, even the first time").
  */
-const POINTS_AT_OTHERS = [
-  /\b(all|none|both|neither) of (the )?(above|these|them|the options)\b/i,
-  /^\s*\(?[A-D]\)?\s*(,|and|or|&)\s*\(?[A-D]\)?(\s*(,|and|or|&)\s*\(?[A-D]\)?)*\s*\.?\s*$/i,
-];
+const BY_LETTER = /^\s*\(?[A-E]\)?\s*(,|and|or|&)\s*\(?[A-E]\)?(\s*(,|and|or|&)\s*\(?[A-E]\)?)*\s*(only)?\s*\.?\s*$/i;
+const OF_ALL = /\b(all|none|neither) of (the )?(above|these|them|the (other )?options|the others)\b|^\s*both of the above\b/i;
 
 /** A small seeded generator, so one showing keeps one order (cyrb53 hash into mulberry32). */
 function seeded(seed: string): () => number {
@@ -40,17 +42,22 @@ function seeded(seed: string): () => number {
 }
 
 /** The order to show the options in: entry k is the index, in the file, of the option shown k-th. */
-const fixedOrder = (options: readonly string[]) => options.some((o) => POINTS_AT_OTHERS.some((p) => p.test(o)));
+const BOTH_LETTERS = /^\s*(both|neither)\s+\(?[A-E]\)?\s+(and|nor)\s+\(?[A-E]\)?\s*\.?\s*$/i;
+const fixedOrder = (options: readonly string[]) => options.some((o) => BY_LETTER.test(o) || BOTH_LETTERS.test(o));
+/** Options that speak of all the others: shown last, in their written order. */
+const lastOnes = (options: readonly string[]) => options.map((o, i) => (OF_ALL.test(o) ? i : -1)).filter((i) => i >= 0);
 
 export function optionOrder(options: readonly string[], seed: string): number[] {
   const order = options.map((_, i) => i);
   if (fixedOrder(options)) return order;
+  const last = lastOnes(options);
+  const rest = order.filter((i) => !last.includes(i));
   const rand = seeded(seed);
-  for (let i = order.length - 1; i > 0; i--) {
+  for (let i = rest.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
-    [order[i], order[j]] = [order[j], order[i]];
+    [rest[i], rest[j]] = [rest[j], rest[i]];
   }
-  return order;
+  return [...rest, ...last];
 }
 
 /** The last order each question was shown in, while the app is open, by question id. */

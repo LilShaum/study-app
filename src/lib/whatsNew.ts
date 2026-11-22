@@ -21,9 +21,10 @@ export const WHATS_NEW: Change[] = [
   {
     date: '2026-11-22',
     items: [
-      'Each section in Learn starts by asking: Read it here first, or Questions first. Questions first explains nothing before it asks.',
+      'Each section in Learn starts by asking: Read it here first, or Questions first. Change it partway on the step line.',
       'A class code is always written with a space, as BIOL 365, so lectures saved as BIOL365 join their class.',
       'Fewer words on the screens: the lines that explained what a button already says are gone.',
+      'Options are shuffled every time a question appears; All of the above and None of the above stay last.',
     ],
   },
   {

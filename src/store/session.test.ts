@@ -488,6 +488,27 @@ describe('session store: Learn after reading the slides', () => {
     expect(s().items.some((i) => i.type === 'explain')).toBe(true);
   });
 
+  it('switches partway, either way, keeping the answers so far (the owner, 2026-11-22)', async () => {
+    const { useLearnStore } = await import('./learn');
+    const { useCoursesStore } = await import('./courses');
+    useCoursesStore.setState({ courses: { slides: course } });
+    useLearnStore.setState({ questionsFirstIn: {} });
+    s().readFirst('s1'); // past the section's first card, reading first
+    const reading = (from: number) => s().items.slice(from).filter((i) => i.type === 'definition' || i.type === 'explain').length;
+    expect(reading(s().index)).toBeGreaterThan(0);
+    s().switchReading(true);
+    expect(reading(s().index + 1)).toBe(0);
+    expect(useLearnStore.getState().startedQuestionsFirst('slides', 's1')).toBe(true);
+    // On to a question, answered, then back to reading first.
+    while (s().current() && !['mcq', 'recall', 'flashcard'].includes(s().current()!.type)) s().next();
+    s().record(true);
+    s().next();
+    const answered = s().index - 1;
+    s().switchReading(false);
+    expect(useLearnStore.getState().startedQuestionsFirst('slides', 's1')).toBe(false);
+    expect(s().answeredIndices.has(answered)).toBe(true);
+  });
+
   it('read it here first keeps the reading and forgets an earlier questions first', async () => {
     const { useLearnStore } = await import('./learn');
     useLearnStore.getState().setQuestionsFirst('slides', 's1', true);

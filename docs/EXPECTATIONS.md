@@ -333,7 +333,10 @@ first**, for a part just read in the notes or heard in class. Questions
 first leaves out every card that teaches before asking (definitions,
 explanations, worked examples, figures, flashcards shown open): each card
 is asked cold, and the why and the passage open after a miss or Not sure.
-The card says where the part is in the notes when the file knows. A
+The card says where the part is in the notes when the file knows. The
+step line has the other choice, to change it partway: Questions first
+drops the reading still ahead; Read it here first puts the current step's
+reading back in front of the card on screen, answers so far kept. A
 sitting left partway and opened again within a day carries on the way
 the section began; a new start asks again. (Until 2026-11-22 this was
 "Skip the reading", one setting for every lecture, and a separate "I've

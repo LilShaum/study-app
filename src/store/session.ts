@@ -152,6 +152,14 @@ interface SessionState {
   /** Learn: this section read here first, as usual; the next card. */
   readFirst: (sectionId: string) => void;
   /**
+   * Partway into a section, the other way (the owner, 2026-11-22: "ensure
+   * that you can change … even after first selecting one option and having
+   * starting the section"). Questions first drops the reading still ahead;
+   * read first puts the current step's reading back in front of the card on
+   * screen, and the rest of the section's ahead. Answers so far are kept.
+   */
+  switchReading: (questionsFirst: boolean) => void;
+  /**
    * The card on screen was set aside: it and every copy of it still ahead
    * leave the sitting (their file item, so a definition takes its typed term
    * with it). The caller moves the session on. `lecture`: the card's own
@@ -595,6 +603,40 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     const { items, index, courseId } = get();
     if (courseId && items[index]) useLearnStore.getState().setQuestionsFirst(lectureOf(items[index], courseId), sectionId, false);
     get().next();
+  },
+
+  switchReading: (questionsFirst) => {
+    const { items, index, courseId, mode, sectionId } = get();
+    const here = items[index];
+    if (!here || !courseId || (mode !== 'learn' && mode !== 'today')) return;
+    const lecture = lectureOf(here, courseId);
+    useLearnStore.getState().setQuestionsFirst(lecture, here._sectionId, questionsFirst);
+    if (questionsFirst) {
+      set((s) => withoutReading(s, here._sectionId, s.index));
+      return;
+    }
+    const course = useCoursesStore.getState().courses[lecture];
+    if (!course) return;
+    const fresh = listFor(lecture, course, mode, {
+      sectionId: sectionId ?? undefined,
+      resuming: true,
+      kind: null,
+      study: null,
+    }).items;
+    const at = fresh.findIndex((i) => i.id === here.id && !i._again);
+    if (at < 0) return;
+    // The step's reading before this card, not already met in this sitting.
+    const seen = new Set(items.slice(0, index).map((i) => i.id));
+    let from = at;
+    while (from > 0 && fresh[from - 1]._sectionId === here._sectionId && fresh[from - 1]._step === fresh[at]._step) from--;
+    const reading = fresh.slice(from, at).filter((i) => READING_TYPES.has(i.type) && i.type !== 'slides' && !seen.has(i.id));
+    const ahead = fresh.slice(at);
+    set((s) => ({
+      items: [...s.items.slice(0, index), ...reading, ...ahead],
+      // What was answered past here belongs to cards now rebuilt: only answers up to here are kept.
+      answeredIndices: new Set([...s.answeredIndices].filter((n) => n < index)),
+      results: new Map([...s.results].filter(([n]) => n < index)),
+    }));
   },
 
   finish: () => {
