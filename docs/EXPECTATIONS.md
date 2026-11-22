@@ -327,17 +327,26 @@ an example sentence: there it is folded behind "From your notes ▸", since
 the card already said the idea twice, and it still opens by itself after
 an answer (design audit 3B, live 2026-11-06; not yet checked on a real
 lecture's sitting). A term defined the same way in two lectures counts
-once. A section with a slide range can start with "read this part of your material" (any source: the range carries its unit, slides or pages; worded for any source, the owner 2026-10-29), then
-everything is asked first. "Skip the reading" asks every card first, for
-material already met in class. At the end Learn offers the next section.
+once. Every section starts with one choice, asked at each section's start
+(the owner, 2026-11-22): **Read it here first** (as above) or **Questions
+first**, for a part just read in the notes or heard in class. Questions
+first leaves out every card that teaches before asking (definitions,
+explanations, worked examples, figures, flashcards shown open): each card
+is asked cold, and the why and the passage open after a miss or Not sure.
+The card says where the part is in the notes when the file knows. A
+sitting left partway and opened again within a day carries on the way
+the section began; a new start asks again. (Until 2026-11-22 this was
+"Skip the reading", one setting for every lecture, and a separate "I've
+read it" that only showed on some sections and often changed nothing.)
+At the end Learn offers the next section.
 
 A section that says what it builds to opens with it, as a teacher opens a
 new part of a lecture, on the same first card as its slide range when it
 has one; the lecture's first section opens with what the whole lecture
 builds to as well (the owner, 2026-11-03; docs/proposals/narration.md).
 It is read once, in the section's first step, in Learn and in Today's new
-material, never in a review, Practice or the test, and Skip the reading
-leaves it out. A figure's card says what to look at and whether it is to
+material, never in a review, Practice or the test, and is the card that
+asks read first or questions first. A figure's card says what to look at and whether it is to
 know or just to picture it; one with no drawing of the app's says where it
 is in the student's own notes. Neither moves a card or changes a schedule:
 one more card to read per section cost nothing measurable in the simulator
@@ -389,7 +398,7 @@ sitting's second look included. A short or long answer of several points
 comes last in its section, after its parts; at its first
 meeting the section opens with it and its points to read ("This section
 builds to this answer"), so it is never asked cold and never read back: in
-a section of one step it waits for the next sitting. Skip the reading
+a section of one step it waits for the next sitting. Questions first
 leaves the outline out and asks it cold, with I don't know. A one-point
 written card (a calculation) has no outline and follows its worked example. A long answer laid out as
 a worked example (tagged or titled as one) is asked as a written question

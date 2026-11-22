@@ -16,7 +16,8 @@ function course(items: StudyItem[]): Course {
 }
 
 const defs = TERMS.map((_, n) => def(n));
-const learn = (items: StudyItem[], progress = {}) => buildSessionItems(course(items), 'learn', { progress });
+/** Learn's cards, without each section's first card (the read-first or questions-first choice): these tests are about the order in a step. */
+const learn = (items: StudyItem[], progress = {}) => buildSessionItems(course(items), 'learn', { progress }).filter((i) => i.type !== 'slides');
 const stepOf = (items: SessionItem[], id: string) => items.find((i) => i.id === id)?._step;
 /** Learn over two sittings: the first, then the second look it held back (SessionItem._second). */
 const whole = (items: StudyItem[]) => {

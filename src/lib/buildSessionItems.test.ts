@@ -120,7 +120,8 @@ describe('buildSessionItems — learn mode', () => {
     // ask is as far from its reading as the step allows. A flashcard never
     // answered is shown open first, then asked.
     const items = buildSessionItems(mixedCourse, 'learn', { sectionId: 'sa' });
-    expect(items.map((i) => i.id)).toEqual(['a_def', 'a_eg', 'a_gfx', 'a_card', 'a_def~recall', 'a_mcq']);
+    // The section's first card, the choice of reading first or questions first, comes before it all.
+    expect(items.map((i) => i.id)).toEqual(['sa~slides', 'a_def', 'a_eg', 'a_gfx', 'a_card', 'a_def~recall', 'a_mcq']);
   });
 
   it('never shows a flashcard open before asking it', () => {
@@ -133,14 +134,14 @@ describe('buildSessionItems — learn mode', () => {
     // course before answering anything.
     const items = buildSessionItems(mixedCourse, 'learn');
     expect(items.map((i) => i.id)).toEqual([
-      'a_def', 'a_eg', 'a_gfx', 'a_card', 'a_def~recall', 'a_mcq',
+      'sa~slides', 'a_def', 'a_eg', 'a_gfx', 'a_card', 'a_def~recall', 'a_mcq',
       // Nothing easy to recall first: the term is named after the question.
-      'b_def', 'b_mcq', 'b_def~recall',
+      'sb~slides', 'b_def', 'b_mcq', 'b_def~recall',
     ]);
   });
 
-  it('drops nothing — it reorders, and adds a recall question per definition', () => {
-    expect(buildSessionItems(mixedCourse, 'learn')).toHaveLength(9);
+  it('drops nothing — it reorders, and adds a recall question per definition and a first card per section', () => {
+    expect(buildSessionItems(mixedCourse, 'learn')).toHaveLength(11);
   });
 });
 
@@ -511,8 +512,9 @@ describe('Learn with the student\'s own slides', () => {
     expect(items[0]._block).toBe(items[1]._block);
   });
 
-  it('leaves it out of sections without a range, and once the first step is done', () => {
-    expect(buildSessionItems(withRange, 'learn', { sectionId: 'sb' }).some((i) => i.type === 'slides')).toBe(false);
+  it('opens a section without a range too, with no place named, and comes back once the first step is done', () => {
+    const plain = buildSessionItems(withRange, 'learn', { sectionId: 'sb' });
+    expect(plain[0]).toMatchObject({ type: 'slides', range: undefined });
     const asks = buildSessionItems(withRange, 'learn', { sectionId: 'sa' }).filter((i) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'recall');
     const progress = Object.fromEntries(asks.map((i) => [i.id, { got: 1, missed: 0, lastSeen: 1 }]));
     const again = buildSessionItems(withRange, 'learn', { sectionId: 'sa', progress: progress as never });
@@ -546,13 +548,15 @@ describe('Learn, opening a section with what it builds to', () => {
     expect(openers[0]).toMatchObject({ range: 'slides 1–3', buildsTo: 'To where it all leads.' });
   });
 
-  it('adds nothing to a section that does not say', () => {
-    expect(buildSessionItems(framed, 'learn', { sectionId: 'sb' }).some((i) => i.type === 'slides')).toBe(false);
+  it('opens a section that does not say with the choice alone (the owner, 2026-11-22)', () => {
+    const items = buildSessionItems(framed, 'learn', { sectionId: 'sb' });
+    expect(items[0]).toMatchObject({ type: 'slides', buildsTo: undefined, range: undefined });
+    expect(items.filter((i) => i.type === 'slides')).toHaveLength(1);
   });
 
   it('says what the whole lecture builds to once, on its first section', () => {
     const lecture = { ...mixedCourse, metadata: { ...mixedCourse.metadata, builds_to: 'To the whole of it.' } } as Course;
-    const openers = buildSessionItems(lecture, 'learn').filter((i) => i.type === 'slides');
+    const openers = buildSessionItems(lecture, 'learn').filter((i) => i.type === 'slides' && i.lectureBuildsTo);
     expect(openers).toHaveLength(1);
     expect(openers[0]).toMatchObject({ _sectionId: mixedCourse.sections[0].id, lectureBuildsTo: 'To the whole of it.' });
   });

@@ -143,12 +143,14 @@ interface SessionState {
   markUnsure: () => void;
   jumpToSection: (sectionId: string) => void;
   /**
-   * Learn: the student has read this section in their own slides. Its
-   * reading cards still ahead (definitions and flashcards shown open) are
-   * dropped, so each card is asked first and its passage shown after, then
-   * the session moves on.
+   * Learn, at a section's start: questions first. Its reading cards still
+   * ahead (definitions, flashcards shown open, explanations, worked examples,
+   * figures) are dropped, so each card is asked before anything explains it,
+   * the why and the passage shown after a miss; then the session moves on.
    */
   askFirst: (sectionId: string) => void;
+  /** Learn: this section read here first, as usual; the next card. */
+  readFirst: (sectionId: string) => void;
   /**
    * The card on screen was set aside: it and every copy of it still ahead
    * leave the sitting (their file item, so a definition takes its typed term
@@ -204,6 +206,30 @@ export function isSetAside(item: SessionItem, sessionCourseId: string | null): b
   const course = useCoursesStore.getState().courses[lectureOf(item, sessionCourseId)];
   const id = fileItemOf(item);
   return !!course?.sections.some((s) => s.items.some((i) => i.id === id && i.set_aside));
+}
+
+/**
+ * The cards that teach before asking: left out of a section started
+ * questions first, so nothing explains a question before it is asked (the
+ * owner, 2026-11-22: "when you do click skip the reading the explanations
+ * still show up before questions"). The why and the passage open after a
+ * miss or Not sure instead.
+ */
+const READING_TYPES = new Set<SessionItem['type']>(['definition', 'preview', 'explain', 'example', 'graphic', 'slides']);
+
+/** The section's reading cards after `from`, unanswered, taken out, the answers by position moved with their cards. */
+function withoutReading(
+  s: { items: SessionItem[]; answeredIndices: Set<number>; results: Map<number, boolean> },
+  sectionId: string,
+  from: number,
+) {
+  const keep = s.items.map((item, n) => !(n > from && item._sectionId === sectionId && READING_TYPES.has(item.type) && !s.answeredIndices.has(n)));
+  const moved = new Map<number, number>();
+  let to = 0;
+  keep.forEach((k, n) => {
+    if (k) moved.set(n, to++);
+  });
+  return { items: s.items.filter((_, n) => keep[n]), ...shifted(s, (n) => moved.get(n) ?? n) };
 }
 
 const isGradable = (item: SessionItem) =>
@@ -296,7 +322,7 @@ function listFor(
           },
         }
       : {}),
-    questionsFirst: useLearnStore.getState().questionsFirst,
+    questionsFirst: useLearnStore.getState().everySection,
   });
   return { items, progress };
 }
@@ -350,12 +376,18 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
         : find(recallId(resumeItemId))
       : -1;
     const index = resumeIndex >= 0 ? resumeIndex : 0;
+    // Carried on partway into a section started questions first: it carries
+    // on that way. At a section's start its first card asks again.
+    let list = { items, answeredIndices: new Set<number>(), results: new Map<number, boolean>() };
+    const here = items[index];
+    if (here && (mode === 'learn' || mode === 'today') && here.type !== 'slides' && useLearnStore.getState().startedQuestionsFirst(courseId, here._sectionId))
+      list = withoutReading(list, here._sectionId, index);
     set({
       ...freshSitting(),
       courseId,
       mode,
       sectionId: sectionId ?? null,
-      items,
+      items: list.items,
       index,
       resumed: resumeIndex >= 0,
       activeSectionId: items[index]?._sectionId ?? null,
@@ -553,23 +585,15 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   },
 
   askFirst: (sectionId) => {
-    const { items, index } = get();
-    const drop = (item: SessionItem, n: number) =>
-      n > index &&
-      item._sectionId === sectionId &&
-      (item.type === 'definition' || item.type === 'preview') &&
-      !get().answeredIndices.has(n);
-    const keep = items.map((item, n) => !drop(item, n));
-    // Answers are kept by position: what was answered past here moves with its card.
-    const moved = new Map<number, number>();
-    let to = 0;
-    keep.forEach((k, n) => {
-      if (k) moved.set(n, to++);
-    });
-    set((s) => ({
-      items: items.filter((_, n) => keep[n]),
-      ...shifted(s, (n) => moved.get(n) ?? n),
-    }));
+    const { items, index, courseId } = get();
+    if (courseId) useLearnStore.getState().setQuestionsFirst(lectureOf(items[index] ?? items[0], courseId), sectionId, true);
+    set((s) => withoutReading(s, sectionId, s.index));
+    get().next();
+  },
+
+  readFirst: (sectionId) => {
+    const { items, index, courseId } = get();
+    if (courseId && items[index]) useLearnStore.getState().setQuestionsFirst(lectureOf(items[index], courseId), sectionId, false);
     get().next();
   },
 

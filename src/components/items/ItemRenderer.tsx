@@ -39,6 +39,8 @@ interface ItemRendererProps {
   learning?: boolean;
   /** Learn, on a section's slides card: the student has read them, so ask first. */
   onReadThem?: () => void;
+  /** A section's first card: read it here first (Next when absent). */
+  onTeachHere?: () => void;
   /** The lecture the item is in (a definition opens its related terms from it). */
   courseId?: string;
 }
@@ -59,6 +61,7 @@ export function ItemRenderer({
   frame = 'card',
   learning = false,
   onReadThem,
+  onTeachHere,
   courseId,
 }: ItemRendererProps) {
   switch (item.type) {
@@ -71,7 +74,7 @@ export function ItemRenderer({
           sectionTitle={'_sectionTitle' in item ? String(item._sectionTitle) : ''}
           keyboardEnabled={keyboardEnabled}
           onReadThem={onReadThem}
-          onTeachHere={onNext}
+          onTeachHere={onTeachHere ?? onNext}
           frame={frame}
         />
       );

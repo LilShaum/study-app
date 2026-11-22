@@ -25,7 +25,6 @@ import { todayAcrossCourses, type CourseToday } from '@/lib/libraryToday';
 import { plannedMinutes, studiedToday, todaySitting } from '@/lib/todaySitting';
 import { CATCH_UP_MINUTES, PART_GAP_HOURS } from '@/lib/today';
 import { sectionsToLearn } from '@/lib/nextToLearn';
-import { useLearnStore } from '@/store/learn';
 import { lectureName, lecturesOf } from '@/lib/classExams';
 import { choiceCount, choiceLink, choiceOf, countBasis, practiceCount, practiceLink } from '@/lib/practice';
 import { encodeChoice } from '@/lib/practiceChoice';
@@ -253,7 +252,7 @@ const PHASES: { key: LearnPhase; label: string }[] = [
  * naming one of three stages that each lasted forty cards, so it said the
  * same thing for minutes at a time.
  */
-function StepLine({ item, questionsFirst, onSwitch }: { item: SessionItem; questionsFirst: boolean; onSwitch: () => void }) {
+function StepLine({ item }: { item: SessionItem }) {
   const phase = item._phase ?? phaseOfItem(item);
   // Today's sitting opens with what is due; say so, the way a step is named.
   if (item._block === 'review') {
@@ -285,17 +284,6 @@ function StepLine({ item, questionsFirst, onSwitch }: { item: SessionItem; quest
         ))}
       </span>
       {item._again ? <span className="whitespace-nowrap text-text-2">Again, from earlier</span> : null}
-      {/* How every step starts, for every lecture (store/learn.ts). Skipping
-          the reading suits material already met in the lecture or slides:
-          simulated, it was level for material never met and ahead for
-          material met before (sim/FINDINGS.md, 2026-10-12). */}
-      <button
-        type="button"
-        onClick={onSwitch}
-        className="tap-safe ml-auto whitespace-nowrap text-text-3 underline-offset-4 hover:text-text hover:underline"
-      >
-        {questionsFirst ? 'Read first' : 'Skip the reading'}
-      </button>
     </div>
   );
 }
@@ -370,7 +358,6 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   /** The class's lectures as they are now, read rather than subscribed to (as the lecture is, below). */
   const classLectures = () => (mixedClass ? lecturesOf(useCoursesStore.getState().courses, mixedClass) : []);
   const init = useSessionStore((s) => s.init);
-  const questionsFirst = useLearnStore((s) => s.questionsFirst);
   const items = useSessionStore((s) => s.items);
   const index = useSessionStore((s) => s.index);
   const answeredIndices = useSessionStore((s) => s.answeredIndices);
@@ -940,21 +927,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         </div>
       )}
 
-      {(mode === 'learn' || mode === 'today') && current && !pause && (
-        <StepLine
-          item={current}
-          questionsFirst={questionsFirst}
-          onSwitch={() => {
-            useLearnStore.getState().setQuestionsFirst(!questionsFirst);
-            // Rebuilt from this card on: a flashcard shown open carries on
-            // at the flashcard, a definition at its typed term.
-            const here = current.type === 'preview' ? current.target.id : current.id;
-            init(courseId, course, mode, sectionId, here);
-            // The same sitting carrying on, not a saved place picked up.
-            useSessionStore.setState({ resumed: false });
-          }}
-        />
-      )}
+      {(mode === 'learn' || mode === 'today') && current && !pause && <StepLine item={current} />}
       {mixedClass ? (
         // No lecture is named on a card: which one it is from is part of the question.
         <p className="mb-4 text-xs text-text-3">
@@ -1096,6 +1069,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
                 handleNext();
               }}
               onReadThem={() => useSessionStore.getState().askFirst(it._sectionId)}
+              onTeachHere={() => useSessionStore.getState().readFirst(it._sectionId)}
               onOverride={setResult}
               onUnsure={() => useSessionStore.getState().markUnsure()}
               onConfused={(otherId) => useProgressStore.getState().noteConfusion(lectureOf(it, courseId), it.id, otherId)}

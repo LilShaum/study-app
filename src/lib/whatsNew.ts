@@ -20,7 +20,10 @@ export interface Change {
 export const WHATS_NEW: Change[] = [
   {
     date: '2026-11-22',
-    items: ['A class code is always written with a space, as BIOL 365, so lectures saved as BIOL365 join their class.'],
+    items: [
+      'Each section in Learn starts by asking: Read it here first, or Questions first. Questions first explains nothing before it asks.',
+      'A class code is always written with a space, as BIOL 365, so lectures saved as BIOL365 join their class.',
+    ],
   },
   {
     date: '2026-11-20',

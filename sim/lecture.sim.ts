@@ -218,7 +218,7 @@ it('lecture', () => {
     useProgressStore.setState({ byCourse: {} });
     useStudyLogStore.setState({ byCourse: {} });
     usePlanStore.setState({ byCourse: { [ID]: { minutes } }, total: null });
-    useLearnStore.setState({ questionsFirst: !!process.env.SIM_QF });
+    useLearnStore.setState({ everySection: !!process.env.SIM_QF });
 
     const r = rng(seed * 7919 + 17);
     const ease = new Map<string, number>();
@@ -270,7 +270,7 @@ it('lecture', () => {
             const T = truth.get(item.id);
             const R = T ? memory.recall((now - T.last) / DAY, T.s) : null;
             let p: number;
-            if (R == null && item._step !== undefined && useLearnStore.getState().questionsFirst)
+            if (R == null && item._step !== undefined && useLearnStore.getState().everySection)
               p = item.type === 'mcq' ? FIRST_TIME.coldRecall + (1 - FIRST_TIME.coldRecall) * MCQ_GUESS : FIRST_TIME.coldRecall;
             else if (R != null) p = chanceRight(item, R);
             else if (item.type === 'recall') {

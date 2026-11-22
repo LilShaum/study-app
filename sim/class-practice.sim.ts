@@ -170,7 +170,7 @@ function begin(w: World) {
   useProgressStore.setState({ byCourse: w.progress });
   useStudyLogStore.setState({ byCourse: w.log, logCard: () => {} });
   usePlanStore.setState({ byCourse: {} });
-  useLearnStore.setState({ questionsFirst: false });
+  useLearnStore.setState({ everySection: false });
   setPersonalScale(1);
   Date.now = () => w.now;
 }

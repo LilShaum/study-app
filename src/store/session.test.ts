@@ -457,6 +457,7 @@ describe('session store: Learn after reading the slides', () => {
         source_range: 'slides 1–4',
         items: [
           { id: 'd0', type: 'definition', term: 'Alpha', definition: 'meaning 0' },
+          { id: 'e0', type: 'explain', title: 'Why Alpha', text: 'Alpha holds because of a reason.' },
           { id: 'f0', type: 'flashcard', front: 'Front about Alpha', back: 'Back' },
           mcq('q0', 'Which is Alpha?'),
         ],
@@ -468,6 +469,31 @@ describe('session store: Learn after reading the slides', () => {
   beforeEach(() => {
     useProgressStore.setState({ byCourse: {} });
     s().init('slides', course, 'learn');
+  });
+
+  it('questions first leaves out the explanations too, and a sitting carried on keeps it (the owner, 2026-11-22)', async () => {
+    const { useLearnStore } = await import('./learn');
+    useLearnStore.setState({ questionsFirstIn: {} });
+    expect(s().items.some((i) => i.type === 'explain')).toBe(true);
+    s().askFirst('s1');
+    expect(s().items.slice(s().index).some((i) => i.type === 'explain' || i.type === 'definition')).toBe(false);
+    // Left on the second question and opened again: still questions first.
+    const at = s().items[s().index + 1].id;
+    s().init('slides', course, 'learn', undefined, at);
+    expect(s().current()?.id).toBe(at);
+    expect(s().items.slice(s().index).some((i) => i.type === 'explain' || i.type === 'definition')).toBe(false);
+    // A new start of the section asks again, with its reading.
+    s().init('slides', course, 'learn');
+    expect(s().current()?.type).toBe('slides');
+    expect(s().items.some((i) => i.type === 'explain')).toBe(true);
+  });
+
+  it('read it here first keeps the reading and forgets an earlier questions first', async () => {
+    const { useLearnStore } = await import('./learn');
+    useLearnStore.getState().setQuestionsFirst('slides', 's1', true);
+    s().readFirst('s1');
+    expect(useLearnStore.getState().startedQuestionsFirst('slides', 's1')).toBe(false);
+    expect(s().current()?.type).toBe('definition');
   });
 
   it('drops the reading cards ahead, so every card is asked first, and moves on', () => {

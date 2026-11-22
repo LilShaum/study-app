@@ -412,7 +412,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
   const reviewing = (item: SessionItem, mode: string) => mode === 'review' || item._block === 'review';
 
   useProgressStore.setState({ byCourse: {} });
-  useLearnStore.setState({ questionsFirst: sc.policy === 'questions-first' });
+  useLearnStore.setState({ everySection: sc.policy === 'questions-first' });
   // The simulated student's card times are the simulator's own assumptions;
   // logging them would feed them back as "measured" pace.
   // SIM_KEEP_LOG keeps it, so scripts/calibrate-log.mjs can be checked on a
@@ -472,7 +472,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       // much that is: 0.15 never met (FIRST_TIME.coldRecall), about 0.5 for
       // a student who sat the lecture or read the slides.
       const cold = Number(process.env.SIM_COLD) || FIRST_TIME.coldRecall;
-      if (R == null && item._step !== undefined && useLearnStore.getState().questionsFirst)
+      if (R == null && item._step !== undefined && useLearnStore.getState().everySection)
         p = item.type === 'mcq' ? cold + (1 - cold) * MCQ_GUESS : cold;
       else if (R != null) p = chanceRight(item, R);
       else if (item.type === 'recall' || (item.type === 'flashcard' && primed.has(item.id))) {

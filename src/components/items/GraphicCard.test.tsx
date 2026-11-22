@@ -1,5 +1,5 @@
-import { afterEach, describe, it, expect } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { GraphicItem } from '@/schema/course';
 import { GraphicCard } from './GraphicCard';
 import { SlidesCard } from './SlidesCard';
@@ -33,20 +33,29 @@ describe('a figure on a card', () => {
 });
 
 describe('the card that opens a section', () => {
-  it('with only what it builds to, is read and left with Next, like any reading card', () => {
-    render(<SlidesCard sectionTitle="Markets" buildsTo="To where two curves cross." />);
+  it('always offers the choice, read it here first or questions first (the owner, 2026-11-22)', () => {
+    const teach = vi.fn();
+    const ask = vi.fn();
+    render(<SlidesCard sectionTitle="Markets" buildsTo="To where two curves cross." onTeachHere={teach} onReadThem={ask} />);
     expect(screen.getByRole('heading', { name: 'Markets' })).toBeTruthy();
     expect(screen.getByText('To where two curves cross.')).toBeTruthy();
-    expect(screen.queryByRole('button')).toBeNull();
-    expect(screen.queryByText(/From your own notes/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Read it here first' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Questions first' }));
+    expect(teach).toHaveBeenCalledTimes(1);
+    expect(ask).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText(/In your notes/)).toBeNull();
   });
 
-  it('with a place in the slides as well, says both, and still offers the choice', () => {
+  it('with a place in the notes, says where', () => {
     render(<SlidesCard sectionTitle="Markets" range="slides 4–9" buildsTo="To where two curves cross." />);
-    expect(screen.getByText('To where two curves cross.')).toBeTruthy();
     expect(screen.getByText('Slides 4–9')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /read it/ })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Teach me here/ })).toBeTruthy();
+    expect(screen.getByText(/In your notes/)).toBeTruthy();
+  });
+
+  it('with nothing more than its title, still asks', () => {
+    render(<SlidesCard sectionTitle="Markets" />);
+    expect(screen.getByRole('heading', { name: 'Markets' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Questions first' })).toBeTruthy();
   });
 
   it('on a lecture\'s first section, says first where the whole lecture is going', () => {
@@ -56,12 +65,6 @@ describe('the card that opens a section', () => {
     expect(screen.getByText('To where two curves cross.')).toBeTruthy();
   });
 
-  it('with only a place in the slides, is what it always was', () => {
-    render(<SlidesCard sectionTitle="Markets" range="slides 4–9" />);
-    expect(screen.getByText('Markets')).toBeTruthy();
-    expect(screen.queryByText(/is going/)).toBeNull();
-    expect(screen.getByRole('button', { name: /read it/ })).toBeTruthy();
-  });
 });
 
 describe('where a passage comes from', () => {

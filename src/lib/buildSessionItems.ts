@@ -274,21 +274,23 @@ function learnOrder(
     const all = stepSection(group, progress);
     // The steps are cut with the reading in, so a step still holds the
     // terms it would have taught; only the cards that give answers go.
-    // Skip the reading leaves out every card that teaches, explanations included.
+    // The simulator's every-section questions first (store/learn.ts everySection).
     const steps = questionsFirst ? all.filter((i) => i.type !== 'definition' && i.type !== 'preview' && i.type !== 'explain') : all;
     if (questionsFirst) return steps;
     const opening = openings?.get(group[0]._sectionId);
     const first = steps[0];
-    // A section that says what it builds to or where it is in the slides
-    // opens with that, as part of its first step: once the step is done, the
-    // card goes with it.
-    if (!opening || !first || first._step !== 0) return steps;
+    // Every section opens with its first card: what it builds to and where
+    // it is in the student's notes, when the file says, and the choice of
+    // reading it here first or questions first, asked at each section's
+    // start (the owner, 2026-11-22). Part of the first step: once the step
+    // is done, the card goes with it.
+    if (!first || first._step !== 0) return steps;
     const slides: SessionItem = {
       id: `${first._sectionId}~slides`,
       type: 'slides',
-      range: opening.range,
-      buildsTo: opening.buildsTo,
-      lectureBuildsTo: opening.lectureBuildsTo,
+      range: opening?.range,
+      buildsTo: opening?.buildsTo,
+      lectureBuildsTo: opening?.lectureBuildsTo,
       _sectionTitle: first._sectionTitle,
       _sectionId: first._sectionId,
       _sectionOrder: first._sectionOrder,
