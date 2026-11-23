@@ -45,7 +45,9 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   name, what it draws new cards from, and the go-ahead. 2026-11-22: new cards mixed by
   default, not in the lecture's order ("its adaptive but when selecting
   certain questions for different parts of the batch of 10, they are
-  someone randomly picked"); the button without explainer text.
+  someone randomly picked"); the button without explainer text. 2026-11-22: named "Adaptive quiz"; the
+  shape in docs/proposals/ecosystem.md agreed for now ("I dont mind your
+  recommendations for the four parts so far").
 - **The ways to study fit together, audited as a whole** (2026-11-22: "make
   sure it fits nicely into the ecosystem with the other modes and the daily
   things … would the daily studying be more fitting to be the learn daily
@@ -65,21 +67,6 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   the lectures, so the more lectures you have the less time it is per
   lecture, which is stupid. it should be replaced with some sort of
   suggestion with what to study today").
-- **A protocol for ripples** (2026-11-22, on the prompt describing an order
-  Learn no longer used: "we need a protocol that deals with shit like
-  this. any time some part of the app is changes, all the other parts of
-  the app that relate to it need to be checked to see how they need to be
-  changed accordingly").
-- **Prompt: example questions set the types, explanations explain, the
-  type guide is guidance** (2026-11-22: "just make it a small rule that is
-  something like if the user provides example questions, make question
-  types that match the provided example question's type/style"; "make it
-  so the answers to why the correct answer was correct doesnt just restate
-  the question/correct answer and that it actually explains why"; "make
-  sure the guide isnt too concrete … if the ai wants to use a question type
-  in a way thats different to the guide that it can if it thinks its
-  valuable"; "make sure you changed all the prompts accordingly and not
-  just the main generating prompt").
 - **Phone and computer each use their format; a design update with the
   onboarding** (2026-11-22: "the difference between the phone view and pc
   view is not good enough, meaning that both do not fully take advantage
@@ -94,11 +81,12 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   shit when it opens … intuitive and cleaner more elegant feel, everything
   should look and feel intentional. start with a plan building on my
   ideas and it will go through in the design update along with the
-  onboarding").
+  onboarding"). Plan: docs/proposals/design-update.md (2026-11-23).
 - **A code audit** (2026-11-22: "the code itself needs a big audit on how
   efficient it is, how many redundant or useless sections there are, how
   well its annotated for ai to understand the code, how well its
-  organized, etc").
+  organized, etc"). Its order is argued in docs/proposals/design-update.md:
+  a removal pass before the redesign, the audit proper after.
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Folding live
@@ -362,6 +350,21 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- **Prompt: example questions set the types, explanations explain, the
+  type guide is guidance** (2026-11-22: "just make it a small rule that is
+  something like if the user provides example questions, make question
+  types that match the provided example question's type/style"; "make it
+  so the answers to why the correct answer was correct doesnt just restate
+  the question/correct answer and that it actually explains why"; "make
+  sure the guide isnt too concrete … if the ai wants to use a question type
+  in a way thats different to the guide that it can if it thinks its
+  valuable"; "make sure you changed all the prompts accordingly and not
+  just the main generating prompt"). Live 2026-11-23 (7c9d283), in the generator prompt and the Fix, even-out, new-lecture and teacher-notes texts.
+- **A protocol for ripples** (2026-11-22, on the prompt describing an order
+  Learn no longer used: "we need a protocol that deals with shit like
+  this. any time some part of the app is changes, all the other parts of
+  the app that relate to it need to be checked to see how they need to be
+  changed accordingly"). Live 2026-11-22: docs/RIPPLES.md and the CLAUDE.md line.
 - **The prompt tells the AI how the app works and what each thing is for**
   (2026-11-20: "gives the ai more context about how the app works and how
   all the info it's giving will be used and what it's for"). Same as the
