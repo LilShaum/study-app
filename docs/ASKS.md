@@ -87,6 +87,19 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   well its annotated for ai to understand the code, how well its
   organized, etc"). Its order is argued in docs/proposals/design-update.md:
   a removal pass before the redesign, the audit proper after.
+- **Interactive diagrams** (2026-11-23, idea only, not to start yet: "I
+  want to add one more ambitious thing, interactive diagrams. idk if we
+  would give the generating ai free reign with only little guidelines for
+  how to make it fit into the app or if we should be more strict. I got the
+  idea when studying for psyc test and I was confused about the different
+  aphasia types and how they differ so the ai spun up a diagram that shows
+  the pathway of speach info and which connection or part is damaged in the
+  different aphasias and what that causes. its a pretty ambitious and hard
+  to tackle idea with a lot of components like when to do it and for what
+  and how to do it. just mark the idea for now"). Needs its own plan:
+  when a diagram earns being interactive, how free the generator is,
+  how it is drawn safely (course diagrams are user content: security
+  review), and how it fits the design update.
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Folding live
