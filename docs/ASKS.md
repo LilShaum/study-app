@@ -73,6 +73,8 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   still think more thought and testing needs to be put into it to see if
   it really is a good way to do it and how it handles different
   scenarios"; its look is for the design update.
+  2026-11-24: held on the branch until part 4 ("Hold until part 4");
+  "questions to review" kept ("Happy with the wording").
 - **Phone and computer each use their format; a design update with the
   onboarding** (2026-11-22: "the difference between the phone view and pc
   view is not good enough, meaning that both do not fully take advantage
@@ -168,6 +170,9 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   for generally and give a demonstration of moving your finger across the
   branches to show how it works … ill leave that up to you to plan and
   mess around with". For the onboarding plan when it resumes.
+  2026-11-24: "really show the user what the app is about and demonstrate
+  what the tree is all about … making them try things/direct their
+  attention … instead of explaining in bullet points" (onboarding.md).
 - **A fresh ultracode session that grades the whole app against its goals**
   (2026-11-03: "I want to eventually start a fresh ultra code session for
   this project that will go through and grade the app and every component
