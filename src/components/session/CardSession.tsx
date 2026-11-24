@@ -205,7 +205,8 @@ const ONE_POINT_HINTS: KeyHint[] = [
 ];
 
 const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
-  adaptive: { title: 'Nothing to ask', text: 'This lecture has no questions yet.' },
+  // New cards come only from parts already studied (sim/FINDINGS.md, 2026-11-24).
+  adaptive: { title: 'Nothing to quiz yet', text: 'The quiz asks about parts you have studied. Learn a section first, then come back.' },
   learn: { title: 'Nothing to learn yet', text: 'This lecture has no items to walk through.' },
   weakest: {
     title: 'Nothing to rank',
