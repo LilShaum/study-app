@@ -20,7 +20,8 @@ export interface Change {
 export const WHATS_NEW: Change[] = [
   {
     date: '2026-11-24',
-    items: ['New lecture can ask the AI to explain more than your slides do: more context where they are thin, labelled as not from your notes.'],
+    items: [
+      'Adaptive quiz: questions keep coming, picked from what is fading, what you missed and what you have not answered yet.','New lecture can ask the AI to explain more than your slides do: more context where they are thin, labelled as not from your notes.'],
   },
   {
     date: '2026-11-22',

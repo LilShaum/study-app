@@ -15,6 +15,10 @@ import { twinsOf } from '@/lib/linkedTerms';
 import { useCoursesStore } from './courses';
 import { onlyStudies } from '@/lib/studies';
 import { mixLectures } from '@/lib/mixLectures';
+import { ADAPTIVE_WINDOW } from '@/lib/buildSessionItems';
+
+/** The adaptive quiz plans its next window when this few cards are left. */
+const ADAPTIVE_TOP_UP = 3;
 
 /**
  * When the current card was put in front of the student. Kept outside the
@@ -129,6 +133,8 @@ interface SessionState {
    * answers.
    */
   record: (got: boolean, grade?: Grade, sure?: boolean) => void;
+  /** The adaptive quiz: plan the next window onto the end of the sitting. */
+  topUp: () => void;
   /** Learn only: put a missed card back a few cards on. */
   requeue: (index: number) => void;
   /** Take back a requeued copy that has not been reached, when a miss is overruled. */
@@ -294,10 +300,10 @@ function listFor(
   courseId: string,
   course: Course,
   mode: StudyMode,
-  { sectionId, resuming, kind, study, practice }: { sectionId?: string; resuming: boolean; kind: CardKind | null; study: string | null; practice?: PracticeChoice | null },
+  { sectionId, resuming, kind, study, practice, exclude }: { sectionId?: string; resuming: boolean; kind: CardKind | null; study: string | null; practice?: PracticeChoice | null; exclude?: ReadonlySet<string> },
 ): { items: SessionItem[]; progress: Record<string, ItemResult> } {
   const progressStore = useProgressStore.getState();
-  const missedIds = mode === 'missed' || mode === 'practice' ? progressStore.missedIds(courseId) : undefined;
+  const missedIds = mode === 'missed' || mode === 'practice' || mode === 'adaptive' ? progressStore.missedIds(courseId) : undefined;
   // Weakest-first ranks by the student's own history, so it is the one mode
   // that needs the full per-item record rather than a set of ids.
   // Weakest and Review rank by history, Terms pairs mixed-up terms from it,
@@ -331,6 +337,7 @@ function listFor(
         }
       : {}),
     questionsFirst: useLearnStore.getState().everySection,
+    exclude,
   });
   return { items, progress };
 }
@@ -448,6 +455,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   hasPrev: () => get().index > 0,
 
   next: () => {
+    // The adaptive quiz plans its next window before the last one runs out.
+    if (get().mode === 'adaptive' && get().items.length - get().index <= ADAPTIVE_TOP_UP) get().topUp();
     if (!get().hasNext()) return false;
     logCurrentCard(get());
     set((state) => {
@@ -455,6 +464,22 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       return { index, activeSectionId: state.items[index]?._sectionId ?? null };
     });
     return true;
+  },
+
+  topUp: () => {
+    const { courseId, items, lectures } = get();
+    if (!courseId) return;
+    const courses = useCoursesStore.getState().courses;
+    const ids = lectures ?? [courseId];
+    // Every card already in this sitting, by lecture: not planned again.
+    const lists = ids.flatMap((id) => {
+      const course = courses[id];
+      if (!course) return [];
+      const exclude = new Set(items.filter((i) => lectureOf(i, courseId) === id).map((i) => i.id));
+      return [{ courseId: id, ...listFor(id, course, 'adaptive', { resuming: false, kind: null, study: null, exclude }) }];
+    });
+    const more = lectures ? mixLectures(lists).slice(0, ADAPTIVE_WINDOW) : (lists[0]?.items ?? []);
+    if (more.length) set((s) => ({ items: [...s.items, ...more] }));
   },
 
   prev: () => {
@@ -490,7 +515,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   requeue: (index) => {
     const { mode, items } = get();
     const item = items[index];
-    const learning = mode === 'learn' || (mode === 'today' && item?._step !== undefined);
+    // The adaptive quiz re-asks a miss a few cards on too (docs/proposals/zen.md).
+    const learning = mode === 'learn' || mode === 'adaptive' || (mode === 'today' && item?._step !== undefined);
     if (!learning || !item || !isGradable(item) || (item._again ?? 0) >= AGAIN_MAX) return;
     // A written answer of several points is not asked again minutes later:
     // that is memorising a list on the spot, again and again (the owner,

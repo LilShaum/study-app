@@ -14,6 +14,7 @@ import { ItemRenderer } from '@/components/items/ItemRenderer';
 import type { ComesBack } from '@/components/items/FlashcardCard';
 import { SectionJump } from './SectionJump';
 import { SessionGlossary } from './SessionGlossary';
+import { AdaptiveBar } from './AdaptiveBar';
 import { glossaryOf } from '@/lib/glossary';
 import { SessionRail } from './SessionRail';
 import { MixedLectures } from './MixedLectures';
@@ -85,6 +86,7 @@ const MODE_LABELS: Record<CardMode, string> = {
   missed: 'Mistakes',
   review: 'Review',
   today: 'Today',
+  adaptive: 'Adaptive quiz',
 };
 
 interface KeyHint {
@@ -144,6 +146,7 @@ function ideaFor(item: SessionItem, lecture: Course | undefined): { title: strin
 }
 
 const KEY_HINTS: Record<CardMode, KeyHint[]> = {
+  adaptive: ALL_CARD_KEYS,
   learn: ALL_CARD_KEYS,
   weakest: ALL_CARD_KEYS,
   review: ALL_CARD_KEYS,
@@ -202,6 +205,7 @@ const ONE_POINT_HINTS: KeyHint[] = [
 ];
 
 const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
+  adaptive: { title: 'Nothing to ask', text: 'This lecture has no questions yet.' },
   learn: { title: 'Nothing to learn yet', text: 'This lecture has no items to walk through.' },
   weakest: {
     title: 'Nothing to rank',
@@ -411,6 +415,42 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   /** Learn: the pause between two steps, while it is showing. */
   const [pause, setPause] = useState<Pause | null>(null);
   /** A question on screen, not yet answered: the glossary is shut, as it would hold the answer. */
+  // The adaptive quiz's line: its count, its misses, and whether anything due is left.
+  const sessionResults = useSessionStore((s) => s.results);
+  // Due is judged as of opening the sitting; rendering must not read the clock.
+  const [openedAt] = useState(Date.now);
+  const adaptive = useMemo(() => {
+    if (mode !== 'adaptive') return { missed: [] as SessionItem[], dueLeft: false, dueAtStart: false };
+    const st = useSessionStore.getState();
+    const missedKeys = new Set(st.stillMissed());
+    const seen = new Set<string>();
+    const missed = st.items.filter((i) => {
+      const k = cardKey(i);
+      if (!missedKeys.has(k) || seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+    const asked = new Set([...sessionResults.keys()].map((n) => st.items[n] && cardKey(st.items[n])));
+    const now = openedAt;
+    const dueLeft = (st.lectures ?? [courseId]).some((id) => {
+      const c = id === courseId ? course : useCoursesStore.getState().courses[id];
+      if (!c) return false;
+      const progress = useProgressStore.getState().getProgress(id);
+      return buildSessionItems(c, 'review', { progress, now, exam: examRule(c, progress, now), minutes: Infinity }).some(
+        (i) => !asked.has(st.lectures ? `${id}\u0000${i.id}` : i.id),
+      );
+    });
+    // Whether anything was due when the sitting began, from the progress it
+    // began with: only then is "everything due is done" news.
+    const dueAtStart = (st.lectures ?? [courseId]).some((id) => {
+      const c = id === courseId ? course : useCoursesStore.getState().courses[id];
+      const progress = st.startByCourse[id] ?? {};
+      return !!c && buildSessionItems(c, 'review', { progress, now, exam: examRule(c, progress, now), minutes: Infinity }).length > 0;
+    });
+    return { missed, dueLeft, dueAtStart };
+    // Recomputed after every answer; the course and mode are fixed for a sitting.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionResults, mode]);
   // Subscribed, so the step line's switch follows the section's choice.
   const sectionQuestionsFirst = useLearnStore((s) => (current ? s.startedQuestionsFirst(lectureOf(current, courseId), current._sectionId) : false));
   const questionUp = !pause && !!current && QUESTION_TYPES.has(current.type) && !answeredIndices.has(index);
@@ -903,7 +943,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
             {MODE_LABELS[mode]}
           </span>
           <span className="whitespace-nowrap text-xs tabular-nums text-text-3">
-            {index + 1} / {items.length}
+            {/* The adaptive quiz has no end, so no total. */}
+            {mode === 'adaptive' ? index + 1 : `${index + 1} / ${items.length}`}
           </span>
         </span>
         <div className="flex gap-3 text-sm">
@@ -944,6 +985,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         </div>
       )}
 
+      {mode === 'adaptive' && current && !pause && (
+        <AdaptiveBar missed={adaptive.missed} dueDone={adaptive.dueAtStart && !adaptive.dueLeft} />
+      )}
       {(mode === 'learn' || mode === 'today') && current && !pause && (
         <StepLine
           item={current}

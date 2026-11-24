@@ -27,8 +27,15 @@ export const STUDY_MODES = [
   'missed',
   'review',
   'today',
+  'adaptive',
 ] as const;
 export type StudyMode = (typeof STUDY_MODES)[number];
+
+/** The adaptive quiz plans this many questions at a time (the owner, 2026-11-22: "thinks of it in batches of 10"). */
+export const ADAPTIVE_WINDOW = 10;
+/** Of each window, the slots for what is fading and past mistakes; more within a week of an exam. */
+export const ADAPTIVE_REVIEW = 3;
+export const ADAPTIVE_REVIEW_NEAR_EXAM = 5;
 
 /**
  * The first cards of a list that fit in `minutes`, at the seconds each takes
@@ -186,8 +193,10 @@ function toRecall(item: SessionItem & DefinitionItem, pool: readonly DefinitionI
 }
 
 export interface SessionOptions {
-  /** Item ids the student has missed more often than got. Only 'missed' uses it. */
+  /** Item ids the student has missed more often than got. 'missed', 'practice' and 'adaptive' use it. */
   missedIds?: ReadonlySet<string>;
+  /** 'adaptive': cards already in this sitting, not to be planned again (a miss's re-test is the session's own). */
+  exclude?: ReadonlySet<string>;
   /** Restrict the session to one section. Undefined studies the whole course. */
   sectionId?: string;
   /** Restrict the session to these cards (the Practice page's studies, lib/studies.ts). */
@@ -365,7 +374,7 @@ function withoutSecondLook(list: SessionItem[], recent: (sectionId: string) => b
 export function buildSessionItems(
   course: Course,
   mode: StudyMode,
-  { missedIds, sectionId, onlyIds, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES, pace, kind, questionsFirst, practice }: SessionOptions = {},
+  { missedIds, sectionId, onlyIds, progress, now = Date.now(), exam, minutes = DEFAULT_MINUTES, pace, kind, questionsFirst, practice, exclude }: SessionOptions = {},
 ): SessionItem[] {
   const sections = sectionId
     ? sortedSections(course).filter((s) => s.id === sectionId)
@@ -558,6 +567,47 @@ export function buildSessionItems(
   // a day lets it fade past its point, and cost a 20-minute student 3 to 5
   // points in the simulator (sim/FINDINGS.md). A card is asked when it is due.
 
+  /**
+   * The adaptive quiz (docs/proposals/zen.md): the next window of
+   * ADAPTIVE_WINDOW questions, planned from where the student is now. The
+   * master prompt's mix (the owner's, 2026-11-20): what is fading and past
+   * mistakes in a few slots, more as an exam nears; the rest cards never
+   * answered, picked at random rather than in the lecture's order (the
+   * owner, 2026-11-22: "mixed by default"), the easier before the harder;
+   * then, with nothing due or new left, what is held least well, so the
+   * questions keep coming. A miss is re-asked a few cards on by the session
+   * (store/session requeue), not here. Never a reading card.
+   */
+  const adaptiveWindow = (list: SessionItem[]): SessionItem[] => {
+    const left = (i: SessionItem) => !exclude?.has(i.id);
+    const pool = asRecall(list).filter(isGradable).filter(left);
+    const answered = (i: SessionItem) => {
+      const r = progress?.[i.id];
+      return !!r && r.got + r.missed > 0;
+    };
+    const due = dueFirst(list).filter(left);
+    const dueIds = new Set(due.map((i) => i.id));
+    const mistakes = pool.filter((i) => !dueIds.has(i.id) && missedIds?.has(i.id));
+    const fresh = shuffle(pool.filter((i) => !answered(i)));
+    const rest = weakestFirst(pool.filter((i) => answered(i) && !dueIds.has(i.id) && !missedIds?.has(i.id)), now, progress);
+    // Within a week of an exam, review takes more of each window.
+    const examSoon = pool.some((i) => {
+      const at = exam?.forItem(i.id) ?? null;
+      return at != null && at > now && at - now <= 7 * 86_400_000;
+    });
+    const review = [...due, ...mistakes];
+    const reviewSlots = Math.min(review.length, examSoon ? ADAPTIVE_REVIEW_NEAR_EXAM : ADAPTIVE_REVIEW);
+    const picked = review.slice(0, reviewSlots);
+    const rank = (i: SessionItem) => ({ easy: 0, medium: 1, hard: 2 })[('difficulty' in i && i.difficulty) || 'medium'] ?? 1;
+    const news = fresh.slice(0, ADAPTIVE_WINDOW - picked.length).sort((a, b) => rank(a) - rank(b));
+    const window = [...picked, ...news];
+    for (const more of [review.slice(reviewSlots), rest]) {
+      for (const i of more) if (window.length < ADAPTIVE_WINDOW && !window.includes(i)) window.push(i);
+    }
+    // Reviews among the new, not in a block; one fact never twice in a row.
+    return spaced(shuffle(window));
+  };
+
   switch (mode) {
     case 'quiz':
       // Multiple choice, chosen as such: asked with its options, even once
@@ -721,6 +771,9 @@ export function buildSessionItems(
     }
     case 'missed':
       items = shuffle(asRecall(items).filter((i) => missedIds?.has(i.id)));
+      break;
+    case 'adaptive':
+      items = adaptiveWindow(items);
       break;
     case 'browse':
       // Browse renders straight from course.sections and only uses this

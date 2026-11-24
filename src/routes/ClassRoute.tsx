@@ -142,6 +142,16 @@ export function ClassRoute() {
             (2026-11-03). */}
         <ul>
           {[
+            ...(lectures.length
+              ? [
+                  {
+                    // The class's lectures together, in one sitting (store/session initMixed).
+                    to: `/session/${lectures[0][0]}/adaptive?class=${encodeURIComponent(code)}&mix=1`,
+                    label: 'Adaptive quiz',
+                    use: 'Questions keep coming, from every lecture, picked for where you need them.',
+                  },
+                ]
+              : []),
             {
               to: `/class/${encodeURIComponent(code)}/practice`,
               label: 'Practice',

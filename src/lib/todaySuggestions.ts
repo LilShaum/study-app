@@ -72,7 +72,8 @@ export function todaySuggestions(lectures: readonly LectureState[], now: number)
         // Plain words until the first run teaches "fading" (the owner, 2026-11-24).
         what: [`${due} question${due === 1 ? '' : 's'} to review`, exam].filter(Boolean).join(' · '),
         action: 'Review',
-        to: code ? `/session/${ls.find((l) => l.due > 0)!.id}/today?class=${encodeURIComponent(code)}` : `/session/${ls[0].id}/today?single=1`,
+        // The adaptive quiz: what is fading first, then on as long as you like.
+        to: code ? `/session/${ls.find((l) => l.due > 0)!.id}/adaptive?class=${encodeURIComponent(code)}&mix=1` : `/session/${ls[0].id}/adaptive`,
       });
     const underWay = ls.find((l) => l.learnUnderWay);
     if (underWay)

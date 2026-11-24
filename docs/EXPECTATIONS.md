@@ -445,6 +445,31 @@ after switching apps), and says so, with Start from the beginning. Today
 does the same within the day. Practice modes reshuffle, so they start fresh
 unless Continue is pressed (store/resume resumesOnOpen).
 
+### Adaptive quiz
+
+**Goal.** For once a lot has been covered: questions that keep coming,
+picked for where the student needs them, without choosing anything (the
+owner, 2026-11-20 and 2026-11-22; docs/proposals/zen.md). The master
+prompt's loop inside the app.
+
+**How it works.** A row on the lecture page and the class page ("Adaptive
+quiz"); the library's Review suggestion opens it. It plans ten questions at
+a time (`buildSessionItems` 'adaptive'): three slots for what is due and
+past mistakes (five within a week of an exam), the rest cards never
+answered, picked at random, easier before harder; with nothing due or new
+left, what is held least well, so it keeps going. Never a reading card. When
+three are left the next ten are planned (`session.topUp`), leaving out every
+card already in the sitting. A miss comes back three or so cards on (as in
+Learn's requeue). Marked as you go. The line above the card says when
+everything that was due at the start is done ("Carry on, or stop here"),
+and Missed opens every miss so far with its right answer and why. The
+counter has no total. On a class page the lectures are drawn from together
+(`initMixed`).
+
+**Not yet.** A miss re-asked by a different card on the same idea (the plan
+wants one; the same card is re-asked for now); "I wasn't sure" as half a
+miss.
+
 ### Practice
 
 **Goal.** Study what you choose, the way you choose, outside the plan:

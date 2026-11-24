@@ -428,10 +428,17 @@ export function CourseRoute() {
               use: 'In the order it was taught, beside your notes.',
             },
             {
+              // docs/proposals/zen.md: questions that keep coming, planned from where you are.
+              to: 'adaptive',
+              label: 'Adaptive quiz',
+              unit: counts.due > 0 ? `${counts.due} to review` : 'any time',
+              use: 'Questions keep coming, picked for where you need them.',
+            },
+            {
               to: null,
               label: 'Practice',
-              unit: counts.due > 0 ? `${counts.due} due` : 'any part',
-              use: 'Study what you choose, each answer marked as you go: tick the kinds of card and the parts. Or rehearse the exam with a practice test.',
+              unit: 'any part',
+              use: 'Pick the kinds, cards and sections. Or a practice test.',
             },
           ].map((m) => (
             <li key={m.label} className="border-b border-border pb-3">
