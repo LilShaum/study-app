@@ -100,6 +100,14 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   when a diagram earns being interactive, how free the generator is,
   how it is drawn safely (course diagrams are user content: security
   review), and how it fits the design update.
+- **"I missed this lecture" on New lecture** (2026-11-24, a rough idea:
+  "I would consider even adding a tick box asking if the student missed
+  the lecture in the prompt part and is lacking context or notes at all or
+  something. this is a very rough idea with a lot of things to work out but
+  that comes after first determining" what the AI would do differently).
+  Answered in chat: today the prompt already writes for a student who
+  missed it, so a note in the box changes little; a tick box would earn
+  its place only with behaviour of its own (see the reply of 2026-11-24).
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Folding live
