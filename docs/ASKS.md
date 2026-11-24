@@ -47,7 +47,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   certain questions for different parts of the batch of 10, they are
   someone randomly picked"); the button without explainer text. 2026-11-22: named "Adaptive quiz"; the
   shape in docs/proposals/ecosystem.md agreed for now ("I dont mind your
-  recommendations for the four parts so far").
+  recommendations for the four parts so far"). 2026-11-24: built on the work branch
+  (not main) and shown as parts 1-3. The simulator put it a little below
+  Today as the daily way in (sim/FINDINGS.md), so Today stays daily and the
+  quiz is its own mode; waits on the owner's look before going live.
 - **The ways to study fit together, audited as a whole** (2026-11-22: "make
   sure it fits nicely into the ecosystem with the other modes and the daily
   things … would the daily studying be more fitting to be the learn daily
@@ -95,6 +98,8 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   well its annotated for ai to understand the code, how well its
   organized, etc"). Its order is argued in docs/proposals/design-update.md:
   a removal pass before the redesign, the audit proper after.
+  Removal pass done 2026-11-24 on the work branch (shown with parts 1-3);
+  the audit proper comes after the design update.
 - **Interactive diagrams** (2026-11-23, idea only, not to start yet: "I
   want to add one more ambitious thing, interactive diagrams. idk if we
   would give the generating ai free reign with only little guidelines for
