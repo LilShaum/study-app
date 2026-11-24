@@ -18,18 +18,14 @@ import { examRule } from '@/lib/exam';
 import { clearSavedTests } from '@/lib/practiceTest';
 import { KeepSafe } from '@/components/KeepSafe';
 import { RestoreButton } from '@/components/Backup';
-import { measuredPace, useStudyLogStore } from '@/store/studyLog';
+import { useStudyLogStore } from '@/store/studyLog';
 import { usePlanStore } from '@/store/plan';
-import { dayAcross, dayLine, todayAcrossCourses, todayLine } from '@/lib/libraryToday';
-import { plannedMinutes, studiedToday } from '@/lib/todaySitting';
+import { todaySuggestions } from '@/lib/todaySuggestions';
 import { roman } from '@/lib/roman';
 import { toastNotesFromAI } from '@/lib/notesFromAI';
 
 /** The classes open on the library, on this device. */
 const OPEN_KEY = 'arborous:library-open';
-
-/** The most courses the Today block names; the list below carries the rest. */
-const TODAY_ROWS = 3;
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
@@ -62,20 +58,25 @@ export function LibraryRoute() {
   const updateCourse = useCoursesStore((s) => s.updateCourse);
   const inputRef = useRef<HTMLInputElement>(null);
   const ids = Object.keys(courses);
-  const total = usePlanStore((s) => s.total);
-  const logs = useStudyLogStore((s) => s.byCourse);
-  const pace = useMemo(() => measuredPace(logs), [logs]);
-  // Only worth working out when there is a choice to make between courses.
-  const todays = useMemo(
+  const bookmarks = useResumeStore((s) => s.byCourse);
+  // Two to four suggestions, each into one way to study (lib/todaySuggestions).
+  const suggestions = useMemo(
     () =>
-      Object.keys(courses).length >= 2
-        ? todayAcrossCourses(courses, allProgress, now, (id) => plannedMinutes(id, now), pace, (id) => studiedToday(id, now))
-        : [],
-    // `total` is read through plannedMinutes, so it is what has to recompute this.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [courses, allProgress, now, total, pace],
+      todaySuggestions(
+        Object.keys(courses).map((id) => {
+          const progress = allProgress[id] ?? EMPTY_PROGRESS;
+          return {
+            id,
+            course: courses[id],
+            due: courseTotals(courses[id], progress, now).due,
+            started: Object.values(progress).some((r) => r.got + r.missed > 0),
+            learnUnderWay: bookmarks[id]?.mode === 'learn',
+          };
+        }),
+        now,
+      ),
+    [courses, allProgress, bookmarks, now],
   );
-  const day = useMemo(() => dayAcross(todays), [todays]);
 
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState('');
@@ -223,7 +224,7 @@ export function LibraryRoute() {
           </button>
           {/* Struck hardest only when it is the main thing to do here: with a
               day to start, that is Today's Start, and a screen has one. */}
-          <button type="button" className={`press tap-safe ${todays.length > 0 ? '' : 'press-ink'}`} onClick={() => setCreating(true)}>
+          <button type="button" className={`press tap-safe ${suggestions.length > 0 ? '' : 'press-ink'}`} onClick={() => setCreating(true)}>
             <Icon name="plus" size={13} />
             New lecture
           </button>
@@ -264,64 +265,29 @@ export function LibraryRoute() {
       ) : (
         <>
           <KeepSafe />
-          {todays.length > 0 && (
+          {suggestions.length > 0 && (
             <div className="mb-7">
               <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                 <h2 className="mark text-text-3">Today</h2>
                 <DailyTime />
               </div>
-              {/* One Start for the day, over every lecture at once.
-                  Today already plans across lectures (lib/libraryToday), so
-                  one row per lecture made the student add up three "30 min"
-                  lines and pick one before studying anything: a choice to
-                  make every day, where the app is meant to be one tap
-                  (docs/proposals/design-audit.md §3A). The day's own totals
-                  are stated here, and the lectures stay below for the day a
-                  student wants one of them alone.
-
-                  With one lecture there is nothing to add up or choose
-                  between, so its own row is the day and the main action. */}
-              {todays.length > 1 && (
-                <>
-                  <ul className="border-y-2 border-text-3">
-                    <li className="flex items-center gap-4 py-4">
-                      <div className="min-w-0 flex-1">
-                        <span className="block font-display text-heading font-semibold text-text">All {todays.length} lectures</span>
-                        <span className="block text-small text-text-2">{dayLine(day)}</span>
-                        <span className="mt-0.5 block text-small text-text-3">Starts with {todays[0].title}.</span>
-                      </div>
-                      <Link to={`/session/${todays[0].id}/today`} className="press press-ink tap-safe shrink-0">
-                        Start
-                      </Link>
-                    </li>
-                  </ul>
-                  <h3 className="mark mb-1 mt-5 text-text-3">One lecture instead</h3>
-                </>
-              )}
+              {/* What to study today, a few lines, each one tap into a way to
+                  study (the owner, 2026-11-22). It replaced one Start over every
+                  lecture and a row per lecture with a share of the day's time,
+                  which shrank as the library grew. */}
               <ul className="border-y border-border">
-                {todays.slice(0, TODAY_ROWS).map((c) => (
-                  <li key={c.id} className="flex items-center gap-4 border-b border-border py-3 last:border-b-0">
+                {suggestions.map((sg, i) => (
+                  <li key={sg.key} className="flex items-center gap-4 border-b border-border py-3 last:border-b-0">
                     <div className="min-w-0 flex-1">
-                      <span className="block font-display text-body font-semibold leading-snug text-text">
-                        {c.title}
-                      </span>
-                      <span className="block text-small text-text-2">{todayLine(c)}</span>
+                      <span className="block font-display text-body font-semibold leading-snug text-text">{sg.who}</span>
+                      <span className="block text-small text-text-2">{sg.what}</span>
                     </div>
-                    {/* A lecture on its own: "?single=1" ends the sitting in
-                        that lecture rather than offering the next one, which
-                        is what choosing one here means. */}
-                    <Link
-                      to={`/session/${c.id}/today${todays.length > 1 ? '?single=1' : ''}`}
-                      className={`press tap-safe shrink-0 ${todays.length > 1 ? '' : 'press-ink'}`}
-                    >
-                      Start
+                    <Link to={sg.to} className={`press tap-safe shrink-0 ${i === 0 ? 'press-ink' : ''}`}>
+                      {sg.action}
                     </Link>
                   </li>
                 ))}
               </ul>
-              {todays.length > TODAY_ROWS && (
-                <p className="mt-2 text-small text-text-3">+{todays.length - TODAY_ROWS} more below</p>
-              )}
             </div>
           )}
           {/* The apparatus of a contents page: a ruled line to write the

@@ -100,6 +100,13 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   when a diagram earns being interactive, how free the generator is,
   how it is drawn safely (course diagrams are user content: security
   review), and how it fits the design update.
+- **Build on a branch, show it, then merge** (2026-11-24: "instead of
+  making mock ups, you just make it in a branch, show me the updates, take
+  my feedback, and then fix it and push it to main … make sure when you
+  show me the updated stuff you do so clearly because every previous time
+  you did mock ups or tried showing me things it was always unclear what
+  was what. Like make it like a presentation almost but don't waste too
+  much usage"). Standing for the design work.
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Folding live

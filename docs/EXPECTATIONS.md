@@ -297,11 +297,14 @@ In the last 3 days, a day of 30 minutes or more is split into 3 sittings
 catch-up on what was missed. With several lectures, one daily time is
 shared by how soon each exam is. A class page's Today starts in the lecture
 with the nearest exam and carries on through the others. The library's
-Today is one Start for the whole day ("All 3 lectures", their minutes
-added up), which starts in the first lecture and offers the next at the end
-of each; below it, a row for each lecture studies that one alone and stops
-there ("?single=1"). With one lecture to study, its own row is the day
-(design audit 3A, live 2026-11-06).
+Today is two to four suggestions, not a sitting (the owner, 2026-11-22:
+"there will never be a day when I need to review everything I have";
+docs/proposals/ecosystem.md, `lib/todaySuggestions`): a practice test for
+a class whose exam is within three days, Review for what is fading, Carry
+on in Learn where it was left, Learn for a lecture not started; the
+nearest exam first, at most two lines a class, the first struck hardest.
+It replaced one Start over every lecture and a row per lecture with a
+share of the daily time, which shrank as the library grew.
 
 **Working means.** A sitting ends close to its planned minutes; nothing
 due is starved; new material is reached; the plan follows the exam.

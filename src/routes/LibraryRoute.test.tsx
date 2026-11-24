@@ -22,7 +22,6 @@ const open = (courses: Record<string, Course>) => {
   );
 };
 
-const starts = () => screen.getAllByRole('link', { name: 'Start' });
 
 afterEach(() => {
   cleanup();
@@ -30,42 +29,26 @@ afterEach(() => {
   useProgressStore.setState({ byCourse: {} });
 });
 
-describe("the library's Today", () => {
-  it('has one Start for the day, struck hardest, across every lecture', () => {
+describe("the library's Today, as suggestions (the owner, 2026-11-22)", () => {
+  it('suggests what to study, the first struck hardest, each a way to study', () => {
     open({ a: lecture('Alpha'), b: lecture('Beta') });
-    const inked = starts().filter((s) => s.classList.contains('press-ink'));
-    expect(inked).toHaveLength(1);
-    // No "?single": this one carries on through the rest.
-    expect(inked[0].getAttribute('href')).toMatch(/^\/session\/[ab]\/today$/);
-    expect(inked[0].closest('li')!.textContent).toContain('All 2 lectures');
-    expect(inked[0].closest('li')!.textContent).toMatch(/Starts with (Alpha|Beta)\./);
-  });
-
-  it('keeps a row for each lecture below it, for the day a student wants one alone', () => {
-    open({ a: lecture('Alpha'), b: lecture('Beta') });
-    const rows = screen.getByRole('heading', { name: 'One lecture instead' }).nextElementSibling as HTMLElement;
-    const links = within(rows).getAllByRole('link', { name: 'Start' });
-    expect(links.map((l) => l.getAttribute('href')).sort()).toEqual(['/session/a/today?single=1', '/session/b/today?single=1']);
-    expect(within(rows).getByText('Alpha')).toBeTruthy();
-    expect(within(rows).getByText('Beta')).toBeTruthy();
-  });
-
-  it('with one lecture left to study today, makes its own row the day: nothing to add up or choose', () => {
-    // Beta answered and still fresh: nothing due, nothing new.
-    useProgressStore.setState({ byCourse: { b: { f: { got: 2, missed: 0, lastSeen: Date.now(), stability: 30 } } } });
-    open({ a: lecture('Alpha'), b: lecture('Beta') });
-    const all = starts();
-    expect(all).toHaveLength(1);
-    expect(all[0].getAttribute('href')).toBe('/session/a/today');
-    expect(all[0].classList.contains('press-ink')).toBe(true);
+    const today = screen.getByRole('heading', { name: 'Today' }).parentElement!.parentElement!;
+    const learns = within(today).getAllByRole('link', { name: 'Learn' });
+    expect(learns).toHaveLength(2);
+    expect(learns[0].classList.contains('press-ink')).toBe(true);
+    expect(learns[1].classList.contains('press-ink')).toBe(false);
+    expect(learns[0].getAttribute('href')).toMatch(/^\/session\/[ab]\/learn$/);
+    expect(today.textContent).toContain('not started');
+    // No Start over every lecture, no share of a daily time per lecture.
+    expect(screen.queryByText(/All 2 lectures/)).toBeNull();
     expect(screen.queryByText('One lecture instead')).toBeNull();
-    expect(screen.queryByText(/^All \d+ lectures$/)).toBeNull();
   });
 
-  it('leaves New lecture as the main action when there is no day to start', () => {
+  it('leaves New lecture as the main action when there is nothing to suggest', () => {
+    useProgressStore.setState({ byCourse: { a: { f: { got: 1, missed: 0, lastSeen: Date.now() } } } });
     open({ a: lecture('Alpha') });
-    expect(screen.queryByRole('link', { name: 'Start' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'New lecture' }).classList.contains('press-ink')).toBe(true);
+    expect(screen.queryByRole('heading', { name: 'Today' })).toBeNull();
+    expect(screen.getByRole('button', { name: /New lecture/ }).classList.contains('press-ink')).toBe(true);
   });
 });
 

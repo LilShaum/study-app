@@ -159,3 +159,21 @@ next session), on the code as it stands after the redesign.
 4. **A miss in a sitting**: should the computer's tree show it (a leaf
    falling) or only show growth? Growth only is kinder; showing both is more
    honest.
+
+## The owner's answers (2026-11-24)
+
+"Yes to all": the spread, the margins, the order (library Today, the
+adaptive quiz, the removal pass, then this). On the tree in a sitting:
+"a leaf should grow when a certain concept or something is shown to be
+understood, I'm hesitant to say after every correct answer", and no leaf
+falls on a wrong answer: "the leaves are meant to fall when the person
+hasn't practiced it in a while and so the knowledge is fading". So the
+sitting's tree grows a leaf only when the tree's own measure says a part
+is learned (the same rule that grows leaves on the lecture page), never
+drops one on a miss.
+
+Instead of mock-ups: "make it in a branch, show me the updates, take my
+feedback, and then fix it and push it to main", shown "clearly … like a
+presentation almost but don't waste too much usage". So each piece is
+built on the work branch, shown as one page of labelled before-and-after
+screenshots (what changed, where to look), then fixed and merged.
