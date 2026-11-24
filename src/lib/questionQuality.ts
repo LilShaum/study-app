@@ -18,13 +18,6 @@ import { multiKey } from './multiKey';
  * having are the ones that can be checked afterwards and reported.
  */
 
-export interface Mcq {
-  id: string;
-  question: string;
-  options: string[];
-  correct_index: number;
-}
-
 const isMcq = (i: StudyItem): i is Extract<StudyItem, { type: 'mcq' }> => i.type === 'mcq';
 const isGradable = (i: StudyItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'multi';
 

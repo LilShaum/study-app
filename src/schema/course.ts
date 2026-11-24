@@ -325,8 +325,6 @@ export const CourseSchema = z.looseObject({
   sections: z.array(SectionSchema),
 });
 
-export type ItemCounts = z.infer<typeof ItemCountsSchema>;
-export type Inventory = z.infer<typeof InventorySchema>;
 export type CourseMetadata = z.infer<typeof CourseMetadataSchema>;
 export type ClassExam = z.infer<typeof ClassExamSchema>;
 export type Section = z.infer<typeof SectionSchema>;

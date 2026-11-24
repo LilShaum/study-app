@@ -4,7 +4,6 @@ import {
   catchUpDue,
   DUE_BELOW,
   examTime,
-  isDue,
   isDueFor,
   memoryBefore,
   nextDueAt,
@@ -22,20 +21,12 @@ const T0 = 1_000 * DAY;
 describe('retrievability', () => {
   it('is null for an item never answered — unseen is not forgotten', () => {
     expect(retrievability(undefined, T0)).toBeNull();
-    expect(isDue(undefined, T0)).toBe(false);
   });
 
   it('starts at 1 and falls to about 37% after one stability', () => {
     const r: ItemResult = { got: 1, missed: 0, lastSeen: T0, stability: 2 };
     expect(retrievability(r, T0)).toBe(1);
     expect(retrievability(r, T0 + 2 * DAY)).toBeCloseTo(Math.exp(-1));
-  });
-
-  it('becomes due once it drops below the threshold', () => {
-    const r: ItemResult = { got: 1, missed: 0, lastSeen: T0, stability: 1 };
-    const dueAfter = -Math.log(DUE_BELOW); // days
-    expect(isDue(r, T0 + (dueAfter - 0.01) * DAY)).toBe(false);
-    expect(isDue(r, T0 + (dueAfter + 0.01) * DAY)).toBe(true);
   });
 });
 
@@ -111,7 +102,6 @@ describe('with an exam date', () => {
     // slack: from about T0 + 0.58 days.
     const exam = T0 + 2 * DAY;
     expect(isDueFor(r, T0 + 0.5 * DAY, exam)).toBe(false);
-    expect(isDue(r, T0 + 0.7 * DAY)).toBe(false);
     expect(isDueFor(r, T0 + 0.7 * DAY, exam)).toBe(true);
   });
 

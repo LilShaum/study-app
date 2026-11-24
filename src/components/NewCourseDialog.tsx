@@ -17,6 +17,7 @@ import { More, PromptStep } from './PromptStep';
 import { ALL_KINDS, storedKinds, type MakeKind } from '@/lib/makeKinds';
 import { cutMessage, readReply } from '@/lib/readReply';
 import { toastNotesFromAI } from '@/lib/notesFromAI';
+import { plural } from '@/lib/plural';
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
@@ -37,10 +38,6 @@ const TYPE_LABELS: Record<string, string> = {
   problem: 'problem',
   graphic: 'diagram',
 };
-
-function plural(n: number, word: string): string {
-  return `${n} ${word}${n === 1 ? '' : 's'}`;
-}
 
 /**
  * "New course" — the missing first step.

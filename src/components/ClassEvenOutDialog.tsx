@@ -11,8 +11,7 @@ import { persisted } from '@/lib/safeStorage';
 import { useCoursesStore } from '@/store/courses';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
-
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+import { plural } from '@/lib/plural';
 
 /**
  * Even out the answers (lib/evenOptions.ts) for every lecture of a class in

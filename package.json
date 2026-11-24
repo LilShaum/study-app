@@ -21,10 +21,8 @@
     "sim:lecture": "vitest run --config vitest.sim.config.ts sim/lecture.sim.ts"
   },
   "dependencies": {
-    "@radix-ui/react-dropdown-menu": "^2.1.4",
     "@radix-ui/react-toast": "^1.2.4",
     "@supabase/supabase-js": "^2.117.2",
-    "clsx": "^2.1.1",
     "dompurify": "^3.4.16",
     "fflate": "^0.8.3",
     "qrcode-generator": "^2.0.4",

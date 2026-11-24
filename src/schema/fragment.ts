@@ -46,7 +46,6 @@ export const FragmentSchema = z
     message: 'Expected at least one section of items, or at least one correction.',
   });
 
-export type FragmentSection = z.infer<typeof FragmentSectionSchema>;
 export type Fragment = z.infer<typeof FragmentSchema>;
 
 export type ParseFragmentResult = { ok: true; fragment: Fragment } | { ok: false; error: string };

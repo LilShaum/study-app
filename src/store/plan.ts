@@ -21,8 +21,6 @@ interface PlanState {
   totalSetAt?: number;
   setTotal: (minutes: number | null) => void;
   minutesFor: (courseId: string) => number;
-  /** Whether the student has chosen, rather than getting the default. */
-  hasChosen: (courseId: string) => boolean;
   setMinutes: (courseId: string, minutes: number) => void;
 }
 
@@ -33,7 +31,6 @@ export const usePlanStore = create<PlanState>()(
       total: null,
       setTotal: (total) => set({ total, totalSetAt: Date.now() }),
       minutesFor: (courseId) => get().byCourse[courseId]?.minutes ?? DEFAULT_MINUTES,
-      hasChosen: (courseId) => courseId in get().byCourse,
       setMinutes: (courseId, minutes) =>
         set((s) => ({ byCourse: { ...s.byCourse, [courseId]: { minutes } } })),
     }),

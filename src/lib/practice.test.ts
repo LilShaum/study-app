@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Course } from '@/schema/course';
-import fixture from '../../scripts/__fixtures__/biochem.study.json';
-import { CARDS, KINDS, choiceOf, countBasis, examSoon, lecturesFor, practiceCount, practiceLink, sessionFor, sittingSize } from './practice';
+import { KINDS, choiceOf, countBasis, examSoon, lecturesFor, practiceCount, practiceLink, sessionFor } from './practice';
 
 // Made-up content: no course material in the repo.
 const course = {
@@ -22,7 +21,7 @@ const course = {
 
 describe('practice choices', () => {
   it('reads back every choice from the session it opens', () => {
-    for (const { value: cards } of CARDS)
+    for (const cards of ['due', 'weakest', 'missed', 'everything'] as const)
       for (const { value: kind } of KINDS) {
         const s = sessionFor(cards, kind);
         expect(choiceOf(s.mode, s.kind ?? null)).toEqual({ cards, kind });
@@ -51,22 +50,6 @@ describe('practice choices', () => {
     // One lecture has the cards: nothing to mix.
     expect(practiceLink('c1', 'due', 'all', {}, 'BIOL 1', true, true)).toBe('/session/c1/review?class=BIOL+1&single=1');
     expect(practiceLink('c1', 'due', 'all', {}, undefined, false, true)).toBe('/session/c1/review');
-  });
-
-  it('says what the sitting holds: its cards to read, and Due now fitted to the daily time', () => {
-    const lecture = fixture as unknown as Course;
-    const day = 86_400_000;
-    const now = 400 * day;
-    // Every card answered right once, long ago: all of them due.
-    const progress = Object.fromEntries(lecture.sections.flatMap((s) => s.items).map((i) => [i.id, { got: 1, missed: 0, lastSeen: day, streak: 1 }]));
-    const basis = countBasis(lecture, progress as never, new Set(), {}, now);
-    const everything = sittingSize(basis, 'everything', 'all', Infinity);
-    expect(everything.answer).toBe(practiceCount(basis, 'everything', 'all'));
-    expect(everything.read).toBeGreaterThan(0);
-    const due = practiceCount(basis, 'due', 'all');
-    expect(due).toBeGreaterThan(5);
-    expect(sittingSize(basis, 'due', 'all', 2).answer).toBeLessThan(due);
-    expect(sittingSize(basis, 'due', 'all', Infinity).answer).toBe(due);
   });
 
   it("mixes a class's lectures by default in the last week before an exam; a pick holds only in the situation it was made in", () => {

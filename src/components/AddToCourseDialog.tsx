@@ -27,6 +27,7 @@ import { toast } from '@/store/toast';
 import { Icon } from './Icon';
 import { TeacherNotesField } from './TeacherNotesField';
 import { cutMessage, readReply } from '@/lib/readReply';
+import { plural } from '@/lib/plural';
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
@@ -51,10 +52,6 @@ const TYPE_LABELS: Record<string, string> = {
   problem: 'problem',
   graphic: 'diagram',
 };
-
-function plural(n: number, word: string): string {
-  return `${n} ${word}${n === 1 ? '' : 's'}`;
-}
 
 /**
  * Two-step "add material to this course": copy a context-loaded prompt out to

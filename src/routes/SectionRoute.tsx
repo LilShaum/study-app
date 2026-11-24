@@ -10,6 +10,7 @@ import { ItemRenderer } from '@/components/items/ItemRenderer';
 import { CourseTree } from '@/components/CourseTree';
 import { examRule } from '@/lib/exam';
 import { RichText } from '@/components/items/RichText';
+import { plural } from '@/lib/plural';
 
 const TYPE_LABELS: Record<string, string> = {
   mcq: 'MCQ',
@@ -21,10 +22,6 @@ const TYPE_LABELS: Record<string, string> = {
   problem: 'problem',
   graphic: 'diagram',
 };
-
-function plural(n: number, word: string): string {
-  return `${n} ${word}${n === 1 ? '' : 's'}`;
-}
 
 /**
  * "/study/:id/section/:sectionId" — one section on its own.

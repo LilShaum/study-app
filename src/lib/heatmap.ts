@@ -1,5 +1,6 @@
 import { normalizeCourseCode } from './courseCode';
 import { dayKey, type CourseLog } from '@/store/studyLog';
+import { plural } from './plural';
 
 /** A day counts as studied from one minute. */
 const MIN_SECONDS = 60;
@@ -98,8 +99,6 @@ export function monthLabels(weeks: HeatCell[][]): (string | null)[] {
     return cell ? MONTHS[parts(cell.date)[1] - 1].slice(0, 3) : null;
   });
 }
-
-const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'}`;
 
 /** "Studied 23 of the last 56 days, 31 minutes on an average day of study." */
 export function summaryLine(weeks: HeatCell[][]): string | null {

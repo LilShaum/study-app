@@ -32,6 +32,7 @@ import { ExamDialog } from '@/components/ExamDialog';
 import { notesFromAI } from '@/lib/notesFromAI';
 import { examLabel, ranges } from '@/lib/examLabel';
 import { classOf, lectureExam } from '@/lib/classExams';
+import { plural } from '@/lib/plural';
 
 interface Counts {
   total: number;
@@ -62,8 +63,6 @@ const MODE_LABELS: Record<string, string> = {
   browse: 'Browse',
   today: 'Today',
 };
-
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 /** "5 minutes ago" — precise enough to tell you whether this is today's work. */
 function ago(ts: number): string {
