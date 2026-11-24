@@ -26,6 +26,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # The whole history, so the version can count the day's changes.
+          fetch-depth: 0
+
+      # The version a student sees in Help (the owner, 2026-11-24: "make it
+      # so the versions follow an actual rule"): the date of this change, in
+      # UTC, then which change of that day it is. 2026.11.24.3 is the third
+      # change made on 24 November 2026; a later version is always a larger
+      # number.
+      - name: Version
+        run: |
+          DAY=$(TZ=UTC git log -1 --date=format-local:%Y.%m.%d --format=%cd)
+          N=$(TZ=UTC git log --date=format-local:%Y.%m.%d --format=%cd | grep -c "^$DAY$")
+          echo "VITE_VERSION=$DAY.$N" >> "$GITHUB_ENV"
 
       - name: Set up Node
         uses: actions/setup-node@v4

@@ -363,6 +363,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Done
 
+- **Versions follow a rule** (2026-11-24: "make it so the versions follow
+  an actual rule rather than being a random string every time"). Live
+  2026-11-24: the date of the change, then which change of that day it is.
+
 - **"I missed this lecture" on New lecture** (2026-11-24, a rough idea:
   "I would consider even adding a tick box asking if the student missed
   the lecture in the prompt part and is lacking context or notes at all or
