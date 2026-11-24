@@ -67,6 +67,8 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   the lectures, so the more lectures you have the less time it is per
   lecture, which is stupid. it should be replaced with some sort of
   suggestion with what to study today").
+  Built 2026-11-24 on the work branch (not main): suggestions, shown to the
+  owner as change 1 of 4; waits on their look.
 - **Phone and computer each use their format; a design update with the
   onboarding** (2026-11-22: "the difference between the phone view and pc
   view is not good enough, meaning that both do not fully take advantage
