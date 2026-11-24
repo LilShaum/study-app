@@ -829,7 +829,8 @@ describe('the adaptive quiz keeps going (the owner, 2026-11-22)', () => {
       sections: [{ id: 's1', title: 'One', items: Array.from({ length: 25 }, (_, i) => mcq(`q${i}`, `Q${i}?`)) }],
     } as Course;
     useCoursesStore.setState({ courses: { quiz: c } });
-    useProgressStore.setState({ byCourse: {} });
+    // The section has been met (one card answered, held well), so its new cards are drawn on.
+    useProgressStore.setState({ byCourse: { quiz: { q24: { got: 2, missed: 0, lastSeen: Date.now() - 3_600_000, stability: 30 } } } });
     const s = () => useSessionStore.getState();
     s().init('quiz', c, 'adaptive');
     expect(s().items).toHaveLength(10);

@@ -36,6 +36,8 @@ export const ADAPTIVE_WINDOW = 10;
 /** Of each window, the slots for what is fading and past mistakes; more within a week of an exam. */
 export const ADAPTIVE_REVIEW = 3;
 export const ADAPTIVE_REVIEW_NEAR_EXAM = 5;
+/** Of each window, the slots kept for new cards while anything new is left. */
+export const ADAPTIVE_NEW_MIN = 2;
 
 /**
  * The first cards of a list that fit in `minutes`, at the seconds each takes
@@ -588,15 +590,27 @@ export function buildSessionItems(
     const due = dueFirst(list).filter(left);
     const dueIds = new Set(due.map((i) => i.id));
     const mistakes = pool.filter((i) => !dueIds.has(i.id) && missedIds?.has(i.id));
-    const fresh = shuffle(pool.filter((i) => !answered(i)));
+    // New cards only from sections already met (some card answered, in Learn
+    // or here): the quiz is "for once a lot has been covered" (the owner,
+    // 2026-11-22), and drawing on sections never studied put every card in
+    // front of the student cold. In the simulator that took a steady student
+    // from 47% to 19% on the exam, and kept Learn from ever teaching those
+    // sections (sim/FINDINGS.md, 2026-11-24).
+    const met = new Set(pool.filter(answered).map((i) => i._sectionId));
+    const fresh = shuffle(pool.filter((i) => !answered(i) && met.has(i._sectionId)));
     const rest = weakestFirst(pool.filter((i) => answered(i) && !dueIds.has(i.id) && !missedIds?.has(i.id)), now, progress);
     // Within a week of an exam, review takes more of each window.
     const examSoon = pool.some((i) => {
       const at = exam?.forItem(i.id) ?? null;
       return at != null && at > now && at - now <= 7 * 86_400_000;
     });
+    // What is due goes first, all of it up to the window less a couple of
+    // new cards: a card is worth most asked when it is due, and three slots
+    // a window let the due ones pile up (the simulator, 2026-11-24: seven
+    // points below Review). Past mistakes not yet due take the review share.
+    const newRoom = fresh.length ? ADAPTIVE_NEW_MIN : 0;
+    const reviewSlots = Math.max(examSoon ? ADAPTIVE_REVIEW_NEAR_EXAM : ADAPTIVE_REVIEW, Math.min(due.length, ADAPTIVE_WINDOW - newRoom));
     const review = [...due, ...mistakes];
-    const reviewSlots = Math.min(review.length, examSoon ? ADAPTIVE_REVIEW_NEAR_EXAM : ADAPTIVE_REVIEW);
     const picked = review.slice(0, reviewSlots);
     const rank = (i: SessionItem) => ({ easy: 0, medium: 1, hard: 2 })[('difficulty' in i && i.difficulty) || 'medium'] ?? 1;
     const news = fresh.slice(0, ADAPTIVE_WINDOW - picked.length).sort((a, b) => rank(a) - rank(b));

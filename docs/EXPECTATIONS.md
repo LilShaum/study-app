@@ -453,11 +453,15 @@ owner, 2026-11-20 and 2026-11-22; docs/proposals/zen.md). The master
 prompt's loop inside the app.
 
 **How it works.** A row on the lecture page and the class page ("Adaptive
-quiz"); the library's Review suggestion opens it. It plans ten questions at
-a time (`buildSessionItems` 'adaptive'): three slots for what is due and
-past mistakes (five within a week of an exam), the rest cards never
-answered, picked at random, easier before harder; with nothing due or new
-left, what is held least well, so it keeps going. Never a reading card. When
+quiz"). It plans ten questions at a time (`buildSessionItems` 'adaptive'):
+what is due first, all of it up to the window less two slots for new cards,
+and at least three slots for due cards and past mistakes (five within a
+week of an exam); new cards only from sections already met (in Learn or
+before), picked at random, easier before harder; with nothing due or new
+left, what is held least well, so it keeps going. In the simulator it did a
+little worse than Today, alone or as extra time (sim/FINDINGS.md,
+2026-11-24), so Today stays the daily way in and the library's Review
+suggestion opens Today. Never a reading card. When
 three are left the next ten are planned (`session.topUp`), leaving out every
 card already in the sitting. A miss comes back three or so cards on (as in
 Learn's requeue). Marked as you go. The line above the card says when

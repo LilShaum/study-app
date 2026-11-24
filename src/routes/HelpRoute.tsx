@@ -33,7 +33,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Adaptive quiz',
-    what: 'Questions keep coming for as long as you want, ten planned at a time from where you are: a few that are fading or that you got wrong before, the rest ones you have not answered yet, in no fixed order, easier before harder. A question you miss comes back a few questions later. Missed, above the question, lists everything you have missed so far with the right answers, without stopping. When everything that was due is done, it says so: carry on, or stop. On a class page it draws from every lecture of the class.',
+    what: 'Questions keep coming for as long as you want, ten planned at a time from where you are: what is fading or you got wrong before first, then questions you have not answered yet from parts you have already studied, in no fixed order, easier before harder. For a lecture you have not studied, use Learn first. A question you miss comes back a few questions later. Missed, above the question, lists everything you have missed so far with the right answers, without stopping. When everything that was due is done, it says so: carry on, or stop. On a class page it draws from every lecture of the class.',
     scored: true,
   },
   {

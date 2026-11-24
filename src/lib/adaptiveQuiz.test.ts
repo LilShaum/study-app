@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Course, StudyItem } from '@/schema/course';
-import { ADAPTIVE_REVIEW, ADAPTIVE_WINDOW, buildSessionItems } from './buildSessionItems';
+import { ADAPTIVE_NEW_MIN, ADAPTIVE_REVIEW, ADAPTIVE_WINDOW, buildSessionItems } from './buildSessionItems';
 import type { ItemResult } from '@/store/progress';
 
 const NOW = new Date('2026-11-24T10:00:00').getTime();
@@ -20,20 +20,21 @@ const fading = (ids: string[]): Record<string, ItemResult> =>
   Object.fromEntries(ids.map((id) => [id, { got: 1, missed: 0, lastSeen: NOW - 40 * DAY, stability: 2, difficulty: 5 } as ItemResult]));
 
 describe('the adaptive quiz plans in windows of ten (docs/proposals/zen.md)', () => {
-  it('mixes a few fading cards with new ones, never a reading card', () => {
-    const progress = fading(['q0', 'q1', 'q2', 'q3', 'q4', 'q5']);
+  it('asks what is due first, keeps two slots for new cards, never a reading card', () => {
+    const ids = Array.from({ length: 12 }, (_, i) => `q${i}`);
+    const progress = fading(ids);
     const w = buildSessionItems(course(30), 'adaptive', { progress, now: NOW });
     expect(w).toHaveLength(ADAPTIVE_WINDOW);
     expect(w.some((i) => i.type === 'explain' || i.type === 'definition')).toBe(false);
-    const old = w.filter((i) => progress[i.id]);
-    expect(old).toHaveLength(ADAPTIVE_REVIEW);
+    expect(w.filter((i) => progress[i.id])).toHaveLength(ADAPTIVE_WINDOW - ADAPTIVE_NEW_MIN);
   });
 
-  it('gives review more of the window within a week of an exam', () => {
-    const progress = fading(['q0', 'q1', 'q2', 'q3', 'q4', 'q5']);
-    const exam = { forItem: () => NOW + 3 * DAY } as never;
-    const w = buildSessionItems(course(30), 'adaptive', { progress, now: NOW, exam });
-    expect(w.filter((i) => progress[i.id]).length).toBe(5);
+  it('with little due, fills the rest with new cards from the sections met', () => {
+    const progress = fading(['q0']);
+    const w = buildSessionItems(course(30), 'adaptive', { progress, now: NOW });
+    expect(w).toHaveLength(ADAPTIVE_WINDOW);
+    expect(w.filter((i) => progress[i.id])).toHaveLength(1);
+    expect(ADAPTIVE_REVIEW).toBe(3);
   });
 
   it('leaves out what the sitting already has, and keeps going on what is held least well', () => {
@@ -44,5 +45,16 @@ describe('the adaptive quiz plans in windows of ten (docs/proposals/zen.md)', ()
     // With nothing due or new left, the strong ones still come, weakest first.
     const held = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`q${i}`, { got: 3, missed: 0, lastSeen: NOW - DAY, stability: 30, difficulty: 5 } as ItemResult]));
     expect(buildSessionItems(course(12), 'adaptive', { progress: held, now: NOW }).length).toBeGreaterThan(0);
+  });
+});
+
+describe('the adaptive quiz and sections never studied (simulator, 2026-11-24)', () => {
+  it('draws new cards only from sections already met', () => {
+    const c = course(12);
+    expect(buildSessionItems(c, 'adaptive', { progress: {}, now: NOW })).toEqual([]);
+    const met = { q0: { got: 1, missed: 0, lastSeen: NOW - DAY, stability: 30, difficulty: 5 } as ItemResult };
+    const w = buildSessionItems(c, 'adaptive', { progress: met, now: NOW });
+    expect(w.length).toBeGreaterThan(1);
+    expect(w.every((i) => i._sectionId === 's1')).toBe(true);
   });
 });

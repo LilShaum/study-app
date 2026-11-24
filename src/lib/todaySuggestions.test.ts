@@ -39,7 +39,7 @@ describe('Today on the library, as suggestions (the owner, 2026-11-22)', () => {
       [lecture('a', 'BIOL 365', 'BIOL 365: Nerves', { due: 5, learnUnderWay: true }), lecture('b', 'BIOL 365', 'BIOL 365: Muscle', { started: false })],
       NOW,
     );
-    expect(out[0]).toMatchObject({ action: 'Review', what: '5 questions to review', to: '/session/a/adaptive?class=BIOL%20365&mix=1' });
+    expect(out[0]).toMatchObject({ action: 'Review', what: '5 questions to review', to: '/session/a/today?class=BIOL%20365' });
     expect(out[1]).toMatchObject({ action: 'Carry on in Learn', what: 'Nerves', to: '/session/a/learn?resume=1' });
   });
 

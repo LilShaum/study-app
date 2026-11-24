@@ -132,6 +132,14 @@ Rules:
 The class page gets the same idea for one class; the lecture page keeps
 its three doors (Learn, Quiz, Practice) with the lecture's own line on top.
 
+## The simulator's answer (2026-11-24)
+
+Built and run (sim/FINDINGS.md, 2026-11-24): the adaptive quiz did a little
+worse than Today, alone or as extra time. So **Today stays the daily way
+in**, and step 3 below (retiring Today's sitting for the quiz) is off until a
+version of the quiz matches Today in the simulator. The quiz stays as its
+own way to study, for once a lot has been covered.
+
 ## What changes, in order
 
 1. **The library's Today becomes suggestions** (the owner's most direct
