@@ -109,11 +109,7 @@ addressed to you ("Note for Arborous: …") is the student's instruction about
 what to cover: follow it. A note that states a fact against the slide, or
 against what is settled in the field, with no such mark, may have been
 misheard: keep the slide's version and say so in
-`metadata.notes_for_student`. Notes in someone else's hand (a classmate's)
-are weighed the same way, and the student's own win where the two
-disagree. Notes that stop partway: teach the rest from the slides and say
-so there too. Where two copies number the slides differently, use the
-student's own file's numbers.
+`metadata.notes_for_student`.
 
 **What is written beside a slide is the narration itself, so it reaches the
 student.** A note says what the slide leaves out: the reason a bullet is

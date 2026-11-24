@@ -19,6 +19,10 @@ export interface Change {
 
 export const WHATS_NEW: Change[] = [
   {
+    date: '2026-11-24',
+    items: ['New lecture can ask the AI to explain more than your slides do: more context where they are thin, labelled as not from your notes.'],
+  },
+  {
     date: '2026-11-22',
     items: [
       'The library folds each class under its name, its lectures numbered from I, and class codes always read like BIOL 365.',

@@ -91,7 +91,8 @@ const SECTIONS: HelpSection[] = [
             kind of card you don&rsquo;t want; only flashcards, say, gets you only flashcards, and the lecture keeps
             that choice for everything added later. Tick <strong>My exams ask about the studies in my
             material</strong> only if they do: each study is then taught in full, which uses a lot more of the
-            AI&rsquo;s usage.
+            AI&rsquo;s usage. Tick <strong>Explain more than my slides do</strong> for more explanation and context
+            where the slides are thin, such as a lecture you missed: a longer file.
           </li>
           <li>
             Copy the prompt and paste it into a chat with an AI such as Claude. Attach your slides

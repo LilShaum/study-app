@@ -128,6 +128,12 @@ offered without explanations, and the lecture check does not ask for a
 kind left out. The app hands out `prompts/generator.md` plus the
 student's notes on what their teacher stressed and, optionally, the lecture
 it follows on from. The student attaches their slides to the same message.
+"Explain more than my slides do" is off unless ticked (the owner,
+2026-11-24: an option "clear on what it does", not a default that strains
+the AI): ticked, the prompt asks for an explanation for every key and
+supporting idea the slides state without the how or why, a figure note for
+every figure, and a gloss for each unexplained term, all labelled
+"Outside the slides" and none scored (lib/moreContext).
 "My exams ask about the studies on the slides" is off unless ticked
 (the owner, 2026-10-26: in depth by default wasted their usage on a class
 that never asks): ticked, each study is taught in full (question, method,

@@ -74,3 +74,13 @@ describe('buildNewCoursePrompt — a deck that follows another lecture', () => {
     expect(buildNewCoursePrompt()).not.toContain('MY PREVIOUS LECTURE');
   });
 });
+
+describe('explain more than my slides do (the owner, 2026-11-24)', () => {
+  it('asks for fuller narration only when ticked, every addition labelled and never scored', () => {
+    expect(buildNewCoursePrompt()).not.toMatch(/MORE EXPLANATION/);
+    const more = buildNewCoursePrompt(undefined, undefined, false, undefined, true);
+    expect(more).toMatch(/MORE EXPLANATION/);
+    expect(more).toMatch(/Outside the slides:/);
+    expect(more).toMatch(/no question, flashcard or definition rests on\s+it/);
+  });
+});

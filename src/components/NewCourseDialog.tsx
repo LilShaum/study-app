@@ -11,7 +11,7 @@ import { persisted } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
 import { TeacherNotesField } from './TeacherNotesField';
-import { StudiesField } from './StudiesField';
+import { MoreContextField, StudiesField } from './StudiesField';
 import { MakeKindsField } from './MakeKindsField';
 import { More, PromptStep } from './PromptStep';
 import { ALL_KINDS, storedKinds, type MakeKind } from '@/lib/makeKinds';
@@ -57,6 +57,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   const [pasted, setPasted] = useState('');
   const [notes, setNotes] = useState('');
   const [studies, setStudies] = useState(false);
+  const [moreContext, setMoreContext] = useState(false);
   // Everything, unless the student unticks a kind (lib/makeKinds).
   const [kinds, setKinds] = useState<MakeKind[]>(ALL_KINDS);
   const [copied, setCopied] = useState(false);
@@ -84,7 +85,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   const course = result && 'course' in result ? result.course : null;
 
   const copyPrompt = async () => {
-    const prompt = buildNewCoursePrompt(notes, after ? lectures[after] : undefined, studies, kinds);
+    const prompt = buildNewCoursePrompt(notes, after ? lectures[after] : undefined, studies, kinds, moreContext);
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
@@ -172,6 +173,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
             <MakeKindsField value={kinds} onChange={setKinds} />
             <div className="mt-3">
               <StudiesField checked={studies} onChange={setStudies} />
+              <MoreContextField checked={moreContext} onChange={setMoreContext} />
             </div>
             <More label="More options">
               <div className="space-y-3">
