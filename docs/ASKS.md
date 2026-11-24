@@ -69,6 +69,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   suggestion with what to study today").
   Built 2026-11-24 on the work branch (not main): suggestions, shown to the
   owner as change 1 of 4; waits on their look.
+  The owner, 2026-11-24: "a step in the right direction functionally but I
+  still think more thought and testing needs to be put into it to see if
+  it really is a good way to do it and how it handles different
+  scenarios"; its look is for the design update.
 - **Phone and computer each use their format; a design update with the
   onboarding** (2026-11-22: "the difference between the phone view and pc
   view is not good enough, meaning that both do not fully take advantage
@@ -109,6 +113,20 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   you did mock ups or tried showing me things it was always unclear what
   was what. Like make it like a presentation almost but don't waste too
   much usage"). Standing for the design work.
+- **The app's own words explained where they are met** (2026-11-24: "when
+  I read "14 fading" it's unclear what is fading and what fading means. If
+  we are gonna use new terms unique to the app, they need to be explained
+  in the on-boarding or something … fading could be outlined in the
+  onboarding when it shows the tree pop up and how it works and it shows
+  the user what happens when they don't study and topics fade and the
+  leaves fall … "cards" seems maybe specifically referring to flash cards
+  so maybe items is better but like what items, the graded ones only?
+  These things need to be somehow made clear and intuitive to the user by
+  being elegantly integrated into the flow of the app"). With the first
+  run: a list of the app's own terms, each taught where it is first met.
+- **The daily time asked in the first run** (2026-11-24, on where "Set one
+  daily time" belongs: "this is something that would be good to ask in the
+  onboarding").
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Folding live

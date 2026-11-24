@@ -300,9 +300,11 @@ with the nearest exam and carries on through the others. The library's
 Today is two to four suggestions, not a sitting (the owner, 2026-11-22:
 "there will never be a day when I need to review everything I have";
 docs/proposals/ecosystem.md, `lib/todaySuggestions`): a practice test for
-a class whose exam is within three days, Review for what is fading, Carry
-on in Learn where it was left, Learn for a lecture not started; the
-nearest exam first, at most two lines a class, the first struck hardest.
+a class whose exam is within three days, Review with how many questions
+are due, Carry on in Learn where it was left, Learn for the first lecture
+not started; the nearest exam first, at most two lines a class and four
+in all, the first struck hardest. A class whose exams are all behind it
+suggests nothing; on an exam's own day it still counts.
 It replaced one Start over every lecture and a row per lecture with a
 share of the daily time, which shrank as the library grew.
 

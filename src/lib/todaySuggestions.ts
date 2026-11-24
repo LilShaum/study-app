@@ -1,6 +1,6 @@
 import type { Course } from '@/schema/course';
 import { daysToExam } from './libraryToday';
-import { classOf, lectureExam, lectureName } from './classExams';
+import { classExams, classOf, lectureExam, lectureName } from './classExams';
 
 /**
  * Today on the library, as suggestions (the owner, 2026-11-22: "there will
@@ -51,6 +51,9 @@ export function todaySuggestions(lectures: readonly LectureState[], now: number)
   }
   const ranked = [...groups.entries()].map(([key, ls]) => {
     const code = key.startsWith('lecture:') ? null : key;
+    // A class whose exams are all behind it is finished: nothing to suggest.
+    const exams = code ? classExams(ls.map((l) => [l.id, l.course] as [string, Course]), now) : [];
+    if (exams.length && exams.every((e) => daysToExam(e.date, now) == null)) return { days: null, due: 0, lines: [] as Suggestion[] };
     const days = ls
       .map((l) => daysToExam(lectureExam(l.course, now).date, now))
       .filter((d): d is number => d != null)
@@ -66,7 +69,8 @@ export function todaySuggestions(lectures: readonly LectureState[], now: number)
       lines.push({
         key: `${key}:review`,
         who,
-        what: [`${due} fading`, exam].filter(Boolean).join(' · '),
+        // Plain words until the first run teaches "fading" (the owner, 2026-11-24).
+        what: [`${due} question${due === 1 ? '' : 's'} to review`, exam].filter(Boolean).join(' · '),
         action: 'Review',
         to: code ? `/session/${ls.find((l) => l.due > 0)!.id}/today?class=${encodeURIComponent(code)}` : `/session/${ls[0].id}/today?single=1`,
       });
