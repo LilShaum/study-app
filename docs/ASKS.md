@@ -364,8 +364,9 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 ## Done
 
 - **Versions follow a rule** (2026-11-24: "make it so the versions follow
-  an actual rule rather than being a random string every time"). Live
-  2026-11-24: the date of the change, then which change of that day it is.
+  an actual rule rather than being a random string every time"; then "Why
+  not make it a version number rule"). Live 2026-11-24: MAJOR.MINOR.PATCH,
+  MINOR counting What's new changes, PATCH the fixes since.
 
 - **"I missed this lecture" on New lecture** (2026-11-24, a rough idea:
   "I would consider even adding a tick box asking if the student missed

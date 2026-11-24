@@ -848,9 +848,11 @@ phone column across it.
   typing), or on coming back to it, or on leaving the session; in a session
   a toast offers Reload. An iPhone home-screen app otherwise ran a copy
   days old (the owner, 2026-10-26). Help shows the version running
-  (`lib/appUpdate.ts`): the date of the change, then which change of that
-  day it is, "2026.11.24.3" for the third on 24 November 2026, in UTC (the
-  owner, 2026-11-24: "follow an actual rule").
+  (`lib/appUpdate.ts`) as MAJOR.MINOR.PATCH, counted by the deploy (the
+  owner, 2026-11-24: "a version number rule"): the middle number goes up
+  with each change a student would notice (each adds to What's new), the
+  last with each fix since; the first only when old course files stop
+  working or the app is remade.
 - **What's new** (Help, last section, and the link beside the version):
   what a student would notice, day by day, newest first, the last three
   days open and the rest under Earlier. Only how the app teaches, what the

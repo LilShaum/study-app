@@ -2,9 +2,10 @@ import { toast } from '@/store/toast';
 
 /** The commit this copy of the app was built from, short, for Help ("dev" locally). */
 /**
- * The version shown in Help: the date of the change, then which change of
- * that day it is ("2026.11.24.3", the third on 24 November 2026, UTC). Set
- * by the deploy (.github/workflows/deploy.yml); "dev" on a local build.
+ * The version shown in Help, MAJOR.MINOR.PATCH (the owner, 2026-11-24):
+ * MINOR counts the changes a student would notice (each adds to What's
+ * new), PATCH the fixes since the last of them, MAJOR is package.json's.
+ * Counted by the deploy (.github/workflows/deploy.yml); "dev" locally.
  */
 export const VERSION = (import.meta.env.VITE_VERSION as string | undefined) ?? 'dev';
 

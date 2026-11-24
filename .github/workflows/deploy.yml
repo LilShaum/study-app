@@ -31,15 +31,21 @@ jobs:
           fetch-depth: 0
 
       # The version a student sees in Help (the owner, 2026-11-24: "make it
-      # so the versions follow an actual rule"): the date of this change, in
-      # UTC, then which change of that day it is. 2026.11.24.3 is the third
-      # change made on 24 November 2026; a later version is always a larger
-      # number.
+      # so the versions follow an actual rule", then "why not make it a
+      # version number rule"). MAJOR.MINOR.PATCH, counted, never typed:
+      # - MAJOR: package.json's, raised by hand only for a change that
+      #   breaks old course files or remakes the whole app;
+      # - MINOR: how many changes a student would notice have shipped,
+      #   counted as the commits that added to What's new
+      #   (src/lib/whatsNew.ts), which every such change does (CLAUDE.md);
+      # - PATCH: fixes since the last of those.
       - name: Version
         run: |
-          DAY=$(TZ=UTC git log -1 --date=format-local:%Y.%m.%d --format=%cd)
-          N=$(TZ=UTC git log --date=format-local:%Y.%m.%d --format=%cd | grep -c "^$DAY$")
-          echo "VITE_VERSION=$DAY.$N" >> "$GITHUB_ENV"
+          MAJOR=$(node -p "require('./package.json').version.split('.')[0]")
+          MINOR=$(git rev-list --count HEAD -- src/lib/whatsNew.ts)
+          LAST=$(git log -1 --format=%H -- src/lib/whatsNew.ts)
+          PATCH=$(git rev-list --count "$LAST"..HEAD)
+          echo "VITE_VERSION=$MAJOR.$MINOR.$PATCH" >> "$GITHUB_ENV"
 
       - name: Set up Node
         uses: actions/setup-node@v4
