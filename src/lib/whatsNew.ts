@@ -23,7 +23,7 @@ export const WHATS_NEW: Change[] = [
     items: [
       'A new first run: grow a tree, watch a part fade, and pick your daily time.',
       'Opening a lecture, its tree grows and the leaves you have let fade fall. Sweeping a finger over it names a part.',
-      'On a phone, Prev, Next and the glossary sit at the bottom, and a flipped flashcard swipes right for Got it and left for Missed it.',
+      'On a phone, Prev, Next and the glossary sit at the bottom, and once you have answered, a swipe turns the page.',
       'On a computer, a lecture opens as two facing pages, and a sitting keeps its tree on the left and the glossary open on the right.',
       'New lecture asks which class it is for.',
     ],
