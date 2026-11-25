@@ -99,15 +99,27 @@ interface CourseTreeProps {
  */
 const arrivedThisVisit = new Set<string>();
 
+/**
+ * How the tree draws itself on. 'stitch': every stroke inks in at once, and
+ * since a branch is many short strokes, mid-way it reads as a dashed line
+ * closing up. 'outward': each stroke starts when growth from the foot of the
+ * trunk reaches it, so the tree grows from the ground up and out. Both are
+ * shown to the owner (2026-11-25: "that looks kinda interesting, the dashes").
+ */
+const GROWTH = 'outward' as 'stitch' | 'outward';
+/** Outward growth: how long the wood takes to reach the furthest tip, and each stroke to ink in. */
+const OUTWARD_SPAN_MS = 900;
+const OUTWARD_STROKE_MS = 420;
+
 /** How the arrival brings the leaves down: with a shake of the tree, or a plain fall. */
-const ARRIVAL_FALL: 'shake' | 'plain' = 'shake';
+const ARRIVAL_FALL = 'shake' as 'shake' | 'plain';
 /** When the arrival's fall begins: after the drawing-on, or almost at once. */
-const FALL_AFTER_UNFURL_MS = 1250;
+const FALL_AFTER_UNFURL_MS = GROWTH === 'outward' ? 1700 : 1250;
 const FALL_AFTER_OPEN_MS = 350;
 /** How long the shake lasts (styles/index.css, tree-shake). */
 const SHAKE_MS = 1100;
 /** How long the drawing-on lasts, wood then leaves (styles/index.css, tree-grow). */
-const UNFURL_MS = 1400;
+const UNFURL_MS = GROWTH === 'outward' ? 2100 : 1400;
 
 /** A small stable hash, to give each moving leaf its own path and timing. */
 function leafHash(s: string): number {
@@ -211,14 +223,24 @@ type Motion = { className: string; style: Record<string, string> };
  * leaf. At half the leaf's weight, never a target, and budding with its
  * leaf: the same stalk to unfurl from, at the same moment.
  */
-function limbWithVein(limb: Limb, key: number | string, held: boolean, animate: boolean, pointable: boolean, motion?: Motion) {
+function limbWithVein(
+  limb: Limb,
+  key: number | string,
+  held: boolean,
+  animate: boolean,
+  pointable: boolean,
+  motion?: Motion,
+  growDelay?: Record<string, string>,
+) {
   const paint = paintLimb(limb, held, animate, pointable);
-  const className = motion ? `${paint.className} ${motion.className}` : paint.className;
+  // Growing outward: no bud of its own, so the drawing-on's timing for where it is.
+  if (!motion && growDelay) motion = { className: '', style: growDelay };
+  const className = motion?.className ? `${paint.className} ${motion.className}` : paint.className;
   if (!limb.vein) return <path key={key} {...paint} className={className} style={motion?.style} />;
   return (
     <Fragment key={key}>
       <path {...paint} className={className} style={motion?.style} />
-      <path d={limb.vein} strokeWidth={paint.strokeWidth / 2} className={motion ? `vn ${motion.className}` : 'vn'} style={motion?.style} />
+      <path d={limb.vein} strokeWidth={paint.strokeWidth / 2} className={motion?.className ? `vn ${motion.className}` : 'vn'} style={motion?.style} />
     </Fragment>
   );
 }
@@ -238,14 +260,23 @@ export const LimbPaths = memo(function LimbPaths({
   animate,
   pointable,
   grow,
+  growDelays,
 }: {
   limbs: Limb[];
   held: boolean;
   animate: boolean;
   pointable: boolean;
   grow?: Map<string, Motion>;
+  /** Growing outward: each path's own start in the drawing-on (CourseTree GROWTH). */
+  growDelays?: Map<Limb, Record<string, string>>;
 }) {
-  return <>{limbs.map((limb, i) => limbWithVein(limb, i, held, animate, pointable, limb.leafKey ? grow?.get(limb.leafKey) : undefined))}</>;
+  return (
+    <>
+      {limbs.map((limb, i) =>
+        limbWithVein(limb, i, held, animate, pointable, limb.leafKey ? grow?.get(limb.leafKey) : undefined, growDelays?.get(limb)),
+      )}
+    </>
+  );
 });
 
 /**
@@ -715,6 +746,33 @@ export function CourseTree({
   /** What buds in the foliage: a sitting's new leaves, or the end of a session's regrowth. */
   const grow = growOnly ? buds : motion.grow;
   const drawOn = animate || unfurling;
+  /*
+   * Growing outward: each path starts when growth from the foot of the
+   * trunk would reach it, wood first and its leaves just after.
+   */
+  const growDelays = useMemo(() => {
+    if (GROWTH !== 'outward' || !layers.foot) return undefined;
+    const [fx, fy] = layers.foot;
+    const out = new Map<Limb, Record<string, string>>();
+    const reach = (l: Limb) => {
+      const p = startOf(l.d);
+      return p ? Math.hypot(p[0] - fx, p[1] - fy) : 0;
+    };
+    const all = tree.limbs.filter((l) => !l.fallen && !l.ghost);
+    const far = Math.max(1, ...all.map(reach));
+    for (const l of all) {
+      const at = (reach(l) / far) * OUTWARD_SPAN_MS;
+      out.set(
+        l,
+        l.solid
+          ? { animationDelay: `${Math.round(at + 350)}ms`, animationDuration: '600ms' }
+          : { animationDelay: `${Math.round(at)}ms`, animationDuration: `${OUTWARD_STROKE_MS}ms` },
+      );
+    }
+    return out;
+  }, [layers.foot, tree]);
+  /** The per-path timing, only while the arrival draws the tree on (the end of a session keeps its own). */
+  const outward = unfurling && !animate ? growDelays : undefined;
   const lifted = active && !drawOn && !(grewFrom && spotlight) ? active : null;
 
   const swing = (id: string): CSSProperties | undefined => {
@@ -1008,19 +1066,19 @@ export function CourseTree({
       {/* Wood first, then foliage, so a canopy hides the branches behind it. */}
       <g>
         {layers.structural.map((limb, i) => (
-          <path key={`s${i}`} {...paintLimb(limb, false, drawOn, false)} />
+          <path key={`s${i}`} {...paintLimb(limb, false, drawOn, false)} style={outward?.get(limb)} />
         ))}
         {[...layers.wood].map(([id, limbs]) => (
           <g key={id} data-sid={id} data-held={id === active || undefined} data-dim={dim(id) || undefined} data-back={stepsBack(id) || undefined} className="limb-set" style={swing(id)}>
-            <LimbPaths limbs={limbs} held={id === active} animate={drawOn} pointable={interactive} />
+            <LimbPaths limbs={limbs} held={id === active} animate={drawOn} pointable={interactive} growDelays={outward} />
           </g>
         ))}
       </g>
       <g>
-        {layers.structuralFoliage.map((limb, i) => limbWithVein(limb, `sf${i}`, false, drawOn, false))}
+        {layers.structuralFoliage.map((limb, i) => limbWithVein(limb, `sf${i}`, false, drawOn, false, undefined, outward?.get(limb)))}
         {[...layers.foliage].map(([id, limbs]) => (
           <g key={id} data-sid={id} data-held={id === active || undefined} data-dim={dim(id) || undefined} data-back={stepsBack(id) || undefined} className="limb-set" style={swing(id)}>
-            <LimbPaths limbs={limbs} held={id === active} animate={drawOn} pointable={false} grow={grow} />
+            <LimbPaths limbs={limbs} held={id === active} animate={drawOn} pointable={false} grow={grow} growDelays={outward} />
           </g>
         ))}
       </g>
