@@ -12,7 +12,7 @@ afterEach(() => {
 
 /** The file the AI handed back, uploaded as the only way in. */
 const upload = async (text: string) => {
-  fireEvent.change(screen.getByLabelText('Upload the file the AI made'), {
+  fireEvent.change(screen.getByLabelText('Upload the file'), {
     target: { files: [new File([text], 'lecture.study.json', { type: 'application/json' })] },
   });
   await waitFor(() => expect((screen.getByRole('button', { name: 'Add lecture' }) as HTMLButtonElement).disabled).toBe(false));

@@ -631,7 +631,9 @@ function FirstRun() {
   );
 
   return (
-    <div className="paper-grain fixed inset-0 z-50 flex flex-col overflow-y-auto bg-bg" role="dialog" aria-modal="true" aria-label="Welcome to Arborous">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-bg" role="dialog" aria-modal="true" aria-label="Welcome to Arborous">
+      {/* The paper on the content, as tall as it scrolls (Sheet, Testing 10). */}
+      <div className="paper-grain flex min-h-full flex-col">
       {/* The running head: where you are, and the way out. */}
       <div className="page-block is-wide flex shrink-0 items-baseline justify-between gap-4 pt-[max(1rem,env(safe-area-inset-top))]">
         <span className="mark text-text-3">
@@ -669,6 +671,7 @@ function FirstRun() {
           <div className="page-block shrink-0 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-2">{actionBlock}</div>
         </>
       )}
+      </div>
     </div>
   );
 }

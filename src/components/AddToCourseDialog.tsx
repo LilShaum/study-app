@@ -71,7 +71,10 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   const [studies, setStudies] = useState(() => hasStudies(course));
   // What to make, as the lecture was made (lib/makeKinds); More practice
   // makes questions only.
-  const [kinds, setKinds] = useState<MakeKind[]>(() => kindsOf(course));
+  // The AI chooses, unless the lecture was made with only some kinds.
+  const [aiChooses, setAiChooses] = useState(() => !course.metadata.make?.length);
+  const [ticked, setKinds] = useState<MakeKind[]>(() => kindsOf(course));
+  const kinds = aiChooses ? ALL_KINDS : ticked;
   // Written answers only when ticked, as on the practice test (the owner,
   // 2026-10-26: "I NEVER TOLD YOU TO ADD WRITTEN ANSWERS").
   // A lecture with neither keeps to what it has: written answers, or
@@ -290,13 +293,17 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
         left={
           <>
             {/* What it is for, in a line, and where to paste it; the rest folds. */}
-            <PromptStep n={1} title="Copy the prompt">
+            <PromptStep
+              n={1}
+              title={
+                mode === 'material'
+                  ? 'Give the AI the prompt and your new notes, in one message'
+                  : 'Give the prompt to the chat that made this lecture'
+              }
+            >
               {mode === 'material' ? (
                 <>
-                  <p className="text-sm text-text-2">
-                    For new notes, such as next week&rsquo;s lecture. Paste the prompt into an AI with the new notes
-                    attached to the same message.
-                  </p>
+                  <p className="text-sm text-text-2">For new notes, such as next week&rsquo;s lecture.</p>
                   <More label="More about this">
                     <p>
                       The prompt tells the AI which sections, ids and tags this lecture uses, so nothing is made twice.
@@ -308,7 +315,6 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 <>
                   <p className="text-sm text-text-2">
                     In {plural(rework.length, 'question')} the right answer is the longest option, so it can be guessed.
-                    <strong>Paste it into the chat that made this lecture.</strong>
                   </p>
                   <More label="More about this">
                     <p>
@@ -320,8 +326,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
               ) : mode === 'explain' ? (
                 <>
                   <p className="text-sm text-text-2">
-                    A short explanation of each key idea, shown in Learn before the questions on it.{' '}
-                    <strong>Paste it into the chat that made this lecture.</strong>
+                    A short explanation of each key idea, shown in Learn before the questions on it.
                   </p>
                   <More label="More about this">
                     <p>
@@ -333,8 +338,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
               ) : mode === 'fix' ? (
                 <>
                   <p className="text-sm text-text-2">
-                    Sends what the lecture check found back to the AI to fix.{' '}
-                    <strong>Paste it into the chat that made this lecture</strong>, where your notes still are.
+                    Sends what the lecture check found back to the AI to fix, in the chat where your notes still are.
                   </p>
                   <More label="More about this">
                     <p>
@@ -347,8 +351,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
               ) : (
                 <>
                   <p className="text-sm text-text-2">
-                    New questions on what this lecture already covers, for when you know the ones you have.{' '}
-                    <strong>Paste it into the chat that made this lecture</strong>, where your notes still are.
+                    New questions on what this lecture already covers, for when you know the ones you have.
                   </p>
                   <More label="More about this">
                     <p>
@@ -465,7 +468,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                 <div className="mb-3">
                   <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-text-3">What to make</div>
                   {mode === 'material' ? (
-                    <MakeKindsField value={kinds} onChange={setKinds} />
+                    <MakeKindsField value={ticked} onChange={setKinds} ai={aiChooses} onAi={setAiChooses} />
                   ) : (
                     <MakeKindsField value={practiceKinds} onChange={setPracticeKinds} only={QUESTION_KINDS} />
                   )}
@@ -481,9 +484,9 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
         }
         right={
           <>
-            <PromptStep n={2} title="Upload the file">
+            <PromptStep n={2} title="Bring back the file it makes">
               <label className="cursor-pointer text-sm text-accent hover:underline">
-                Upload the file the AI made
+                Upload the file
                 <input
                   type="file"
                   accept=".json,.txt,application/json,text/plain"
@@ -519,7 +522,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
             )}
 
             {plan && (
-              <div className="border-l-2 border-border-strong bg-bg py-2 pl-3 text-sm">
+              <div className="border-l-2 border-border-strong py-2 pl-3 text-sm">
                 {plan.totalAdded === 0 && plan.totalCorrected === 0 && plan.totalFramed === 0 ? (
                   <div className="text-text-2">
                     Nothing new to add

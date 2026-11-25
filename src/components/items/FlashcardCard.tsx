@@ -98,7 +98,7 @@ function FlipCard({ item, onGot, onMissed, comesBack, keyboardEnabled = false, l
   ];
 
   return (
-    <div className="rounded-sm border border-border-light border-t-text-3 border-t-2 bg-surface p-5 shadow sm:p-6">
+    <div className="paper-grain rounded-sm border border-border-light border-t-text-3 border-t-2 bg-surface p-5 shadow sm:p-6">
       <div className="mark mb-4 flex items-center gap-2 border-b border-border-light pb-2 text-text-3">
         Flashcard
         <DifficultyBadge difficulty={item.difficulty} />
@@ -274,7 +274,7 @@ function WrittenCard({
   }, keyboardEnabled);
 
   return (
-    <div className="rounded-sm border border-border-light border-t-text-3 border-t-2 bg-surface p-5 shadow sm:p-6">
+    <div className="paper-grain rounded-sm border border-border-light border-t-text-3 border-t-2 bg-surface p-5 shadow sm:p-6">
       <div className="mark mb-4 flex items-center gap-2 border-b border-border-light pb-2 text-text-3">
         Write the answer
         <DifficultyBadge difficulty={item.difficulty} />

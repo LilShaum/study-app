@@ -94,20 +94,27 @@ const SECTIONS: HelpSection[] = [
         </p>
         <ol className="mt-2 list-decimal space-y-1 pl-5">
           <li>
-            On the library page, tap <strong>New lecture</strong>. Under <strong>What to make</strong>, leave <strong>What suits my
-            material</strong> and the AI picks the kind of card that fits each idea, or choose <strong>Only the kinds I
-            tick</strong>: only flashcards, say, gets you only flashcards, and the lecture keeps that choice for
-            everything added later. Tick <strong>My exams ask about the studies in my
+            On the library page, tap <strong>New lecture</strong>. Beside <strong>Make</strong>, leave{' '}
+            <strong>The AI chooses</strong>, or pick <strong>Only these</strong> and tick the kinds you want.
+            The AI choosing, every kind is open to it and it picks, idea by idea, the kind that tests it best:
+            a term to name becomes a term card, a fact to recall a flashcard, two close ideas to tell apart or
+            an idea to apply a multiple-choice question, a process step by step a worked example then a
+            problem, a structure or a pathway a diagram, a mechanism to explain a written answer. With Only
+            these, a kind left unticked is not made at all, and what it would have asked is asked by the kinds
+            you kept: only flashcards gets you only flashcards. The lecture keeps the choice for everything
+            added later. Tick <strong>My exams ask about the studies in my
             material</strong> only if they do: each study is then taught in full, which uses a lot more of the
             AI&rsquo;s usage. Tick <strong>Explain more than my slides do</strong> for more explanation and context
             where the slides are thin, such as a lecture you missed: a longer file.
           </li>
           <li>
-            Copy the prompt and paste it into a chat with an AI; for the best results, use a more
-            capable model on high effort. Attach your slides
-            or notes to that same message. Files kept only in a project often reach the AI as text,
-            without the diagrams, and the lecture then misses what the diagrams show. If a key
-            diagram is dense, attach a screenshot of that slide too.
+            Give the AI the prompt and your slides or notes in one message: copy the prompt, paste it
+            into a chat with an AI, and attach your slides or notes to that same message. For the best
+            results, use a more capable model on high effort. Why the same message: files kept only in a
+            project often reach the AI as text, without their diagrams, and the lecture then misses what
+            the diagrams show. If a key diagram is dense, attach a screenshot of that slide too. The prompt
+            has the AI list every term and idea in your material first, so the lecture covers all of it
+            rather than skimming.
           </li>
           <li>
             The AI hands back a <span className="font-mono">.study.json</span> file. Upload it in

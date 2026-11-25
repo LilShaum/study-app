@@ -2,16 +2,20 @@ import type { ReactNode } from 'react';
 
 /**
  * One step of a prompt screen (New lecture, Add to a lecture): its number
- * and name set as a label, then what to do, in a line or two. The rest of
+ * and the task in the heading, then the controls. The rest of
  * what a student might want to know folds behind a "more" line (the owner,
  * 2026-10-29: "massive blocks of text … not intuitive for new users").
  */
 export function PromptStep({ n, title, children }: { n: number; title: string; children: ReactNode }) {
   return (
     <section>
-      <h3 className="mark mb-2 flex items-baseline gap-2 text-text-3">
-        <span className="text-accent">{n}</span>
-        {title}
+      {/* The heading is the step's whole task, read as a sentence: reading
+          only the headings gets a student through (the owner, 2026-11-25).
+          It was a grey small-caps label, which suited a name ("Copy the
+          prompt") and not a task. */}
+      <h3 className="mb-2.5 flex items-baseline gap-2.5 font-display text-body font-semibold text-text">
+        <span className="mark shrink-0 text-accent">{n}</span>
+        <span>{title}</span>
       </h3>
       {children}
     </section>

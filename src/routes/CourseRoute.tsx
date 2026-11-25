@@ -397,7 +397,7 @@ export function CourseRoute() {
       <CourseHealthPanel course={course} onFix={() => setAdding('fix')} onEvenOut={() => setAdding('options')} />
 
       {resumable && (
-        <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded border border-border-strong bg-surface-raised p-4 shadow">
+        <div className="paper-grain mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded border border-border-strong bg-surface-raised p-4 shadow">
           <span className="min-w-0 flex-1">
             <span className="block font-medium text-text">
               {MODE_LABELS[resumable.mode] ?? resumable.mode}

@@ -12,7 +12,7 @@ import { Icon } from './Icon';
 import { TeacherNotesField } from './TeacherNotesField';
 import { MoreContextField, StudiesField } from './StudiesField';
 import { MakeKindsField } from './MakeKindsField';
-import { More, PromptBody, PromptStep, Row, Rows } from './PromptStep';
+import { PromptBody, PromptStep, Row, Rows } from './PromptStep';
 import { Sheet } from './Sheet';
 import { ALL_KINDS, storedKinds, type MakeKind } from '@/lib/makeKinds';
 import { cutMessage, readReply } from '@/lib/readReply';
@@ -54,8 +54,10 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   const [notes, setNotes] = useState('');
   const [studies, setStudies] = useState(false);
   const [moreContext, setMoreContext] = useState(false);
-  // Everything, unless the student unticks a kind (lib/makeKinds).
-  const [kinds, setKinds] = useState<MakeKind[]>(ALL_KINDS);
+  // The AI chooses the kinds, unless the student picks "Only these" (lib/makeKinds).
+  const [aiChooses, setAiChooses] = useState(true);
+  const [ticked, setKinds] = useState<MakeKind[]>(ALL_KINDS);
+  const kinds = aiChooses ? ALL_KINDS : ticked;
   const [copied, setCopied] = useState(false);
   const lectures = useCoursesStore((s) => s.courses);
   // In a class, the lecture added last is the likeliest one this deck follows.
@@ -191,7 +193,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
       <PromptBody
         left={
           <>
-            <PromptStep n={1} title="What to make">
+            <PromptStep n={1} title="Choose what to make">
               <Rows>
                 {!classCode && (
                   <Row label="Class">
@@ -238,7 +240,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
                   </Row>
                 )}
                 <Row label="Make">
-                  <MakeKindsField value={kinds} onChange={setKinds} />
+                  <MakeKindsField value={ticked} onChange={setKinds} ai={aiChooses} onAi={setAiChooses} />
                 </Row>
                 <Row label="Also">
                   <StudiesField checked={studies} onChange={setStudies} />
@@ -274,27 +276,23 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
               </Rows>
             </PromptStep>
 
-            <PromptStep n={2} title="Copy the prompt">
-              <p className="mb-3 text-sm text-text-2">
-                Paste it into an AI chat, and attach your slides, notes or PDF to the same message. For the best results, use a more capable model on high effort.
-              </p>
+            {/* The heading is the whole task, the attaching included; the
+                button only names its action (the owner, 2026-11-25, Testing 7:
+                "the title for step 2 should be something like give the prompt
+                and the lecture notes you want to use to the ai"). Why attach
+                them, and how the prompt works, are in Help. */}
+            <PromptStep n={2} title="Give the AI the prompt and your slides or notes, in one message">
               {copyButton}
-              <More label="Why attach them to the message?">
-                <p>
-                  Files kept only in a project often reach the AI as text, without their diagrams, and the lecture then
-                  misses what the diagrams show. The prompt has the AI list every term and idea in your material first, so
-                  the lecture covers all of it rather than skimming.
-                </p>
-              </More>
+              <p className="mt-2 text-sm text-text-3">For the best results, use a more capable model on high effort.</p>
             </PromptStep>
           </>
         }
         right={
           <>
-            <PromptStep n={3} title="Upload the file">
+            <PromptStep n={3} title="Bring back the file it makes">
               <label className="press tap-safe inline-flex cursor-pointer">
                 <Icon name="upload" size={13} />
-                Upload the file the AI made
+                Upload the file
                 <input type="file" accept=".json,.study.json" className="hidden" onChange={handleFile} />
               </label>
             </PromptStep>
@@ -315,7 +313,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
             )}
 
             {course && (
-              <div className="border-l-2 border-border-strong bg-bg py-2 pl-3 text-sm">
+              <div className="border-l-2 border-border-strong py-2 pl-3 text-sm">
                 <div className="font-medium text-text">
                   {course.metadata.title || 'Untitled lecture'}
                   {course.metadata.course_code && (

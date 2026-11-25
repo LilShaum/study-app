@@ -6,7 +6,7 @@ import { AddToCourseDialog } from './AddToCourseDialog';
 
 /** The file the AI handed back, uploaded as the only way in. */
 const upload = (text: string) =>
-  fireEvent.change(screen.getByLabelText('Upload the file the AI made'), {
+  fireEvent.change(screen.getByLabelText('Upload the file'), {
     target: { files: [new File([text], 'items.json', { type: 'application/json' })] },
   });
 

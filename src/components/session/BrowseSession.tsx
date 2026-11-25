@@ -94,7 +94,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
       {hasNav && (
         <nav
           aria-label="Sections"
-          className="sticky top-0 z-10 -mx-6 mb-4 flex gap-5 overflow-x-auto border-b border-border bg-bg px-6 py-1 wide:hidden"
+          className="paper-grain sticky top-0 z-10 -mx-6 mb-4 flex gap-5 overflow-x-auto border-b border-border bg-bg px-6 py-1 wide:hidden"
         >
           {sections.map((s) => (
             <button

@@ -28,7 +28,7 @@ export function ThumbBar({ children }: { children: ReactNode }) {
   return (
     <div
       ref={ref}
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border-strong bg-bg/95 px-5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur wide:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 paper-grain border-t border-border-strong bg-bg px-5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 wide:hidden"
     >
       <div className="mx-auto max-w-[44rem]">{children}</div>
     </div>

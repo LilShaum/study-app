@@ -58,8 +58,12 @@ export function Sheet({ label, title, onClose, children, onSubmit, width = 'lg' 
     },
   };
 
+  /* The paper is the content's, not the panel's: on a phone the panel
+     scrolls, and a grain painted on the scrolling box covered only its first
+     screen, so a long sheet ran out of paper partway down (the owner,
+     2026-11-25, Testing 10). On the content it is as tall as the sheet. */
   const body = (
-    <>
+    <div className="paper-grain min-h-full">
       {/* The top edge: what a thumb takes hold of to put the sheet away. */}
       <div {...grab} className="touch-none select-none sm:touch-auto">
         <div className="flex justify-center pt-2.5 sm:hidden" aria-hidden="true">
@@ -73,10 +77,10 @@ export function Sheet({ label, title, onClose, children, onSubmit, width = 'lg' 
         </div>
       </div>
       {children}
-    </>
+    </div>
   );
 
-  const panel = `sheet-panel paper-grain w-full overflow-y-auto border-t-2 border-border-strong bg-surface pb-[env(safe-area-inset-bottom)]
+  const panel = `sheet-panel w-full overflow-y-auto border-t-2 border-border-strong bg-surface pb-[env(safe-area-inset-bottom)]
     max-h-[92dvh] sm:my-8 sm:max-h-none sm:rounded-sm sm:border sm:pb-0 sm:shadow-md ${WIDTH[width]}`;
   const style = drag ? { transform: `translateY(${drag}px)`, transition: 'none' } : undefined;
 

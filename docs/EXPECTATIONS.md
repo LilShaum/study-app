@@ -130,13 +130,19 @@ is a specimen label of ruled rows, each named in small caps (`Rows`,
 "That whole screen honestly needs some reorganization … a lot more
 intuitive without losing function"): Class, Make, Also (studies, explain
 more, each with its cost in quiet type), More (teacher's notes, follows on
-from, folded). Make is a box per kind, always in view, with one line under
-it: "Each idea becomes whichever ticked kind suits it best" (all ticked,
-every kind is allowed and the AI picks the kind that fits each idea, as the
-spec's "Which type for what" says: a ticked kind is allowed, never
-required; a "What suits my material / Only the kinds I tick" choice in
-front of the boxes was dropped after a day as "ugly and low effort"), and
-Tick all once any is unticked. The boxes: (multiple choice, select all that apply, flashcards,
+from, folded). Make has two named ways over a box per kind, always in
+view: "The AI chooses" (the default: every kind is open and the AI picks
+the kind that fits each idea, as the spec's "Which type for what" says;
+the boxes show every kind ticked, quiet) or "Only these" (a kind unticked
+is not made). Touching a box in the AI's way moves to Only these with that
+box changed. No line of text under them; how the AI decides is in Help
+(2026-11-25, Testing 6: the choice had been dropped for "looking ugly" and
+replaced by an explainer line; the owner: "I was telling you it LOOKED
+ugly, not to remove it"). The steps' headings are each step's whole task:
+"Choose what to make", "Give the AI the prompt and your slides or notes,
+in one message" (its button "Copy the prompt", and the model advice under
+it; why attach and how the prompt works are in Help, Testing 7), "Bring
+back the file it makes" (its button "Upload the file"). The boxes: (multiple choice, select all that apply, flashcards,
 terms to name, written answers, explanations, step-by-step examples, problem sets, diagrams;
 renamed 2026-11-16 from "worked examples" and "problems to work out",
 which the owner could not tell apart; a problem is any method to carry

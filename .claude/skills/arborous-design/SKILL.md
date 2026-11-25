@@ -82,9 +82,24 @@ screen, not that one:
   and never a line telling the student what to do.
 - **A material covers its whole surface.** If a page, sheet or dialog is
   paper (the grain), it is paper top to bottom at every scroll position;
-  grain that stops partway reads as a fault. Which surfaces are paper, and
-  why, is decided once and kept to everywhere. Check long surfaces at their
+  grain that stops partway reads as a fault. Check long surfaces at their
   bottom, not only their first screen (the owner, 2026-11-25).
+- **Which surfaces are paper, and why** (decided 2026-11-25, Testing 10).
+  The grain is the paper itself, so anything that is a piece of paper
+  carries it, and nothing else has a fill at all:
+  - *Paper, grain on:* the page (the shell), every leaf laid over it (a
+    sheet, a dialog, the first run), every band pinned over the page that
+    the page scrolls under (the thumb bar, a sticky row, the status-bar
+    cover, the glossary's held letter), and every slip or card set on it
+    (a flashcard, a toast, the resume note, the editor). Put `.paper-grain`
+    on the CONTENT of anything that scrolls, never on the scrolling box: a
+    `::before` on a scroll container covers only its first screen.
+  - *Not paper, no fill:* ink and rules. A note set in the text is a rule
+    at its side (`border-l-2`), never a box filled with flat colour: a flat
+    patch on grained paper reads as a hole in it. No translucent or blurred
+    bars (glass is not paper).
+  - *Controls drawn small* (a key cap, the glyph of a phone's button) may
+    keep a plain fill: they are marks, too small for grain to show.
 - **When a way of doing something is replaced, remove what the old way
   needed.** A leftover screen that does nothing new, opened by a stray tap,
   is clutter and a trap. A tap on empty space or a picture never opens a

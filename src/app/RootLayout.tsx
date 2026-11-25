@@ -102,7 +102,7 @@ export function RootLayout() {
       {/* Behind the phone's clock and signal icons: the page scrolls under
           them in the installed app, so this band keeps it from showing
           through. Zero high where there is no status bar to cover. */}
-      <div className="status-bar-cover bg-bg" aria-hidden="true" />
+      <div className="status-bar-cover paper-grain bg-bg" aria-hidden="true" />
       {/* The running head, not a nav bar.
           The page used to sit in an `lg:` rounded, bordered, shadowed box —
           a card on a backdrop, which is a dashboard's anatomy, not a
