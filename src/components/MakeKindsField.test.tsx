@@ -22,23 +22,25 @@ function Harness({ start }: { start: MakeKind[] }) {
 }
 
 describe('MakeKindsField', () => {
-  it('leaves the choice to the AI by default, with no ticks to read (the owner, 2026-11-25)', () => {
+  it('shows every kind ticked to begin with, the boxes in view (the owner, 2026-11-25)', () => {
     render(<Harness start={[...ALL_KINDS]} />);
-    expect(screen.getByRole('radio', { name: /What suits my material/ }).getAttribute('aria-checked')).toBe('true');
-    expect(screen.queryByRole('checkbox')).toBeNull();
+    const boxes = screen.getAllByRole('checkbox') as HTMLInputElement[];
+    expect(boxes).toHaveLength(ALL_KINDS.length);
+    expect(boxes.every((b) => b.checked)).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Tick all' })).toBeNull();
   });
 
-  it('shows the ticks to narrow it, and going back allows every kind again', () => {
+  it('unticks a kind, and Tick all brings every kind back', () => {
     render(<Harness start={[...ALL_KINDS]} />);
-    fireEvent.click(screen.getByRole('radio', { name: 'Only the kinds I tick' }));
     fireEvent.click(screen.getByLabelText('Flashcards'));
     expect(seen).not.toContain('flashcard');
-    fireEvent.click(screen.getByRole('radio', { name: /What suits my material/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Tick all' }));
     expect(seen).toEqual([...ALL_KINDS]);
   });
 
-  it('opens on the ticks when a narrower choice is already stored', () => {
+  it('asks for at least one when every box is unticked', () => {
     render(<Harness start={['flashcard']} />);
-    expect((screen.getByLabelText('Flashcards') as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(screen.getByLabelText('Flashcards'));
+    expect(screen.getByText('Choose at least one.')).toBeTruthy();
   });
 });

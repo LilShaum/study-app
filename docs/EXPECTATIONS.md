@@ -125,10 +125,18 @@ to make, copy the prompt, upload the file the AI made (the paste box went
 one code block to save as one; the upload shows the same preview before
 Add lecture); one line each, the reasons and
 options folded behind a "more" line (`PromptStep`, `More`). What to make
-opens on "What suits my material" (suggested; every kind allowed, the AI
-picking the kind that fits each idea, as the spec's "Which type for what"
-says: a ticked kind is allowed, never required), or "Only the kinds I
-tick" (the owner, 2026-11-25: "suggested items"), which shows a box per kind (multiple choice, select all that apply, flashcards,
+is a specimen label of ruled rows, each named in small caps (`Rows`,
+`Row`; docs/proposals/new-lecture-screen.md, after the owner, 2026-11-25:
+"That whole screen honestly needs some reorganization … a lot more
+intuitive without losing function"): Class, Make, Also (studies, explain
+more, each with its cost in quiet type), More (teacher's notes, follows on
+from, folded). Make is a box per kind, always in view, with one line under
+it: "Each idea becomes whichever ticked kind suits it best" (all ticked,
+every kind is allowed and the AI picks the kind that fits each idea, as the
+spec's "Which type for what" says: a ticked kind is allowed, never
+required; a "What suits my material / Only the kinds I tick" choice in
+front of the boxes was dropped after a day as "ugly and low effort"), and
+Tick all once any is unticked. The boxes: (multiple choice, select all that apply, flashcards,
 terms to name, written answers, explanations, step-by-step examples, problem sets, diagrams;
 renamed 2026-11-16 from "worked examples" and "problems to work out",
 which the owner could not tell apart; a problem is any method to carry

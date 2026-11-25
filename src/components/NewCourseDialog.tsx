@@ -12,7 +12,7 @@ import { Icon } from './Icon';
 import { TeacherNotesField } from './TeacherNotesField';
 import { MoreContextField, StudiesField } from './StudiesField';
 import { MakeKindsField } from './MakeKindsField';
-import { More, PromptBody, PromptStep } from './PromptStep';
+import { More, PromptBody, PromptStep, Row, Rows } from './PromptStep';
 import { Sheet } from './Sheet';
 import { ALL_KINDS, storedKinds, type MakeKind } from '@/lib/makeKinds';
 import { cutMessage, readReply } from '@/lib/readReply';
@@ -192,80 +192,86 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
         left={
           <>
             <PromptStep n={1} title="What to make">
-              {!classCode && (
-                <div className="mb-4">
-                  <span className="mb-1.5 block text-sm text-text-2">Which class is it for?</span>
-                  <div role="radiogroup" aria-label="Class" className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
-                    {classes.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        role="radio"
-                        aria-checked={!typing && klass === c}
-                        onClick={() => {
-                          setTyping(false);
-                          setKlass(klass === c ? '' : c);
-                        }}
-                        className={`tap-safe text-small ${
-                          !typing && klass === c ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : 'text-text-2 hover:text-text'
-                        }`}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                    {typing ? (
-                      <input
-                        autoFocus
-                        value={klass}
-                        onChange={(e) => setKlass(e.target.value)}
-                        placeholder="Class code, e.g. PSYC 351"
-                        aria-label="Another class"
-                        className="field w-48 text-small"
-                      />
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setTyping(true);
-                          setKlass('');
-                        }}
-                        className="tap-safe text-small text-text-3 hover:text-text"
-                      >
-                        {classes.length ? 'Another' : 'Type its code'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-              <MakeKindsField value={kinds} onChange={setKinds} />
-              <div className="mt-3">
-                <StudiesField checked={studies} onChange={setStudies} />
-                <MoreContextField checked={moreContext} onChange={setMoreContext} />
-              </div>
-              <More label="More options">
-                <div className="space-y-3">
-                  <TeacherNotesField value={notes} onChange={setNotes} />
-                  {Object.keys(lectures).length > 0 && (
-                    <label className="block">
-                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-3">
-                        Follows on from
-                      </span>
-                      <span className="mb-1.5 block text-sm text-text-2">
-                        If this starts with slides from the end of another lecture, pick it, so they aren&rsquo;t made twice.
-                      </span>
-                      <select value={after} onChange={(e) => setAfter(e.target.value)} className="field w-full text-sm">
-                        <option value="">None</option>
-                        {Object.entries(lectures).map(([id, c]) => (
-                          <option key={id} value={id}>
-                            {c.metadata.title}
-                            {c.metadata.course_code ? ` · ${c.metadata.course_code}` : ''}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  )}
-                </div>
-              </More>
+              <Rows>
+                {!classCode && (
+                  <Row label="Class">
+                    <div role="radiogroup" aria-label="Which class is it for?" className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+                      {classes.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          role="radio"
+                          aria-checked={!typing && klass === c}
+                          onClick={() => {
+                            setTyping(false);
+                            setKlass(klass === c ? '' : c);
+                          }}
+                          className={`tap-safe text-sm ${
+                            !typing && klass === c ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : 'text-text-2 hover:text-text'
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                      {typing ? (
+                        <input
+                          autoFocus
+                          value={klass}
+                          onChange={(e) => setKlass(e.target.value)}
+                          placeholder="Class code, e.g. PSYC 351"
+                          aria-label="Another class"
+                          className="field w-48 text-sm"
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTyping(true);
+                            setKlass('');
+                          }}
+                          className="tap-safe text-sm text-text-3 hover:text-text"
+                        >
+                          {classes.length ? 'Another' : 'Type its code'}
+                        </button>
+                      )}
+                    </div>
+                  </Row>
+                )}
+                <Row label="Make">
+                  <MakeKindsField value={kinds} onChange={setKinds} />
+                </Row>
+                <Row label="Also">
+                  <StudiesField checked={studies} onChange={setStudies} />
+                  <MoreContextField checked={moreContext} onChange={setMoreContext} />
+                </Row>
+                <Row label="More">
+                  <details>
+                    <summary className="tap-safe cursor-pointer text-sm text-text-2 hover:text-text">
+                      {Object.keys(lectures).length > 0 ? 'Your teacher\u2019s notes, or the lecture it follows' : 'Your teacher\u2019s notes'}
+                    </summary>
+                    <div className="mt-3 space-y-3 text-sm text-text-2">
+                      <TeacherNotesField value={notes} onChange={setNotes} />
+                      {Object.keys(lectures).length > 0 && (
+                        <label className="block">
+                          <span className="mark mb-1 block text-text-3">Follows on from</span>
+                          <span className="mb-1.5 block text-sm text-text-2">
+                            If this starts with slides from the end of another lecture, pick it, so they aren&rsquo;t made twice.
+                          </span>
+                          <select value={after} onChange={(e) => setAfter(e.target.value)} className="field w-full text-sm">
+                            <option value="">None</option>
+                            {Object.entries(lectures).map(([id, c]) => (
+                              <option key={id} value={id}>
+                                {c.metadata.title}
+                                {c.metadata.course_code ? ` · ${c.metadata.course_code}` : ''}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
+                    </div>
+                  </details>
+                </Row>
+              </Rows>
             </PromptStep>
 
             <PromptStep n={2} title="Copy the prompt">

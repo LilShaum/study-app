@@ -18,6 +18,23 @@ export function PromptStep({ n, title, children }: { n: number; title: string; c
   );
 }
 
+/**
+ * A step's choices as a specimen label: ruled rows, each named in small caps,
+ * the name above on a phone and to the left on a computer
+ * (docs/proposals/new-lecture-screen.md). `Rows` holds them.
+ */
+export function Rows({ children }: { children: ReactNode }) {
+  return <div className="border-t border-border">{children}</div>;
+}
+export function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="border-b border-border py-3 sm:grid sm:grid-cols-[4.25rem_minmax(0,1fr)] sm:gap-4">
+      <div className="mark mb-1.5 text-text-3 sm:mb-0 sm:pt-1">{label}</div>
+      <div className="min-w-0">{children}</div>
+    </div>
+  );
+}
+
 /** A line that unfolds the rest: the reasons, the details, the options most never need. */
 export function More({ label, children }: { label: string; children: ReactNode }) {
   return (
