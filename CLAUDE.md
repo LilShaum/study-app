@@ -208,6 +208,12 @@ read `docs/proposals/part4-brief.md` and do that stage.
 
 ## How to work here
 
+**Every piece of feedback is broken down before anything is built**
+(2026-11-25: "don't just accept them as adjectives but break down each one
+and see what I really mean"): the `owner-feedback` skill writes it into
+`docs/FEEDBACK.md` with what went wrong, the ask in my own words, and each
+expectation turned into a meaning, a check and the cheap reading to avoid.
+
 **Every ask goes in `docs/ASKS.md` the moment the owner makes it** (dated,
 their words), and leaves Open only when it is live or the owner drops it.
 The session-start hook prints the Open list; work it before proposing
@@ -230,6 +236,7 @@ Load these skills when the work matches; don't wait until halfway through:
 | When | Skill |
 |---|---|
 | Start of the session, any multi-step task | `working-method` (if the account has it) |
+| Any feedback, correction or expectation from the owner (screenshots, review-page notes, "you didn't listen") | `owner-feedback`, before replying or building |
 | Anything a student sees: screens, labels, toasts, Help, the tree | `arborous-design` and `app-making` |
 | Scheduling, Review, Learn, Today, the memory model, any "will this help students" question | `simulate` |
 | Before shipping a code change | `code-review` |

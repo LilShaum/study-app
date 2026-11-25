@@ -64,6 +64,14 @@ reasoning; this is the working version.
   an action), never a browser `confirm`.
 - Every screen sets a tab title (`useTabTitle` in `RootLayout.tsx`).
 
+## Feedback from the owner
+
+When the owner comments on something a student sees, take it in with the
+`owner-feedback` skill first (`docs/FEEDBACK.md`): their words like
+"intuitive", "elegant", "clean" or "not AI slop" are each turned into what
+the student would see, how to check it and the cheap reading to avoid,
+before anything is redrawn.
+
 ## Checking a change
 
 1. `npm run build`, then `node scripts/screenshots.mjs <outDir>` (outside the

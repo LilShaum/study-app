@@ -674,6 +674,11 @@ tree (unreadable).
   Well-scoped coding tasks can go to a cheaper subagent with an exact spec;
   read its diff and run the checks before anything ships.
 - Concise replies; say clearly whether you are asking or going ahead.
+- Feedback from the owner goes through the `owner-feedback` skill first:
+  broken down in `docs/FEEDBACK.md` (their words, what went wrong, the ask
+  in your words, each expectation made concrete and checkable) before
+  anything is built. The habits it exists to stop: a question read as an
+  instruction, a correction over-applied, an adjective met the cheap way.
 - "What's next?" means work you can start without them. Leave out what
   waits on the owner (uploads, backups, real study logs, a real
   generation, iPhone checks); they know those already.

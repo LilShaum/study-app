@@ -15,8 +15,21 @@ the owner remembers asking that is not here goes in when they say so.
 
 How the owner wants the app to work, as standing rules, is in CLAUDE.md
 ("How the owner wants it to work"); this file is for things to get done.
+Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
+`owner-feedback` skill) before it becomes work here.
 
 ## Open
+
+- **Take feedback in properly** (2026-11-25: "whenever I give you feedback
+  on something and explain expectations, you mark them down, write what you
+  did wrong, write what I'm asking, all in your own words … break down each
+  one and see what I really mean"). Built: `.claude/skills/owner-feedback`,
+  `docs/FEEDBACK.md`, wired into CLAUDE.md, HANDOFF, RIPPLES. Open until the
+  owner has seen it work on their testing feedback.
+- **Testing feedback, one screenshot at a time** (2026-11-25: "I took a lot
+  of screenshots while testing I need to go over one by one with you … only
+  after I have shown all of them can you begin"). Replies a line or two
+  until they say to start.
 
 - **A new app icon** (2026-11-25: "I also think the apps icon needs an
   update since the current icon I think was made once at the start and
