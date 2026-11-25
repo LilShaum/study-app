@@ -888,6 +888,12 @@ its side, sits on a desk with room to look around: the page spreads out.
 - **Opening a page** starts at its top, so a lecture shows its tree
   first; Back returns to where you were (the owner, 2026-11-10).
 
+- **A sitting on a phone** (2026-11-25): the whole screen, no running
+  head; Prev, the glossary and Next in a bar at the bottom; the glossary a
+  sheet, greyed while a question waits. Once an answer is in, a swipe turns
+  the page: left on, right back, the card sliding off like a page; never
+  on a waiting question, never a verdict (docs/proposals/swipes.md).
+
 **Working means.** Every screen fits a 390px phone with its main action on
 the first screen, and uses the room on a desktop rather than stretching a
 phone column across it.

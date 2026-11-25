@@ -667,6 +667,27 @@
       transform: scale(1) rotate(0deg);
     }
   }
+  /* A card turned to with a swipe comes in from the side the finger sent the
+     last one off to, like a page (lib/useSwipe). */
+  .page-in-next {
+    animation: page-in-next 220ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+  .page-in-back {
+    animation: page-in-back 220ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+  @keyframes page-in-next {
+    from {
+      transform: translateX(40px);
+      opacity: 0;
+    }
+  }
+  @keyframes page-in-back {
+    from {
+      transform: translateX(-40px);
+      opacity: 0;
+    }
+  }
+
   /* A sheet drawn up from the bottom of a phone, and the page dimming
      behind it. On a larger screen it is a leaf over the page and simply
      appears. The reduced-motion block below neutralises both. */

@@ -1,17 +1,29 @@
-import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 
 /** How far a finger must carry a card sideways, in pixels, to mean it. */
 const SWIPE_PX = 72;
+/** How long the card takes to slide off once the swipe is meant. */
+const OUT_MS = 170;
+
+/** Whether the touch began in something that scrolls sideways itself (a wide table or formula). */
+function inSidewaysScroll(t: Element | null, stop: Element): boolean {
+  for (let el = t; el && el !== stop; el = el.parentElement) {
+    const x = getComputedStyle(el).overflowX;
+    if ((x === 'auto' || x === 'scroll') && el.scrollWidth > el.clientWidth) return true;
+  }
+  return false;
+}
 
 /**
- * A sideways swipe on a phone (docs/proposals/design-update.md, "Swipes").
+ * Turning the page with a finger, on a phone (docs/proposals/swipes.md):
+ * one meaning only, left for on and right for back.
  *
  * Touch only: a mouse drags to select text. Up and down stays the page's
- * scroll (`touch-action: pan-y` on the element, which this returns in its
- * style), so only a move that is mostly sideways is a swipe. A move that
- * starts in a field, or on a link or button, is left to it. While the finger
- * is down the element follows it a little, so the gesture is seen to work;
- * let go short of the mark and it settles back.
+ * scroll (`touch-action: pan-y`, in the style this returns), so only a move
+ * that is mostly sideways is a swipe; one that starts in a field, a button
+ * still to be pressed, a link or a block that scrolls sideways is left to it. The card follows
+ * the finger a little; past the mark it slides off, like a page, and the
+ * action runs; short of it, it settles back.
  */
 export function useSwipe({
   enabled,
@@ -23,8 +35,14 @@ export function useSwipe({
   onRight?: () => void;
 }) {
   const [dx, setDx] = useState(0);
+  const [out, setOut] = useState<0 | 1 | -1>(0);
+  // The frame the wrapper jumps back to its place, unseen: the card now in
+  // it makes its own entrance (CardSession, page-in).
+  const [snap, setSnap] = useState(false);
   const start = useRef<{ x: number; y: number; id: number } | null>(null);
   const sideways = useRef(false);
+  const timer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
 
   const reset = () => {
     start.current = null;
@@ -32,12 +50,26 @@ export function useSwipe({
     setDx(0);
   };
 
+  const leave = (dir: 1 | -1, act?: () => void) => {
+    setOut(dir);
+    timer.current = window.setTimeout(() => {
+      act?.();
+      setSnap(true);
+      setOut(0);
+      setDx(0);
+      requestAnimationFrame(() => requestAnimationFrame(() => setSnap(false)));
+    }, OUT_MS);
+  };
+
   const handlers = enabled
     ? {
         onPointerDown: (e: ReactPointerEvent<HTMLElement>) => {
-          if (e.pointerType !== 'touch') return;
+          if (e.pointerType !== 'touch' || out) return;
           const t = e.target as Element;
-          if (t.closest('input, textarea, select, button, a, [contenteditable="true"]')) return;
+          // An answered card's options are disabled buttons over most of it:
+          // those carry no tap to protect, so a swipe may start on them.
+          if (t.closest('input, textarea, select, button:not(:disabled), a, [contenteditable="true"]')) return;
+          if (inSidewaysScroll(t, e.currentTarget)) return;
           start.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
           sideways.current = false;
         },
@@ -61,9 +93,12 @@ export function useSwipe({
         },
         onPointerUp: () => {
           if (!start.current) return reset();
-          if (dx <= -SWIPE_PX) onLeft?.();
-          else if (dx >= SWIPE_PX) onRight?.();
-          reset();
+          const moved = dx;
+          start.current = null;
+          sideways.current = false;
+          if (moved <= -SWIPE_PX) leave(-1, onLeft);
+          else if (moved >= SWIPE_PX) leave(1, onRight);
+          else setDx(0);
         },
         onPointerCancel: reset,
       }
@@ -71,12 +106,14 @@ export function useSwipe({
 
   const style: CSSProperties = {
     touchAction: enabled ? 'pan-y' : undefined,
-    transform: dx ? `translateX(${dx * 0.6}px) rotate(${dx * 0.012}deg)` : undefined,
-    transition: dx ? 'none' : 'transform 220ms ease',
+    transform: out ? `translateX(${out * 110}%)` : dx ? `translateX(${dx * 0.6}px)` : undefined,
+    opacity: out ? 0 : undefined,
+    transition: out
+      ? `transform ${OUT_MS}ms ease-in, opacity ${OUT_MS}ms ease-in`
+      : dx || snap
+        ? 'none'
+        : 'transform 220ms ease',
   };
 
-  /** Which way the finger is carrying it past the mark, to name the verdict as it is made. */
-  const leaning: 'left' | 'right' | null = dx <= -SWIPE_PX ? 'left' : dx >= SWIPE_PX ? 'right' : null;
-
-  return { handlers, style, dx, leaning };
+  return { handlers, style };
 }

@@ -5,7 +5,6 @@ import { Icon } from '@/components/Icon';
 import { answerPoints, type AnswerPoints } from '@/lib/answerPoints';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import type { Grade } from '@/lib/memory';
-import { useSwipe } from '@/lib/useSwipe';
 import { DifficultyBadge } from './DifficultyBadge';
 import { SourceNote } from './SourceNote';
 import { RichText } from './RichText';
@@ -97,11 +96,6 @@ function FlipCard({ item, onGot, onMissed, comesBack, keyboardEnabled = false, l
     { label: 'Hard', tone: '', when: comesBack?.hard, act: () => grade(true, 'hard') },
     { label: 'Missed it', tone: 'press-no', when: comesBack?.missed, act: () => grade(false) },
   ];
-  // On a phone, the answer seen: right for Got it, left for Missed it, the
-  // way a card is sorted into two piles. Hard stays a button (a third way
-  // would be a guess), and so do the other two.
-  const swipe = useSwipe({ enabled: flipped && !dontKnow, onRight: () => grade(true), onLeft: () => grade(false) });
-  const leaningTo = swipe.leaning === 'right' ? 'Got it' : swipe.leaning === 'left' ? 'Missed it' : null;
 
   return (
     <div className="rounded-sm border border-border-light border-t-text-3 border-t-2 bg-surface p-5 shadow sm:p-6">
@@ -119,7 +113,7 @@ function FlipCard({ item, onGot, onMissed, comesBack, keyboardEnabled = false, l
         )}
       </div>
 
-      <div className="flip-scene" {...swipe.handlers} style={swipe.style}>
+      <div className="flip-scene">
         <div className={`flip-card min-h-[220px] ${flipped ? 'is-flipped' : ''}`}>
           {/* Front */}
           <div className={FACE} aria-hidden={flipped}>
@@ -186,8 +180,7 @@ function FlipCard({ item, onGot, onMissed, comesBack, keyboardEnabled = false, l
                       tabIndex={flipped ? 0 : -1}
                       onClick={g.act}
                       aria-describedby={g.when ? `${whenId}-${k}` : undefined}
-                      // The verdict a swipe is about to give, struck as it would be pressed.
-                      className={`press tap-safe ${g.tone} ${leaningTo === g.label ? 'press-ink' : ''}`}
+                      className={`press tap-safe ${g.tone}`}
                     >
                       {g.label}
                     </button>
