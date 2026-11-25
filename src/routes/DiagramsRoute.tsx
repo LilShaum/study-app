@@ -303,7 +303,7 @@ export function DiagramsRoute() {
               ))}
             </div>
           ) : (
-            <div className="mt-6">
+            <div className="mt-6 overflow-x-clip">
               {/* One at a time; a swipe turns it (the buttons stay). */}
               <div {...swipe.handlers} style={swipe.style}>
                 <PlateFigure key={plates[here]!.item.id} plate={plates[here]!} courseId={id} />

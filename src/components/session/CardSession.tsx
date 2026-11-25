@@ -518,27 +518,13 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   // Only once the answer is showing, never on a question still waiting for
   // one (a swipe can be an accident). A flipped flashcard takes its own
   // swipes, as its verdict.
-  // The page that comes in after a swipe slides in from the side it came
-  // from, as the one before slid off (styles/index.css, page-in).
-  const [turned, setTurned] = useState<'next' | 'back' | null>(null);
+  // The page slides off with the finger and the next comes in from the far
+  // edge, one motion (lib/useSwipe).
   const cardSwipe = useSwipe({
     enabled: !wideLayout && !pause && !!current && !questionUp,
-    onLeft: () => {
-      setTurned('next');
-      handleNext();
-    },
-    onRight: hasPrev
-      ? () => {
-          setTurned('back');
-          prev();
-        }
-      : undefined,
+    onLeft: () => handleNext(),
+    onRight: hasPrev ? () => prev() : undefined,
   });
-  useEffect(() => {
-    if (!turned) return;
-    const t = window.setTimeout(() => setTurned(null), 400);
-    return () => window.clearTimeout(t);
-  }, [turned]);
   const keysNow = keysFor(current, hints, written, stages[index] ?? 'front', answeredIndices.has(index), !!pause);
 
   useEffect(() => {
@@ -1229,13 +1215,15 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         * why. Keyed by the card object, which a copy of a missed card is not,
         * so a card that comes back starts unanswered.
         */}
+      {/* Clipped sideways, so a page off the screen never widens it. */}
+      <div className="overflow-x-clip">
       <div {...cardSwipe.handlers} style={cardSwipe.style}>
       {items.map((it, n) => {
         const here = n === index;
         if (!here && (!answeredIndices.has(n) || Math.abs(n - index) > KEEP_NEAR)) return null;
         const lecture = lectureFor(it);
         return (
-          <div key={cardUid(it)} hidden={!here || !!pause} className={here && turned ? `page-in-${turned}` : undefined}>
+          <div key={cardUid(it)} hidden={!here || !!pause}>
             <ItemRenderer
               item={it}
               courseId={lectureOf(it, courseId)}
@@ -1275,6 +1263,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           </div>
         );
       })}
+      </div>
       </div>
 
       {wideLayout ? (
