@@ -183,19 +183,26 @@ const SECTIONS: HelpSection[] = [
     body: (
       <>
         <ul className="list-disc space-y-1 pl-5">
-          <li>Each branch is a section of the lecture.</li>
+          <li>Each branch is one section of the lecture.</li>
           <li>A section you have not studied has no leaves.</li>
           <li>
-            Leaves grow as you study a section. As you forget it they fall and collect under the
-            tree, but a branch you have studied always keeps a few.
+            Its leaves grow as you study that section. As you forget it, they fall to the ground
+            below, but a branch you have studied always keeps a few.
           </li>
-          <li>Reviewing the section grows them back.</li>
+          <li>Review the section and they grow back.</li>
         </ul>
         <p className="mt-2">
           Opening a lecture, its tree grows and the leaves you have let fade fall, with a shake.
-          Sweep a finger across it (or point, on a computer) to name a part, and tap its number to
-          open that part. In a sitting the tree grows a leaf when a part is learned, and never drops
-          one for a wrong answer: leaves fall only from not practising.
+        </p>
+        <p className="mt-2">
+          Touch the tree and every branch shows its number. Drag your finger over the tree to choose
+          a branch: its number is marked, the other branches fade, and its name shows under the
+          tree. Tap its number, or Open under the tree, to open that section. On a computer, move
+          the pointer over the tree and click a number.
+        </p>
+        <p className="mt-2">
+          In a sitting the tree grows a leaf when a section is learned, and never drops one for a
+          wrong answer: leaves fall only from not practising.
         </p>
       </>
     ),

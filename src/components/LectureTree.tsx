@@ -34,7 +34,6 @@ export function LectureTree({
   course,
   progress,
   wide,
-  onExpand,
   onOpenSection,
   highlight,
 }: {
@@ -43,7 +42,6 @@ export function LectureTree({
   progress: Record<string, ItemResult>;
   /** The desktop layout's column, which has the height a phone's first screen does not. */
   wide: boolean;
-  onExpand: () => void;
   /** Open a section beside the page instead of going to it (the computer's spread). */
   onOpenSection?: (sectionId: string) => void;
   /** A section to light, e.g. the contents row under the pointer (the computer's spread). */
@@ -65,8 +63,6 @@ export function LectureTree({
           crop
           className={`${wide ? 'h-[26rem]' : 'h-72'} max-w-full`}
           interactive
-          mode="reveal"
-          onExpand={onExpand}
           onPoint={setPicked}
           onOpenSection={onOpenSection}
           highlight={highlight}
@@ -82,8 +78,8 @@ export function LectureTree({
           <span className="flex min-w-0 items-baseline gap-2">
             <span className="mark shrink-0 tabular-nums text-text-3">{named.n}</span>
             <span className="min-w-0 truncate font-display text-text">{named.title}</span>
-            {/* The title is what a phone's width is for; the number's own ink
-                says the rest, and only fading is worth the words. */}
+            {/* The title is what a phone's width is for; the leaves say the
+                rest, and only fading is worth the words. */}
             {named.state === 'fading' && <span className="mark shrink-0 text-accent">fading</span>}
             {onOpenSection ? (
               <button

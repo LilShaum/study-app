@@ -41,7 +41,7 @@ describe('CourseTree', () => {
 
   it('gives every section a link into it when interactive', () => {
     render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
-    const links = screen.getAllByRole('link');
+    const links = screen.getAllByRole('link', { hidden: true });
     expect(links).toHaveLength(2);
     expect(links.map((a) => a.getAttribute('href'))).toEqual([
       '#/study/c1/section/sec-a',
@@ -53,10 +53,9 @@ describe('CourseTree', () => {
 
   it('names each link by its section and how it is going', () => {
     render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
-    expect(screen.getAllByRole('link').map((a) => a.getAttribute('aria-label'))).toEqual([
-      'Steady state: 2 items, 75% correct',
-      'Inhibition: 1 item, not yet studied',
-    ]);
+    const labels = screen.getAllByRole('link', { hidden: true }).map((a) => a.getAttribute('aria-label'));
+    expect(labels[0]).toMatch(/^Section 1, Steady state: /);
+    expect(labels[1]).toBe('Section 2, Inhibition: not started');
   });
 
   it('stops being an image once it holds links', () => {
@@ -73,7 +72,7 @@ describe('CourseTree', () => {
     const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
     // The leaves lying on the ground are drawn first, so the trunk stands in
     // front of them; they are not on any branch, so they are left out here.
-    const painted = [...container.querySelectorAll('path')].filter((el) => !el.closest('.tree-litter'));
+    const painted = [...container.querySelectorAll('path')].filter((el) => !el.closest('.tree-litter') && !el.closest('.tree-keys'));
     // A leaf's vein (.vn) is part of its leaf, drawn straight after it.
     const isLeaf = (el: Element) => el.classList.contains('lf') || el.classList.contains('vn');
     expect(painted.some((el) => el.classList.contains('vn'))).toBe(true);
@@ -135,7 +134,8 @@ describe('CourseTree', () => {
 
   it('draws each leaf’s vein straight after it, in its section’s group, at half its weight, never a target', () => {
     const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
-    const veins = veinsOf(container);
+    // The ones on the branch: the ground's are line art of their own (below).
+    const veins = veinsOf(container).filter(({ vein }) => !vein.closest('.tree-litter'));
     expect(veins.length).toBeGreaterThan(0);
     for (const { vein, leaf } of veins) {
       // After its own leaf, so that leaf's paper cannot cover it.
@@ -150,6 +150,7 @@ describe('CourseTree', () => {
     }
     // One for every leaf on the branch.
     const onBranch = [...container.querySelectorAll('g.limb-set path.lf')];
+    expect(onBranch.length).toBeGreaterThan(0);
     expect(veins).toHaveLength(onBranch.length);
   });
 
@@ -169,11 +170,14 @@ describe('CourseTree', () => {
     expect(width(veins[0].vein)).toBeCloseTo(width(unpicked) * 1.5, 5);
   });
 
-  it('puts no vein on a leaf lying on the ground', () => {
+  it('draws a leaf lying on the ground as line art: its vein, and no paper fill (Testing 4)', () => {
     const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
-    const litter = container.querySelectorAll('g.tree-litter path');
+    const litter = container.querySelectorAll('g.tree-litter path.lf');
     expect(litter.length).toBeGreaterThan(0);
-    expect(container.querySelectorAll('g.tree-litter path.vn')).toHaveLength(0);
+    expect(container.querySelectorAll('g.tree-litter path.vn')).toHaveLength(litter.length);
+    // The paper fill is for leaves on the branch only (.lf without .fl).
+    for (const leaf of litter) expect(leaf.classList.contains('fl')).toBe(true);
+    expect(container.querySelector('svg')!.getAttribute('class')).toContain('[&_.lf:not(.fl)]:fill-');
   });
 
   it('buds each vein with its leaf at the end of a session: the same stalk, the same moment', () => {
@@ -227,8 +231,8 @@ describe('CourseTree on the lecture page (reveal)', () => {
     touch(svg, 'pointerUp');
     fireEvent.click(svg, { detail: 1, clientX: 300, clientY: 300 });
   };
-  const show = (extra: { onExpand?: () => void; onPoint?: (id: string | null) => void } = {}) =>
-    render(<CourseTree courseId="c1" course={course} progress={progress} interactive mode="reveal" {...extra} />);
+  const show = (extra: { onOpenSection?: (id: string) => void; onPoint?: (id: string | null) => void } = {}) =>
+    render(<CourseTree courseId="c1" course={course} progress={progress} interactive {...extra} />);
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -244,14 +248,17 @@ describe('CourseTree on the lecture page (reveal)', () => {
     expect(numbers().map((a) => a.getAttribute('href'))).toEqual(['#/study/c1/section/sec-a', '#/study/c1/section/sec%20b%2Fslash']);
   });
 
-  it('raises the numbers on the first tap, which no longer opens the large tree; a tap on the drawing then does', () => {
-    const onExpand = vi.fn();
-    const { container } = show({ onExpand });
+  it('raises the numbers on the first tap; a tap on the drawing, not a number, opens nothing (Testing 11)', () => {
+    const onOpenSection = vi.fn();
+    const { container } = show({ onOpenSection });
     tap(svgOf(container));
     expect(shown(container)).toBe(true);
-    expect(onExpand).not.toHaveBeenCalled();
     tap(svgOf(container));
-    expect(onExpand).toHaveBeenCalledTimes(1);
+    tap(svgOf(container));
+    expect(onOpenSection).not.toHaveBeenCalled();
+    expect(shown(container)).toBe(true);
+    // No other layer appeared: the only dialog-like thing is none at all.
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
   });
 
   it('raises them for a press held a moment', () => {
@@ -314,18 +321,16 @@ describe('CourseTree on the lecture page (reveal)', () => {
   });
 
   it('opens nothing when a sweep across the branches ends in a click', () => {
-    const onExpand = vi.fn();
-    const { container } = show({ onExpand });
+    const onOpenSection = vi.fn();
+    const { container } = show({ onOpenSection });
     tap(svgOf(container));
     expect(shown(container)).toBe(true);
     touch(svgOf(container), 'pointerDown', 200, 300);
     touch(svgOf(container), 'pointerMove', 215, 301);
     touch(svgOf(container), 'pointerUp', 215, 301);
     fireEvent.click(svgOf(container), { detail: 1, clientX: 215, clientY: 301 });
-    expect(onExpand).not.toHaveBeenCalled();
-    // And the next real tap still does.
-    tap(svgOf(container));
-    expect(onExpand).toHaveBeenCalledTimes(1);
+    expect(onOpenSection).not.toHaveBeenCalled();
+    expect(shown(container)).toBe(true);
   });
 
   it('puts them away a few seconds after the finger lifts', () => {
@@ -355,11 +360,12 @@ describe('CourseTree on the lecture page (reveal)', () => {
     expect(fireEvent.mouseDown(svgOf(container))).toBe(false);
   });
 
-  it('opens the large tree from the keyboard with Enter on the drawing', () => {
-    const onExpand = vi.fn();
-    const { container } = show({ onExpand });
+  it('raises the numbers from the keyboard with Enter on the drawing, and opens nothing else', () => {
+    const onOpenSection = vi.fn();
+    const { container } = show({ onOpenSection });
     fireEvent.keyDown(svgOf(container), { key: 'Enter' });
-    expect(onExpand).toHaveBeenCalled();
+    expect(shown(container)).toBe(true);
+    expect(onOpenSection).not.toHaveBeenCalled();
   });
 
   it('carries each number in its branch: one transform moves both', () => {

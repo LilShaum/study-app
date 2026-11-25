@@ -264,10 +264,13 @@ function FirstRun() {
         crop
         className="h-full max-w-full"
         arrive
-        noDim
+        // Every branch in full ink only while leaves are being grown: there,
+        // the branches growing are the point. Finding one, the others fade as
+        // on a lecture, so the touched branch stands out from the one it grows
+        // on (the owner, 2026-11-25, Testing 3).
+        noDim={page === 'grow'}
         growOnly={page === 'grow' ? EMPTY : undefined}
         interactive={playing}
-        mode="reveal"
         onOpenSection={page === 'grow' ? ask : () => undefined}
         onPoint={
           page === 'find'
@@ -379,7 +382,7 @@ function FirstRun() {
       const question = asking ? DEMO_QUESTIONS[asking] : null;
       words = question ? (
         <div className="w-full max-w-sm">
-          <p className="mark text-text-3">{partName(asking)}</p>
+          <p className="mark text-text-3">The {partName(asking)} section</p>
           <h1 className="mt-1 font-display text-title font-semibold text-text">{question.q}</h1>
           <ul className="mt-4 border-t border-border text-left">
             {question.options.map((o, i) => (
@@ -393,15 +396,15 @@ function FirstRun() {
         </div>
       ) : (
         <Words
-          lead={grown.length === 0 ? 'Get a part right, and its branch grows leaves.' : grown.length === 1 ? 'Leaves grow when you learn a part.' : 'The more you learn, the fuller the tree.'}
+          lead={grown.length === 0 ? 'Get a section right, and its branch grows leaves.' : grown.length === 1 ? 'Leaves grow when you learn a section.' : 'The more you learn, the fuller the tree.'}
           line={
             answer && !answer.right
               ? `Not quite: ${DEMO_QUESTIONS[answer.sid].options[DEMO_QUESTIONS[answer.sid].right].toLowerCase()}. Tap a number to try again.`
               : grown.length === 0
-                ? `A sample lecture on the water cycle: each branch is one part of it. ${touch ? 'Touch the tree, then tap' : 'Point at the tree, then click'} a number to answer a question on that part.`
+                ? `A sample lecture on the water cycle: each branch is one of its sections. ${touch ? 'Touch the tree, then tap' : 'Point at the tree, then click'} a number to answer a question on that section.`
                 : grown.length === 1
-                  ? 'Try another part.'
-                  : 'Each part of a lecture is a branch, and what you get right grows its leaves.'
+                  ? 'Try another section.'
+                  : 'Each section of a lecture is a branch, and what you get right grows its leaves.'
           }
         />
       );
@@ -417,7 +420,7 @@ function FirstRun() {
       words = faded ? (
         <Words
           lead="What you don't review starts to fade."
-          line="The part left alone lost its leaves; the one reviewed yesterday kept them. Arborous brings fading parts back before you forget them."
+          line="The section left alone lost its leaves; the one reviewed yesterday kept them. Arborous brings fading sections back before you forget them."
         />
       ) : (
         <Words lead="Now leave it for a while." line="Without review, what you learn begins to slip away." />
@@ -436,10 +439,10 @@ function FirstRun() {
     case 'find':
       words = (
         <Words
-          lead="Sweep across the tree to find any part."
+          lead="Sweep across the tree to find any section."
           line={
             named
-              ? `That's ${partName(named)}. On a lecture, ${touch ? 'tap' : 'click'} its number to open it.`
+              ? `That's the ${partName(named)} section. On a lecture, ${touch ? 'tap' : 'click'} its number to open it.`
               : touch
                 ? 'Slide a finger along the branches.'
                 : 'Move your pointer along the branches.'

@@ -310,17 +310,51 @@ describe('the look the owner chose (2026-11-07, look C of docs/proposals/tree.md
     { id: 'b', weight: 10, mastery: 0.6 },
   ]);
 
-  it('gives every leaf on the branch a vein, and a fallen or lost leaf none', () => {
+  it('gives every leaf a vein, on the branch, lost or lying on the ground (Testing 4), and no wood one', () => {
     const onTree = faded.limbs.filter((l) => l.kind === 'leaf' && l.solid && !l.fallen);
     const fallen = faded.limbs.filter((l) => l.fallen);
     const ghosts = faded.limbs.filter((l) => l.ghost);
     expect(onTree.length).toBeGreaterThan(0);
     expect(fallen.length).toBeGreaterThan(0);
     expect(ghosts.length).toBeGreaterThan(0);
-    expect(onTree.every((l) => l.vein)).toBe(true);
-    // A leaf falling is drawn from its ghost, so it has none either.
-    expect([...fallen, ...ghosts].some((l) => l.vein)).toBe(false);
+    // A leaf falling is drawn from its ghost: the same leaf, vein and all.
+    expect([...onTree, ...fallen, ...ghosts].every((l) => l.vein)).toBe(true);
     expect(faded.limbs.filter((l) => l.kind !== 'leaf').some((l) => l.vein)).toBe(false);
+  });
+
+  it('roots every leaf on the branch on its section’s wood: none hangs in the air (Testing 2)', () => {
+    // Each leaf's stalk, the first point of its outline, must lie on a stroke
+    // of its own section's wood (within that stroke's half-width and a hair),
+    // over many trees, narrowed ones included.
+    const PAIR = /(-?\d+(?:\.\d+)?)[ ,](-?\d+(?:\.\d+)?)/g;
+    const pointsOf = (d: string) => [...d.matchAll(PAIR)].map((m) => ({ x: Number(m[1]), y: Number(m[2]) }));
+    const distToRun = (p: { x: number; y: number }, run: { x: number; y: number }[]) => {
+      let best = Infinity;
+      for (let i = 1; i < run.length; i++) {
+        const a = run[i - 1];
+        const b = run[i];
+        const vx = b.x - a.x;
+        const vy = b.y - a.y;
+        const t = Math.max(0, Math.min(1, ((p.x - a.x) * vx + (p.y - a.y) * vy) / (vx * vx + vy * vy || 1)));
+        best = Math.min(best, Math.hypot(a.x + vx * t - p.x, a.y + vy * t - p.y));
+      }
+      return best;
+    };
+    let checked = 0;
+    let worst = 0;
+    for (const id of ['bioc301', 'psyc351', 'ephe155', 'arborous:first-run:4', 'x1', 'x2', 'x3', 'x4']) {
+      const t = growTree(id, sections(7, 1));
+      for (const leaf of t.limbs.filter((l) => l.kind === 'leaf' && l.solid && !l.fallen)) {
+        const stalk = pointsOf(leaf.d)[0]!;
+        const wood = t.limbs.filter((l) => l.kind !== 'leaf' && !l.ink && l.sectionId === leaf.sectionId);
+        const d = Math.min(...wood.map((w) => distToRun(stalk, pointsOf(w.d)) - w.weight / 2));
+        worst = Math.max(worst, d);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(500);
+    // A smoothed stroke runs a little off the points it was drawn through.
+    expect(worst).toBeLessThan(0.8);
   });
 
   it('runs a vein from its leaf’s stalk along its middle, three quarters of the way, in a narrowed tree too', () => {

@@ -781,7 +781,8 @@
   /* A leaf already on the ground under a branch that has just lost it: it
      comes into the pile as the falling leaves land, not before. Three
      classes, to win over the drawing-on's fade for the same leaf. */
-  .tree .lf.leaf-land {
+  .tree .lf.leaf-land,
+  .tree .vn.leaf-land {
     animation: tree-leaf 600ms ease-out both;
   }
 
@@ -840,56 +841,71 @@
 
   /* The numbers a touch raises on the lecture page's tree. Each travels out
      from its branch's tip to its place round the crown, its hairline drawn
-     on behind it, and goes back the same way. Set on the paper, so a
-     hairline stops short of the figure. */
+     on behind it, and goes back the same way. The hairline stops short of
+     the figure (CourseTree, shortOf).
+
+     Every number looks the same but the one under the finger, which is in
+     the accent, the app's mark for "this one", and larger. A branch's state
+     is the tree's to show (its leaves) and the words' to say, never a
+     second colour on its number: the owner could not tell a fading branch's
+     blue number from the one they were touching, nor why one other number
+     was darker (2026-11-25, Testing 1 and 3).
+
+     Hidden means nothing drawn: a hairline dashed down to nothing still
+     painted its round cap as a dot, which dark paper showed (Testing 8).
+     So the lines have flat ends and go invisible as well. */
   .tree-key-num {
     font-family: var(--font-display);
     font-variant-numeric: lining-nums;
     font-size: 12px;
     font-weight: 500;
-    fill: var(--color-text);
-    stroke: var(--color-bg);
-    stroke-width: 3.5px;
-    paint-order: stroke;
+    fill: var(--color-text-2);
+    stroke: none;
     transform-box: fill-box;
     transform-origin: center;
     opacity: 0;
+    visibility: hidden;
     transform: var(--from) scale(0.4);
     transition:
       transform 300ms cubic-bezier(0.2, 0.7, 0.3, 1),
       opacity 200ms ease,
+      visibility 0s linear 300ms,
       font-size 160ms ease;
-  }
-  .tree-key-num[data-state='fading'] {
-    fill: var(--color-accent);
-    font-weight: 700;
-    font-size: 13px;
-  }
-  .tree-key-num[data-state='bare'] {
-    fill: var(--color-text-3);
   }
   .tree-key-line {
     fill: none;
     stroke: var(--color-text-3);
     stroke-width: 0.5px;
+    stroke-linecap: butt;
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
-    transition: stroke-dashoffset 300ms cubic-bezier(0.2, 0.7, 0.3, 1);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      stroke-dashoffset 300ms cubic-bezier(0.2, 0.7, 0.3, 1),
+      opacity 200ms ease,
+      visibility 0s linear 300ms;
   }
-  .tree-key-line[data-state='fading'] {
-    stroke: var(--color-accent);
+  .tree-keys[data-shown] .tree-key-num,
+  .tree-keys[data-shown] .tree-key-line {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
   }
   .tree-keys[data-shown] .tree-key-num {
-    opacity: 1;
     transform: none;
   }
   .tree-keys[data-shown] .tree-key-line {
     stroke-dashoffset: 0;
   }
-  /* The picked branch's number stands up from the rest. */
+  /* The picked branch's number: the one marked. */
   .tree-keys[data-shown] [data-held] .tree-key-num {
+    fill: var(--color-accent);
     font-size: 14.5px;
     font-weight: 700;
+  }
+  .tree-keys[data-shown] [data-held] .tree-key-line {
+    stroke: var(--color-accent);
   }
 
   /* Flashcard 3D flip. Tailwind v3 ships no utilities for perspective,

@@ -89,8 +89,9 @@ export interface Limb {
    * wood to the renderer, drawn under every leaf and hidden by their paper.
    * So the renderer draws it straight after its leaf, at half the leaf's
    * weight, and it moves, dims and comes to the front with its section as
-   * the leaf does. Only a leaf on the branch has one; a leaf lost, lying on
-   * the ground or falling is the outline alone.
+   * the leaf does. Every leaf has one, on the branch, falling or lying on
+   * the ground: a fallen leaf is the same leaf (the owner, 2026-11-25,
+   * Testing 4).
    */
   vein?: string;
 }
@@ -351,6 +352,29 @@ function veinPath(at: Pt, angle: number, length: number): string {
 
 const RAD = Math.PI / 180;
 
+/** The nearest point on any of these runs of wood, or null when there are none. */
+function nearestOnWood(p: Pt, runs: Pt[][]): Pt | null {
+  let best: Pt | null = null;
+  let bestD = Infinity;
+  for (const run of runs) {
+    for (let i = 1; i < run.length; i++) {
+      const a = run[i - 1];
+      const b = run[i];
+      const vx = b.x - a.x;
+      const vy = b.y - a.y;
+      const len2 = vx * vx + vy * vy || 1;
+      const t = Math.max(0, Math.min(1, ((p.x - a.x) * vx + (p.y - a.y) * vy) / len2));
+      const q = { x: a.x + vx * t, y: a.y + vy * t };
+      const d = (q.x - p.x) ** 2 + (q.y - p.y) ** 2;
+      if (d < bestD) {
+        bestD = d;
+        best = q;
+      }
+    }
+  }
+  return best;
+}
+
 /**
  * A number from 0 to 1 that belongs to a point of the drawing, for a trait
  * that may follow the drawing but must not take a draw from the seeded
@@ -408,6 +432,8 @@ function grow(
   ctx: {
     limbs: Limb[];
     anchors: Anchor[];
+    /** The outer runs of the limbs that bear leaves, where a leaf's stalk sits (nearestOnWood). */
+    twigs: Pt[][];
     rand: () => number;
     traits: SpeciesTraits;
     sectionId?: string;
@@ -458,6 +484,7 @@ function grow(
   const tip = pts[pts.length - 1];
   if (depth <= 0 || length < 7) {
     ctx.anchors.push({ at: tip, angle: a });
+    ctx.twigs.push(pts);
     return;
   }
 
@@ -490,6 +517,7 @@ function grow(
 
   // Leaf anchors along the outer part of any limb thin enough to bear them.
   if (depth <= 2) {
+    ctx.twigs.push(pts.slice(Math.ceil(pts.length * 0.5) - 1));
     for (let i = Math.ceil(pts.length * 0.5); i < pts.length; i++) {
       ctx.anchors.push({ at: pts[i], angle: a + (rand() - 0.5) * 0.7 });
     }
@@ -693,6 +721,7 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
 
   const totalWeight = sections.reduce((n, s) => n + Math.max(1, s.weight), 0) || 1;
   const anchorsBySection = new Map<string, Anchor[]>();
+  const twigsBySection = new Map<string, Pt[][]>();
 
   /* Attachment heights are irregular on purpose: some sections cluster, some
      stand alone. Evenly spaced branches are the strongest machinery tell
@@ -728,8 +757,9 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
     const length = (30 + 18 * vigour) * (1.2 - 0.45 * t);
 
     const anchors: Anchor[] = [];
+    const twigs: Pt[][] = [];
     grow(
-      { limbs, anchors, rand, traits, sectionId: section.id },
+      { limbs, anchors, twigs, rand, traits, sectionId: section.id },
       origin,
       angle,
       length,
@@ -738,6 +768,7 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
       true,
     );
     anchorsBySection.set(section.id, anchors);
+    twigsBySection.set(section.id, twigs);
 
     // Mostly alternate, occasionally repeat a side — a strict alternation is
     // a pattern the eye reads immediately.
@@ -747,8 +778,9 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
   /* ---- the leader: the trunk carries on upward as the last section, so
      the crown closes over instead of leaving a bare spike ---- */
   const leaderAnchors: Anchor[] = [];
+  const leaderTwigs: Pt[][] = [];
   grow(
-    { limbs, anchors: leaderAnchors, rand, traits, sectionId: crown?.id },
+    { limbs, anchors: leaderAnchors, twigs: leaderTwigs, rand, traits, sectionId: crown?.id },
     trunkPts[trunkPts.length - 1],
     ta + (rand() - 0.5) * 0.3,
     36 + rand() * 10,
@@ -756,7 +788,10 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
     3,
     !!crown,
   );
-  if (crown) anchorsBySection.set(crown.id, leaderAnchors);
+  if (crown) {
+    anchorsBySection.set(crown.id, leaderAnchors);
+    twigsBySection.set(crown.id, leaderTwigs);
+  }
 
   /* ---- foliage: the only thing study changes ----
 
@@ -774,6 +809,7 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
   const leafy = (
     key: string,
     anchors: Anchor[],
+    twigs: Pt[][],
     minClumps: number,
     held: number,
     learned: number,
@@ -812,7 +848,7 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
         // Leaves in a clump fan outward from its centre, with enough scatter
         // that no two sit parallel. Larger toward the outside: the big leaves
         // draw the silhouette, the small ones pack the shaded core.
-        const own = theta + Math.PI / 2 + (r() - 0.5) * 2.4;
+        const tangent = theta + Math.PI / 2 + (r() - 0.5) * 2.4;
         const length = traits.leafLength * (0.5 + fill * 0.5 + r() * 0.4);
         const shape = r();
         const fallX = r();
@@ -821,7 +857,17 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
         // Every leaf consumes the same draws whether it shows, droops or
         // lies on the ground, so no state moves any other leaf.
         const leafRand = rng(hashSeed(`${key}/${c}/${k}/${shape}`));
-        const at = { x: host.at.x + Math.cos(theta) * radius, y: host.at.y + Math.sin(theta) * radius * 0.85 };
+        // Where the clump puts this leaf: a point in the air round its twig.
+        const toward = { x: host.at.x + Math.cos(theta) * radius, y: host.at.y + Math.sin(theta) * radius * 0.85 };
+        // The leaf grows FROM the wood toward that point: its stalk on the
+        // nearest twig, its blade pointing out to where the clump wants it. A
+        // leaf drawn at the point itself hung in the air beside its twig (the
+        // owner, 2026-11-25, Testing 2: "very frequently aren't
+        // attached/touching any branch"). No draw from the stream, so nothing
+        // else moves.
+        const at = nearestOnWood(toward, twigs) ?? host.at;
+        const gap = Math.hypot(toward.x - at.x, toward.y - at.y);
+        const own = gap > 1.5 ? Math.atan2(toward.x - at.x, at.y - toward.y) + (hashUnit(toward) - 0.5) * 0.6 : tangent;
         const size = length * LEAF_SCALE;
 
         if (!onTree) {
@@ -829,6 +875,8 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
           // what was known, and the leaf that falls when its branch is picked.
           limbs.push({
             d: leafPath(at, own, size, rng(hashSeed(`${key}/${c}/${k}/${shape}`))),
+            // It falls as the leaf it was, vein and all (Testing 4).
+            vein: veinPath(at, own, size),
             weight: 0.7,
             kind: 'leaf',
             ghost: true,
@@ -860,15 +908,17 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
           // litter, not so many that a badly-faded course is a carpet — one
           // in four was. Scattered down the paper below the ground, they read
           // as confetti (finding 7).
-          const x = Math.min(width - 8, Math.max(8, host.at.x * 0.85 + baseX * 0.15 + (fallX - 0.5) * 12));
+          // Spread wider along the ground and less alike in their lie than
+          // when they were filled: as line art, a tight pile of outlines read
+          // as one grey tangle.
+          const x = Math.min(width - 8, Math.max(8, host.at.x * 0.85 + baseX * 0.15 + (fallX - 0.5) * 26));
           const y = baseY + 0.6 + fallY * 2.4;
+          const lie = (fallTurn < 0.5 ? -1 : 1) * (Math.PI / 2 + (fallTurn - 0.5) * 0.45);
           limbs.push({
-            d: leafPath(
-              { x, y },
-              (fallTurn < 0.5 ? -1 : 1) * (Math.PI / 2 + (fallTurn - 0.5) * 0.22),
-              length * FALLEN_SCALE,
-              leafRand,
-            ),
+            d: leafPath({ x, y }, lie, length * FALLEN_SCALE, leafRand),
+            // The same leaf as on the branch: outline and vein, no fill
+            // (Testing 4: "line art like the trees … a line in the middle").
+            vein: veinPath({ x, y }, lie, length * FALLEN_SCALE),
             weight: 0.7,
             kind: 'leaf',
             solid: true,
@@ -885,7 +935,7 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
   sections.forEach((section) => {
     const held = clamp01(section.mastery);
     const learned = Math.max(held, clamp01(section.learned ?? held));
-    leafy(section.id, anchorsBySection.get(section.id) ?? [], traits.clumps, held, learned, section.id, [0.75, 0.55]);
+    leafy(section.id, anchorsBySection.get(section.id) ?? [], twigsBySection.get(section.id) ?? [], traits.clumps, held, learned, section.id, [0.75, 0.55]);
   });
 
   /* ---- fit: a broad habit can reach past the drawing's edges, and the

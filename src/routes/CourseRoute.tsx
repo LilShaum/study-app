@@ -18,7 +18,6 @@ import { useListKeys } from '@/lib/useListKeys';
 import { Sheet } from '@/components/Sheet';
 import { SectionDetail } from '@/components/SectionDetail';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
-import { TreeDialog } from '@/components/TreeDialog';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
 import { kindsOf } from '@/lib/makeKinds';
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
@@ -134,7 +133,6 @@ export function CourseRoute() {
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
   const [adding, setAdding] = useState<AddMode | null>(null);
   const [editingDetails, setEditingDetails] = useState(false);
-  const [treeOpen, setTreeOpen] = useState(false);
   // Indexing straight into the map keeps the selector's return reference
   // stable — a getter that built an object would change the snapshot on every
   // store read (see EMPTY_PROGRESS for the render loop that causes).
@@ -329,7 +327,6 @@ export function CourseRoute() {
       course={course}
       progress={progress}
       wide={wide}
-      onExpand={() => setTreeOpen(true)}
       onOpenSection={wide ? pick : setSheetId}
       highlight={wide ? (hovered ?? picked?.id ?? null) : null}
     />
@@ -744,7 +741,6 @@ export function CourseRoute() {
 
       {examOpen && <ExamDialog courseId={id} course={course} onClose={() => setExamOpen(false)} />}
 
-      {treeOpen && <TreeDialog courseId={id} course={course} progress={progress} onClose={() => setTreeOpen(false)} />}
 
       {editingDetails && <CourseDetailsDialog courseId={id} course={course} onClose={() => setEditingDetails(false)} />}
 
