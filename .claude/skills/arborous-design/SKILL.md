@@ -110,7 +110,10 @@ before anything is redrawn.
    `localStorage` keys `arborous:courses` and `arborous:onboarding` =
    `{"state":{"onboarded":true}}`).
 4. `node scripts/contrast-report.mjs` if a colour or token changed.
-5. After shipping, confirm the live site serves it (grep the live JS for a
+5. Look at hidden and resting states zoomed in, in dark mode as well as
+   light: dark paper shows specks (a hidden label's dot, a stroke's round
+   cap) that light paper hides (the owner found them, 2026-11-25).
+6. After shipping, confirm the live site serves it (grep the live JS for a
    string from the change), then report what you looked at.
 
 ## Checking what a student is asked

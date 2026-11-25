@@ -11,6 +11,28 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-25 · Testing 8: stray dots where the numbers sit (dark mode)
+
+**Their words:** "On dark mode sometimes these dots where I assume the
+labels for the branches appear are visible as tiny dots that you probably
+missed on light mode." (screenshot: a lecture's tree in dark mode, about
+ten faint dots circled around the crown, where the branch numbers appear.)
+**Question or instruction:** a fault, after all screenshots.
+**What went wrong:** with the numbers hidden, something of each number
+(probably a hairline's round cap, or the dot at its end) still draws as a
+speck; it shows against dark paper. Not caught: hidden states never looked
+at zoomed in, in both themes. (habit: checking a state only in the theme
+where faults hide.)
+**What they are asking:** nothing of a hidden number shows at all, in
+either theme.
+**Expectations, broken down:**
+- *nothing visible*: hidden means no pixels drawn / checked by: a zoomed
+  screenshot of the hidden state, both themes, and a check that every
+  number part is invisible / not: making the dot darker in dark mode.
+**Lesson for every screen:** check hidden and resting states zoomed in,
+in dark mode as well as light; dark paper shows specks light paper hides.
+**Status:** noted; to fix after all screenshots.
+
 ### 2026-11-25 · Testing 7: New lecture's step 2
 
 **Their words:** "This is another relic I'm surprised you still kept after I
