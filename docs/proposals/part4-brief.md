@@ -231,3 +231,10 @@ knows where things stand.
   (the drawing-on rule had been holding the falling leaves). Open
   questions: swipes, the reminder hour, chat replies; then P4-3 on the
   owner's word.
+- **2026-11-25, a preview to try** (the owner: "I can't give you an answer
+  for shit like swiping unless I can test it myself or if you can show me a
+  demonstration"): the branch built with `npx vite build --base ./`, its
+  service worker and CSP dropped, a made-up lecture seeded into
+  localStorage on first load, and published as a private artifact
+  (https://claude.ai/artifact/3EsXFCq7XWcdFH4vj4vbAq). A captioned swipe
+  recording is Round 7 on the part 4 page.
