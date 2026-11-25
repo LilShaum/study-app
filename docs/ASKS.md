@@ -100,6 +100,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   ui/ux, that take full advantage of the benefits and downsides of the
   form factor": every screen, and the phone as much as the computer (the
   brief had too few phone changes and screens; widened in part4-brief.md).
+  2026-11-25: the screen-by-format table (design-update.md) approved as a
+  whole on judgement ("yes to everything … do your best to make everything
+  high quality and not look like ai slop"); feedback after the
+  presentation.
 - **A code audit** (2026-11-22: "the code itself needs a big audit on how
   efficient it is, how many redundant or useless sections there are, how
   well its annotated for ai to understand the code, how well its

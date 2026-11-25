@@ -292,3 +292,10 @@ rounded card with a shadow.
 
 Cost: this is two or three times the earlier plan. Steps 1–3 are the
 biggest gain; 5 could wait for P4-2 or a later round if usage runs short.
+
+The owner, 2026-11-25, on the table: "its hard to say if things wont work
+just based on the table, so ill give you a yes to everything based on your
+judgement for now. just do your best to make everything high quality and
+not look like ai slop. i trust you and will give feedback after seeing your
+presentation". So the whole table is built in P4-1 and judged on the
+presentation.
