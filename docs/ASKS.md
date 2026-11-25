@@ -51,8 +51,8 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   (not main) and shown as parts 1-3. The simulator put it a little below
   Today as the daily way in (sim/FINDINGS.md), so Today stays daily and the
   quiz is its own mode; waits on the owner's look before going live. 2026-11-25: the Missed list
-  taken out (it only repeated what each answer already shows; the owner's
-  "a way to see them all at once" was about marking at the end, not a list).
+  taken out (it only repeated what each answer already shows; the owner
+  meant "easier than implementing a way to see them all at once", 2026-11-25).
   Held on the branch until part 4 ("Hold off again until 4 is done").
 - **The ways to study fit together, audited as a whole** (2026-11-22: "make
   sure it fits nicely into the ecosystem with the other modes and the daily

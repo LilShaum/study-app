@@ -229,7 +229,7 @@ beyond that: the next window is planned fresh.
 ## 2026-11-25: the Missed list taken out
 
 The plan above has a Missed list, from reading the owner's "a way to see
-them all at once" as a request for one. In context it was about the other
-option, marking at the end, which would need every answer shown together.
+them all at once" as a request for one. The owner, 2026-11-25: it was "than", not "that":
+marking as you go is easier than building a way to see every answer at once.
 Each answer is already marked as it is given, with its why and passage, so
 the list only repeated it, with less. It was built, shown, and taken out.
