@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useCallback, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import type { Course } from '@/schema/course';
@@ -23,6 +23,8 @@ import { usePlanStore } from '@/store/plan';
 import { todaySuggestions } from '@/lib/todaySuggestions';
 import { roman } from '@/lib/roman';
 import { toastNotesFromAI } from '@/lib/notesFromAI';
+import { ThumbBar } from '@/components/ThumbBar';
+import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 
 /** The classes open on the library, on this device. */
 const OPEN_KEY = 'arborous:library-open';
@@ -206,8 +208,23 @@ export function LibraryRoute() {
     });
   };
 
-  return (
-    <div>
+  const wide = useMediaQuery(WIDE);
+  // The thumb bar carries the first suggestion only while its own button is
+  // out of view: with both showing, the page said the same thing twice.
+  const [firstInView, setFirstInView] = useState(true);
+  const firstObserver = useRef<IntersectionObserver | null>(null);
+  const firstRef = useCallback((el: HTMLAnchorElement | null) => {
+    firstObserver.current?.disconnect();
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    firstObserver.current = new IntersectionObserver(([entry]) => setFirstInView(entry.intersectionRatio > 0.9), { threshold: [0, 1] });
+    firstObserver.current.observe(el);
+  }, []);
+  const hasToday = ids.length > 0 && suggestions.length > 0;
+  // A spread only when there is a day to put on the left page; otherwise the
+  // one column, set at reading width in the middle of the wide sheet.
+  const spread = wide && hasToday;
+
+  const header = (
       <div className="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div>
           <h1 className="font-display text-display font-semibold text-text">My lectures</h1>
@@ -237,36 +254,12 @@ export function LibraryRoute() {
           onChange={handleUpload}
         />
       </div>
+  );
 
-      {ids.length === 0 ? (
-        <div className="border-y border-border py-14 text-center text-text-2">
-          <div className="mb-5 flex justify-center text-text-3">
-            <Sprig size={48} />
-          </div>
-          <p className="font-display text-heading text-text">The library is empty.</p>
-          <p className="mx-auto mt-2 max-w-md text-small">
-            A lecture is a{' '}
-            <code className="font-mono text-text-2">.study.json</code> file generated from your own
-            notes. Start here and the app will give you the prompt.
-          </p>
-          <button
-            type="button"
-            onClick={() => setCreating(true)}
-            className="press press-ink tap-safe mt-6"
-          >
-            <Icon name="plus" size={13} />
-            New lecture
-          </button>
-          <p className="mt-6 text-small">
-            Studied on another device?{' '}
-            <RestoreButton className="tap-safe text-text-2 underline decoration-border-strong underline-offset-4 hover:text-text" label="Restore a backup" />
-          </p>
-        </div>
-      ) : (
-        <>
-          <KeepSafe />
+  const todayBlock = (
+    <>
           {suggestions.length > 0 && (
-            <div className="mb-7">
+            <div className={spread ? '' : 'mb-7'}>
               <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                 <h2 className="mark text-text-3">Today</h2>
                 <DailyTime />
@@ -274,15 +267,23 @@ export function LibraryRoute() {
               {/* What to study today, a few lines, each one tap into a way to
                   study (the owner, 2026-11-22). It replaced one Start over every
                   lecture and a row per lecture with a share of the day's time,
-                  which shrank as the library grew. */}
+                  which shrank as the library grew. On the left page there is no
+                  width for the button beside its words, so it sits under them. */}
               <ul className="border-y border-border">
                 {suggestions.map((sg, i) => (
-                  <li key={sg.key} className="flex items-center gap-4 border-b border-border py-3 last:border-b-0">
+                  <li
+                    key={sg.key}
+                    className={`border-b border-border py-3 last:border-b-0 ${spread ? '' : 'flex items-center gap-4'}`}
+                  >
                     <div className="min-w-0 flex-1">
                       <span className="block font-display text-body font-semibold leading-snug text-text">{sg.who}</span>
                       <span className="block text-small text-text-2">{sg.what}</span>
                     </div>
-                    <Link to={sg.to} className={`press tap-safe shrink-0 ${i === 0 ? 'press-ink' : ''}`}>
+                    <Link
+                      ref={i === 0 ? firstRef : undefined}
+                      to={sg.to}
+                      className={`press tap-safe ${spread ? 'mt-2' : 'shrink-0'} ${i === 0 ? 'press-ink' : ''}`}
+                    >
                       {sg.action}
                     </Link>
                   </li>
@@ -290,6 +291,11 @@ export function LibraryRoute() {
               </ul>
             </div>
           )}
+    </>
+  );
+  const listPage = (
+    <>
+          <KeepSafe />
           {/* The apparatus of a contents page: a ruled line to write the
               search on, and the classes and tags set as index lines. Both used to
               be web furniture — a grey rounded search box and a row of
@@ -399,7 +405,7 @@ export function LibraryRoute() {
                         courseId={id}
                         course={course}
                         progress={allProgress[id] ?? EMPTY_PROGRESS}
-                        className="entry-art h-12 w-12 sm:h-16 sm:w-16"
+                        className={`entry-art h-12 w-12 sm:h-16 sm:w-16 ${spread ? 'wide:h-20 wide:w-20' : ''}`}
                       />
                       <span className="entry-body min-w-0">
                         {/* The class heads the group now; a lecture with no class has no code. */}
@@ -446,8 +452,69 @@ export function LibraryRoute() {
               })}
             </ul>
           )}
+    </>
+  );
+
+  return (
+    <div className={wide && !spread ? 'mx-auto max-w-[44rem]' : !wide && hasToday ? 'pb-24' : ''}>
+      {!spread && header}
+
+      {ids.length === 0 ? (
+        <div className="border-y border-border py-14 text-center text-text-2">
+          <div className="mb-5 flex justify-center text-text-3">
+            <Sprig size={48} />
+          </div>
+          <p className="font-display text-heading text-text">The library is empty.</p>
+          <p className="mx-auto mt-2 max-w-md text-small">
+            A lecture is a{' '}
+            <code className="font-mono text-text-2">.study.json</code> file generated from your own
+            notes. Start here and the app will give you the prompt.
+          </p>
+          <button
+            type="button"
+            onClick={() => setCreating(true)}
+            className="press press-ink tap-safe mt-6"
+          >
+            <Icon name="plus" size={13} />
+            New lecture
+          </button>
+          <p className="mt-6 text-small">
+            Studied on another device?{' '}
+            <RestoreButton className="tap-safe text-text-2 underline decoration-border-strong underline-offset-4 hover:text-text" label="Restore a backup" />
+          </p>
+        </div>
+      ) : spread ? (
+        // An open spread, the lecture page's measurements: today on the left
+        // page, held in place, and the lectures on the right past a gutter rule.
+        <div className="flex gap-10">
+          <aside className="sticky top-6 max-h-[calc(100vh-3rem)] w-[24rem] shrink-0 self-start overflow-y-auto [scrollbar-width:thin]">
+            {todayBlock}
+          </aside>
+          <div className="min-w-0 flex-1 border-l border-border pl-10">
+            {header}
+            {listPage}
+          </div>
+        </div>
+      ) : (
+        <>
+          {todayBlock}
+          {listPage}
         </>
       )}
+
+      {!wide && hasToday && !firstInView && (
+        <ThumbBar>
+          <div className="flex items-center gap-4">
+            <span className="min-w-0 flex-1 truncate text-small text-text-2">
+              <span className="font-display font-semibold text-text">{suggestions[0].who}</span>
+            </span>
+            <Link to={suggestions[0].to} className="press press-ink shrink-0">
+              {suggestions[0].action}
+            </Link>
+          </div>
+        </ThumbBar>
+      )}
+
 
       {creating && <NewCourseDialog onClose={() => setCreating(false)} />}
     </div>

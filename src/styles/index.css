@@ -366,6 +366,20 @@
     }
   }
 
+  /* The same entry in a narrow page (a spread's left page): the figures stay
+     under the title whatever the window's width, as on a phone. */
+  .entry.entry-stack {
+    grid-template-columns: 1.5rem auto minmax(0, 1fr);
+    grid-template-areas:
+      'num art body'
+      'num art figs';
+    column-gap: 0.75rem;
+  }
+  .entry.entry-stack > .entry-figs {
+    justify-self: start;
+    text-align: left;
+  }
+
   /* ---- a long list that only pays for what is on screen ----
      Browse lays out an entire course in one document: a real 498-item course
      measured 168,640px tall. Every entry was styled, laid out and painted on
