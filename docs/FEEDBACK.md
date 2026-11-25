@@ -11,6 +11,51 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-25 · Testing 9: Diagrams on a phone, the row of sections
+
+**Their words:** "My first instinct when testing the diagram feature on the
+phone was that it feels too restrictive to have to tap "next" to go through
+each diagram but then I noticed the scroll at the top. The design of it
+needs to be fixed to be more intuitive. And reminder that intuitive doesn't
+mean remove it or make it a more simple but less interesting way. I'm not
+telling you to replace it with static buttons, I like the idea on paper but
+it needs to be easy for the users to assume they can scroll it to see the
+other diagrams. This involves figuring out why a student might struggle to
+figure it out in the first place and then you can think of changes to make
+to fix the issue." (screenshot: Diagrams, the sideways row of section names
+under the count, the first underlined, the second cut off at the edge.)
+**Question or instruction:** instruction, after all screenshots; the method
+is part of the ask.
+**What they are asking:** keep the sideways row of sections; make it
+obvious at a glance that it scrolls and that it is how you move between
+diagrams. First work out why a student misses it, then design from those
+reasons.
+**Why a student might miss it (to verify on the phone, then design from):**
+- it reads as a heading or a line of text, not as something to move: the
+  names sit like plain words with an underline, and its rule looks like a
+  divider;
+- the cut-off at the right edge is a hard clip that looks like a layout
+  fault, not "more this way";
+- nothing moves or hints on arrival; a phone hides scrollbars;
+- it sits above the diagram, away from where the thumb and eyes are, and
+  "Next" at the bottom offers the obvious way, so the row is never tried;
+- it doesn't follow you: scrolling down the page, the row is gone, and
+  moving between diagrams doesn't visibly move along it.
+**Expectations, broken down:**
+- *intuitive*: a student who has never seen the page would try swiping the
+  row within seconds / checked by: the reasons above each answered by
+  something on screen, and a fresh look at the phone screenshot / not: an
+  instruction line ("swipe to see more"), not static buttons, not removing
+  the row.
+- *not simpler or less interesting*: keep the paper-like row and its feel;
+  add cues that belong to the book look (a soft fade at the edge as paper
+  continues, the current one centred, a glimpse of motion on arrival) /
+  not: generic chips or arrows.
+**Lesson for every screen:** when a control is hard to discover, list why
+a student would miss it before changing anything, and answer each reason
+with design, not text.
+**Status:** noted; to plan after all screenshots.
+
 ### 2026-11-25 · Testing 8: stray dots where the numbers sit (dark mode)
 
 **Their words:** "On dark mode sometimes these dots where I assume the

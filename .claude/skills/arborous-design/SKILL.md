@@ -74,6 +74,12 @@ screen, not that one:
 - **An overhaul covers the whole screen**, old parts included: walk every
   element top to bottom and ask whether it still earns its place and
   reads clearly, not only the parts added last.
+- **A control nobody finds is a design fault, not a reason to remove it.**
+  First list why a student would miss it (it reads as text, its edge looks
+  like a layout fault, nothing hints that it moves, a more obvious control
+  is beside it), then answer each reason with the control's own look and
+  motion, in the book's style. "Intuitive" never means simpler or duller,
+  and never a line telling the student what to do.
 - **Settings are not page content.** Anything the student sets once (their
   name, theme, reminders, account) lives in a settings place they open,
   not as open fields on a page that also displays it.
