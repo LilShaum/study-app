@@ -225,3 +225,11 @@ beyond that: the next window is planned fresh.
    (your "when a lot of content has been covered"), with a tick to include
    the rest? Or everything from the start?
 3. **Go ahead** with the simulator, then the build?
+
+## 2026-11-25: the Missed list taken out
+
+The plan above has a Missed list, from reading the owner's "a way to see
+them all at once" as a request for one. In context it was about the other
+option, marking at the end, which would need every answer shown together.
+Each answer is already marked as it is given, with its why and passage, so
+the list only repeated it, with less. It was built, shown, and taken out.
