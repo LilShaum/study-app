@@ -145,6 +145,8 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   These things need to be somehow made clear and intuitive to the user by
   being elegantly integrated into the flow of the app"). With the first
   run: a list of the app's own terms, each taught where it is first met.
+  2026-11-25 (P4-1): listed and decided in docs/proposals/terms.md, built
+  on the branch; waits on P4-2/P4-3.
 - **The daily time asked in the first run** (2026-11-24, on where "Set one
   daily time" belongs: "this is something that would be good to ask in the
   onboarding"). Built on the branch 2026-11-25 (P4-1); waits on P4-2/P4-3.
