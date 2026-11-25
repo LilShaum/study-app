@@ -52,6 +52,32 @@ reasoning; this is the working version.
 - The reason to come back is when knowledge will fade, never a streak or
   guilt.
 
+## Screens a student works through
+
+Lessons the owner taught on New lecture (2026-11-25), meant for every
+screen, not that one:
+
+- **A step's heading is the student's whole task in that step**, written
+  as what they do ("Give the AI the prompt and your slides, in one
+  message"), including anything they must not miss. Reading only the
+  headings should be enough to get through. A heading never repeats its
+  button: the button names its action ("Copy the prompt"), the heading the
+  task it belongs to.
+- **Anything required lives in the heading or a control's label**, never
+  only in a sentence, a grey note or a fold.
+- **On screen: what to do. In Help: why and how it works.** No explainer
+  lines under controls, no "Why …?" folds. If a control needs a sentence
+  to be understood, redesign the control (its label, grouping, position),
+  don't caption it.
+- **"It looks ugly" means redesign it, never remove it.** Keep every
+  function the owner asked for; change how it looks and where it sits.
+- **An overhaul covers the whole screen**, old parts included: walk every
+  element top to bottom and ask whether it still earns its place and
+  reads clearly, not only the parts added last.
+- **Settings are not page content.** Anything the student sets once (their
+  name, theme, reminders, account) lives in a settings place they open,
+  not as open fields on a page that also displays it.
+
 ## Layout and behaviour
 
 - **Phone first.** Design at 390px. The main action stays in thumb reach

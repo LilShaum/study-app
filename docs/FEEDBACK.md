@@ -11,6 +11,47 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-25 · Testing 7: New lecture's step 2
+
+**Their words:** "This is another relic I'm surprised you still kept after I
+told you to overhaul the page. … No reason to have to explain this at all
+let alone right here. If anything it belongs in help … it's honestly pretty
+implied why the user needs to attach their notes. But also, the parts I
+underlined as well as the circles part which is usually hidden in a drop
+down are the only places that explicitly tell you to attach your notes. It
+needs to be more explicit and part of the step. We do this by fixing the
+step 2 titles. It's redundant that step 2 is titled the same thing as the
+button right under it. The button should keep the name … but the title for
+step 2 should be something like give the prompt and the lecture notes you
+want to use to the ai. … Since ai has no taste, I hope … you take detailed
+non specific to this example notes that are ripples to all the skills and
+memory and stuff you have so future app building with ai will know to
+consider these different things." (screenshot: step 2, "Why attach them to
+the message?" open, the attach instruction underlined.)
+**Question or instruction:** instruction, after all screenshots; plus
+general lessons to record now.
+**What went wrong:** the overhaul only touched step 1. Step 2 kept a fold
+explaining why, and its heading repeats its button, while the one thing
+the student must do (attach their notes in the same message) sits mid
+sentence. (habits: an overhaul that only reworks what was added last;
+explaining instead of making the step say it; a heading that names the
+button instead of the student's task.)
+**What they are asking:** step 2's heading says the whole task: give the
+AI the prompt together with your lecture material (in one message); the
+button keeps "Copy the prompt"; the "why attach" fold goes (to Help, if
+anywhere).
+**Expectations, broken down:**
+- *explicit, part of the step*: the attach instruction is in the heading,
+  not only in a sentence or a fold / checked by: reading only the step
+  headings tells a student everything to do / not: bolding the sentence.
+- *not redundant*: heading and button never say the same thing / checked
+  by: compare each step's heading with its controls.
+- *worded better than my example*: short, plain, the same meaning:
+  prompt + notes, to the AI, together.
+**General lessons:** written into `.claude/skills/arborous-design/SKILL.md`
+("Screens a student works through") and the owner-feedback habits list.
+**Status:** lessons recorded; screen fix after all screenshots.
+
 ### 2026-11-25 · Testing 6: the AI-picks-the-kind option was removed
 
 **Their words (screenshot):** "you fucking removed the option that I

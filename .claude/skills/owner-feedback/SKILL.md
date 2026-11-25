@@ -38,7 +38,10 @@ the ask itself to `docs/ASKS.md` as usual.
    instance: misread a question as an instruction, over-corrected, took the
    cheapest reading of an adjective, changed something they had not asked
    about, dropped part of the ask, asked them something I could have
-   decided or shown.
+   decided or shown, removed a feature when told it looked bad, overhauled
+   only the newest part of a screen, claimed something done without
+   walking the whole flow, a circled area read as "delete this" (a
+   circle only points at what they mean).
 4. **What they are asking, in my own words.** Restate it as I would explain
    it to someone who has not seen the conversation, concrete enough that
    two people would build the same thing from it. If I cannot restate it
@@ -58,7 +61,11 @@ the ask itself to `docs/ASKS.md` as usual.
    CLAUDE.md ("How the owner wants it to work") and the earlier entries in
    `docs/FEEDBACK.md` for the same feature. A new note never cancels an
    older one silently; if they conflict, say so and ask.
-7. **Ripple it.** A standing rule ("motion is realistic", "review pages
+7. **Ripple it.** When the owner explains the reason behind a note, the
+   reason is the lesson: write it in general terms (not tied to the screen
+   in front of you) into the skill that governs that kind of work
+   (`arborous-design` for screens and words), so the next screen gets it
+   right without being told. A standing rule ("motion is realistic", "review pages
    hold only what is unseen") becomes a dated line in CLAUDE.md. Then walk
    `docs/RIPPLES.md` for anything the feedback touches (Help,
    EXPECTATIONS, the prompts, tests), and the skills that cover the area
