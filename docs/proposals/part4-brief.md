@@ -214,3 +214,13 @@ knows where things stand.
   owner's go-ahead to change the Supabase project, and the first run's
   reminder question waits with them. Open questions: notifications, swipes
   on a real phone, New lecture in one column. Then P4-3.
+- **2026-11-25, Round 4** (the owner's notes on Round 3, and "yes to
+  notifications"): the copy step's advice made general ("a more capable
+  model on high effort"), leaves fall as the shiver starts, "Figure 1.",
+  the first run's tree never greyed and a part grown by answering its
+  question right, warmer dark paper, and reminders built end to end
+  (Supabase tables, the `arborous-push` function and its minute job are
+  live; the app side is on the branch). Shown as "Round 4" on the same
+  page, with New lecture's two layouts side by side. Open questions: New
+  lecture's layout, swipes, the reminder's default hour. A reminder on a
+  real phone waits for the merge (P4-3).
