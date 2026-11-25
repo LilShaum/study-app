@@ -6,11 +6,19 @@ import { ALL_KINDS, type MakeKind } from '@/lib/makeKinds';
 
 afterEach(cleanup);
 
+// What the field last handed back, as its parent would hold it.
 let seen: MakeKind[] = [];
 function Harness({ start }: { start: MakeKind[] }) {
   const [v, setV] = useState(start);
-  seen = v;
-  return <MakeKindsField value={v} onChange={setV} />;
+  return (
+    <MakeKindsField
+      value={v}
+      onChange={(next) => {
+        seen = next;
+        setV(next);
+      }}
+    />
+  );
 }
 
 describe('MakeKindsField', () => {
