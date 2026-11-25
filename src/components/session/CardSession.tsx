@@ -17,6 +17,8 @@ import { SessionGlossary } from './SessionGlossary';
 import { AdaptiveBar } from './AdaptiveBar';
 import { glossaryOf } from '@/lib/glossary';
 import { SessionRail } from './SessionRail';
+import type { CardStage } from '@/lib/useReportStage';
+import { useMediaQuery } from '@/lib/useMediaQuery';
 import { MixedLectures } from './MixedLectures';
 import { CATCH_UP_HOURS, inWords, missedThisSitting, nextDueAt, whenLabel, type Grade } from '@/lib/memory';
 import { examRule } from '@/lib/exam';
@@ -107,7 +109,7 @@ const MULTI_HINTS: KeyHint[] = [
 ];
 
 const ALL_CARD_KEYS: KeyHint[] = [
-  { keys: ['1', '–', '4'], label: 'select' },
+  { keys: ['1', '–', '4'], label: 'choose' },
   { keys: ['Space'], label: 'flip' },
   { keys: ['Enter'], label: 'check' },
   { keys: ['G'], label: 'got' },
@@ -152,7 +154,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
   review: ALL_CARD_KEYS,
   today: ALL_CARD_KEYS,
   quiz: [
-    { keys: ['1', '–', '4'], label: 'select' },
+    { keys: ['1', '–', '4'], label: 'choose' },
     { keys: ['Enter'], label: 'check' },
     ...NAV_HINTS,
   ],
@@ -167,7 +169,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
   problems: [{ keys: ['Enter'], label: 'check' }, ...NAV_HINTS],
   practice: ALL_CARD_KEYS,
   mixed: [
-    { keys: ['1', '–', '4'], label: 'select' },
+    { keys: ['1', '–', '4'], label: 'choose' },
     { keys: ['Space'], label: 'flip' },
     { keys: ['Enter'], label: 'check' },
     { keys: ['G'], label: 'got' },
@@ -176,7 +178,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
     ...NAV_HINTS,
   ],
   missed: [
-    { keys: ['1', '–', '4'], label: 'select' },
+    { keys: ['1', '–', '4'], label: 'choose' },
     { keys: ['Space'], label: 'flip' },
     { keys: ['Enter'], label: 'check' },
     ...NAV_HINTS,
@@ -203,6 +205,58 @@ const ONE_POINT_HINTS: KeyHint[] = [
   { keys: ['M'], label: 'missed it' },
   ...NAV_HINTS,
 ];
+
+/** "1–4" for a run of number keys, else the keys side by side. */
+function keyText(keys: string[]): string {
+  return keys[1] === '–' ? keys.join('') : keys.join(' / ');
+}
+
+/**
+ * The keys that work on this card right now, for the line under it: from the
+ * card, whether it is answered, and the stage it reports (flipped, "I don't
+ * know"), so no key is listed that would do nothing. The full list stays
+ * behind the ? button.
+ */
+function keysFor(
+  current: SessionItem | null | undefined,
+  hints: KeyHint[],
+  written: ReturnType<typeof answerPoints>,
+  stage: CardStage,
+  answeredNow: boolean,
+  pause: boolean,
+): KeyHint[] {
+  if (!current || pause) return [];
+  const next: KeyHint = { keys: ['→'], label: 'next' };
+  const pick = (list: KeyHint[], ...first: string[]) => list.filter((h) => first.includes(h.keys[0]));
+  /** The number keys run to the card's own count, not the list's. */
+  const upTo = (list: KeyHint[], n: number) =>
+    list.map((h) => (h.keys.length === 3 ? { ...h, keys: [h.keys[0], '–', String(Math.min(9, Math.max(1, n)))] } : h));
+  const enterNext: KeyHint = { keys: ['Enter'], label: 'next' };
+  switch (current.type) {
+    case 'mcq':
+    case 'multi':
+      return answeredNow ? [next] : pick(hints, '1', 'Enter');
+    case 'flashcard':
+      if (written) {
+        if (stage === 'front') return pick(WRITTEN_HINTS, 'Space');
+        if (stage === 'dont') return [enterNext];
+        return written.points.length === 1 ? pick(ONE_POINT_HINTS, 'G', 'M') : upTo(pick(WRITTEN_HINTS, '1', 'Enter'), written.points.length);
+      }
+      if (stage === 'front') return pick(KEY_HINTS.flashcards, 'Space');
+      return stage === 'dont' ? [enterNext] : pick(KEY_HINTS.flashcards, 'G', 'H', 'M');
+    case 'problem':
+      if (answeredNow) return [next];
+      if (answerKind(current) !== 'self') return [{ keys: ['Enter'], label: 'check' }];
+      if (stage === 'front') return pick(STEPS_HINTS, 'Space');
+      return stage === 'dont' ? [{ keys: ['Enter'], label: 'done' }] : upTo(pick(STEPS_HINTS, '1', 'Enter'), current.steps?.length ?? 1);
+    case 'recall':
+    case 'slides':
+      return [next];
+    default:
+      // Reading cards: Enter moves on as well as the arrow.
+      return [{ keys: ['Enter', '→'], label: 'next' }];
+  }
+}
 
 const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
   // New cards come only from parts already studied (sim/FINDINGS.md, 2026-11-24).
@@ -362,6 +416,12 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   // spans several lectures, so it has none.
   const glossary = useMemo(() => (mixedClass ? [] : glossaryOf(course)), [course, mixedClass]);
   const [glossaryOpen, setGlossaryOpen] = useState(false);
+  // Three columns from 1280px: the glossary then has its own margin, so the
+  // button that swaps it in only exists below that (and is not drawn twice).
+  const threeColumns = useMediaQuery('(min-width: 1280px)');
+  /** Where each card is (flipped, answered), as the card reports it: the keys under the card follow. */
+  const [stages, setStages] = useState<Record<number, CardStage>>({});
+  const [keysOpen, setKeysOpen] = useState(false);
   // Read after the session has recorded its results, so the tree on the
   // finish screen is the tree this session just grew.
   const progress = useProgressStore((s) => s.getProgress(courseId) ?? EMPTY_PROGRESS);
@@ -447,6 +507,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   // Subscribed, so the step line's switch follows the section's choice.
   const sectionQuestionsFirst = useLearnStore((s) => (current ? s.startedQuestionsFirst(lectureOf(current, courseId), current._sectionId) : false));
   const questionUp = !pause && !!current && QUESTION_TYPES.has(current.type) && !answeredIndices.has(index);
+  const keysNow = keysFor(current, hints, written, stages[index] ?? 'front', answeredIndices.has(index), !!pause);
 
   useEffect(() => {
     // Read the bookmark rather than subscribing to it: this session writes one
@@ -749,7 +810,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        navigate(home);
+        // The full list of keys closes first; Escape only leaves with it shut.
+        if (keysOpen) setKeysOpen(false);
+        else navigate(home);
         return;
       }
       if (pause) {
@@ -925,8 +988,10 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   }
 
   return (
-    <div className={`mx-auto max-w-2xl py-6 short:py-2 sm:px-6 wide:grid wide:max-w-5xl wide:gap-12 ${glossaryOpen ? 'wide:grid-cols-[minmax(0,1fr)_20rem]' : 'wide:grid-cols-[minmax(0,1fr)_13rem]'}`}>
-      <div className="min-w-0">
+    // Phone: the card alone. 1024px: card and a left margin. 1280px: a margin
+    // each side, the card centred even when there is no glossary to fill one.
+    <div className="mx-auto max-w-2xl py-6 short:py-2 sm:px-6 wide:grid wide:max-w-none wide:grid-cols-[13rem_minmax(0,44rem)] wide:justify-center wide:gap-10 xl:grid-cols-[15rem_minmax(0,42rem)_17rem] xl:gap-8">
+      <div className="min-w-0 wide:col-start-2 wide:row-start-1">
       <div className="mb-4 flex items-center justify-between">
         <Link to={home} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
           ← Back
@@ -1135,6 +1200,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
               onConfused={(otherId) => useProgressStore.getState().noteConfusion(lectureOf(it, courseId), it.id, otherId)}
               onNext={handleNext}
               learning={it._step !== undefined}
+              onStage={(st) => setStages((p) => (p[n] === st ? p : { ...p, [n]: st }))}
               keyboardEnabled={here && !pause}
             />
           </div>
@@ -1185,78 +1251,124 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         </div>
       )}
 
-      {/* Hidden on touch, where there's no keyboard to hint about. */}
-      <p
-        className={`mt-4 hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-3 wide:!hidden ${pause ? '' : '[@media(hover:hover)]:flex'}`}
-      >
-        {hints.map((hint) => (
-          <span key={hint.keys.join()} className="flex items-center gap-1">
-            {hint.keys.map((k) => (
-              <kbd key={k} className="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-[11px]">
-                {k}
-              </kbd>
+      {/* The keys that work on this card now, one quiet line. Only where there
+          is a keyboard to hint about: a wide screen that can hover. */}
+      {!pause && keysNow.length > 0 && (
+        <div className="mt-4 hidden text-center text-xs text-text-3 wide:[@media(hover:hover)]:block">
+          <p>
+            {keysNow.map((hint, i) => (
+              <span key={hint.keys.join()}>
+                {i > 0 && ' · '}
+                <span className="font-mono text-[11px] text-text-2">{keyText(hint.keys)}</span> {hint.label}
+              </span>
             ))}
-            <span>{hint.label}</span>
-          </span>
-        ))}
-      </p>
-      </div>
-      <div className="hidden min-w-0 wide:block">
-      {/* The lecture's glossary, opened beside the card (a wide screen only). */}
-      {glossary.length > 0 && (
-        <div className="mb-4">
-          <button
-            type="button"
-            onClick={() => setGlossaryOpen((o) => !o)}
-            aria-expanded={glossaryOpen && !questionUp}
-            aria-describedby={questionUp ? 'glossary-shut' : undefined}
-            disabled={questionUp && !glossaryOpen}
-            className="press press-quiet tap-safe"
-          >
-            {glossaryOpen ? '← This sitting' : 'Glossary'}
-          </button>
-          {questionUp && !glossaryOpen && (
-            <p id="glossary-shut" className="mt-1 text-small text-text-3">
-              Opens after you answer.
-            </p>
+            {' · '}
+            <button
+              type="button"
+              onClick={() => setKeysOpen((o) => !o)}
+              aria-label="All keys"
+              aria-expanded={keysOpen}
+              className="font-mono text-[11px] text-text-3 hover:text-text"
+            >
+              ?
+            </button>
+          </p>
+          {keysOpen && (
+            <ul className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+              {hints.map((hint) => (
+                <li key={hint.keys.join()}>
+                  <span className="font-mono text-[11px] text-text-2">{keyText(hint.keys)}</span> {hint.label}
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       )}
-      {glossaryOpen && questionUp ? (
-        /* Shut while a question is asked: the term asked would be in it
-           (the owner, 2026-11-17). Said so, so it does not look broken. */
-        <p id="glossary-shut" className="border-t border-border pt-3 text-small text-text-3">
-          Shut while a question is asked. It opens after you answer.
-        </p>
-      ) : glossaryOpen ? (
-        <SessionGlossary entries={glossary} />
-      ) : (
-      <>
-      {!mixedClass && (
-        <div className="hidden sideways:block">
-          <SectionJump items={items} mode={mode} activeSectionId={activeSectionId} onJump={jumpToSection} />
-        </div>
-      )}
-      <SessionRail
-        items={items}
-        index={index}
-        course={course}
-        score={score}
-        hints={pause ? [] : hints}
-        // A mixed sitting shows neither which lecture the card is from (that
-        // is part of the question) nor its parts (a run is a card or two).
-        parts={!mixedClass}
-        figure={
-          /* The course's tree with the section you are in lit: the one
-             screen you spend the most time on otherwise has nothing of the
-             course on it but its text. */
-          mixedClass ? undefined : (
-            <CourseTree courseId={courseId} course={course} progress={progress} className="h-40" highlight={activeSectionId} />
+      </div>
+
+      {/* Left margin: the tree large and where you are in the sitting. Below
+          1280px the glossary swaps in here instead of having a margin. */}
+      <div className="hidden min-w-0 wide:col-start-1 wide:row-start-1 wide:block">
+        {glossary.length > 0 && !threeColumns && (
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={() => setGlossaryOpen((o) => !o)}
+              aria-expanded={glossaryOpen && !questionUp}
+              aria-describedby={questionUp ? 'glossary-shut' : undefined}
+              disabled={questionUp && !glossaryOpen}
+              className="press press-quiet tap-safe"
+            >
+              {glossaryOpen ? '← This sitting' : 'Glossary'}
+            </button>
+            {questionUp && !glossaryOpen && (
+              <p id="glossary-shut" className="mt-1 text-small text-text-3">
+                Opens after you answer.
+              </p>
+            )}
+          </div>
+        )}
+        {glossaryOpen && !threeColumns ? (
+          questionUp ? (
+            /* Shut while a question is asked: the term asked would be in it
+               (the owner, 2026-11-17). Said so, so it does not look broken. */
+            <p id="glossary-shut" className="border-t border-border pt-3 text-small text-text-3">
+              Shut while a question is asked. It opens after you answer.
+            </p>
+          ) : (
+            <SessionGlossary entries={glossary} />
           )
-        }
-      />
-      </>
-      )}
+        ) : (
+          <>
+            {!mixedClass && (
+              <div className="hidden sideways:block">
+                <SectionJump items={items} mode={mode} activeSectionId={activeSectionId} onJump={jumpToSection} />
+              </div>
+            )}
+            <SessionRail
+              items={items}
+              index={index}
+              course={course}
+              score={score}
+              // A mixed sitting shows neither which lecture the card is from (that
+              // is part of the question) nor its parts (a run is a card or two).
+              parts={!mixedClass}
+              figure={
+                /* The course's tree with the section you are in lit, and the
+                   leaves held at where the sitting began so a miss does not
+                   take one off mid-sitting; new ones bud as they are learned. */
+                mixedClass ? undefined : (
+                  <CourseTree
+                    courseId={courseId}
+                    course={course}
+                    progress={progress}
+                    className="h-72 w-full"
+                    highlight={activeSectionId}
+                    growOnly={startProgress}
+                  />
+                )
+              }
+            />
+          </>
+        )}
+      </div>
+
+      {/* Right margin (1280px up): the glossary, always there. */}
+      <div className="hidden min-w-0 xl:col-start-3 xl:row-start-1 xl:block">
+        {threeColumns && glossary.length > 0 && (
+          <div className="sticky top-6 max-h-[calc(100vh-3rem)] self-start overflow-y-auto">
+            {questionUp ? (
+              <section aria-label="Glossary" className="text-small">
+                <h2 className="mark mb-2 text-text-3">Glossary</h2>
+                <p id="glossary-shut" className="border-t border-border pt-3 text-text-3">
+                  Shut while a question is asked. It opens after you answer.
+                </p>
+              </section>
+            ) : (
+              <SessionGlossary entries={glossary} />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

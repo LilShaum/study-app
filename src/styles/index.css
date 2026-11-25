@@ -479,6 +479,15 @@
      a cover the clock sat on top of whatever line was passing beneath it
      (the owner's iPhone). Opaque, the page's own colour, above everything
      that scrolls. */
+  /* A sitting on a phone has no running head: its own top clears the status bar. */
+  .session-top {
+    padding-top: calc(max(env(safe-area-inset-top), var(--safe-top-fallback, 0px)) + 0.75rem);
+  }
+  @media (min-width: 1024px) {
+    .session-top {
+      padding-top: 2rem;
+    }
+  }
   .status-bar-cover {
     position: fixed;
     inset-inline: 0;

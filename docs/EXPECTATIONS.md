@@ -834,17 +834,20 @@ its side, sits on a desk with room to look around: the page spreads out.
   Browse's sections scroll in a strip at the top.
 - On a desktop: the lecture page is two columns, the tree and sections on
   the left, the title and ways to work on the right (2026-09-26); a
-  sitting has a side rail with its parts and where you are in them, the
-  score, hints and the figure (`SessionRail`, 2026-09-27); Browse lists
-  its sections at the side, the glossary has a letter rail. In a sitting,
-  "Glossary" at the top of the side column swaps it for the lecture's
-  terms and meanings, with a search, the column widened; "← This sitting"
-  swaps back; the card does not move (the owner, 2026-11-16: "i dont wanna
-  have to exit the mode"). Not in a sitting that mixes lectures. It is shut
-  while a question is on screen and not yet answered, as the term asked
-  would be in it; the button says "Opens after you answer", and open, it
-  says it is shut and why (the owner, 2026-11-17). Reading cards and an
-  answered card have it.
+  sitting has a margin each side from 1280px (P4, 2026-11-25): the tree
+  large on the left with where you are, the sitting's parts and the score
+  (`SessionRail`), the lecture's glossary always on the right, the card
+  between. Below 1280px the glossary has no margin: "Glossary" at the top
+  of the left margin swaps it for the terms, "← This sitting" swaps back.
+  Not in a sitting that mixes lectures. It is shut while a question is on
+  screen and not yet answered, as the term asked would be in it; it says
+  so and why, and opens after the answer (the owner, 2026-11-17). Reading
+  cards and an answered card have it. The keys are one quiet line under
+  the card on a screen with a keyboard, only the ones that work on this
+  card now ("1-4 choose, Enter check" before an answer, "next" after);
+  "?" lists them all, Escape closes that before it leaves. On a phone a
+  sitting is the whole screen: no running head, clear of the status bar.
+  Browse lists its sections at the side, the glossary has a letter rail.
 - **A phone on its side** (the owner, 2026-11-10: "when it does the view is
   very cut off"). iOS gives a web page no rotation lock, so a short screen
   held sideways (landscape, under 500px tall, 600px or wider) gets the

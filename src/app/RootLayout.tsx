@@ -81,6 +81,7 @@ export function RootLayout() {
   const name = useProfileStore((s) => s.name);
   // The course page and the study screen are laid out in two columns on a
   // desktop; head, page and colophon widen together so the rules still line up.
+  const inSession = pathname.startsWith('/session/');
   const wide = /^\/study\/[^/]+$/.test(pathname) || pathname.startsWith('/session/') ? ' is-wide' : '';
 
   return (
@@ -103,7 +104,7 @@ export function RootLayout() {
           the way a page is trimmed rather than pasted down. */}
       {/* A sitting has its own Back; on a short screen held sideways the
           running head would push the card below the fold. */}
-      <header className={`app-header page-block shrink-0${wide}${pathname.startsWith('/session/') ? ' short:hidden' : ''}`}>
+      <header className={`app-header page-block shrink-0${wide}${inSession ? ' hidden wide:block short:hidden' : ''}`}>
         <div className="flex min-h-header items-end justify-between gap-4 pb-2 short:min-h-[2.75rem]">
           {/* shrink-0 and whitespace-nowrap are both load-bearing. Without
               them a long location on the right squeezed this side until the
@@ -125,7 +126,9 @@ export function RootLayout() {
         <div className="rule-oxford" />
       </header>
 
-      <main className={`page-block flex-1 py-8 short:py-4${wide}`}>
+      {/* With the running head gone on a phone, a sitting keeps itself clear of
+          the status bar (the cover above is fixed and opaque). */}
+      <main className={`page-block flex-1 ${inSession ? 'session-top pb-8 wide:py-8' : 'py-8'} short:py-4${wide}`}>
         <Outlet />
       </main>
 

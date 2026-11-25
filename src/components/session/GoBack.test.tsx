@@ -85,6 +85,38 @@ describe('going back in a sitting', () => {
   });
 });
 
+describe('the glossary margin at 1280px and up', () => {
+  const wideScreen = (matches: boolean) =>
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({ matches: matches && query.includes('1280'), addEventListener() {}, removeEventListener() {} }),
+    });
+  afterEach(() => Reflect.deleteProperty(window, 'matchMedia'));
+
+  it('is always there, and shuts while a question is asked (the owner, 2026-11-17)', () => {
+    wideScreen(true);
+    useCoursesStore.setState({ courses: { back: lecture } });
+    render(
+      <MemoryRouter initialEntries={['/session/back/quiz']}>
+        <Routes>
+          <Route path="/session/:id/:mode" element={<SessionRoute />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    // No button to open it: a margin, shut with its reason while the question is up.
+    expect(screen.queryByRole('button', { name: 'Glossary' })).toBeNull();
+    expect(screen.getByText(/Shut while a question is asked/)).toBeTruthy();
+    expect(screen.queryByText('Fatty sheath around an axon.')).toBeNull();
+    const id = useSessionStore.getState().current()!.id;
+    fireEvent.click(screen.getByRole('radio', { name: new RegExp(`${id} right`) }));
+    fireEvent.click(screen.getByRole('button', { name: 'Check answer' }));
+    expect(screen.getByText('Fatty sheath around an axon.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Next →' }));
+    expect(screen.queryByText('Fatty sheath around an axon.')).toBeNull();
+    expect(screen.getByText(/Shut while a question is asked/)).toBeTruthy();
+  });
+});
+
 describe('the pause between steps', () => {
   it('has Back beside Next and Stop here, to the card that ended the step (the owner, 2026-11-20)', () => {
     const section = (n: number) => ({
