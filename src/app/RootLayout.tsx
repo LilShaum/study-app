@@ -79,9 +79,12 @@ export function RootLayout() {
   useTabTitle(here);
   const { pathname } = useLocation();
   const name = useProfileStore((s) => s.name);
-  // The course page and the study screen are laid out in two columns on a
-  // desktop; head, page and colophon widen together so the rules still line up.
-  const wide = /^\/study\/[^/]+$/.test(pathname) || pathname.startsWith('/session/') ? ' is-wide' : '';
+  // The library, the class page, the course page and the study screen are laid
+  // out as a spread on a desktop; head, page and colophon widen together so the rules still line up.
+  const wide =
+    pathname === '/' || /^\/study\/[^/]+$/.test(pathname) || /^\/class\/[^/]+$/.test(pathname) || pathname.startsWith('/session/')
+      ? ' is-wide'
+      : '';
 
   return (
     <div className="app-shell paper-grain flex min-h-screen flex-col bg-bg">
