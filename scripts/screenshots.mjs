@@ -158,7 +158,11 @@ if (!fs.existsSync(path.join(dist, 'index.html'))) {
 fs.mkdirSync(OUT, { recursive: true });
 const server = await serve(dist);
 const B = base(server.address().port);
-const browser = await chromium.launch();
+// The local playwright can be a different version from the browser the
+// machine has; fall back to the pre-installed one rather than fail.
+const PREINSTALLED = '/opt/pw-browsers/chromium';
+const browser = await chromium.launch().catch(() =>
+  chromium.launch({ executablePath: PREINSTALLED }));
 
 for (const size of ['desktop', 'phone']) {
   console.log(`${size}, populated:`);
