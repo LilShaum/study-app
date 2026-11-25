@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { useReportStage, type CardStage } from '@/lib/useReportStage';
 import type { FlashcardItem } from '@/schema/course';
 import { Icon } from '@/components/Icon';
 import { answerPoints, type AnswerPoints } from '@/lib/answerPoints';
@@ -26,6 +27,8 @@ interface FlashcardCardProps {
   keyboardEnabled?: boolean;
   /** Learn: the passage opens after every answer, right or wrong (see SourceNote). */
   learning?: boolean;
+  /** Where the card is (question side, answer showing, "I don't know"), for the keys the session lists. */
+  onStage?: (stage: CardStage) => void;
 }
 
 const FACE = 'flip-face flex min-h-[220px] w-full flex-col items-center justify-center gap-4 text-center';
@@ -44,12 +47,13 @@ export function FlashcardCard(props: FlashcardCardProps) {
  * wins back most of what that costs, and Anki's Easy nothing
  * (sim/FINDINGS.md, 2026-11-03). Got it and Missed it keep their places.
  */
-function FlipCard({ item, onGot, onMissed, comesBack, keyboardEnabled = false, learning = false }: FlashcardCardProps) {
+function FlipCard({ item, onGot, onMissed, comesBack, keyboardEnabled = false, learning = false, onStage }: FlashcardCardProps) {
   const [flipped, setFlipped] = useState(false);
   const [hintShown, setHintShown] = useState(false);
   /** Said "I don't know": the answer shown, and it is a miss (the owner, 2026-10-26). */
   const [dontKnow, setDontKnow] = useState(false);
   const whenId = useId();
+  useReportStage(!flipped ? 'front' : dontKnow ? 'dont' : 'back', onStage);
 
   const grade = (got: boolean, how?: Grade) => {
     setFlipped(false);
@@ -212,6 +216,7 @@ function WrittenCard({
   onMissed,
   keyboardEnabled = false,
   learning = false,
+  onStage,
 }: FlashcardCardProps & { answer: AnswerPoints }) {
   const [written, setWritten] = useState('');
   const [shown, setShown] = useState(false);
@@ -220,6 +225,7 @@ function WrittenCard({
   /** Said "I don't know": the model answer shown, nothing to tick, a miss. */
   const [dontKnow, setDontKnow] = useState(false);
   const fieldId = useId();
+  useReportStage(!shown ? 'front' : dontKnow ? 'dont' : 'back', onStage);
   const one = answer.points.length === 1;
   // "Name three" of five listed: three is full marks (lib/answerPoints need).
   const need = answer.need;
