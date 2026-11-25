@@ -24,5 +24,7 @@ Before a change is committed:
 | A way to study (Today, Learn, Practice, the practice test, the adaptive quiz) | the library, lecture and class pages; Help; EXPECTATIONS; CLAUDE.md's line for it; `docs/proposals/ecosystem.md`; the simulator if it schedules |
 | A field in the course file | `src/schema/course.ts`, `parseCourse`, the generator prompt's output contract, `EditItemForm`, sync (`syncMerge`), share and export, Fix and Add prompts |
 | How the AI hands back its work | `NewCourseDialog`, `AddToCourseDialog`, `ClassEvenOutDialog`, `lib/handBack.ts`, every prompt builder, Help |
+| Where a setting lives, or a new setting (name, theme, reminders, account, backups) | `SettingsRoute` and its tests, the foot of every page (`RootLayout`), Help's "Your data" section, the first run's lines that say where to change things, EXPECTATIONS Settings and Your page, What's new |
+| The tree's drawing, its numbers or its leaves | `growTree` and its contract tests (leaves on the wood), `CourseTree` and its tests, the numbers' styles in `index.css` (one marked ink, nothing drawn when hidden), Help's The tree, the first run (grow, fade, find), EXPECTATIONS lecture page; check zoomed, both themes |
 | Anything a student reads | Help, the first run (`Onboarding`), What's new, tests that match the copy, `node scripts/ui-dashes.mjs` |
 | The memory model or scheduling | the simulator, Today, Review, the adaptive quiz's planner, Progress's forecast |

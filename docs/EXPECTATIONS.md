@@ -792,8 +792,19 @@ ones you missed" or anything else that brings misses back (the owner,
   §4). Any touch on it raises a number on every branch, on a ring round
   the crown, each riding its branch as it swings; the branch under the
   finger is picked out and named under the tree with "Open"; a tap on a
-  number opens its section, a tap on the drawing while they show opens the
-  large tree, and an up-and-down drag still scrolls the page. Mouse: hover;
+  number opens its section, a tap on the drawing picks the branch under it
+  and never opens anything (the enlarged tree in a sheet of its own was
+  removed 2026-11-25, Testing 11: it did nothing the page could not, and a
+  stray tap opened it; its info card's words are in Help, The tree), and an
+  up-and-down drag still scrolls the page. Every number is in the same ink
+  but the picked one, in the accent and larger; a branch's state is never a
+  colour on its number (the owner could not tell a fading branch's blue
+  from the one touched, Testing 1 and 3). Hidden numbers draw nothing, in
+  either theme (Testing 8). In the first run's find page the other branches
+  fade as here; only its grow page keeps every branch dark. Every leaf on a
+  branch grows from its twig's wood (`growTree` nearestOnWood; Testing 2),
+  and falling and fallen leaves are the same line art as standing ones,
+  outline and vein, with no fill (Testing 4). Mouse: hover;
   keyboard: focus, Tab through the numbers, Enter (docs/proposals/tree.md
   §2; live 2026-11-07, look C the same day). Picking a branch sets the rest
   in a flat lighter ink, never per-stroke see-through (overlaps darkened
@@ -830,8 +841,8 @@ just account"). Friends are a plan of their own, later.
 
 **How it works.** `#/account` (`routes/AccountRoute`), reached from the
 foot of every page, where the link carries the student's name or
-"Account" (it replaced Sync's link; Sync is reached from the page). A
-name field ("Your name", kept on this device, not synced yet). Days of
+"Account", beside Settings. The name shows once, as the title; changing
+it, Sync, Reminders and Back up are in Settings (Testing 5). Days of
 study: a column a week, Sunday at the top, half a year on a phone, up to a
 year from 640px, from the first week studied; each day a drawn leaf,
 larger and deeper green for more time, a day without a small bud, never a
@@ -841,8 +852,27 @@ a tap shows a day's minutes and lectures. Four figures: time studied, days
 studied, longest and current streak (from yesterday until today is
 studied). Time by class, most first, then Other, then Removed lectures. A
 removed lecture keeps its days, class code and title (studyLog `retire`,
-kept by sync), so its time stays under its class. Then Sync (a link), Reminders (below) and
-Back up. No streak nudges, no forecast ahead.
+kept by sync), so its time stays under its class. No streak nudges, no
+forecast ahead.
+
+### Settings
+
+**What it is for.** One place for everything a student sets once (the
+owner, 2026-11-25: "we need a settings area for all this kind of shit to
+live … light mode … their username … notifications, help, changing your
+email … your password"); docs/proposals/settings.md.
+
+**How it works.** `#/settings` (`routes/SettingsRoute`), from the foot of
+every page, which holds only the student's page and Settings. Ruled
+sections: You (name, saved on leaving the field), Appearance (Light, Dark,
+Match this device), Reminders, Account (signed out: sign in or make an
+account; signed in: the email, when it last synced, Sync now, Sign out,
+Change email and Change password opened in place; a new email is confirmed
+by a link Supabase sends), Your lectures (Back up, Restore), Help (Help,
+What's new: `#/help?s=new` opens that section). `#/sync` opens Settings.
+
+**Working means.** The theme, the name and the account are found without
+being told where; nothing set once sits on a page that shows something else.
 
 **Working means.** "2 of the last 3 days" for a student who began three
 days ago; a finished class removed from the library still counts.
@@ -918,7 +948,11 @@ its side, sits on a desk with room to look around: the page spreads out.
   letters run down the phone's right edge (a thumb can slide along them) and
   on a computer sit at the side with the picked or hovered term's full
   meaning beside the list ("/" searches, J and K move); Diagrams is one
-  plate at a time with a swipe on a phone, a grid with the plate opened
+  plate at a time with a swipe on a phone, its row of sections the
+  figures' running head (the section shown marked, a count on each name,
+  the edges fading where more names wait, a glide once on arrival, the
+  mark following Next and swipes, held at the top of the screen;
+  docs/proposals/diagrams-row.md, Testing 9), a grid with the plate opened
   large beside its note on a computer; Progress on a computer has the
   forecast of what comes due and this lecture's days of study on the right
   page; Help folds its sections on a phone and has a contents column on a
@@ -940,8 +974,18 @@ its side, sits on a desk with room to look around: the page spreads out.
 - **A sitting on a phone** (2026-11-25): the whole screen, no running
   head; Prev, the glossary and Next in a bar at the bottom; the glossary a
   sheet, greyed while a question waits. Once an answer is in, a swipe turns
-  the page: left on, right back, the card sliding off like a page; never
-  on a waiting question, never a verdict (docs/proposals/swipes.md).
+  the page: left on, right back; never on a waiting question, never a
+  verdict (docs/proposals/swipes.md). One motion (the owner, 2026-11-25:
+  "when you let go it just jumps"): the page stays under the finger 1:1,
+  carries on off the screen at the finger's speed (a quick flick counts),
+  and the next slides in from the far edge at that speed and settles
+  (`lib/useSwipe`; measured frame by frame, no frame over 40px).
+- **Paper** (2026-11-25, Testing 10): every surface that is paper carries
+  the grain to its bottom at every scroll position (the grain sits on a
+  scrolling sheet's content, not on the scrolling box); bands pinned over
+  the page and slips on it (the bottom bar, sticky rows, flashcards,
+  toasts) are paper too; a note is a rule at its side, never a filled box.
+  The rule is in the arborous-design skill.
 
 **Working means.** Every screen fits a 390px phone with its main action on
 the first screen, and uses the room on a desktop rather than stretching a

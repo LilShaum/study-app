@@ -64,7 +64,7 @@ the owner when work starts; the info card's words may belong in Help.
 **Lesson for every screen:** when a feature is replaced, remove what the
 old way needed; a tap on empty space or a drawing should not open a new
 layer.
-**Status:** answered; decision with the owner.
+**Status:** built (the owner: "remove it, and move its info card's wording into Help"). The sheet, its "navigate" mode and its caption are gone; a tap on the drawing picks the branch under it and opens nothing; the card's words are in Help, The tree. Checked: three taps on the lecture page's drawing on a 390px phone, light and dark: no dialog, no route change; tests for taps and Enter.
 
 ### 2026-11-25 · Testing 10: the paper texture stops partway down a sheet
 
@@ -91,7 +91,7 @@ written down, for which surfaces are paper and which are not.
   surface listed and matched.
 **Lesson for every screen:** a material belongs to a whole surface; check
 long, scrolling surfaces at their bottom, not only their first screen.
-**Status:** noted; to fix and audit after all screenshots.
+**Status:** built. The grain sits on a sheet's content (and the first run's), not on its scrolling box; the bottom bar lost its glass for solid paper; sticky rows, the status-bar band, flashcards, toasts and the resume note carry it; the filled preview box became a rule. Rule written in the arborous-design skill ("Which surfaces are paper, and why"). Checked: New lecture opened out to its longest, scrolled to the bottom, grain measured at top and bottom (same spread, light 3.2, dark 1.8); the bottom bar's grain matches the page's.
 
 ### 2026-11-25 · Testing 9: Diagrams on a phone, the row of sections
 
@@ -136,7 +136,7 @@ reasons.
 **Lesson for every screen:** when a control is hard to discover, list why
 a student would miss it before changing anything, and answer each reason
 with design, not text.
-**Status:** noted; to plan after all screenshots.
+**Status:** built (docs/proposals/diagrams-row.md, option C). Each reason answered by the row: the section shown marked in the accent, a count on each name, a fade at whichever edge has more, a glide once on arrival, the mark following Next and swipes and the row scrolling to keep it in view, held at the top of the screen. Checked on a 390px phone, light and dark: arrival glide measured (0 → 56 → 0 px), Next six times across sections, a swipe back, a tap on a name, scrolled down (the row holds at the top on a short screen); no instruction line.
 
 ### 2026-11-25 · Testing 8: stray dots where the numbers sit (dark mode)
 
@@ -158,7 +158,7 @@ either theme.
   number part is invisible / not: making the dot darker in dark mode.
 **Lesson for every screen:** check hidden and resting states zoomed in,
 in dark mode as well as light; dark paper shows specks light paper hides.
-**Status:** noted; to fix after all screenshots.
+**Status:** built. The cause was the hidden hairlines: dashed down to nothing they still painted their round caps as dots. Hidden numbers and lines are now invisible as well as dashed off, with flat ends; the paper halo round each number (a flat patch on grained dark paper) is gone, the hairline stops short of its figure instead. Checked: the first run's and a lecture's tree zoomed, after the numbers went away, dark and light: no specks.
 
 ### 2026-11-25 · Testing 7: New lecture's step 2
 
@@ -199,7 +199,7 @@ anywhere).
   prompt + notes, to the AI, together.
 **General lessons:** written into `.claude/skills/arborous-design/SKILL.md`
 ("Screens a student works through") and the owner-feedback habits list.
-**Status:** lessons recorded; screen fix after all screenshots.
+**Status:** built. Step 2's heading: "Give the AI the prompt and your slides or notes, in one message"; its button "Copy the prompt"; the Why fold gone, its words in Help. Every step heading now reads as the task (1 "Choose what to make", 3 "Bring back the file it makes", its button "Upload the file"), set as a sentence, not a grey label; Add material's two steps the same. Checked: New lecture on a 390px phone, both themes, top and bottom.
 
 ### 2026-11-25 · Testing 6: the AI-picks-the-kind option was removed
 
@@ -239,7 +239,7 @@ it. No explainer line on the screen; how the AI decides goes in Help.
   smaller or greyer explainer line.
 - *how it decides goes in Help*: a short Help passage on what the AI does
   with each choice / checked by: Help has it / not: on the screen.
-**Status:** noted; to redesign after all screenshots.
+**Status:** built (docs/proposals/new-lecture-screen.md, option C): "The AI chooses" and "Only these" over the boxes, which stay in view (quiet and ticked when the AI chooses; touching one moves to Only these). No line under them; how the AI decides is in Help. Checked on a phone, both themes: tap a box (moves to Only these, 8 ticked), another (7), The AI chooses (9, quiet), Only these (9); tests for each.
 
 ### 2026-11-25 · Review page notes (left on the page)
 
@@ -279,6 +279,7 @@ that should have been a question first.
 **Dark paper, Figure 1.:** approved earlier ("assume anything I didn't
 mention was good"). Lesson: don't present as new what they already passed.
 **Anything else:** "Don't start updates yet."
+**Status:** swipes built (one motion, measured frame by frame: the page leaves at the finger's speed and the next arrives at that speed, no frame over 40 px; a short drag settles back; a vertical drag scrolls); Settings built (Testing 5); first run's words built: every section named as "the Evaporation section", and "part" is "section" throughout the first run; falling leaves built (Testing 2, 4). Icon and dark paper: answered, nothing to build.
 
 ### 2026-11-25 · Testing 5: the name field under the name on your page
 
@@ -308,7 +309,7 @@ place), not a field sitting on the page.
 **Ripples:** the first run's name page sets it (stays); EXPECTATIONS (the
 student's page); Help mentions of "your page"; reminders and sync sections
 may belong in the same settings place (to think through, not assume).
-**Status:** noted; to plan after all screenshots.
+**Status:** built (docs/proposals/settings.md, option A): a Settings page with the name, Light/Dark/Match this device, reminders, the account (sign in, sync, change email and password, sign out), backups and Help; the foot of every page holds only your page and Settings; your page shows the name once. Checked on a phone, both themes, scrolled to the bottom, the theme tapped four times; the signed-in side by tests only (no test account on the real project).
 
 ### 2026-11-25 · Testing 4: falling leaves look different and cheap
 
@@ -340,7 +341,7 @@ through.
 - *both themes*: light and dark checked / not: dark only.
 **Note:** standing leaves are filled with the page colour so the wood
 behind is hidden; that stays unless the owner says otherwise.
-**Status:** noted; to fix after all screenshots.
+**Status:** built: falling and fallen leaves are the tree's line art, outline and vein, no fill, the page showing through; the ground's leaves spread a little wider so the outlines don't tangle. Standing leaves keep their paper fill (it hides the wood behind them). Checked: mid-fall and settled, light and dark, zoomed.
 
 ### 2026-11-25 · Testing 3: the find page's colours and highlighting
 
@@ -381,7 +382,7 @@ marking from an earlier touch. Every leaf on a twig.
   when a branch is picked, here too; only the grow page keeps all branches
   dark / checked by: the find page with a branch touched / not: removing
   noDim everywhere and greying the grow page again.
-**Status:** noted; to fix after all screenshots.
+**Status:** built. Numbers: every one in the same ink but the one under the finger, in the accent and larger; a branch's state is never a colour on its number. The find page fades the other branches as a lecture does (only the grow page keeps them dark). Checked: three successive sweeps onto three branches on a 390px phone, light and dark: each time one marked number, the words naming the same section, and only two inks among the numbers.
 
 ### 2026-11-25 · Testing 2: leaves floating in the air
 
@@ -399,7 +400,7 @@ drawn where there is no branch.
   checked by: a check on the tree's geometry (each leaf's base within a
   small distance of a branch path) plus a zoomed look at the first-run tree
   and a lecture tree on a phone / not: nudging the two circled leaves.
-**Status:** noted; to fix after all screenshots.
+**Status:** built: every leaf grows from the nearest point of its section's twigs, pointing to where the clump wants it (no draw from the seeded stream, so trees keep their shape). A test checks every leaf's stalk on its section's wood over eight trees (worst gap now under 0.8 units; it was 15.7), and fails without the fix. Checked zoomed on the first run's and a lecture's tree.
 
 ### 2026-11-25 · Testing 1: the first run's find page, the blue number
 
@@ -413,7 +414,7 @@ touched. Not checked by touching more than one branch on a real phone.
 (habit: testing one touch, not the way a student plays with it.)
 **What they are asking:** whether the blue means anything, and why it
 stays on the first branch.
-**Status:** noted; to fix after all screenshots.
+**Status:** answered and fixed with Testing 3: the blue was the fading colour, not the touch; numbers no longer carry a state colour.
 
 ### 2026-11-25 · How feedback is taken in
 

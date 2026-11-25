@@ -21,11 +21,11 @@ export const WHATS_NEW: Change[] = [
   {
     date: '2026-11-25',
     items: [
-      'A new first run: answer a question to grow a tree, watch a part fade, and pick your daily time.',
-      'Opening a lecture, its tree grows and the leaves you have let fade fall. Sweeping a finger over it names a part.',
-      'On a phone, Prev, Next and the glossary sit at the bottom, and once you have answered, a swipe turns the page.',
-      'On a computer, a lecture opens as two facing pages, and a sitting keeps its tree on the left and the glossary open on the right.',
-      'Reminders, if you want them: once a day at your time, a few hours after a miss, and before an exam. Choose them on your page.',
+      'A new first run: answer a question to grow a tree, watch a section fade, and pick your daily time.',
+      'Opening a lecture, its tree grows and the leaves you have let fade fall. Sweeping a finger over it names a section.',
+      'On a phone, Prev and Next sit at the bottom, a swipe turns the page, and Diagrams shows which section you are in.',
+      'Settings, at the foot of every page: your name, light or dark, reminders, your account, backups and Help.',
+      'New lecture: let the AI choose the kinds of card, or pick Only these. On a computer, a lecture opens as two facing pages.',
     ],
   },
   {

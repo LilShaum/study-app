@@ -25,6 +25,12 @@ reasoning; this is the working version.
   and the minute choices in `ExamDialog.tsx`.
 - **Buttons.** `press` with its ink underline; `press-ink` for the one main
   action on a screen. Text links are quiet (`text-text-3 hover:text-text`).
+- **A colour means one thing.** The accent marks "this one, chosen": the
+  picked choice, the touched branch, where you are. Never also use it for a
+  state (fading, due, wrong): two meanings in one colour and the student
+  cannot tell what they are pointing at. Things in the same state look the
+  same; any difference must be one the student has been taught (the owner,
+  2026-11-25, Testing 1 and 3, the tree's numbers).
 - **Colour.** Only theme tokens (`text-text`, `text-text-2`, `text-text-3`,
   `text-accent`, `border-border`…), never literals. Both themes must pass
   `node scripts/contrast-report.mjs`.
