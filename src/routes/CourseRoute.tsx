@@ -661,9 +661,13 @@ export function CourseRoute() {
           </aside>
           <div className="min-w-0 flex-1 border-l border-border pl-10">
             {picked ? (
+              // The title runs across the whole right page; under it the
+              // ways to study and the section face each other. In one
+              // narrow column the title broke over three lines.
+              <>
+              <div className="hidden xl:block">{titleBlock}</div>
               <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] xl:gap-10">
                 <div className="hidden min-w-0 xl:block">
-                  {titleBlock}
                   {main}
                 </div>
                 <section
@@ -681,6 +685,7 @@ export function CourseRoute() {
                   <SectionDetail courseId={id} course={course} section={picked} progress={progress} compact />
                 </section>
               </div>
+              </>
             ) : (
               <>
                 {titleBlock}
