@@ -24,7 +24,9 @@ receive notifications for in the settings."
 
 ## What to notify (each its own tick in settings)
 
-1. **Each day** (on): the daily study reminder (the owner, 2026-11-25: "you
+1. **Each day** (on; the time picked in the first run, 6 pm unless changed,
+   and once there are four days of study the student's page offers the
+   time they usually start): the daily study reminder (the owner, 2026-11-25: "you
    missed the most obvious kind which is like a daily study reminder"), at
    the time the student picks, on a day there is something to study, saying
    what: "12 to review in PSYC 351, and 2 more lectures. About 45 minutes."

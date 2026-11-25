@@ -6,6 +6,11 @@ import { useFallenStore } from '@/store/fallen';
 import { useProfileStore } from '@/store/profile';
 import { cloud, cloudError, syncNow } from '@/lib/cloud';
 import { pushBlock, turnOnReminders } from '@/lib/push';
+import { useRemindersStore } from '@/store/reminders';
+import { timeLabel } from '@/lib/usualTime';
+
+/** Times offered for the daily reminder; any other is set on the student's page. */
+const REMIND_TIMES = ['08:00', '12:00', '18:00', '21:00'];
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { CourseTree } from './CourseTree';
@@ -193,6 +198,7 @@ function FirstRun() {
   const [foundOne, setFoundOne] = useState(false);
   const [yourName, setYourName] = useState('');
   const [reminding, setReminding] = useState(false);
+  const [remindAt, setRemindAt] = useState(() => useRemindersStore.getState().time);
   const [remindError, setRemindError] = useState<string | null>(null);
   // Came for their own account, not the tour: sign in, then straight to the library.
   const [returning, setReturning] = useState(false);
@@ -529,10 +535,28 @@ function FirstRun() {
 
     case 'remind':
       words = (
-        <Words
-          lead="Remind you when things start to fade?"
-          line="Once a day at a time you choose, a few hours after a miss, and before an exam. You can change what you hear about on your page."
-        />
+        <div>
+          <Words
+            lead="Remind you when things start to fade?"
+            line="Once a day, a few hours after a miss, and before an exam. Pick when the daily one comes; you can change any of it on your page."
+          />
+          <div role="radiogroup" aria-label="Daily reminder at" className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-3 wide:justify-start">
+            {REMIND_TIMES.map((t) => (
+              <button
+                key={t}
+                type="button"
+                role="radio"
+                aria-checked={remindAt === t}
+                onClick={() => setRemindAt(t)}
+                className={`tap-safe px-0.5 font-display text-heading tabular-nums ${
+                  remindAt === t ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : 'text-text-2 hover:text-text'
+                }`}
+              >
+                {timeLabel(t)}
+              </button>
+            ))}
+          </div>
+        </div>
       );
       action = (
         <div className="flex flex-col items-center gap-3 wide:items-start">
@@ -543,6 +567,7 @@ function FirstRun() {
               setReminding(true);
               setRemindError(null);
               try {
+                useRemindersStore.getState().set({ time: remindAt });
                 await turnOnReminders();
                 next();
               } catch (e) {

@@ -863,7 +863,11 @@ and one day before an exam, which takes that day's slot with the day's
 line under it. A tap opens the library, the lecture or the class. Where
 push can't work, one line says why (sign in; add to the Home Screen on an
 iPhone; blocked in settings). The first run asks after the account page,
-only when signed in on a device that can take a push.
+only when signed in on a device that can take a push, with the daily time
+to tap (8 am, noon, 6 pm, 9 pm; 6 pm chosen). Once four days of the last
+30 have been studied, the page offers "You usually start around 9 pm. Use
+that" (`lib/usualTime`: the middle of each day's first answer, to the
+quarter hour; the owner, 2026-11-25: "why not help the user choose?").
 
 **Working means.** A student who studied their time in the morning hears
 nothing that evening; one with an exam in three days hears about the exam,

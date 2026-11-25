@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { BLOCK_LINE, pushBlock, saveReminderPlan, turnOffReminders, turnOnReminders } from '@/lib/push';
 import { cloudError } from '@/lib/cloud';
 import { useRemindersStore, type ReminderSettings } from '@/store/reminders';
+import { useStudyLogStore } from '@/store/studyLog';
+import { timeLabel, usualStartTime } from '@/lib/usualTime';
 
 const KINDS: { key: 'daily' | 'secondLook' | 'exam'; label: string }[] = [
   { key: 'daily', label: 'Each day, when there is something to study' },
@@ -20,6 +22,10 @@ export function RemindersField() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const block = pushBlock();
+  const byCourse = useStudyLogStore((st) => st.byCourse);
+  // As of opening the page: rendering must not read the clock.
+  const [now] = useState(Date.now);
+  const usual = usualStartTime(byCourse, now);
 
   const change = (patch: Partial<ReminderSettings>) => {
     r.set(patch);
@@ -94,6 +100,18 @@ export function RemindersField() {
           className="field w-28 text-small tabular-nums"
         />
       </label>
+      {usual && usual !== r.time && (
+        <p className="mt-1.5 text-small text-text-3">
+          You usually start around {timeLabel(usual)}.{' '}
+          <button
+            type="button"
+            onClick={() => change({ time: usual })}
+            className="tap-safe text-text-2 underline decoration-border underline-offset-2 hover:text-text"
+          >
+            Use that
+          </button>
+        </p>
+      )}
       <button
         type="button"
         onClick={() => {

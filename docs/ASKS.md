@@ -151,6 +151,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   background is actually pretty good and its just the dark mode one that
   could be improved"); to see New lecture's two versions again; to know when
   leaves are programmed to grow.
+- **Help the student choose the reminder time** (2026-11-25: "For the daily
+  reminder, why not help the user choose? Maybe have a default but let them
+  choose a time or something in settings"). Built 2026-11-25: times to tap
+  in the first run, and "You usually start around …" on the page.
 - **Round 4 feedback (2026-11-25)**: the icon: "I'd choose c since I'm not
   a big fan of the leaves falling on the tree and I think c is a good icon";
   the first run's "evaporation has grown its leaves" still disliked ("I had

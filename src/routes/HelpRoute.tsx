@@ -376,7 +376,7 @@ const SECTIONS: HelpSection[] = [
           <strong>Reminders</strong> (on your page, under Reminders) need you signed in. Each kind is
           its own tick: once a day at the time you choose, when there is something to study; a few
           hours after a sitting with misses, for a second look; and three days and one day before an
-          exam. Never more than two a day, and each is turned on or off per device. On an iPhone they
+          exam. Once you have studied a few days, your page offers the time you usually start. Never more than two a day, and each is turned on or off per device. On an iPhone they
           reach only the app added to the Home Screen.
         </p>
         <p className="mt-2">
