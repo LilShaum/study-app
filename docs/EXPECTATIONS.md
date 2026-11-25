@@ -990,9 +990,13 @@ measured against.
   install first; the student brings two parts of a made-up lecture into
   leaf by tapping their numbers, lets three weeks pass and watches the
   parts left unstudied lose their leaves (where "fading" is taught), and
-  sweeps the branches to find one; then the daily time, an account or Not
-  now, and New lecture. Skip on every page. Full pages; on a computer the
-  tree faces the words.
+  sweeps the branches to find one; then the daily time, their name, an
+  account (made or signed in to on the page, or Not now; "I already have
+  an account" on the title page goes straight to signing in), and New
+  lecture. Skip on every page. One tree stays through every page, growing
+  or shrinking for the words, which leave and arrive line by line (the
+  owner, 2026-11-25: "dynamic and elegant"); on a computer the tree faces
+  the words, on a phone the one action sits at the bottom.
 - **Sync**: the same library, progress and log on every device, nothing
   ever lost or overwritten unseen.
 - **Backup and export**: a student's work is theirs and can never be lost,

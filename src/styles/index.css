@@ -709,11 +709,49 @@
     }
   }
 
-  /* The first run's title page: the name comes up once the tree has drawn
-     itself on (the owner, 2026-11-16: "the tree branches unfurling … and
-     the name of the app arborous appears"). */
-  .first-run-name {
-    animation: tree-leaf 900ms ease-out 1500ms both;
+  /* The first run (components/Onboarding). The tree stays; it grows or
+     shrinks to make room for each page's words. The words leave and the
+     next page's arrive, line after line. On the title page they wait for the
+     tree to draw itself on (the owner, 2026-11-16: "the tree branches
+     unfurling … and the name of the app arborous appears"). */
+  .first-run-tree {
+    transition: height 500ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  .fr-words > *,
+  .fr-words h1,
+  .fr-words p {
+    animation: fr-in 520ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+  .fr-words p {
+    animation-delay: 110ms;
+  }
+  .fr-words > *:last-child,
+  .fr-action > * {
+    animation-delay: 220ms;
+  }
+  .fr-title h1 {
+    animation-delay: 1500ms;
+    animation-duration: 900ms;
+  }
+  .fr-title p {
+    animation-delay: 1900ms;
+  }
+  .fr-title > *:last-child,
+  .fr-title.fr-action > * {
+    animation-delay: 2300ms;
+  }
+  .fr-leaving {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+      opacity 180ms ease-in,
+      transform 180ms ease-in;
+  }
+  @keyframes fr-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
   }
 
   /* The arrival's shiver: each branch trembles about its own base, quick

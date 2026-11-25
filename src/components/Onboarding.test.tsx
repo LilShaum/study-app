@@ -24,12 +24,19 @@ describe('the first run', () => {
     expect(useOnboardingStore.getState().onboarded).toBe(true);
   });
 
-  it('asks the student to grow the tree before going on, not to read about it', () => {
+  it('asks the student to grow the tree before going on, not to read about it', async () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: 'Begin' }));
-    expect(screen.getByRole('heading', { name: 'Study a part, and it comes into leaf.' })).toBeTruthy();
-    // Next waits until two parts have been studied on the tree itself.
-    expect(screen.getByRole('button', { name: 'Next' })).toHaveProperty('disabled', true);
+    expect(await screen.findByRole('heading', { name: 'Study a part, and its branch grows leaves.' })).toBeTruthy();
+    // Continue waits until two parts have been studied on the tree itself.
+    expect(screen.getByRole('button', { name: 'Continue' })).toHaveProperty('disabled', true);
   });
 
+  it('takes someone with an account straight to signing in', async () => {
+    open();
+    fireEvent.click(screen.getByRole('button', { name: 'I already have an account' }));
+    expect(await screen.findByRole('heading', { name: 'Welcome back.' })).toBeTruthy();
+    expect(screen.getByLabelText('Email')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeTruthy();
+  });
 });
