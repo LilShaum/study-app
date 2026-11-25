@@ -11,6 +11,20 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-25 · Testing 1: the first run's find page, the blue number
+
+**Their words:** "Why does the number first branch touched turn blue? And
+it never changes no matter how much I touch the other branches? Is there a
+functional reason?" (screenshot: 1 in blue, "That's Rivers.")
+**Question or instruction:** question. Answered; fix waits for "start".
+**What went wrong:** the blue is meant to follow the finger (it marks the
+part the line names), but on their phone it stuck on the first branch
+touched. Not checked by touching more than one branch on a real phone.
+(habit: testing one touch, not the way a student plays with it.)
+**What they are asking:** whether the blue means anything, and why it
+stays on the first branch.
+**Status:** noted; to fix after all screenshots.
+
 ### 2026-11-25 · How feedback is taken in
 
 **Their words:** "we need to address how you have continuously
