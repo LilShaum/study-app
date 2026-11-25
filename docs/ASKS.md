@@ -137,6 +137,14 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 - **The daily time asked in the first run** (2026-11-24, on where "Set one
   daily time" belongs: "this is something that would be good to ask in the
   onboarding").
+- **A scantron layout for the practice test** (2026-11-25, an idea for
+  later: "it could be as a tick in the practice test settings called
+  scantron multiple choice or something"; from the owner's earlier "like a
+  real test where you have your scantron sheet and then your test sheet
+  with several questions per page and you flip between them. Maybe that's
+  doing to much tho"). Several multiple-choice questions on a page, an
+  answer sheet beside them, marked at the end. A tick on the test's setup;
+  fits the design update's computer layout.
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Folding live
