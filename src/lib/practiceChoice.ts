@@ -24,7 +24,7 @@ export const PRACTICE_KINDS: { value: PracticeKind; label: string }[] = [
 ];
 
 export const WHICH: { value: Which; label: string }[] = [
-  { value: 'due', label: 'Due now' },
+  { value: 'due', label: 'To review' },
   { value: 'missed', label: 'Mistakes' },
   { value: 'new', label: 'New' },
   { value: 'strong', label: 'Already strong' },

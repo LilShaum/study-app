@@ -143,6 +143,6 @@ describe("a lecture's Practice", () => {
     renderAt('/study/k/practice');
     const problems = screen.getByRole('link', { name: /^Problems/ }).getAttribute('href');
     expect(choiceIn(problems).kinds).toEqual(['problems']);
-    expect(screen.getByRole('link', { name: /^Due now/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /^To review/ })).toBeTruthy();
   });
 });

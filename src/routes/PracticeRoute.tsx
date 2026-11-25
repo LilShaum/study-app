@@ -245,7 +245,7 @@ function PracticePage() {
   };
   const everyKind = present.filter((k) => k !== 'written');
   const presets = [
-    ready('Due now', { kinds: everyKind.length ? everyKind : present, which: ['due'], order: 'weakest' }),
+    ready('To review', { kinds: everyKind.length ? everyKind : present, which: ['due'], order: 'weakest' }),
     ready('Mistakes', { kinds: present, which: ['missed'], order: 'mixed' }),
     // Anki's way: what is fading first, then up to ten new (docs/proposals/practice.md).
     ...(present.includes('flashcards') ? [ready('Flashcards', { kinds: ['flashcards'], which: ['due', 'missed', 'new'], order: 'weakest', newCap: FLASHCARDS_NEW })] : []),
