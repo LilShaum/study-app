@@ -59,7 +59,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Glossary',
-    what: 'Every term in the lecture from A to Z, with its meaning, to look things up. Find it under View on the lecture page.',
+    what: 'Every term in the lecture, with its meaning, to look things up. Find it under View on the lecture page.',
     scored: false,
   },
   {

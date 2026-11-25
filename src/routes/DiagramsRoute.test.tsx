@@ -60,13 +60,13 @@ describe('DiagramsRoute', () => {
     expect(screen.getByText('2 of 2')).toBeTruthy();
   });
 
-  it('numbers the plates straight through the course', () => {
+  it('numbers the figures straight through the course', () => {
     useCoursesStore.setState({ courses: { cell_biology: course } });
     renderDiagrams();
-    // The number IS the plate's name, so it never restarts per section.
-    expect(screen.getByText(/^Plate I$/)).toBeTruthy();
+    // The number IS the figure's name, so it never restarts per section.
+    expect(screen.getByText(/^Figure 1$/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Next/ }));
-    expect(screen.getByText(/^Plate II$/)).toBeTruthy();
+    expect(screen.getByText(/^Figure 2$/)).toBeTruthy();
   });
 
   it('jumps to a section without leaving the page', () => {

@@ -142,7 +142,7 @@ export function GlossaryRoute() {
       ) : (
         <>
           <p className="mt-2 text-body text-text-2">
-            {all.length} term{all.length === 1 ? '' : 's'}, from A to Z.
+            {all.length} term{all.length === 1 ? '' : 's'}
           </p>
           <label className="mt-5 flex items-baseline gap-3">
             <span className="mark shrink-0 text-text-3">Find</span>

@@ -165,7 +165,8 @@ describe('the glossary on a phone', () => {
     );
     const glossary = () => screen.getByRole('button', { name: /^Glossary/ });
     expect(glossary()).toHaveProperty('disabled', true);
-    expect(screen.getByText('after you answer')).toBeTruthy();
+    // Greyed on screen; said only to a screen reader.
+    expect(glossary().textContent).toContain('after you answer');
     const id = useSessionStore.getState().current()!.id;
     fireEvent.click(screen.getByRole('radio', { name: new RegExp(`${id} right`) }));
     fireEvent.click(screen.getByRole('button', { name: 'Check answer' }));

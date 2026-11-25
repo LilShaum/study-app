@@ -14,22 +14,6 @@ import { RichText } from '@/components/items/RichText';
 import { purposeLabel } from '@/lib/figurePurpose';
 import type { GraphicItem } from '@/schema/course';
 
-/** I, II, III… the way a plate has been numbered since before any of this. */
-function roman(n: number): string {
-  const table: [number, string][] = [
-    [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'],
-    [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I'],
-  ];
-  let out = '';
-  let left = n;
-  for (const [value, numeral] of table) {
-    while (left >= value) {
-      out += numeral;
-      left -= value;
-    }
-  }
-  return out;
-}
 
 interface Plate {
   item: GraphicItem;
@@ -74,7 +58,7 @@ function PlateFigure({
     >
       <div className="flex items-baseline justify-between gap-3 text-micro uppercase tracking-wider text-text-3">
         <span className="whitespace-nowrap">
-          Plate {roman(plate.number)}
+          Figure {plate.number}
           {purpose && <span className="normal-case tracking-normal"> · {purpose}</span>}
         </span>
         <Link
@@ -168,7 +152,7 @@ function PlateDetail({
   }, [onStep]);
 
   return (
-    <Sheet label={`Plate ${roman(plate.number)}: ${item.title}`} title={`Plate ${roman(plate.number)}`} onClose={onClose} width="4xl">
+    <Sheet label={`Figure ${plate.number}: ${item.title}`} title={`Figure ${plate.number}`} onClose={onClose} width="4xl">
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(14rem,18rem)] gap-x-8 p-6">
         <div className="flex min-h-64 items-center justify-center text-text [&_svg]:max-h-[70vh] [&_svg]:max-w-full">
           {svg ? (

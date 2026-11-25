@@ -23,8 +23,17 @@ first met, by showing rather than a definition. Otherwise it is replaced.
 | sitting | one go at studying | Kept: a plain English word ("This sitting") | Needs no teaching |
 | set aside | a card taken out because it is not on the exam or is wrong | Kept: the control asks "Not needed?" and then says "Set aside as …" | Where met |
 | Not sure | answered right but unsure, so it comes back sooner | Kept: what it does is said beside it | Where met |
+| plate | a diagram on the Diagrams page (a book's word for a full-page figure) | **Replaced** by "Figure 1, 2, 3" and the page called Diagrams (the owner, 2026-11-25: one of the app's own words) | Needs no teaching |
 | held | still remembered (the tree's measure) | Kept only for screen readers (the tree's numbers' labels) | Not shown |
 
 Practice's ready-made "Due now" and Help's sentences that say "due" are
 changed with the Practice and Help work of the design update, so two
 sessions do not edit the same file at once.
+
+## Explainer text (the owner, 2026-11-25)
+
+"Things like that should be intuitively understood, they shouldn't have to
+be explicitly explained with that classic ai explainer text." A control
+that is shut is shown greyed, not captioned; the reason is kept for a
+screen reader only (the glossary while a question waits). A legend for
+marks that read on their own (the test's Questions list) is dropped.

@@ -1251,7 +1251,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
                   className="tap-safe flex flex-col items-center text-small text-text-2 disabled:text-text-3"
                 >
                   Glossary
-                  {questionUp && <span className="text-[11px] leading-none">after you answer</span>}
+                  {questionUp && <span className="sr-only">, after you answer</span>}
                 </button>
               )}
               <button type="button" onClick={handleNext} className="press tap-safe">
@@ -1346,18 +1346,20 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
               {glossaryOpen ? '← This sitting' : 'Glossary'}
             </button>
             {questionUp && !glossaryOpen && (
-              <p id="glossary-shut" className="mt-1 text-small text-text-3">
+              // Greyed is enough to see; the reason is for a screen reader (the
+              // owner, 2026-11-25: no explainer text under the glossary).
+              <span id="glossary-shut" className="sr-only">
                 Opens after you answer.
-              </p>
+              </span>
             )}
           </div>
         )}
         {glossaryOpen && !threeColumns ? (
           questionUp ? (
             /* Shut while a question is asked: the term asked would be in it
-               (the owner, 2026-11-17). Said so, so it does not look broken. */
-            <p id="glossary-shut" className="border-t border-border pt-3 text-small text-text-3">
-              Shut while a question is asked. It opens after you answer.
+               (the owner, 2026-11-17). A bare rule; the reason is read out only. */
+            <p id="glossary-shut" className="border-t border-border pt-3">
+              <span className="sr-only">Shut while a question is asked. It opens after you answer.</span>
             </p>
           ) : (
             <SessionGlossary entries={glossary} />
@@ -1403,9 +1405,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           <div className="sticky top-6 max-h-[calc(100vh-3rem)] self-start overflow-y-auto">
             {questionUp ? (
               <section aria-label="Glossary" className="text-small">
-                <h2 className="mark mb-2 text-text-3">Glossary</h2>
-                <p id="glossary-shut" className="border-t border-border pt-3 text-text-3">
-                  Shut while a question is asked. It opens after you answer.
+                <h2 className="mark mb-2 text-text-3 opacity-60">Glossary</h2>
+                <p id="glossary-shut" className="border-t border-border pt-3">
+                  <span className="sr-only">Shut while a question is asked. It opens after you answer.</span>
                 </p>
               </section>
             ) : (

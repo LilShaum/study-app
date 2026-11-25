@@ -1150,7 +1150,6 @@ function QuestionGrid({
           );
         })}
       </ol>
-      <p className="mt-1 text-xs text-text-3">Faint: not answered yet. ?: marked to come back to.</p>
     </div>
   );
 }

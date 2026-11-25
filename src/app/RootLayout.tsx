@@ -41,7 +41,7 @@ function useLocationName(): string {
   }
   if (pathname.startsWith('/session/')) return title ?? 'Session';
   if (pathname.includes('/progress')) return title ? `${title} · Progress` : 'Progress';
-  if (pathname.includes('/diagrams')) return title ? `${title} · Plates` : 'Plates';
+  if (pathname.includes('/diagrams')) return title ? `${title} · Diagrams` : 'Diagrams';
   if (pathname.endsWith('/glossary')) return title ? `${title} · Glossary` : 'Glossary';
   if (pathname.endsWith('/practice')) return title ? `${title} · Practice` : 'Practice';
   if (/^\/study\/[^/]+\/test$/.test(pathname)) return title ? `${title} · Practice test` : 'Practice test';
@@ -62,7 +62,7 @@ function useTabTitle(here: string): void {
   let name: string | null = here === 'The library' ? null : pathname === '/help' ? 'Help' : here;
   if (title) {
     if (pathname.includes('/progress')) name = `${title} · Progress`;
-    else if (pathname.includes('/diagrams')) name = `${title} · Plates`;
+    else if (pathname.includes('/diagrams')) name = `${title} · Diagrams`;
     else if (pathname.endsWith('/glossary')) name = `${title} · Glossary`;
     else if (pathname.endsWith('/practice')) name = `${title} · Practice`;
     else if (/^\/study\/[^/]+\/test$/.test(pathname)) name = `${title} · Practice test`;
