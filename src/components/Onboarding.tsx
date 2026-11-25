@@ -84,6 +84,20 @@ const DEMO: Course = {
   })),
 } as unknown as Course;
 
+/**
+ * One easy question per part, so growing a branch is what it is in the app:
+ * getting that part's questions right (the owner, 2026-11-25: "does the user
+ * go through and try a question or something?"). Any student can answer them.
+ */
+const DEMO_QUESTIONS: Record<string, { q: string; options: string[]; right: number }> = {
+  s1: { q: 'What turns the water in a lake into vapour?', options: ['Cold air', "The sun's heat", 'The wind alone'], right: 1 },
+  s2: { q: 'What happens when water vapour cools high up?', options: ['It turns back into tiny droplets', 'It disappears', 'It sinks to the ground'], right: 0 },
+  s3: { q: 'What is a cloud made of?', options: ['Smoke', 'Dry air', 'Tiny drops of water'], right: 2 },
+  s4: { q: 'When does a cloud let its water fall as rain?', options: ['When the sun sets', 'When its drops grow too heavy', 'When the wind stops'], right: 1 },
+  s5: { q: 'Where does most river water end up?', options: ['In the sea', 'Back in the clouds at once', 'Underground for good'], right: 0 },
+  s6: { q: 'What is groundwater?', options: ['Rain that has not landed yet', 'Water on top of mountains', 'Water soaked into soil and rock'], right: 2 },
+};
+
 const DAY = 86_400_000;
 
 /** A part studied: every question answered right, last seen `ago` ms before now. */
@@ -179,6 +193,20 @@ function FirstRun() {
     setGrown((g) => [...g, sid]);
     setProgress((p) => ({ ...p, ...studied(sid, now) }));
   };
+  // The part whose question is open on the study page, and how the last answer went.
+  const [asking, setAsking] = useState<string | null>(null);
+  const [answer, setAnswer] = useState<{ sid: string; right: boolean } | null>(null);
+  const ask = (sid: string) => {
+    if (grown.includes(sid)) return;
+    setAnswer(null);
+    setAsking(sid);
+  };
+  const reply = (sid: string, choice: number) => {
+    const right = DEMO_QUESTIONS[sid]?.right === choice;
+    setAnswer({ sid, right });
+    setAsking(null);
+    if (right) grow(sid);
+  };
   const letTimePass = () => {
     // Three weeks on: every part studied fades, but the last one, reviewed
     // yesterday, keeps its leaves, so the difference is the lesson.
@@ -219,7 +247,7 @@ function FirstRun() {
         growOnly={page === 'grow' ? EMPTY : undefined}
         interactive={playing}
         mode="reveal"
-        onOpenSection={page === 'grow' ? grow : () => undefined}
+        onOpenSection={page === 'grow' ? ask : () => undefined}
         onPoint={
           page === 'find'
             ? (sid) => {
@@ -326,27 +354,43 @@ function FirstRun() {
       );
       break;
 
-    case 'grow':
-      words = (
+    case 'grow': {
+      const question = asking ? DEMO_QUESTIONS[asking] : null;
+      words = question ? (
+        <div className="w-full max-w-sm">
+          <p className="mark text-text-3">{partName(asking)}</p>
+          <h1 className="mt-1 font-display text-title font-semibold text-text">{question.q}</h1>
+          <ul className="mt-4 border-t border-border text-left">
+            {question.options.map((o, i) => (
+              <li key={o} className="border-b border-border">
+                <button type="button" onClick={() => reply(asking!, i)} className="tap-safe w-full py-3 text-left text-body text-text hover:text-accent">
+                  {o}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
         <Words
-          lead="Study a part, and its branch grows leaves."
+          lead={grown.length < 2 ? 'Get a part right, and its branch grows leaves.' : 'Every question you get right grows its part.'}
           line={
-            grown.length === 0
-              ? touch
-                ? 'Here is a sample lecture on the water cycle. Touch the tree, then tap a number to study a part.'
-                : 'Here is a sample lecture on the water cycle. Point at the tree, then click a number to study a part.'
-              : grown.length === 1
-                ? `${first} has grown its leaves. Now study one more.`
-                : `${first} and ${last} have grown their leaves.`
+            answer && !answer.right
+              ? `Not quite: ${DEMO_QUESTIONS[answer.sid].options[DEMO_QUESTIONS[answer.sid].right].toLowerCase()}. Tap a number to try again.`
+              : grown.length === 0
+                ? `A sample lecture on the water cycle: each branch is one part of it. ${touch ? 'Touch the tree, then tap' : 'Point at the tree, then click'} a number to answer a question on that part.`
+                : grown.length === 1
+                  ? `Right, so ${first} has grown its leaves. Answer one more.`
+                  : `${first} and ${last} have grown their leaves.`
           }
         />
       );
-      action = (
+      action = question ? null : (
         <button type="button" onClick={next} disabled={!enough} className="press press-ink tap-safe">
           Continue
         </button>
       );
       break;
+    }
 
     case 'fade':
       words = faded ? (
@@ -480,7 +524,7 @@ function FirstRun() {
       break;
   }
 
-  const pageKey = page + (faded ? ':after' : '') + (grown.length > 1 ? ':2' : grown.length);
+  const pageKey = page + (faded ? ':after' : '') + (grown.length > 1 ? ':2' : grown.length) + (asking ? `:${asking}` : '') + (answer && !answer.right ? ':x' : '');
   const motion = `fr-words ${page === 'title' ? 'fr-title' : ''} ${leaving ? 'fr-leaving' : ''}`;
   const wordsBlock = (
     <div key={pageKey} className={`${motion} flex flex-col gap-8 ${wide ? 'items-start' : 'items-center text-center'}`} aria-live="polite">

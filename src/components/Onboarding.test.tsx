@@ -27,7 +27,7 @@ describe('the first run', () => {
   it('asks the student to grow the tree before going on, not to read about it', async () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: 'Begin' }));
-    expect(await screen.findByRole('heading', { name: 'Study a part, and its branch grows leaves.' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Get a part right, and its branch grows leaves.' })).toBeTruthy();
     // Continue waits until two parts have been studied on the tree itself.
     expect(screen.getByRole('button', { name: 'Continue' })).toHaveProperty('disabled', true);
   });
