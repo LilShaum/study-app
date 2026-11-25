@@ -11,6 +11,24 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-25 · Testing 2: leaves floating in the air
+
+**Their words:** "Examples of leaves floating in the air" (screenshot: the
+first run's "The more you learn, the fuller the tree", two circled spots
+where leaves hang off the branch tips with no branch under them).
+**Question or instruction:** a fault to fix, after all screenshots.
+**What went wrong:** leaves are placed past or away from the twigs that
+should carry them, so some sit in empty air. Not caught because the tree
+was looked at as a whole, not leaf by leaf at phone size.
+**What they are asking:** every leaf visibly attached to a twig; no leaf
+drawn where there is no branch.
+**Expectations, broken down:**
+- *not floating*: each leaf's base touches a twig or a branch's end /
+  checked by: a check on the tree's geometry (each leaf's base within a
+  small distance of a branch path) plus a zoomed look at the first-run tree
+  and a lecture tree on a phone / not: nudging the two circled leaves.
+**Status:** noted; to fix after all screenshots.
+
 ### 2026-11-25 · Testing 1: the first run's find page, the blue number
 
 **Their words:** "Why does the number first branch touched turn blue? And
