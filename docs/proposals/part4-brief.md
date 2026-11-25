@@ -109,3 +109,39 @@ Read the owner's words in design-update.md and onboarding.md; in short:
 - **Effort**: the owner runs this first pass on high effort; the feedback
   round may be medium; a final high-effort pass stress-tests the result,
   reviews the code and visuals, and fixes what was done poorly.
+
+## The three stages, and their codes
+
+Part 4 runs as three sessions, one after another. A session cannot start
+the next one itself (cloud sessions do not have that tool), so each stage
+ends by telling the owner, at the bottom of its last reply: "Next: start a
+new session on the branch claude/project-status-review-rv4e28, <effort>
+effort, and type P4-n."
+
+A session that receives only a code (`P4-1`, `P4-2`, `P4-3`) reads this
+brief in full, then does that stage. Read the dated lines at the end of the
+brief first: they say where the last stage left off.
+
+**P4-1 · Build** (high effort). Plan, build every part 4 piece on the
+branch, check it, and present it all as one page (the form above). Small
+questions on the way are fine; the big feedback round is P4-2's. Ends by
+telling the owner to start P4-2 (medium effort) and give their feedback
+there.
+
+**P4-2 · Feedback** (medium effort). Starts by reading this brief, the
+branch's latest presentation page and the commits since parts 1–3, then
+waits for the owner's feedback. Fixes what they say, shows the changed
+screens the same way, repeats until the owner says it is right. Ends by
+telling the owner to start P4-3 (high effort).
+
+**P4-3 · Final check** (high effort). Stress-tests the whole branch (parts
+1–4) as a student would on a phone and a computer, both themes, a first
+run from nothing, an existing library, reduced motion; runs the
+code-review and simulate skills where they apply; fixes what was done
+poorly; walks every ripple. Presents the result and what it fixed, then,
+**only when the owner says yes**, merges to main, checks the live site,
+and closes the asks in docs/ASKS.md.
+
+Each stage writes down at the end of this brief what it did and what is
+left (a dated line), so the next stage, or a session started by hand,
+knows where things stand.
