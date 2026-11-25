@@ -82,7 +82,10 @@ export function RootLayout() {
   // The course page and the study screen are laid out in two columns on a
   // desktop; head, page and colophon widen together so the rules still line up.
   const inSession = pathname.startsWith('/session/');
-  const wide = /^\/study\/[^/]+$/.test(pathname) || pathname.startsWith('/session/') ? ' is-wide' : '';
+  const wide =
+    /^\/study\/[^/]+$/.test(pathname) || pathname.startsWith('/session/') || /^\/(study|class)\/[^/]+\/(practice|test)$/.test(pathname)
+      ? ' is-wide'
+      : '';
 
   return (
     <div className="app-shell paper-grain flex min-h-screen flex-col bg-bg">
