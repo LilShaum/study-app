@@ -120,4 +120,19 @@ describe('NewCourseDialog: which class', () => {
     const [added] = Object.values(useCoursesStore.getState().courses);
     expect(added.metadata.course_code).toBe('CHEM 200');
   });
+
+  it('asks once when the class in the file is a typo away from one in the library', async () => {
+    const existing = JSON.parse(reply);
+    useCoursesStore.setState({ courses: { old: { ...existing, metadata: { title: 'Old', course_code: 'PSYC 351' } } } });
+    render(
+      <MemoryRouter>
+        <NewCourseDialog onClose={() => {}} />
+      </MemoryRouter>,
+    );
+    await upload(JSON.stringify({ ...existing, metadata: { title: 'New', course_code: 'PSYC351C' } }));
+    expect(screen.getByRole('radio', { name: 'Put it with PSYC 351' }).getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: 'Add lecture' }));
+    const added = Object.values(useCoursesStore.getState().courses).find((c) => c.metadata.title === 'New')!;
+    expect(added.metadata.course_code).toBe('PSYC 351');
+  });
 });

@@ -112,8 +112,11 @@ class it is for (the classes in the library, Another to type a code, or
 nothing picked); the pick is stamped on the lecture whatever the AI wrote,
 as a class page's New lecture already did (the owner, 2026-11-11: "it would
 now know no matter what"). Checking a new class code against the library's
-when the reply comes back (option C of docs/proposals/onboarding.md) is not
-built.
+when the reply comes back (option C of docs/proposals/onboarding.md):
+with no class picked, a code a typo or a section letter away from one in
+the library ("PSYC351C", "PYSC 351" for "PSYC 351", `lib/courseCode`
+closeClass) is asked about once in the preview, "Put it with PSYC 351"
+chosen, "Keep PSYC351C" beside it.
 
 **How it works.** Three short steps (the owner, 2026-10-29: the prompt
 screens were "massive blocks of text … not intuitive for new users"): what

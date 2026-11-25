@@ -1,4 +1,4 @@
-import { normalizeCourseCode } from '@/lib/courseCode';
+import { closeClass, normalizeCourseCode } from '@/lib/courseCode';
 import { classOf } from '@/lib/classExams';
 import { useMemo, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -83,7 +83,11 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   }, [lectures]);
   const [klass, setKlass] = useState<string>('');
   const [typing, setTyping] = useState(false);
-  const stamped = classCode ?? (klass.trim() || undefined);
+  const picked = classCode ?? (klass.trim() || undefined);
+  // The file's own code, when no class was picked, checked against the
+  // library's: "PSYC351C" from the AI for the student's "PSYC 351" is the
+  // same class, asked about once in the preview (onboarding.md, option C).
+  const [keepOwn, setKeepOwn] = useState(false);
 
   // Parsed on every keystroke so the preview and the error both track the box.
   const result = useMemo((): { course: Course; cut: string | null } | { error: string } | null => {
@@ -129,6 +133,9 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
     onClose();
     navigate(`/study/${id}`);
   };
+
+  const nearClass = !picked && course ? closeClass(course.metadata.course_code, classes) : null;
+  const stamped = picked ?? (nearClass && !keepOwn ? nearClass : undefined);
 
   const confirmPaste = () => {
     if (!course) return;
@@ -309,6 +316,28 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
                     <span className="font-normal text-text-3"> · {course.metadata.course_code}</span>
                   )}
                 </div>
+                {nearClass && (
+                  <div role="radiogroup" aria-label="Which class" className="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-text-2">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={!keepOwn}
+                      onClick={() => setKeepOwn(false)}
+                      className={`tap-safe ${!keepOwn ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : 'hover:text-text'}`}
+                    >
+                      Put it with {nearClass}
+                    </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={keepOwn}
+                      onClick={() => setKeepOwn(true)}
+                      className={`tap-safe ${keepOwn ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : 'hover:text-text'}`}
+                    >
+                      Keep {course.metadata.course_code}
+                    </button>
+                  </div>
+                )}
                 <div className="mt-0.5 text-text-2">
                   {plural(course.sections.length, 'section')}, {plural(itemTotal, 'item')}
                   {Object.keys(counts).length > 0 && (
