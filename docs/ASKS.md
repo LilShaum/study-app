@@ -18,6 +18,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 ## Open
 
+- **A new app icon** (2026-11-25: "I also think the apps icon needs an
+  update since the current icon I think was made once at the start and
+  never touched"). Planned (docs/proposals/icon.md); four candidates on
+  the part 4 page (Round 5). Waits on the owner's pick.
 - **Keep going until the list is clear, then check, then report**
   (2026-11-03: "dont stop until you run out of limit or the to do list is
   cleared. and even after its cleared, if there are any follow up checks or

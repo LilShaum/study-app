@@ -99,8 +99,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(msg.title || 'Arborous', {
       body: msg.body ?? '',
-      icon: `${BASE}icon-192.png`,
-      badge: `${BASE}icon-192.png`,
+      icon: `${BASE}icons/icon-192.png`,
+      badge: `${BASE}icons/icon-192.png`,
       data: { url: msg.url ?? '' },
       // A newer reminder replaces one still showing, never piles up.
       tag: 'arborous-reminder',
