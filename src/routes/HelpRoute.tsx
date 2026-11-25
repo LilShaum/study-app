@@ -34,7 +34,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Adaptive quiz',
-    what: 'Questions keep coming for as long as you want, ten planned at a time from where you are: what is fading or you got wrong before first, then questions you have not answered yet from parts you have already studied, in no fixed order, easier before harder. For a lecture you have not studied, use Learn first. A question you miss comes back a few questions later. When everything that was due is done, it says so: carry on, or stop. On a class page it draws from every lecture of the class.',
+    what: 'Questions keep coming for as long as you want, ten planned at a time from where you are: what is fading or you got wrong before first, then questions you have not answered yet from parts you have already studied, in no fixed order, easier before harder. For a lecture you have not studied, use Learn first. A question you miss comes back a few questions later. When everything to review is done, it says so: carry on, or stop. On a class page it draws from every lecture of the class.',
     scored: true,
   },
   {
@@ -44,7 +44,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Practice',
-    what: 'Study whatever you want, however you want, outside the plan: before a class quiz, on a part that feels shaky, only problems, only flashcards on a bus. Each answer is marked as you give it. On top are ready-made sittings, one tap each: Due now (what is fading, weakest first), Mistakes, Flashcards (the ones fading first, then up to ten new, as Anki does) and Problems. Below, Choose it yourself: tick the kinds of card (multiple choice, flashcards, written answers, terms, problems), tick which cards (due now, mistakes, new, already strong), pick an order (Mixed, the way an exam mixes them; In order, as the lectures teach them; Weakest first), and under From tick the sections, or on a class page the lectures and their sections. Start, pinned at the bottom, says how many cards you get. Written answers are left unticked until you tick them. Studies keeps only the cards on empirical studies, or one study. To go straight to one kind, use the links under Practice on the lecture page, or on a section’s page for that section. Mistakes keeps a card you got wrong until you get it right on a later day: right again a minute after the miss is the answer you just saw. On a class page, Mixed puts every lecture in one sitting, so you have to tell apart ideas from different lectures, as an exam does; In order runs one lecture after another. In the last week before one of the class’s exams, Mixed is the default. Each answer counts in its own lecture. Your choices are remembered for next time. Today still decides what comes back when, so a card that is not fading yet gains little from more practice.',
+    what: 'Study whatever you want, however you want, outside the plan: before a class quiz, on a part that feels shaky, only problems, only flashcards on a bus. Each answer is marked as you give it. On top are ready-made sittings, one tap each: To review (what is fading, weakest first), Mistakes, Flashcards (the ones fading first, then up to ten new, as Anki does) and Problems. Below, Choose it yourself: tick the kinds of card (multiple choice, flashcards, written answers, terms, problems), tick which cards (to review, mistakes, new, already strong), pick an order (Mixed, the way an exam mixes them; In order, as the lectures teach them; Weakest first), and under From tick the sections, or on a class page the lectures and their sections. Start, pinned at the bottom, says how many cards you get. Written answers are left unticked until you tick them. Studies keeps only the cards on empirical studies, or one study. To go straight to one kind, use the links under Practice on the lecture page, or on a section’s page for that section. Mistakes keeps a card you got wrong until you get it right on a later day: right again a minute after the miss is the answer you just saw. On a class page, Mixed puts every lecture in one sitting, so you have to tell apart ideas from different lectures, as an exam does; In order runs one lecture after another. In the last week before one of the class’s exams, Mixed is the default. Each answer counts in its own lecture. Your choices are remembered for next time. Today still decides what comes back when, so a card that is not fading yet gains little from more practice.',
     scored: true,
   },
   {
@@ -189,9 +189,10 @@ const SECTIONS: HelpSection[] = [
           <li>Reviewing the section grows them back.</li>
         </ul>
         <p className="mt-2">
-          Tap the tree on a lecture page to open it larger. Choose a branch to see its name, how many
-          items are due, and a button to review just that section; the leaves it has lost fall as
-          you choose it. At the end of a session, the leaves you won back rise from the ground.
+          Opening a lecture, its tree grows and the leaves you have let fade fall, with a shake.
+          Sweep a finger across it (or point, on a computer) to name a part, and tap its number to
+          open that part. In a sitting the tree grows a leaf when a part is learned, and never drops
+          one for a wrong answer: leaves fall only from not practising.
         </p>
       </>
     ),
@@ -436,7 +437,7 @@ function ReplayWelcome() {
       className="press tap-safe"
     >
       <Icon name="bulb" size={14} />
-      Show the welcome screen again
+      Show the welcome again
     </button>
   );
 }

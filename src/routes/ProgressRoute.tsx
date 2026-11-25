@@ -290,7 +290,7 @@ export function ProgressRoute() {
   const totalSeconds = Object.values(days).reduce((n, d) => n + d.seconds, 0);
   const rightPage = (
     <>
-      <h2 className="mark mb-1 text-text-3">Coming due</h2>
+      <h2 className="mark mb-1 text-text-3">Coming back to review</h2>
       <ul className="border-t border-border">
         {forecast.map((f) => (
           <li key={f.label} className="flex items-baseline gap-2 border-b border-border py-2 text-small">

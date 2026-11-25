@@ -33,5 +33,5 @@ export function forecastDue(course: Course, progress: Record<string, ItemResult>
       counts[at <= now ? 0 : days <= 0 ? 1 : days === 1 ? 2 : days < 7 ? 3 : 4]! += 1;
     }
   }
-  return ['Due now', 'Later today', 'Tomorrow', 'Within the week', 'After that'].map((label, i) => ({ label, count: counts[i]! }));
+  return ['Now', 'Later today', 'Tomorrow', 'Within the week', 'After that'].map((label, i) => ({ label, count: counts[i]! }));
 }
