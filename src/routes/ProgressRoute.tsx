@@ -8,6 +8,11 @@ import { computeCourseStats, type StatRow } from '@/lib/computeCourseStats';
 import { CourseTree } from '@/components/CourseTree';
 import { examRule } from '@/lib/exam';
 import { mixUps } from '@/lib/mixUps';
+import { forecastDue } from '@/lib/forecast';
+import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
+import { useStudyLogStore } from '@/store/studyLog';
+import { dayLine, heatmapWeeks, sumDays, summaryLine, timeStudied } from '@/lib/heatmap';
+import { StudyHeatmap } from '@/components/StudyHeatmap';
 
 /** The latest mix-ups shown; the rest are counted. */
 const MIXUPS_SHOWN = 8;
@@ -102,6 +107,9 @@ export function ProgressRoute() {
   const progress = useProgressStore((s) => (id ? s.getProgress(id) : EMPTY_PROGRESS));
   // Fading is judged as of opening the page; rendering must not read the clock.
   const [now] = useState(Date.now);
+  const wide = useMediaQuery(WIDE);
+  const log = useStudyLogStore((s) => (id ? s.byCourse[id] : undefined));
+  const [pickedDay, setPickedDay] = useState<string | null>(null);
 
   if (!id) return <Navigate to="/" replace />;
   if (!course) {
@@ -155,29 +163,8 @@ export function ProgressRoute() {
     .map(({ section, m }) => ({ section, due: m.due, held: Math.round((m.learned ? m.held / m.learned : 1) * 100) }))
     .sort((a, b) => a.held - b.held || b.due - a.due);
 
-  return (
-    <div>
-      <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
-        ← Back
-      </Link>
-      <div className="mt-4 flex items-start gap-5">
-        <CourseTree courseId={id} course={course} progress={progress} className="h-28 sm:h-36" />
-        <div className="min-w-0 flex-1">
-          <p className="mark text-text-3">Progress</p>
-          <h1 className="mt-1 font-display text-title font-semibold text-text sm:text-display">
-            {course.metadata.title}
-          </h1>
-          <p className="mt-2 text-small text-text-2">{lastSeenText}</p>
-        </div>
-      </div>
-
-      {/* What is fading leads the page.
-          It used to open with accuracy — four tiles of past answers — and
-          then list the same sections three times over: recall now, accuracy,
-          tags. Only the first of those says what needs the student now, which
-          is the question this page is here to answer, so it comes first and
-          the accuracy figures fold below it
-          (docs/proposals/design-audit.md §3D). */}
+  const fadingBlock = (
+    <>
       {fading.length > 0 && (
         <div className="mt-8">
           <h2 className="mark mb-1 text-text-3">Still remembered</h2>
@@ -209,7 +196,10 @@ export function ProgressRoute() {
           </div>
         </div>
       )}
-
+    </>
+  );
+  const mixedBlock = (
+    <>
       {mixed.length > 0 && (
         <div className="mt-8">
           <h2 className="mark mb-1 text-text-3">Mixed up</h2>
@@ -227,7 +217,10 @@ export function ProgressRoute() {
           {mixed.length > MIXUPS_SHOWN && <p className="mt-1 text-xs text-text-3">and {mixed.length - MIXUPS_SHOWN} more</p>}
         </div>
       )}
-
+    </>
+  );
+  const detBlock = (
+    <>
       {/* How well it was answered, folded: it is the record of past answers,
           not what needs the student now, and the two "least accurate" lists
           name the same sections the list above already ranks. One line, and
@@ -272,7 +265,10 @@ export function ProgressRoute() {
           </div>
         )}
       </details>
-
+    </>
+  );
+  const pracBlock = (
+    <>
       {stats.weakestSections.length > 0 && (
         <Link
           to={`/session/${id}/weakest`}
@@ -281,6 +277,83 @@ export function ProgressRoute() {
           <span className="font-display text-heading font-semibold text-text">Practise the weakest</span>
           <span className="shrink-0 text-small text-text-2">{stats.gradableCount} items →</span>
         </Link>
+      )}
+    </>
+  );
+
+  // The right page on a computer: what comes due, and this lecture's days of study.
+  const forecast = wide ? forecastDue(course, progress, now, exam) : [];
+  const days = sumDays({ [id]: { days: log?.days ?? {} } });
+  const weeks = wide ? heatmapWeeks(days, new Date(now), { maxWeeks: 26 }) : [];
+  const daysLine = summaryLine(weeks) ?? 'No study in these weeks.';
+  const dayCell = pickedDay ? weeks.flat().find((c) => c.date === pickedDay) : undefined;
+  const totalSeconds = Object.values(days).reduce((n, d) => n + d.seconds, 0);
+  const rightPage = (
+    <>
+      <h2 className="mark mb-1 text-text-3">Coming due</h2>
+      <ul className="border-t border-border">
+        {forecast.map((f) => (
+          <li key={f.label} className="flex items-baseline gap-2 border-b border-border py-2 text-small">
+            <span className={f.count ? 'text-text' : 'text-text-3'}>{f.label}</span>
+            <span className="leaders" aria-hidden="true" />
+            <span className="tabular-nums text-text-2">{f.count}</span>
+          </li>
+        ))}
+      </ul>
+      {totalSeconds > 0 && (
+        <div className="mt-8">
+          <h2 className="mark mb-3 text-text-3">Days of study in this lecture</h2>
+          <StudyHeatmap weeks={weeks} label={daysLine} picked={pickedDay} setPicked={setPickedDay} />
+          <p className="mt-2 text-small text-text-2" aria-live="polite">
+            {dayCell ? dayLine(dayCell) : daysLine} {timeStudied(totalSeconds)} in all.
+          </p>
+        </div>
+      )}
+      {mixedBlock}
+      {detBlock}
+    </>
+  );
+
+  return (
+    <div>
+      <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
+        ← Back
+      </Link>
+      <div className="mt-4 flex items-start gap-5">
+        <CourseTree courseId={id} course={course} progress={progress} className="h-28 sm:h-36" />
+        <div className="min-w-0 flex-1">
+          <p className="mark text-text-3">Progress</p>
+          <h1 className="mt-1 font-display text-title font-semibold text-text sm:text-display">
+            {course.metadata.title}
+          </h1>
+          <p className="mt-2 text-small text-text-2">{lastSeenText}</p>
+        </div>
+      </div>
+
+      {/* What is fading leads the page.
+          It used to open with accuracy — four tiles of past answers — and
+          then list the same sections three times over: recall now, accuracy,
+          tags. Only the first of those says what needs the student now, which
+          is the question this page is here to answer, so it comes first and
+          the accuracy figures fold below it
+          (docs/proposals/design-audit.md §3D). */}
+
+      {wide ? (
+        // Two facing pages: what is fading on the left, the rest on the right.
+        <div className="mt-2 grid grid-cols-[minmax(0,1fr)_minmax(0,24rem)] gap-x-10">
+          <div>
+            {fadingBlock}
+            {pracBlock}
+          </div>
+          <div className="border-l border-border pl-10 pt-8">{rightPage}</div>
+        </div>
+      ) : (
+        <>
+          {fadingBlock}
+          {mixedBlock}
+          {detBlock}
+          {pracBlock}
+        </>
       )}
     </div>
   );

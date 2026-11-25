@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { scoredEntries } from '@/lib/scored';
 import { useCoursesStore } from '@/store/courses';
@@ -14,6 +14,7 @@ import { useOnboardingStore } from '@/store/onboarding';
 import { storageUsage } from '@/lib/safeStorage';
 import { scrollToAnchor } from '@/lib/scrollToAnchor';
 import { VERSION } from '@/lib/appUpdate';
+import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 
 interface HelpSection {
   id: string;
@@ -531,9 +532,116 @@ function TestingTools() {
   );
 }
 
-/** "/help" — what the app does, including the parts that aren't obvious. */
+/**
+ * "/help" — what the app does, including the parts that aren't obvious.
+ *
+ * A phone gets the sections folded to one line each, so a topic is found
+ * without scrolling past the rest; a computer gets the contents at the side,
+ * the current topic underscored, and the text at reading width.
+ */
 export function HelpRoute() {
   const [search] = useSearchParams();
+  const wide = useMediaQuery(WIDE);
+  // Phone: which sections are unfolded.
+  const [unfolded, setUnfolded] = useState<ReadonlySet<string>>(new Set());
+  // Computer: the section nearest the top of the page.
+  const [current, setCurrent] = useState<string>(SECTIONS[0]!.id);
+
+  useEffect(() => {
+    if (!wide || typeof IntersectionObserver === 'undefined') return;
+    const seen = new Set<string>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) seen.add(e.target.id);
+          else seen.delete(e.target.id);
+        }
+        // The first section in the book that is in the top part of the screen.
+        const first = SECTIONS.find((x) => seen.has(x.id));
+        if (first) setCurrent(first.id);
+      },
+      { rootMargin: '0px 0px -65% 0px' },
+    );
+    for (const x of SECTIONS) {
+      const el = document.getElementById(x.id);
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, [wide]);
+
+  // A jump into a folded section unfolds it first.
+  const jump = (id: string) => {
+    if (!wide) setUnfolded((u) => new Set(u).add(id));
+    scrollToAnchor(id);
+  };
+  const toggle = (id: string) =>
+    setUnfolded((u) => {
+      const next = new Set(u);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+
+  const contents = (
+    <nav aria-label="Help topics">
+      <h2 className="mark mb-2 text-text-3">Contents</h2>
+      <ol className="border-t border-border">
+        {SECTIONS.map((s, i) => (
+          <li key={s.id} className="border-b border-border">
+            <button
+              type="button"
+              onClick={() => jump(s.id)}
+              aria-current={wide && current === s.id ? 'true' : undefined}
+              className="group tap-safe flex w-full items-baseline gap-3 py-2 text-left"
+            >
+              <span className="mark w-5 shrink-0 tabular-nums text-text-3">{i + 1}</span>
+              <span
+                className={`${wide ? 'text-small' : 'text-body'} ${
+                  wide && current === s.id
+                    ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
+                    : 'text-text group-hover:text-accent'
+                }`}
+              >
+                {s.title}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+
+  const sections = SECTIONS.map((s) => {
+    const open = wide || unfolded.has(s.id);
+    return (
+      <section key={s.id} id={s.id} tabIndex={-1} className={`prose-set scroll-mt-20 border-t border-border ${wide ? 'pt-6' : open ? 'pb-4' : ''}`}>
+        {wide ? (
+          <h2 className="mb-2 font-display text-heading font-semibold text-text">{s.title}</h2>
+        ) : (
+          // Folded: the heading is the one line; a tap unfolds the section.
+          <button
+            type="button"
+            aria-expanded={open}
+            onClick={() => toggle(s.id)}
+            className="tap-safe flex w-full items-baseline justify-between gap-3 text-left"
+          >
+            <h2 className="font-display text-heading font-semibold text-text">{s.title}</h2>
+            <span className="mark shrink-0 text-text-3" aria-hidden="true">
+              {open ? '▾' : '▸'}
+            </span>
+          </button>
+        )}
+        <div className={`space-y-1 text-small text-text-2 ${open ? '' : 'hidden'}`}>{s.body}</div>
+      </section>
+    );
+  });
+
+  const intro = (
+    <div className="mt-4 space-y-2">
+      <ReplayWelcome />
+      <ShareApp />
+    </div>
+  );
+
   return (
     <div>
       <Link to="/" className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
@@ -545,18 +653,13 @@ export function HelpRoute() {
         Version {VERSION} ·{' '}
         <button
           type="button"
-          onClick={() => scrollToAnchor('new')}
+          onClick={() => jump('new')}
           className="text-text-3 underline decoration-border underline-offset-2 hover:text-text"
         >
           What’s new
         </button>
       </p>
       {search.has('devtools') && <TestingTools />}
-
-      <div className="mt-4 space-y-2">
-        <ReplayWelcome />
-        <ShareApp />
-      </div>
 
       {/*
         Buttons, not anchors.
@@ -570,40 +673,23 @@ export function HelpRoute() {
         moves focus as well as the scroll position, or it only works for
         people using a mouse.
       */}
-      {/* Contents, set the way a book sets them: numbered, ruled, one line
-          each. It was twelve stacked buttons — about a thousand pixels of
-          chunky boxes on a phone before a word of help. */}
-      <nav className="mt-6" aria-label="Help topics">
-        <h2 className="mark mb-2 text-text-3">Contents</h2>
-        <ol className="border-t border-border">
-          {SECTIONS.map((s, i) => (
-            <li key={s.id} className="border-b border-border">
-              <button
-                type="button"
-                onClick={() => scrollToAnchor(s.id)}
-                className="group tap-safe flex w-full items-baseline gap-3 py-2 text-left"
-              >
-                <span className="mark w-5 shrink-0 tabular-nums text-text-3">{i + 1}</span>
-                <span className="text-body text-text group-hover:text-accent">{s.title}</span>
-              </button>
-            </li>
-          ))}
-        </ol>
-      </nav>
-
-      <div className="mt-8 space-y-8">
-        {SECTIONS.map((s) => (
-          <section
-            key={s.id}
-            id={s.id}
-            tabIndex={-1}
-            className="prose-set scroll-mt-20 border-t border-border pt-6"
-          >
-            <h2 className="mb-2 font-display text-heading font-semibold text-text">{s.title}</h2>
-            <div className="space-y-1 text-small text-text-2">{s.body}</div>
-          </section>
-        ))}
-      </div>
+      {wide ? (
+        <div className="mt-6 grid grid-cols-[13rem_minmax(0,1fr)] gap-x-12">
+          <div className="sticky top-6 max-h-[calc(100vh-3rem)] self-start overflow-y-auto [scrollbar-width:thin]">
+            {contents}
+          </div>
+          <div className="max-w-[40rem]">
+            <div className="-mt-4">{intro}</div>
+            <div className="mt-8 space-y-8">{sections}</div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {intro}
+          {/* The folded headings are the contents: one line each. */}
+          <div className="mt-6 border-b border-border">{sections}</div>
+        </>
+      )}
     </div>
   );
 }

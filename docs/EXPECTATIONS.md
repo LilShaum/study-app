@@ -862,6 +862,17 @@ its side, sits on a desk with room to look around: the page spreads out.
   "?" lists them all, Escape closes that before it leaves. On a phone a
   sitting is the whole screen: no running head, clear of the status bar.
   Browse lists its sections at the side, the glossary has a letter rail.
+  The quieter pages differ by format (P4-1, 2026-11-25): the glossary's
+  letters run down the phone's right edge (a thumb can slide along them) and
+  on a computer sit at the side with the picked or hovered term's full
+  meaning beside the list ("/" searches, J and K move); Diagrams is one
+  plate at a time with a swipe on a phone, a grid with the plate opened
+  large beside its note on a computer; Progress on a computer has the
+  forecast of what comes due and this lecture's days of study on the right
+  page; Help folds its sections on a phone and has a contents column on a
+  computer; Set aside's Put back has Undo, and on a computer the picked card
+  shows beside the list; Browse edits in a sheet on a phone and beside the
+  card on a computer.
 - **A phone on its side** (the owner, 2026-11-10: "when it does the view is
   very cut off"). iOS gives a web page no rotation lock, so a short screen
   held sideways (landscape, under 500px tall, 600px or wider) gets the
