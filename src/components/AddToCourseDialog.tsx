@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { withExamSections } from '@/lib/classExams';
-import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 import type { Course } from '@/schema/course';
 import { parseFragment } from '@/schema/fragment';
 import { planMerge, type MergePlan } from '@/lib/mergeFragment';
@@ -11,7 +10,7 @@ import { buildExplainPrompt } from '@/lib/buildExplainPrompt';
 import { hasStudies } from '@/lib/generatorSpec';
 import { StudiesField } from './StudiesField';
 import { MakeKindsField } from './MakeKindsField';
-import { More, PromptColumns, PromptStep } from './PromptStep';
+import { More, PromptBody, PromptStep } from './PromptStep';
 import { Sheet } from './Sheet';
 import { ALL_KINDS, kindsOf, type MakeKind } from '@/lib/makeKinds';
 
@@ -64,7 +63,6 @@ const TYPE_LABELS: Record<string, string> = {
  * anything touches their course.
  */
 export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'material' }: AddToCourseDialogProps) {
-  const wide = useMediaQuery(WIDE);
   const [mode, setMode] = useState<AddMode>(initialMode);
   const [pasted, setPasted] = useState('');
   const [notes, setNotes] = useState(course.metadata.student_notes ?? '');
@@ -254,7 +252,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
       label={`${MODE_TITLES[mode]}: ${course.metadata.title}`}
       title={MODE_TITLES[mode]}
       onClose={onClose}
-      width={wide ? '4xl' : '2xl'}
+      width="2xl"
     >
         <div className="flex flex-wrap gap-x-1 border-b border-border px-5 pt-3" role="tablist">
           {(
@@ -288,8 +286,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
           ))}
         </div>
 
-      <PromptColumns
-        wide={wide}
+      <PromptBody
         left={
           <>
             {/* What it is for, in a line, and where to paste it; the rest folds. */}
@@ -474,7 +471,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                   )}
                 </div>
               )}
-              {!wide && copyButton}
+              {copyButton}
               <More label="More options">
                 <TeacherNotesField value={notes} onChange={setNotes} />
                 {mode === 'material' && <StudiesField checked={studies} onChange={setStudies} />}
@@ -484,7 +481,6 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
         }
         right={
           <>
-            {wide && copyButton}
             <PromptStep n={2} title="Upload the file">
               <label className="cursor-pointer text-sm text-accent hover:underline">
                 Upload the file the AI made

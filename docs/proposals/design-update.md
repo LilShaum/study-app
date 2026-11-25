@@ -268,7 +268,7 @@ rounded card with a shadow.
 | Practice test setup | One page, Start at the bottom | Setup beside a preview of how many questions and what kinds |
 | Practice test | One question at a time, the question list as a sheet | The question list in the left margin, the question in the middle, the timer on the right |
 | Test review | Misses first, one at a time | List on the left, the question with its reason on the right |
-| New lecture, Add, Fix | Steps as a sheet: tick kinds, copy, come back, paste or upload | Side by side: the steps on the left, the prompt and the paste box on the right |
+| New lecture, Add, Fix | Steps as a sheet: tick kinds, copy, come back, paste or upload | One column, as a leaf over the page (side by side was built and dropped: see below) |
 | Browse and edit | Sections in a strip at the top, edit in a sheet | Sections at the side, the edit form beside the item |
 | Glossary page | Letters down the right edge for the thumb | Letters at the side, the meaning beside the list; / searches |
 | Diagrams page | One at a time, swipe between | A grid of plates; one opened large with its note beside |
@@ -299,3 +299,16 @@ judgement for now. just do your best to make everything high quality and
 not look like ai slop. i trust you and will give feedback after seeing your
 presentation". So the whole table is built in P4-1 and judged on the
 presentation.
+
+### What building changed (P4-1)
+
+- **New lecture side by side on a computer: dropped.** Built, then looked
+  at: a step's Copy button landed across the page from its own words, and
+  the right column sat empty until a reply came back. The steps are a
+  sequence, which reads down a page. One column, like the account forms.
+- **The lecture page's bottom bar keeps Today's Start alone**, not Learn,
+  Quiz and Practice: one main action per bar, and the three ways to study
+  are a short scroll away on the page itself.
+- **The tree draws itself outward from the foot of the trunk**, as the
+  default; the all-at-once drawing (which reads as dashes closing up, the
+  owner: "that looks kinda interesting") kept as a switch, both shown.

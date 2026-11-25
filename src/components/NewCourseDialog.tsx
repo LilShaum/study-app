@@ -1,7 +1,6 @@
 import { normalizeCourseCode } from '@/lib/courseCode';
 import { classOf } from '@/lib/classExams';
 import { useMemo, useState, type ChangeEvent } from 'react';
-import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 import { useNavigate } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { parseCourse } from '@/schema/parseCourse';
@@ -13,7 +12,7 @@ import { Icon } from './Icon';
 import { TeacherNotesField } from './TeacherNotesField';
 import { MoreContextField, StudiesField } from './StudiesField';
 import { MakeKindsField } from './MakeKindsField';
-import { More, PromptColumns, PromptStep } from './PromptStep';
+import { More, PromptBody, PromptStep } from './PromptStep';
 import { Sheet } from './Sheet';
 import { ALL_KINDS, storedKinds, type MakeKind } from '@/lib/makeKinds';
 import { cutMessage, readReply } from '@/lib/readReply';
@@ -51,7 +50,6 @@ const TYPE_LABELS: Record<string, string> = {
  * Step 3 takes the file the AI made; the prompt asks it to hand one back.
  */
 export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
-  const wide = useMediaQuery(WIDE);
   const [pasted, setPasted] = useState('');
   const [notes, setNotes] = useState('');
   const [studies, setStudies] = useState(false);
@@ -163,10 +161,9 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
       label="Create a new lecture"
       title={classCode ? `New lecture for ${classCode}` : 'New lecture'}
       onClose={onClose}
-      width={wide ? '4xl' : '2xl'}
+      width="2xl"
     >
-      <PromptColumns
-        wide={wide}
+      <PromptBody
         left={
           <>
             <PromptStep n={1} title="What to make">
@@ -205,7 +202,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
               <p className="mb-3 text-sm text-text-2">
                 Paste it into Claude or another AI, and attach your slides, notes or PDF to the same message.
               </p>
-              {!wide && copyButton}
+              {copyButton}
               <More label="Why attach them to the message?">
                 <p>
                   Files kept only in a project often reach the AI as text, without their diagrams, and the lecture then
@@ -218,7 +215,6 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
         }
         right={
           <>
-            {wide && copyButton}
             <PromptStep n={3} title="Upload the file">
               <label className="press tap-safe inline-flex cursor-pointer">
                 <Icon name="upload" size={13} />
