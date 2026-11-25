@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { Link, Outlet, ScrollRestoration, useLocation, useParams } from 'react-router-dom';
 import { ThemeEffect } from '@/components/ThemeEffect';
-import { DarkModeToggle } from '@/components/DarkModeToggle';
 import { Toaster } from '@/components/Toaster';
 import { Onboarding } from '@/components/Onboarding';
 import { Sprig } from '@/components/Sprig';
@@ -31,7 +30,7 @@ function useLocationName(): string {
   });
 
   if (pathname === '/help') return 'Using Arborous';
-  if (pathname === '/sync') return 'Sync';
+  if (pathname === '/settings') return 'Settings';
   if (pathname === '/account') return pageName(name);
   if (pathname.startsWith('/shared/')) return 'Shared lecture';
   if (pathname.startsWith('/class/') && params.code) {
@@ -151,21 +150,23 @@ export function RootLayout() {
           unexplained mark at the foot of every page. */}
       {/* Not under a card being studied: it made every question page taller
           than a phone, so the card slid up under the clock band even when it
-          fitted (the owner, 2026-10-13). Help and the theme are a tap back. */}
+          fitted (the owner, 2026-10-13). Settings is a tap back. */}
       {!pathname.startsWith('/session/') && (
         <footer className={`page-block shrink-0 pb-8 pt-10${wide}`}>
           <div className="mb-5 flex justify-center text-text-3">
             <Sprig size={22} />
           </div>
           <div className="flex items-center justify-center gap-5">
-            <Link to="/help" className="press press-quiet">
-              Help
-            </Link>
-            {/* The student's own page (Sync is reached from it), named for them. */}
+            {/* Two things: the student's own page, named for them, and
+                Settings, where Help, the theme, the name, reminders and the
+                account live (the owner, 2026-11-25: "It's not okay that
+                settings are just openly available"; docs/proposals/settings.md). */}
             <Link to="/account" className="press press-quiet">
               {pageName(name)}
             </Link>
-            <DarkModeToggle />
+            <Link to="/settings" className="press press-quiet">
+              Settings
+            </Link>
           </div>
         </footer>
       )}

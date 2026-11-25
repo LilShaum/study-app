@@ -541,7 +541,7 @@ function FirstRun() {
         <div>
           <Words
             lead="Remind you when things start to fade?"
-            line="Once a day, a few hours after a miss, and before an exam. Pick when the daily one comes; you can change any of it on your page."
+            line="Once a day, a few hours after a miss, and before an exam. Pick when the daily one comes; you can change any of it in Settings."
           />
           <div role="radiogroup" aria-label="Daily reminder at" className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-3 wide:justify-start">
             {REMIND_TIMES.map((t) => (
@@ -710,7 +710,7 @@ function AccountStep({ signingIn, onDone, onSkip }: { signingIn: boolean; onDone
         : await sb.auth.signUp({ email, password });
       if (authError) throw authError;
       if (!data.session) {
-        setError('Check your email to confirm the account, then sign in on your page.');
+        setError('Check your email to confirm the account, then sign in from Settings.');
         return;
       }
       await syncNow().catch(() => undefined);

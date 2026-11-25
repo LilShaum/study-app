@@ -6,8 +6,6 @@ import { pageName, useProfileStore } from '@/store/profile';
 import { useMediaQuery } from '@/lib/useMediaQuery';
 import { dayLine, heatmapWeeks, studyStats, summaryLine, sumDays, timeByClass, timeStudied } from '@/lib/heatmap';
 import { StudyHeatmap } from '@/components/StudyHeatmap';
-import { BackupButton, RestoreButton } from '@/components/Backup';
-import { RemindersField } from '@/components/RemindersField';
 
 /** Wide enough for a whole year of weeks at a readable size. */
 const YEAR_WIDE = '(min-width: 640px)';
@@ -18,8 +16,9 @@ const days = (n: number) => `${n} day${n === 1 ? '' : 's'}`;
  * "#/account": the student's own page (docs/proposals/account.md), named for
  * them (the owner, 2026-11-11: "probably the users name … if not then just
  * account"). Their days of study as leaves (the owner's pick), the figures
- * and the time by class; then their account and their things. Friends are a
- * plan of their own, later. Reached from the foot of every page.
+ * and the time by class. What they set (name, reminders, account, backups)
+ * is in Settings. Friends are a plan of their own, later. Reached from the
+ * foot of every page.
  */
 export function AccountRoute() {
   const byCourse = useStudyLogStore((s) => s.byCourse);
@@ -47,8 +46,9 @@ export function AccountRoute() {
       <Link to="/" className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
         ← Library
       </Link>
+      {/* The name once, as the page's title; changing it, like everything
+          set once, is in Settings (the owner, 2026-11-25, Testing 5). */}
       <h1 className="mt-3 font-display text-display font-semibold text-text">{pageName(name)}</h1>
-      <NameField />
 
       <section className="mt-10" aria-labelledby="account-days">
         <h2 id="account-days" className="mark text-text-3">
@@ -104,61 +104,6 @@ export function AccountRoute() {
         )}
       </section>
 
-      <section className="mt-12 max-w-md" aria-labelledby="account-sync">
-        <h2 id="account-sync" className="mark text-text-3">
-          Sync
-        </h2>
-        <p className="mt-2 text-small text-text-2">
-          Sign in to keep your lectures and progress on every device. Optional.
-        </p>
-        <Link to="/sync" className="press tap-safe mt-3">
-          Sign in and sync
-        </Link>
-      </section>
-
-      <section className="mt-10 max-w-md" aria-labelledby="account-reminders">
-        <h2 id="account-reminders" className="mark text-text-3">
-          Reminders
-        </h2>
-        <RemindersField />
-      </section>
-
-      <section className="mt-10 max-w-md" aria-labelledby="account-backup">
-        <h2 id="account-backup" className="mark text-text-3">
-          Back up
-        </h2>
-        <p className="mt-2 text-small text-text-2">
-          Everything as one file, to keep or restore.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-3">
-          <BackupButton />
-          <RestoreButton />
-        </div>
-      </section>
     </div>
-  );
-}
-
-/** The name the page and its link carry: a ruled field, saved when you leave it. */
-function NameField() {
-  const name = useProfileStore((s) => s.name);
-  const setName = useProfileStore((s) => s.setName);
-  const [draft, setDraft] = useState(name);
-  return (
-    <label className="mt-2 flex max-w-xs items-baseline gap-3">
-      <span className="mark shrink-0 text-text-3">Your name</span>
-      <input
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={() => setName(draft)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-        }}
-        maxLength={40}
-        autoComplete="given-name"
-        placeholder="so this page is yours"
-        className="field min-w-0 flex-1 text-small"
-      />
-    </label>
   );
 }

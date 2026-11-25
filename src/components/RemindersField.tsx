@@ -1,5 +1,5 @@
+import { scrollToAnchor } from '@/lib/scrollToAnchor';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { BLOCK_LINE, pushBlock, saveReminderPlan, turnOffReminders, turnOnReminders } from '@/lib/push';
 import { cloudError } from '@/lib/cloud';
 import { useRemindersStore, type ReminderSettings } from '@/store/reminders';
@@ -53,9 +53,14 @@ export function RemindersField() {
             {block === 'signin' && (
               <>
                 {' '}
-                <Link to="/sync" className="underline decoration-border underline-offset-2 hover:decoration-text">
+                {/* On Settings, where Account is just below. */}
+                <button
+                  type="button"
+                  onClick={() => scrollToAnchor('settings-account')}
+                  className="underline decoration-border underline-offset-2 hover:decoration-text"
+                >
                   Sign in
-                </Link>
+                </button>
               </>
             )}
           </p>

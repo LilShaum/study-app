@@ -1,4 +1,4 @@
-import { createHashRouter } from 'react-router-dom';
+import { createHashRouter, Navigate } from 'react-router-dom';
 import { RootLayout } from '@/app/RootLayout';
 import { RouteError } from '@/app/RouteError';
 import { LibraryRoute } from '@/routes/LibraryRoute';
@@ -11,7 +11,7 @@ import { PracticeRoute } from '@/routes/PracticeRoute';
 import { SetAsideRoute } from '@/routes/SetAsideRoute';
 import { GlossaryRoute } from '@/routes/GlossaryRoute';
 import { HelpRoute } from '@/routes/HelpRoute';
-import { SyncRoute } from '@/routes/SyncRoute';
+import { SettingsRoute } from '@/routes/SettingsRoute';
 import { SharedRoute } from '@/routes/SharedRoute';
 import { ClassRoute } from '@/routes/ClassRoute';
 import { TestRoute } from '@/routes/TestRoute';
@@ -40,7 +40,9 @@ export const router = createHashRouter([
       { path: 'class/:code/test', element: <TestRoute /> },
       { path: 'class/:code/practice', element: <PracticeRoute /> },
       { path: 'help', element: <HelpRoute /> },
-      { path: 'sync', element: <SyncRoute /> },
+      { path: 'settings', element: <SettingsRoute /> },
+      // Sync became part of Settings (docs/proposals/settings.md); old links still land.
+      { path: 'sync', element: <Navigate to="/settings" replace /> },
       { path: 'account', element: <AccountRoute /> },
       { path: 'shared/:id', element: <SharedRoute /> },
       { path: 'session/:id/:mode', element: <SessionRoute /> },

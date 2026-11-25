@@ -380,17 +380,23 @@ const SECTIONS: HelpSection[] = [
           browser&rsquo;s data, your lectures go with it.
         </p>
         <p className="mt-2">
-          <strong>Sync</strong> (on your page, at the foot of every page under your name or Account) is optional: sign in with an email and a
+          <strong>Settings</strong>, at the foot of every page beside your page, holds everything you
+          set once: your name, light or dark, reminders, your account, backups, and this Help.
+        </p>
+        <p className="mt-2">
+          <strong>Sync</strong> (in Settings, under Account) is optional: sign in with an email and a
           password on each device you study on, and your lectures and progress follow you between
-          them. Without it nothing leaves this device. <strong>Share</strong> on a lecture page makes
+          them. Without it nothing leaves this device. The first time you sign in on a device, what is
+          on it is combined with what is in your account, so nothing on either is lost. Your email and
+          password can be changed there too; a new email is confirmed by a link sent to it. <strong>Share</strong> on a lecture page makes
           a link anyone can open to add that lecture to their own library; it needs you signed in,
           and opening it does not.
         </p>
         <p className="mt-2">
-          <strong>Reminders</strong> (on your page, under Reminders) need you signed in. Each kind is
+          <strong>Reminders</strong> (in Settings, under Reminders) need you signed in. Each kind is
           its own tick: once a day at the time you choose, when there is something to study; a few
           hours after a sitting with misses, for a second look; and three days and one day before an
-          exam. Once you have studied a few days, your page offers the time you usually start. Never more than two a day, and each is turned on or off per device. On an iPhone they
+          exam. Once you have studied a few days, Settings offers the time you usually start. Never more than two a day, and each is turned on or off per device. On an iPhone they
           reach only the app added to the Home Screen.
         </p>
         <p className="mt-2">
@@ -599,6 +605,13 @@ export function HelpRoute() {
     if (!wide) setUnfolded((u) => new Set(u).add(id));
     scrollToAnchor(id);
   };
+  // Opened at a section (?s=new, from Settings' What's new).
+  const opening = search.get('s');
+  useEffect(() => {
+    if (opening && SECTIONS.some((x) => x.id === opening)) jump(opening);
+    // Once, on arriving.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const toggle = (id: string) =>
     setUnfolded((u) => {
       const next = new Set(u);
