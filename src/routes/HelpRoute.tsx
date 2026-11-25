@@ -93,15 +93,17 @@ const SECTIONS: HelpSection[] = [
         </p>
         <ol className="mt-2 list-decimal space-y-1 pl-5">
           <li>
-            On the library page, tap <strong>New lecture</strong>. Under <strong>What to make</strong>, untick any
-            kind of card you don&rsquo;t want; only flashcards, say, gets you only flashcards, and the lecture keeps
-            that choice for everything added later. Tick <strong>My exams ask about the studies in my
+            On the library page, tap <strong>New lecture</strong>. Under <strong>What to make</strong>, leave <strong>What suits my
+            material</strong> and the AI picks the kind of card that fits each idea, or choose <strong>Only the kinds I
+            tick</strong>: only flashcards, say, gets you only flashcards, and the lecture keeps that choice for
+            everything added later. Tick <strong>My exams ask about the studies in my
             material</strong> only if they do: each study is then taught in full, which uses a lot more of the
             AI&rsquo;s usage. Tick <strong>Explain more than my slides do</strong> for more explanation and context
             where the slides are thin, such as a lecture you missed: a longer file.
           </li>
           <li>
-            Copy the prompt and paste it into a chat with an AI such as Claude. Attach your slides
+            Copy the prompt and paste it into the strongest AI you can use, on its highest effort
+            setting (a quick model makes a weaker lecture). Attach your slides
             or notes to that same message. Files kept only in a project often reach the AI as text,
             without the diagrams, and the lecture then misses what the diagrams show. If a key
             diagram is dense, attach a screenshot of that slide too.

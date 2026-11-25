@@ -122,7 +122,10 @@ to make, copy the prompt, upload the file the AI made (the paste box went
 one code block to save as one; the upload shows the same preview before
 Add lecture); one line each, the reasons and
 options folded behind a "more" line (`PromptStep`, `More`). What to make
-is a box per kind (multiple choice, select all that apply, flashcards,
+opens on "What suits my material" (suggested; every kind allowed, the AI
+picking the kind that fits each idea, as the spec's "Which type for what"
+says: a ticked kind is allowed, never required), or "Only the kinds I
+tick" (the owner, 2026-11-25: "suggested items"), which shows a box per kind (multiple choice, select all that apply, flashcards,
 terms to name, written answers, explanations, step-by-step examples, problem sets, diagrams;
 renamed 2026-11-16 from "worked examples" and "problems to work out",
 which the owner could not tell apart; a problem is any method to carry

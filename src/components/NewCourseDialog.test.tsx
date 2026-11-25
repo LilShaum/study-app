@@ -69,6 +69,7 @@ describe('NewCourseDialog: what to make', () => {
         <NewCourseDialog onClose={() => {}} />
       </MemoryRouter>,
     );
+    fireEvent.click(screen.getByRole('radio', { name: 'Only the kinds I tick' }));
     fireEvent.click(screen.getByLabelText('Multiple choice'));
     await upload(reply);
     fireEvent.click(screen.getByRole('button', { name: 'Add lecture' }));

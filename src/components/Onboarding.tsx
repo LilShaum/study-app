@@ -422,7 +422,7 @@ function FirstRun() {
       body = (
         <Words
           lead="Your first lecture."
-          line="New lecture gives you a prompt. Paste it into an AI chat with your slides or notes, and bring back the file it makes."
+          line="New lecture gives you a prompt. Paste it into a strong AI with your slides or notes, and bring back the file it makes."
         />
       );
       action = (

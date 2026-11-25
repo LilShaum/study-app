@@ -56,6 +56,7 @@ describe('AddToCourseDialog, what to make', () => {
   it('offers select all that apply as its own tick, ticked by default, for new material and for more practice', () => {
     for (const initialMode of ['material', 'practice'] as const) {
       render(<AddToCourseDialog courseId="bio" course={course} initialMode={initialMode} onClose={() => {}} />);
+      fireEvent.click(screen.getByRole('radio', { name: 'Only the kinds I tick' }));
       const tick = screen.getByRole('checkbox', { name: 'Select all that apply' }) as HTMLInputElement;
       expect(tick.checked).toBe(true);
       fireEvent.click(tick);
