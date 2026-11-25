@@ -57,11 +57,22 @@ export function useSwipe({
   enabled,
   onLeft,
   onRight,
+  at,
 }: {
   enabled: boolean;
   onLeft?: () => void;
   onRight?: () => void;
+  /**
+   * Where the reader is (a card's index). If it changes while a page is
+   * sliding off (Next pressed, a key), the swipe's own turn is dropped, so
+   * one gesture never turns two pages.
+   */
+  at?: unknown;
 }) {
+  const atNow = useRef(at);
+  useEffect(() => {
+    atNow.current = at;
+  }, [at]);
   const [dx, setDx] = useState(0);
   const [phase, setPhase] = useState<Phase>('rest');
   /** Which way the page went: -1 off to the left (on), 1 off to the right (back). */
@@ -110,8 +121,10 @@ export function useSwipe({
     setDir(to);
     setOutMs(ms);
     setPhase('out');
+    const from = atNow.current;
     later(() => {
-      act?.();
+      // Turned some other way meanwhile: that turn stands, this one is dropped.
+      if (atNow.current === from) act?.();
       // The next page, placed at the far edge unseen, then brought in.
       setDx(0);
       setPhase('enter-from');
@@ -157,8 +170,15 @@ export function useSwipe({
           if ((x < 0 && !onLeft) || (x > 0 && !onRight)) return setDx(0);
           setDx(x);
         },
-        onPointerUp: () => {
-          if (!start.current || !sideways.current) return reset();
+        onPointerUp: (e: ReactPointerEvent<HTMLElement>) => {
+          // A tap during a turn, or another finger lifting: not this gesture,
+          // and nothing to undo (resetting here snapped a page mid-turn).
+          if (!start.current || start.current.id !== e.pointerId) return;
+          if (!sideways.current) {
+            start.current = null;
+            samples.current = [];
+            return;
+          }
           const moved = dx;
           const v = speed();
           start.current = null;
@@ -171,7 +191,9 @@ export function useSwipe({
             setPhase('rest');
           }
         },
-        onPointerCancel: reset,
+        onPointerCancel: () => {
+          if (!busy) reset();
+        },
       }
     : {};
 

@@ -524,6 +524,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     enabled: !wideLayout && !pause && !!current && !questionUp,
     onLeft: () => handleNext(),
     onRight: hasPrev ? () => prev() : undefined,
+    at: index,
   });
   const keysNow = keysFor(current, hints, written, stages[index] ?? 'front', answeredIndices.has(index), !!pause);
 

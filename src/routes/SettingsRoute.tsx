@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { scrollToAnchor } from '@/lib/scrollToAnchor';
 import { cloud, cloudError, syncNow } from '@/lib/cloud';
 import { useSyncMetaStore } from '@/store/syncMeta';
 import { useProfileStore } from '@/store/profile';
@@ -21,6 +22,12 @@ import { BackupButton, RestoreButton } from '@/components/Backup';
  * which /sync still opens (it comes here).
  */
 export function SettingsRoute() {
+  // Opened at a section (?s=account, from Share's Sign in).
+  const [search] = useSearchParams();
+  const opening = search.get('s');
+  useEffect(() => {
+    if (opening) scrollToAnchor(`settings-${opening}`);
+  }, [opening]);
   return (
     <div className="mx-auto max-w-lg">
       <BackLink />
@@ -82,7 +89,8 @@ function BackLink() {
 function Section({ id, label, children }: { id: string; label: string; children: ReactNode }) {
   return (
     <section className="mt-8 border-t border-border pt-4" aria-labelledby={id}>
-      <h2 id={id} className="mark mb-3 text-text-3">
+      {/* Focusable, so a jump here (Reminders' Sign in, ?s=account) lands the focus too. */}
+      <h2 id={id} tabIndex={-1} className="mark mb-3 text-text-3">
         {label}
       </h2>
       {children}
@@ -182,10 +190,15 @@ function AccountSettings() {
   };
 
   const signOut = async () => {
-    await (await cloud()).auth.signOut();
-    setEmail(null);
-    setChanging(null);
-    toast('Signed out. Your lectures stay on this device.', { type: 'info' });
+    try {
+      const { error } = await (await cloud()).auth.signOut();
+      if (error) throw error;
+      setEmail(null);
+      setChanging(null);
+      toast('Signed out. Your lectures stay on this device.', { type: 'info' });
+    } catch (e) {
+      toast(cloudError(e), { type: 'error' });
+    }
   };
 
   if (email === undefined) return <p className="text-small text-text-3">Checking…</p>;

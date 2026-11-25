@@ -831,6 +831,11 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
     for (let c = 0; c < had; c++) {
       const host = order[c % order.length].a;
       const spreadR = traits.clumpSize * (sizes[0] + r() * sizes[1]);
+      // Only the runs of wood near this clump can be nearest to its leaves:
+      // searching every twig of the section for every leaf made a tree a
+      // third slower to grow.
+      const reachR = spreadR * 1.3 + 4;
+      const near = twigs.filter((run) => run.some((p) => Math.abs(p.x - host.at.x) < reachR * 2 && Math.abs(p.y - host.at.y) < reachR * 2));
       // Fewer leaves than the clump has room for, each larger (LEAF_SCALE):
       // packed at full density, a crown of outlined leaves read as a pile of
       // seeds at phone size (docs/proposals/tree.md §3).
@@ -865,7 +870,7 @@ function growTreeFresh(seed: string, sections: TreeSection[]): Tree {
         // owner, 2026-11-25, Testing 2: "very frequently aren't
         // attached/touching any branch"). No draw from the stream, so nothing
         // else moves.
-        const at = nearestOnWood(toward, twigs) ?? host.at;
+        const at = nearestOnWood(toward, near.length ? near : twigs) ?? host.at;
         const gap = Math.hypot(toward.x - at.x, toward.y - at.y);
         const own = gap > 1.5 ? Math.atan2(toward.x - at.x, at.y - toward.y) + (hashUnit(toward) - 0.5) * 0.6 : tangent;
         const size = length * LEAF_SCALE;

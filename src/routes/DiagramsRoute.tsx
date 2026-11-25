@@ -340,7 +340,7 @@ export function DiagramsRoute() {
 
   const count = plates.length;
   const step = (by: 1 | -1) => setAt((i) => Math.min(count - 1, Math.max(0, i + by)));
-  const swipe = useSwipe({ enabled: !wide && count > 1, onLeft: () => step(1), onRight: () => step(-1) });
+  const swipe = useSwipe({ enabled: !wide && count > 1, onLeft: () => step(1), onRight: () => step(-1), at });
   const turnOpen = (by: 1 | -1) => setOpen((i) => (i === null ? i : (i + by + count) % count));
   const here = Math.min(at, Math.max(0, count - 1));
 

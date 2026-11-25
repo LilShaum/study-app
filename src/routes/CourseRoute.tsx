@@ -760,7 +760,7 @@ async function share(course: Course) {
     toast('Sign in to share a lecture.', {
       type: 'info',
       actionLabel: 'Sign in',
-      onAction: () => window.location.assign('#/sync'),
+      onAction: () => window.location.assign('#/settings?s=account'),
     });
     return;
   }

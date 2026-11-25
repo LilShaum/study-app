@@ -366,6 +366,8 @@ describe('CourseTree on the lecture page (reveal)', () => {
     fireEvent.keyDown(svgOf(container), { key: 'Enter' });
     expect(shown(container)).toBe(true);
     expect(onOpenSection).not.toHaveBeenCalled();
+    // Into the numbers: the first takes the focus once they show.
+    expect(document.activeElement).toBe(container.querySelector('.tree-keys a'));
   });
 
   it('carries each number in its branch: one transform moves both', () => {

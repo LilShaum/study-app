@@ -839,6 +839,14 @@ export function CourseTree({
     window.clearTimeout(holdTimer.current);
   }, []);
 
+  /** Enter on the drawing: move the focus to the first number once it can take it. */
+  const focusFirstKey = useRef(false);
+  useEffect(() => {
+    if (!revealed || !focusFirstKey.current) return;
+    focusFirstKey.current = false;
+    svgRef.current?.querySelector<SVGAElement>('.tree-keys a')?.focus();
+  }, [revealed]);
+
   // Which branch is picked, for the words under the drawing.
   useEffect(() => {
     if (reveal) onPoint?.(revealed ? pointed : null);
@@ -1010,10 +1018,10 @@ export function CourseTree({
           if (e.key === 'Escape') {
             hide();
           } else if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-            // Into the numbers: the first one takes the focus.
+            // Into the numbers: the first one takes the focus once they show.
             e.preventDefault();
+            focusFirstKey.current = true;
             show();
-            svgRef.current?.querySelector<SVGAElement>('.tree-keys a')?.focus();
           }
         },
       }
