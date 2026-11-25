@@ -195,3 +195,13 @@ knows where things stand.
   computer, the class check when a file comes back, hover-a-term in a
   card, J and K outside the glossary. Unchecked: real iPhone Safari and
   real touch. The page's four questions wait on the owner in P4-2.
+- **2026-11-25, the first feedback round done in the same session** (the
+  owner gave it here rather than in a new P4-2 session). Done and shown as
+  "Round 2" on the same page: the branches shiver on opening (the trunk and
+  ground still), no explainer text under the glossary or in the test's
+  Questions sheet, "Plate" is "Figure", the glossary's "from A to Z" gone,
+  swipes cut to one meaning (turning the page; docs/proposals/swipes.md),
+  New lecture's "What suits my material" and the copy step's stronger AI,
+  and the first run rewritten (words, a nicer tree that stays throughout,
+  transitions, name, account). Waits on the owner's look at Round 2 and
+  three questions at its end; then P4-3 (high effort) for the final check.
