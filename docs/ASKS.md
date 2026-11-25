@@ -107,6 +107,17 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   2026-11-25 (P4-1): built on the branch and shown as one page
   (part4-brief.md, "Where things stand"); waits on the owner's feedback in
   P4-2, then P4-3 and the merge.
+  2026-11-25, the owner's feedback on that page (in full in
+  design-update.md, "The owner's feedback on the P4-1 page"): the shake as
+  a shiver in the branches, the ground still; no explainer text under the
+  glossary or in the test's Questions sheet; swipes to be explored ("see if
+  it's worth keeping the swiping for certain things or not"); "plate" made
+  intuitive, "from A to Z" gone; a "suggested items" choice on New lecture
+  and the copy step to name a stronger model on high effort; the first
+  run's words rewritten ("elegant … easy to understand but worded nicely
+  and concisely"), a nicer example tree, then a username and an account
+  with email, and transitions between pages ("dynamic and elegant …
+  impressive and intuitive").
 - **A code audit** (2026-11-22: "the code itself needs a big audit on how
   efficient it is, how many redundant or useless sections there are, how
   well its annotated for ai to understand the code, how well its

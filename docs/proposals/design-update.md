@@ -312,3 +312,36 @@ presentation.
 - **The tree draws itself outward from the foot of the trunk**, as the
   default; the all-at-once drawing (which reads as dashes closing up, the
   owner: "that looks kinda interesting") kept as a switch, both shown.
+
+## The owner's feedback on the P4-1 page (2026-11-25)
+
+- Opening: growth A, but "the shake is shaking the whole tree whereas I
+  want more of a shake in the branches almost like a shiver; right now the
+  whole tree moves including the line representing the floor".
+- Sitting on a computer: "remove the explainer text under the glossary.
+  Things like that should be intuitively understood, they shouldn't have to
+  be explicitly explained with that classic ai explainer text."
+- Swipes: "it seems counter intuitive that got it is on the left side of the
+  screen but you swipe right to say you got it, but then you can also swipe
+  to go to the next card in general. This needs a lot more testing … see if
+  it's worth keeping the swiping for certain things or not … that's for you
+  to explore."
+- Test on a phone: remove the Questions sheet's text on what faint and ?
+  mean.
+- "plate" is an app term to make intuitive; the glossary's "from A to Z"
+  goes (unnecessary, and not every letter has a term).
+- New lecture: a "suggested items" choice for a student unsure what to
+  make; the copy step to say to use a coding AI or a stronger model on
+  high effort rather than any AI. Asked: is the AI forced to make the
+  kinds ticked, or allowed to and left to judge?
+- First run: the title's line, and every page's words, to be "elegant:
+  getting the whole idea across in a way that's easy to understand but
+  worded nicely and concisely" ("Retrieval is in leaf. One more if you
+  like" "doesn't even make sense to me"); a nicer example tree; better
+  daily-time words; then a username, then an account with email to sync;
+  "really nice and showy … clean transitions like how the tree fades in …
+  when you go from page to page we could have a similar effect with the
+  words … dynamic and elegant … impressive and intuitive".
+- Liked as they are: the lecture page on both formats, the sitting on a
+  computer, the library and class page ("a step in the right direction"),
+  Practice and the test, the dialogs as sheets, the words.
