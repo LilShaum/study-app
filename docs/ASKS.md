@@ -130,6 +130,20 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   reminders and that you can adjust what you specifically receive
   notifications for in the settings"). To plan first
   (docs/proposals/notifications.md).
+  2026-11-25, on the plan: "you missed the most obvious kind which is like a
+  daily study reminder"; "yes to notifications if you can do the supabase
+  stuff yourself if you are connected".
+- **Round 3 feedback (2026-11-25)**: the copy step's model advice "too far
+  the other way … it should just be a general suggestion like for best
+  results, use a more capable model on high effort"; the leaves "start
+  falling when it starts shaking, not after"; the first run's study page
+  "lacks context … does the user go through and try a question or
+  something? … why use a specific example?"; the branches growing leaves
+  not greyed out while a number is picked; "Figure 1." with a period, not
+  all caps, like a science paper; the dark paper improved ("the white paper
+  background is actually pretty good and its just the dark mode one that
+  could be improved"); to see New lecture's two versions again; to know when
+  leaves are programmed to grow.
 - **A code audit** (2026-11-22: "the code itself needs a big audit on how
   efficient it is, how many redundant or useless sections there are, how
   well its annotated for ai to understand the code, how well its
