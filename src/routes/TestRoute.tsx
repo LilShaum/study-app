@@ -21,6 +21,9 @@ import type { SessionItem } from '@/lib/buildSessionItems';
 import { CodeBlock, RichText } from '@/components/items/RichText';
 import { SolutionSteps } from '@/components/items/ProblemCard';
 import { MultiStatements } from '@/components/items/MultiCard';
+import { Sheet } from '@/components/Sheet';
+import { ThumbBar } from '@/components/ThumbBar';
+import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 
 /**
  * "/study/:id/test" (one lecture, `?section=` for one section) and
@@ -524,8 +527,10 @@ function Setup({
   const [minutes, setMinutes] = useState<number | null>(null);
   const limit = minutes ?? suggested;
   const toggle = <T,>(list: T[], v: T): T[] => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
+  const wide = useMediaQuery(WIDE);
 
-  const row = 'flex flex-col gap-y-1 border-b border-border py-5 sm:flex-row sm:items-baseline sm:gap-x-3';
+  const row = `flex flex-col gap-y-1 border-b border-border py-5 ${wide ? '' : 'sm:flex-row sm:items-baseline sm:gap-x-3'}`;
+  const lab = `mark shrink-0 text-text-3 ${wide ? '' : 'sm:w-20'}`;
   const oneOf = <T,>(choices: { value: T; label: string }[], value: T, set: (v: T) => void) => (
     <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
       {choices.map((c, i) => (
@@ -544,9 +549,8 @@ function Setup({
     </div>
   );
 
-  return (
-    <div>
-      {header}
+  const body = (
+    <>
       <p className="mt-4 max-w-prose text-small text-text-2">
         Answers held to the end, then your score and every question you missed.
         {kinds.includes('written') && ' Short and long answers are written, then you tick each point of the model answer you made.'}
@@ -556,7 +560,7 @@ function Setup({
       <div className="mt-6 border-t border-border">
         {present.length > 1 && (
           <fieldset className={row}>
-            <legend className="mark float-left shrink-0 text-text-3 sm:w-20">On it</legend>
+            <legend className={`mark float-left shrink-0 text-text-3 ${wide ? '' : 'sm:w-20'}`}>On it</legend>
             <div className="clear-left flex flex-wrap gap-x-4 sm:clear-none">
               {present.map((k) => (
                 <label key={k.value} className="tap-safe flex cursor-pointer items-baseline gap-2 py-1 text-small text-text">
@@ -570,7 +574,7 @@ function Setup({
         )}
         {places.length > 1 && (
           <div className={row}>
-            <span className="mark shrink-0 text-text-3 sm:w-20">From</span>
+            <span className={lab}>From</span>
             <details className="min-w-0 flex-1">
               <summary className="tap-safe cursor-pointer text-small text-text-2 hover:text-text">
                 {off.length ? `${places.length - off.length} of ${places.length}` : `All ${places.length}`} {byLecture ? 'lectures' : 'sections'}
@@ -599,14 +603,14 @@ function Setup({
       ) : (
         <>
           <div className={row}>
-            <span className="mark shrink-0 text-text-3 sm:w-20">Questions</span>
+            <span className={lab}>Questions</span>
             {oneOf([...lengths, undefined].map((n) => ({ value: n, label: n == null ? `All ${pool.length}` : String(n) })), length, setLength)}
           </div>
           {/* A drawn test shares itself by how many questions each lecture
               has; an exam often gives each lecture a similar share instead. */}
           {lectures > 1 && length != null && (
             <div className={row}>
-              <span className="mark shrink-0 text-text-3 sm:w-20">Lectures</span>
+              <span className={lab}>Lectures</span>
               {oneOf(
                 [
                   { value: false, label: 'Each by its size' },
@@ -618,7 +622,7 @@ function Setup({
             </div>
           )}
           <div className={row}>
-            <span className="mark shrink-0 text-text-3 sm:w-20">Timer</span>
+            <span className={lab}>Timer</span>
             <div className="min-w-0">
               {oneOf(
                 [
@@ -644,11 +648,51 @@ function Setup({
               )}
             </div>
           </div>
-          <button type="button" onClick={() => onStart(pool, length, even, timed ? limit : undefined)} className="press press-ink tap-safe mt-6">
-            Start the test
-          </button>
         </>
       )}
+    </>
+  );
+  const start = (
+    <button type="button" onClick={() => onStart(pool, length, even, timed ? limit : undefined)} className="press press-ink tap-safe">
+      Start the test
+    </button>
+  );
+
+  if (wide) {
+    // A plain preview of the test it will make, held beside the choices.
+    const line = (k: string, v: ReactNode) => (
+      <li className="flex items-baseline gap-4 border-b border-border py-2 text-small">
+        <span className="mark w-16 shrink-0 text-text-3">{k}</span>
+        <span className="min-w-0 flex-1 text-text">{v}</span>
+      </li>
+    );
+    const drawn = present.filter((k) => kinds.includes(k.value)).map((k) => (asked < pool.length ? k.label : `${k.label} ${pool.filter((q) => kindOfQuestion(q) === k.value).length}`));
+    return (
+      <div>
+        {header}
+        <div className="mt-6 flex gap-10">
+          <aside aria-label="The test it will make" className="sticky top-6 w-[22rem] shrink-0 self-start">
+            <h2 className="mark mb-1 text-text-3">The test</h2>
+            <ul className="border-t border-border">
+              {line('Asks', pool.length ? <span className="font-display text-heading tabular-nums">{asked} question{asked === 1 ? '' : 's'}</span> : 'Nothing yet')}
+              {line('Kinds', drawn.length ? drawn.join(', ') : 'None ticked')}
+              {line('From', `${places.length - off.length} of ${places.length} ${byLecture ? 'lectures' : 'sections'}`)}
+              {line('Timer', timed && pool.length ? `${limit} minutes` : 'None')}
+              {pool.length > 0 && firstLine(pool.length, missed, fresh) && line('Order', firstLine(pool.length, missed, fresh).trim())}
+            </ul>
+            {pool.length > 0 && <div className="mt-5">{start}</div>}
+          </aside>
+          <div className="min-w-0 flex-1 border-l border-border pl-10">{body}</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pb-24">
+      {header}
+      {body}
+      {pool.length > 0 && <ThumbBar>{start}</ThumbBar>}
     </div>
   );
 }
@@ -707,6 +751,7 @@ function Taking({
   const answered = answers.filter(isAnswered).length;
   /** Every question's number, to turn to any of them. */
   const [pages, setPages] = useState(false);
+  const wide = useMediaQuery(WIDE);
   const blank = typeof chosen === 'string' ? !chosen.trim() : chosen == null;
   // Shown in the test's own order; answers are kept by the file's index.
   const options = useMemo(() => (q.item.type === 'mcq' || q.item.type === 'multi' ? q.item.options : []), [q]);
@@ -742,46 +787,14 @@ function Taking({
     }
   });
 
-  return (
-    <div>
-      <div className="flex items-baseline justify-between gap-3">
-        <Link to={backTo} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
-          ← Leave
-        </Link>
-        <button type="button" onClick={onEnd} className="tap-safe text-sm text-text-3 hover:text-text">
-          End and see my score
-        </button>
-      </div>
-      <div className="mt-4 flex items-baseline justify-between gap-3 border-b border-border pb-2">
-        <button
-          type="button"
-          aria-expanded={pages}
-          onClick={() => setPages((p) => !p)}
-          className="tap-safe mark text-text-3 hover:text-text"
-        >
-          Question {at + 1} of {test.length} {pages ? '▾' : '▸'}
-        </button>
-        <span className="text-xs tabular-nums text-text-3">
-          {answered} answered
-          {left != null && (
-            <span className={`ml-2 ${left <= 60_000 ? 'text-error' : ''}`} role="timer" aria-live="off">
-              · {Math.floor(left / 60_000)}:{String(Math.floor((left % 60_000) / 1000)).padStart(2, '0')} left
-            </span>
-          )}
-        </span>
-      </div>
-      {pages && (
-        <QuestionGrid
-          test={test}
-          answers={answers}
-          flagged={flagged}
-          at={at}
-          onJump={(n) => {
-            onJump(n);
-            setPages(false);
-          }}
-        />
-      )}
+  const timer =
+    left != null ? (
+      <span className={left <= 60_000 ? 'text-error' : ''} role="timer" aria-live="off">
+        {Math.floor(left / 60_000)}:{String(Math.floor((left % 60_000) / 1000)).padStart(2, '0')} left
+      </span>
+    ) : null;
+  const ask = (
+    <>
       {isProblem(q.item) ? (
         <ProblemAsk
           // Its own box per question, so a half-typed answer is never carried to the next.
@@ -869,6 +882,10 @@ function Taking({
           {shown && <McqMarked item={q.item} chosen={chosen} order={order} />}
         </>
       )}
+    </>
+  );
+  const extras = (
+    <>
       <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-4">
         {!shown && (
           <button
@@ -889,10 +906,17 @@ function Taking({
           {flagged[at] ? 'Marked to come back to' : 'Mark to come back to'}
         </button>
       </div>
-      <div className="mt-6 flex items-center gap-3">
+    </>
+  );
+  const backButton = (
+    <>
         <button type="button" onClick={onBack} disabled={at === 0} className="press tap-safe disabled:opacity-40">
           Back
         </button>
+    </>
+  );
+  const nextButton = (
+    <>
         {toCheck ? (
           // A problem's Check goes through its form, which first asks for a number it can read.
           <button
@@ -908,7 +932,92 @@ function Taking({
             {last ? (unmarked ? 'Finish and mark it' : 'See my score') : blank ? 'Skip' : 'Next'}
           </button>
         )}
+    </>
+  );
+
+  if (wide) {
+    // The pages of a paper test: its list of questions at the left margin,
+    // the question at reading width, the clock and the end at the right.
+    return (
+      <div className="grid grid-cols-[12rem_minmax(0,42rem)_12rem] justify-center gap-10">
+        <div className="sticky top-6 max-h-[calc(100vh-3rem)] self-start overflow-y-auto [scrollbar-width:thin]">
+          <p className="mark mb-1 text-text-3">Questions</p>
+          <QuestionList test={test} answers={answers} flagged={flagged} at={at} onJump={onJump} />
+        </div>
+        <div className="min-w-0">
+          <p className="mark border-b border-border pb-2 text-text-3">
+            Question {at + 1} of {test.length}
+          </p>
+          {ask}
+          {extras}
+          <div className="mt-6 flex items-center gap-3">
+            {backButton}
+            {nextButton}
+          </div>
+        </div>
+        <aside className="sticky top-6 self-start">
+          <Link to={backTo} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
+            ← Leave
+          </Link>
+          {timer && <p className="mt-4 font-display text-heading tabular-nums text-text">{timer}</p>}
+          <p className="mt-2 text-small tabular-nums text-text-3">{answered} answered</p>
+          <button type="button" onClick={onEnd} className="press tap-safe mt-4">
+            End and see my score
+          </button>
+        </aside>
       </div>
+    );
+  }
+
+  return (
+    <div className="pb-24">
+      <div className="flex items-baseline justify-between gap-3">
+        <Link to={backTo} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
+          ← Leave
+        </Link>
+        <button type="button" onClick={onEnd} className="tap-safe text-sm text-text-3 hover:text-text">
+          End and see my score
+        </button>
+      </div>
+      <div className="mt-4 flex items-baseline justify-between gap-3 border-b border-border pb-2">
+        <span className="mark text-text-3">
+          Question {at + 1} of {test.length}
+        </span>
+        <span className="text-xs tabular-nums text-text-3">
+          {answered} answered
+          {timer && <span className="ml-2"> · {timer}</span>}
+        </span>
+      </div>
+      {ask}
+      {extras}
+      {/* Back and Next where the thumb is, with the list of questions between. */}
+      <ThumbBar>
+        <div className="flex items-center justify-between gap-3">
+          <button type="button" onClick={onBack} disabled={at === 0} className="press tap-safe disabled:opacity-40">
+            Back
+          </button>
+          <button type="button" onClick={() => setPages(true)} className="tap-safe mark text-text-3 hover:text-text">
+            Questions
+          </button>
+          {nextButton}
+        </div>
+      </ThumbBar>
+      {pages && (
+        <Sheet label="Questions" onClose={() => setPages(false)}>
+          <div className="px-5 pb-4">
+            <QuestionGrid
+              test={test}
+              answers={answers}
+              flagged={flagged}
+              at={at}
+              onJump={(n) => {
+                onJump(n);
+                setPages(false);
+              }}
+            />
+          </div>
+        </Sheet>
+      )}
     </div>
   );
 }
@@ -1043,6 +1152,47 @@ function QuestionGrid({
       </ol>
       <p className="mt-1 text-xs text-text-3">Faint: not answered yet. ?: marked to come back to.</p>
     </div>
+  );
+}
+
+/** The same list down the margin of a wide page: numbered, answered ones marked, here underscored. */
+function QuestionList({
+  test,
+  answers,
+  flagged,
+  at,
+  onJump,
+}: {
+  test: TestQuestion[];
+  answers: TestAnswer[];
+  flagged: boolean[];
+  at: number;
+  onJump: (n: number) => void;
+}) {
+  return (
+    <ol aria-label="Questions" className="border-t border-border">
+      {test.map((q, n) => {
+        const done = isAnswered(answers[n]);
+        const here = n === at;
+        return (
+          <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border">
+            <button
+              type="button"
+              onClick={() => onJump(n)}
+              aria-current={here ? 'step' : undefined}
+              aria-label={`Question ${n + 1}, ${done ? 'answered' : 'not answered'}${flagged[n] ? ', marked to come back to' : ''}`}
+              className={`tap-safe flex w-full items-baseline gap-2 py-1.5 text-left text-small tabular-nums ${done ? 'text-text' : 'text-text-3'} hover:text-accent`}
+            >
+              <span className={here ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : done ? 'font-semibold' : ''}>{n + 1}</span>
+              <span className="ml-auto text-xs text-accent">{flagged[n] ? '?' : ''}</span>
+              <span className="w-3 text-xs text-text-3" aria-hidden="true">
+                {done ? '✓' : ''}
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -1299,47 +1449,12 @@ function Results({
       </button>
     </div>
   );
-  return (
-    <div>
-      {header}
-      <div className="mt-6 border-y border-border py-5">
-        <div className="font-display text-display font-semibold text-text">
-          {result.got} of {result.total}
-        </div>
-        <div className="mt-1 text-small text-text-2">
-          {pct}% right
-          {result.missed.length > 0 && `. ${result.missed.length} to go over below.`}
-        </div>
-        <div className="mt-4">{actions}</div>
-      </div>
-
-      <section className="mt-8">
-        <h2 className="mark mb-2 text-text-3">By section</h2>
-        <ul className="border-t border-border">
-          {shown.map((r) => (
-            <li key={r.key} className="flex items-baseline gap-3 border-b border-border py-2.5">
-              <span className="min-w-0 flex-1 text-small text-text">
-                {r.section}
-                {lectures > 1 && <span className="block text-xs text-text-3">{r.lecture}</span>}
-              </span>
-              <span className={`shrink-0 text-small tabular-nums ${r.got < r.total ? 'text-text' : 'text-text-3'}`}>
-                {r.got} / {r.total}
-              </span>
-            </li>
-          ))}
-        </ul>
-        {sections.length > SECTIONS_SHOWN && (
-          <button type="button" onClick={() => setAllSections((v) => !v)} className="tap-safe mt-1 text-small text-text-3 hover:text-text">
-            {allSections ? 'Fewer sections' : `All ${sections.length} sections`}
-          </button>
-        )}
-      </section>
-
-      {result.missed.length > 0 && (
-        <section className="mt-8">
-          <h2 className="mark mb-2 text-text-3">What you missed</h2>
-          <ol className="border-t border-border">
-            {result.missed.map(({ q, chose, ticks }) => {
+  const wide = useMediaQuery(WIDE);
+  const [sel, setSel] = useState(0);
+  const pick = Math.min(sel, Math.max(0, result.missed.length - 1));
+  /** A question's first words, for the list. */
+  const stem = (q: TestQuestion) => (isWritten(q.item) ? q.item.front : 'question' in q.item ? q.item.question : '').replace(/[*_`$\\]/g, '').trim();
+  const missedBody = ({ q, chose, ticks }: (typeof result.missed)[number]) => {
               const where = (
                 <div className="text-xs text-text-3">
                   {lectures > 1 ? `${q.lecture} · ` : ''}
@@ -1350,7 +1465,7 @@ function Results({
                 const points = answerPoints(q.item)?.points ?? [];
                 const wrote = typeof chose === 'string' ? chose.trim() : '';
                 return (
-                  <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
+                  <>
                     {where}
                     <div className="prose-set mt-1 text-body text-text">
                       <RichText text={q.item.front} />
@@ -1367,14 +1482,14 @@ function Results({
                     </ul>
                     <IdeaNote idea={ideaOf(q)} open />
                     <SourceNote excerpt={q.item.source_excerpt} open />
-                  </li>
+                  </>
                 );
               }
               if (isProblem(q.item)) {
                 const typed = typeof chose === 'string' ? chose.trim() : '';
                 const verdict = chose === DONT_KNOW || !typed ? null : checkAnswer(q.item, typed);
                 return (
-                  <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
+                  <>
                     {where}
                     <div className="prose-set mt-1 text-body text-text">
                       <RichText text={q.item.question} />
@@ -1389,7 +1504,7 @@ function Results({
                     <div className="mt-2 text-small text-success">✓ {shownAnswer(q.item)}</div>
                     <SolutionSteps steps={q.item.steps ?? []} />
                     <SourceNote excerpt={q.item.source_excerpt} open />
-                  </li>
+                  </>
                 );
               }
               if (isMulti(q.item)) {
@@ -1397,7 +1512,7 @@ function Results({
                 const ticked = Array.isArray(chose) ? chose : [];
                 const n = q.item.options.length;
                 return (
-                  <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
+                  <>
                     {where}
                     <div className="prose-set mt-1 text-body text-text"><RichText text={q.item.question} /></div>
                     <div className="mt-2 text-small text-error">
@@ -1425,12 +1540,12 @@ function Results({
                     )}
                     <IdeaNote idea={ideaOf(q)} open />
                     <SourceNote excerpt={q.item.source_excerpt} open />
-                  </li>
+                  </>
                 );
               }
               const why = typeof chose === 'number' ? normalisedRationale(q.item)?.[chose] : undefined;
               return (
-                <li key={`${q.courseId}/${q.item.id}`} className="border-b border-border py-4">
+                <>
                   {where}
                   <div className="prose-set mt-1 text-body text-text"><RichText text={q.item.question} /></div>
                   <div className="mt-2 text-small text-error">
@@ -1445,13 +1560,34 @@ function Results({
                   )}
                   <IdeaNote idea={ideaOf(q)} open />
                   <SourceNote excerpt={q.item.source_excerpt} open />
-                </li>
+                </>
               );
-            })}
-          </ol>
-        </section>
-      )}
-
+  };
+  const bySection = (
+      <section className="mt-8">
+        <h2 className="mark mb-2 text-text-3">By section</h2>
+        <ul className="border-t border-border">
+          {shown.map((r) => (
+            <li key={r.key} className="flex items-baseline gap-3 border-b border-border py-2.5">
+              <span className="min-w-0 flex-1 text-small text-text">
+                {r.section}
+                {lectures > 1 && <span className="block text-xs text-text-3">{r.lecture}</span>}
+              </span>
+              <span className={`shrink-0 text-small tabular-nums ${r.got < r.total ? 'text-text' : 'text-text-3'}`}>
+                {r.got} / {r.total}
+              </span>
+            </li>
+          ))}
+        </ul>
+        {sections.length > SECTIONS_SHOWN && (
+          <button type="button" onClick={() => setAllSections((v) => !v)} className="tap-safe mt-1 text-small text-text-3 hover:text-text">
+            {allSections ? 'Fewer sections' : `All ${sections.length} sections`}
+          </button>
+        )}
+      </section>
+  );
+  const unsureBlock = (
+    <>
       {unsureRight.length > 0 && (
         <section className="mt-8">
           <h2 className="mark mb-1 text-text-3">Right, but marked ?</h2>
@@ -1492,6 +1628,61 @@ function Results({
           </ol>
         </section>
       )}
+    </>
+  );
+  return (
+    <div>
+      {header}
+      <div className="mt-6 border-y border-border py-5">
+        <div className="font-display text-display font-semibold text-text">
+          {result.got} of {result.total}
+        </div>
+        <div className="mt-1 text-small text-text-2">
+          {pct}% right
+          {result.missed.length > 0 && `. ${result.missed.length} to go over below.`}
+        </div>
+        <div className="mt-4">{actions}</div>
+      </div>
+
+      {!wide && bySection}
+      {wide && result.missed.length > 0 ? (
+        <section className="mt-8">
+          <h2 className="mark mb-2 text-text-3">What you missed</h2>
+          <div className="flex gap-10">
+            <ol aria-label="Missed questions" className="sticky top-6 max-h-[calc(100vh-3rem)] w-[18rem] shrink-0 self-start overflow-y-auto border-t border-border [scrollbar-width:thin]">
+              {result.missed.map((m, n) => (
+                <li key={`${m.q.courseId}/${m.q.item.id}`} className="border-b border-border">
+                  <button
+                    type="button"
+                    onClick={() => setSel(n)}
+                    aria-current={n === pick ? 'true' : undefined}
+                    className={`tap-safe flex w-full items-baseline gap-3 py-2 text-left text-small ${n === pick ? 'text-accent' : 'text-text-2 hover:text-text'}`}
+                  >
+                    <span className="mark w-5 shrink-0 tabular-nums">{n + 1}</span>
+                    <span className={`line-clamp-2 min-w-0 flex-1 ${n === pick ? 'underline decoration-accent decoration-2 underline-offset-4' : ''}`}>{stem(m.q) || m.q.section}</span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+            <div className="min-w-0 flex-1 border-l border-border pl-10">{missedBody(result.missed[pick])}</div>
+          </div>
+        </section>
+      ) : (
+        result.missed.length > 0 && (
+        <section className="mt-8">
+          <h2 className="mark mb-2 text-text-3">What you missed</h2>
+          <ol className="border-t border-border">
+            {result.missed.map((m) => (
+              <li key={`${m.q.courseId}/${m.q.item.id}`} className="border-b border-border py-4">
+                {missedBody(m)}
+              </li>
+            ))}
+          </ol>
+        </section>
+        )
+      )}
+      {wide && bySection}
+      {unsureBlock}
 
       {result.missed.length > 0 && <div className="mt-6">{actions}</div>}
     </div>

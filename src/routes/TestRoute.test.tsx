@@ -78,7 +78,7 @@ describe('practice test: a rehearsal, answers at the end', () => {
     fireEvent.click(radios()[0]);
     fireEvent.click(screen.getByRole('button', { name: 'Mark to come back to' }));
     expect(screen.getByRole('button', { name: 'Marked to come back to' }).getAttribute('aria-pressed')).toBe('true');
-    fireEvent.click(screen.getByRole('button', { name: /^Question 1 of 3/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Questions' }));
     expect(screen.getByRole('button', { name: 'Question 1, answered, marked to come back to' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Question 3, not answered' }));
     expect(screen.getByText(/^Question 3 of 3/)).toBeTruthy();

@@ -83,7 +83,11 @@ export function RootLayout() {
   // and colophon widen together so the rules still line up.
   const inSession = pathname.startsWith('/session/');
   const wide =
-    pathname === '/' || /^\/study\/[^/]+$/.test(pathname) || /^\/class\/[^/]+$/.test(pathname) || inSession
+    pathname === '/' ||
+    pathname === '/help' ||
+    inSession ||
+    /^\/(study|class)\/[^/]+$/.test(pathname) ||
+    /^\/(study|class)\/[^/]+\/(practice|test|progress|glossary|diagrams|set-aside)$/.test(pathname)
       ? ' is-wide'
       : '';
 
