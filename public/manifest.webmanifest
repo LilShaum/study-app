@@ -1,12 +1,12 @@
 {
   "name": "Arborous",
   "short_name": "Arborous",
-  "description": "Grow your knowledge — flashcards, MCQs, definitions and diagrams",
+  "description": "Grow your knowledge: flashcards, multiple choice, definitions and diagrams",
   "start_url": "/study-app/",
   "scope": "/study-app/",
   "display": "standalone",
-  "background_color": "#e2e0d5",
-  "theme_color": "#e2e0d5",
+  "background_color": "#faf8f0",
+  "theme_color": "#faf8f0",
   "icons": [
     {
       "src": "icons/icon.svg",

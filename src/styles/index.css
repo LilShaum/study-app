@@ -590,8 +590,11 @@
     stroke-dasharray: 1;
     animation: tree-wood 900ms ease-out both;
   }
-  /* A leaf's vein (.vn) arrives with its leaf, not with the wood. */
-  .tree-grow .lf,
+  /* A leaf's vein (.vn) arrives with its leaf, not with the wood. Not the
+     falling leaves: this rule outranks .leaf-fall, and held every leaf on its
+     branch until the drawing-on ended, so the fall came after the shiver
+     instead of with it. */
+  .tree-grow .lf:not(.leaf-fall),
   .tree-grow .vn {
     animation: tree-leaf 700ms ease-out 650ms both;
   }
@@ -615,16 +618,13 @@
     animation-duration: 2600ms;
     animation-fill-mode: both;
   }
+  /* A leaf waits on its branch until its own moment (its delay), then lets
+     go at once: no hang before it moves. */
   @keyframes leaf-fall {
     0% {
-      opacity: 0;
-      transform: translate(0, 0) rotate(0deg);
-      animation-timing-function: ease-out;
-    }
-    2% {
       opacity: 0.9;
       transform: translate(0, 0) rotate(0deg);
-      animation-timing-function: ease-in-out;
+      animation-timing-function: cubic-bezier(0.35, 0.2, 0.6, 1);
     }
     28% {
       transform: translate(var(--sway), calc(var(--dy) * 0.22)) rotate(calc(var(--rot) + 18deg));
@@ -758,37 +758,25 @@
      and dying away, the way a gust goes through a tree; the faded leaves
      come off with it. The trunk and the ground do not move. --amp is set
      per branch (harder where leaves are falling). */
+  /* Long enough for the leaves to go on falling while it trembles, dying
+     away slowly rather than stopping as they start (the owner, 2026-11-25). */
   .branch-shiver {
-    animation: branch-shiver 1000ms cubic-bezier(0.3, 0, 0.5, 1) both;
+    animation: branch-shiver 1700ms ease-in-out both;
   }
   @keyframes branch-shiver {
-    0% {
-      transform: rotate(0deg);
-    }
-    8% {
-      transform: rotate(calc(var(--amp, 1) * 1deg));
-    }
-    18% {
-      transform: rotate(calc(var(--amp, 1) * -0.85deg));
-    }
-    29% {
-      transform: rotate(calc(var(--amp, 1) * 0.65deg));
-    }
-    41% {
-      transform: rotate(calc(var(--amp, 1) * -0.45deg));
-    }
-    54% {
-      transform: rotate(calc(var(--amp, 1) * 0.28deg));
-    }
-    68% {
-      transform: rotate(calc(var(--amp, 1) * -0.14deg));
-    }
-    84% {
-      transform: rotate(calc(var(--amp, 1) * 0.05deg));
-    }
-    100% {
-      transform: rotate(0deg);
-    }
+    0% { transform: rotate(0deg); }
+    5% { transform: rotate(calc(var(--amp, 1) * 1deg)); }
+    11% { transform: rotate(calc(var(--amp, 1) * -0.95deg)); }
+    18% { transform: rotate(calc(var(--amp, 1) * 0.9deg)); }
+    25% { transform: rotate(calc(var(--amp, 1) * -0.8deg)); }
+    33% { transform: rotate(calc(var(--amp, 1) * 0.7deg)); }
+    41% { transform: rotate(calc(var(--amp, 1) * -0.6deg)); }
+    50% { transform: rotate(calc(var(--amp, 1) * 0.5deg)); }
+    59% { transform: rotate(calc(var(--amp, 1) * -0.4deg)); }
+    68% { transform: rotate(calc(var(--amp, 1) * 0.3deg)); }
+    77% { transform: rotate(calc(var(--amp, 1) * -0.2deg)); }
+    87% { transform: rotate(calc(var(--amp, 1) * 0.1deg)); }
+    100% { transform: rotate(0deg); }
   }
   /* A leaf already on the ground under a branch that has just lost it: it
      comes into the pile as the falling leaves land, not before. Three

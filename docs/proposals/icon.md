@@ -39,21 +39,23 @@ current icon I think was made once at the start and never touched."
 - **A specimen sprig taped to the sheet** (drawn and dropped): the tape read
   as tags, and the drawing was cluttered at home-screen size.
 
-## The pick, pending the owner
+## The pick: C, the sprig on paper (the owner, 2026-11-25)
 
-**The tree for the app icon (A or B), and the redrawn sprig for the tab and
-the header**, the same hand at two sizes, as a printed mark has a small
-version. The tree is the only option that says what Arborous is; the sprig
-is the only one that survives 16 pixels. Paper or ink is the owner's call:
-ink stands out more on a home screen, paper matches the app.
+> "I'd choose c since I'm not a big fan of the leaves falling on the tree and
+> I think c is a good icon"
 
-## The build, once picked
+The same sprig is the header mark, so the app icon, the tab and the header
+are one drawing.
 
-`scripts/make-icons.mjs` takes the chosen drawings (from
-`scripts/icon-candidates.mjs`, then deleted): icon.svg, the PNGs (192, 512,
-maskable 512 with the drawing inside the safe circle, apple-touch-icon),
-`src/lib/sprigMark.ts` for the header, the manifest's `background_color` and
-`theme_color` (now the stale #e2e0d5), and the notification badge. Then the
-share image (`public/og.png`) if it carries the old mark. Checked on the
-built app at phone size, and the installed splash on the owner's phone after
-the merge.
+## The build, as built
+
+`scripts/make-icons.mjs` now draws the sprig (the candidate's geometry moved
+in; `scripts/icon-candidates.mjs` is deleted) and writes `icon.svg`,
+`icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (the drawing inside
+the 80% safe circle), `apple-touch-icon.png`, the new white-on-transparent
+`badge-96.png` (used by the push handler in `src/sw.ts`) and
+`src/lib/sprigMark.ts` for `src/components/Sprig.tsx`. The manifest's
+`background_color` and `theme_color` and the light `theme-color` meta in
+`index.html` are now the app's paper, #faf8f0. `public/og.png` shows the
+course tree, not the sprig, so it is unchanged. Still to check: the
+installed splash on the owner's phone after the merge.

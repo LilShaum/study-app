@@ -237,8 +237,6 @@ function FirstRun() {
   };
 
   const partName = (sid: string | null | undefined) => DEMO.sections.find((s) => s.id === sid)?.title ?? '';
-  const first = partName(grown[0]);
-  const last = partName(grown[grown.length - 1]);
   const enough = grown.length >= 2;
 
   // The one tree: grows on the title page, is studied, fades, is searched.
@@ -389,15 +387,15 @@ function FirstRun() {
         </div>
       ) : (
         <Words
-          lead={grown.length < 2 ? 'Get a part right, and its branch grows leaves.' : 'Every question you get right grows its part.'}
+          lead={grown.length === 0 ? 'Get a part right, and its branch grows leaves.' : grown.length === 1 ? 'Leaves grow when you learn a part.' : 'The more you learn, the fuller the tree.'}
           line={
             answer && !answer.right
               ? `Not quite: ${DEMO_QUESTIONS[answer.sid].options[DEMO_QUESTIONS[answer.sid].right].toLowerCase()}. Tap a number to try again.`
               : grown.length === 0
                 ? `A sample lecture on the water cycle: each branch is one part of it. ${touch ? 'Touch the tree, then tap' : 'Point at the tree, then click'} a number to answer a question on that part.`
                 : grown.length === 1
-                  ? `Right, so ${first} has grown its leaves. Answer one more.`
-                  : `${first} and ${last} have grown their leaves.`
+                  ? 'Try another part.'
+                  : 'Each part of a lecture is a branch, and what you get right grows its leaves.'
           }
         />
       );
@@ -413,7 +411,7 @@ function FirstRun() {
       words = faded ? (
         <Words
           lead="What you don't review starts to fade."
-          line={`${first} went unreviewed, so its leaves fell. ${last}, reviewed yesterday, kept them. Arborous brings fading parts back before you forget them.`}
+          line="The part left alone lost its leaves; the one reviewed yesterday kept them. Arborous brings fading parts back before you forget them."
         />
       ) : (
         <Words lead="Now leave it for a while." line="Without review, what you learn begins to slip away." />

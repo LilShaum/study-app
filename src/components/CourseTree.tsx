@@ -122,7 +122,7 @@ const ARRIVAL_FALL = 'shake' as 'shake' | 'plain';
 const FALL_AFTER_UNFURL_MS = GROWTH === 'outward' ? 1700 : 1250;
 const FALL_AFTER_OPEN_MS = 350;
 /** How long the shiver lasts (styles/index.css, branch-shiver). */
-const SHAKE_MS = 1100;
+const SHAKE_MS = 1800;
 /** How long the drawing-on lasts, wood then leaves (styles/index.css, tree-grow). */
 const UNFURL_MS = GROWTH === 'outward' ? 2100 : 1400;
 
@@ -608,7 +608,7 @@ export function CourseTree({
    * leaves lost since you last saw that branch, kept per course
    * (store/fallen).
    */
-  const FALL_LASTS_MS = 3600;
+  const FALL_LASTS_MS = 4500;
   type Falling = { d: string; style: Record<string, string> };
   const [falls, setFalls] = useState<{ sid: string; at: number; leaves: Falling[] }[]>([]);
   const fellFrom = useFallenStore((s) => s.byCourse[courseId]);
@@ -651,9 +651,11 @@ export function CourseTree({
               // A tilt to land at, not a spin: leaves flutter, they do not tumble.
               '--rot': `${((h >> 6) % 70) - 35}deg`,
               animationDuration: `${2200 + ((h >> 12) % 800)}ms`,
-              // Off with the first tremble, a few at a time (the owner, 2026-11-25:
-              // "start falling when it starts shaking, not after").
-              animationDelay: `${after + (h % 320)}ms`,
+              // The first off with the first tremble, the rest let go one by
+              // one while the shiver goes on, more early than late (the owner,
+              // 2026-11-25: "very soon after it starts shaking the leaves should
+              // start falling and continuing to do so while the shake continues").
+              animationDelay: `${after + 60 + Math.round(1300 * ((h % 1000) / 1000) ** 2)}ms`,
             } as Record<string, string>,
           };
         });
@@ -690,7 +692,7 @@ export function CourseTree({
           if (!l.leafKey || clumpOf(l.leafKey) >= seenFrom) continue;
           landing.set(l.leafKey, {
             className: 'leaf-land',
-            style: { animationDelay: `${startAt + 1700 + (leafHash(l.leafKey) % 700)}ms` },
+            style: { animationDelay: `${startAt + 1900 + (leafHash(l.leafKey) % 1500)}ms` },
           });
         }
       }

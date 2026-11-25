@@ -90,7 +90,7 @@ interface PushMessage {
 }
 
 self.addEventListener('push', (event) => {
-  let msg: PushMessage = {};
+  let msg: PushMessage;
   try {
     msg = event.data?.json() ?? {};
   } catch {
@@ -100,7 +100,7 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(msg.title || 'Arborous', {
       body: msg.body ?? '',
       icon: `${BASE}icons/icon-192.png`,
-      badge: `${BASE}icons/icon-192.png`,
+      badge: `${BASE}icons/badge-96.png`,
       data: { url: msg.url ?? '' },
       // A newer reminder replaces one still showing, never piles up.
       tag: 'arborous-reminder',

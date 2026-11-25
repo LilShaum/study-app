@@ -20,8 +20,8 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
 
 - **A new app icon** (2026-11-25: "I also think the apps icon needs an
   update since the current icon I think was made once at the start and
-  never touched"). Planned (docs/proposals/icon.md); four candidates on
-  the part 4 page (Round 5). Waits on the owner's pick.
+  never touched"). Planned (docs/proposals/icon.md). 2026-11-25: the owner
+  picked C, the sprig on paper.
 - **Keep going until the list is clear, then check, then report**
   (2026-11-03: "dont stop until you run out of limit or the to do list is
   cleared. and even after its cleared, if there are any follow up checks or
@@ -151,6 +151,20 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   background is actually pretty good and its just the dark mode one that
   could be improved"); to see New lecture's two versions again; to know when
   leaves are programmed to grow.
+- **Round 4 feedback (2026-11-25)**: the icon: "I'd choose c since I'm not
+  a big fan of the leaves falling on the tree and I think c is a good icon";
+  the first run's "evaporation has grown its leaves" still disliked ("I had
+  suggested that in the case you hadn't asked a question, why not just make
+  it a general example": general words such as "leaves grow when you learn
+  a topic or concept"); the leaves to "drop 0.1-0.2 seconds sooner. I want
+  it to seem realistic rather than a step by step animations … very soon
+  after it starts shaking the leaves should start falling and continuing to
+  do so while the shake continues until it's finished"; New lecture: "I
+  like the side by side more in terms of the actual content but I do like
+  the in a stack better"; "What suits my material / Only the kinds I tick"
+  "looks ugly and low effort. That whole screen honestly needs some
+  reorganization especially after tacking on new things. It needs to be a
+  lot more intuitive without losing function."
 - **A code audit** (2026-11-22: "the code itself needs a big audit on how
   efficient it is, how many redundant or useless sections there are, how
   well its annotated for ai to understand the code, how well its
