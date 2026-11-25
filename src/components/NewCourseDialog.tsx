@@ -1,7 +1,7 @@
 import { normalizeCourseCode } from '@/lib/courseCode';
 import { classOf } from '@/lib/classExams';
 import { useMemo, useState, type ChangeEvent } from 'react';
-import { useDialog } from '@/lib/useDialog';
+import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 import { useNavigate } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { parseCourse } from '@/schema/parseCourse';
@@ -13,7 +13,8 @@ import { Icon } from './Icon';
 import { TeacherNotesField } from './TeacherNotesField';
 import { MoreContextField, StudiesField } from './StudiesField';
 import { MakeKindsField } from './MakeKindsField';
-import { More, PromptStep } from './PromptStep';
+import { More, PromptColumns, PromptStep } from './PromptStep';
+import { Sheet } from './Sheet';
 import { ALL_KINDS, storedKinds, type MakeKind } from '@/lib/makeKinds';
 import { cutMessage, readReply } from '@/lib/readReply';
 import { toastNotesFromAI } from '@/lib/notesFromAI';
@@ -50,7 +51,7 @@ const TYPE_LABELS: Record<string, string> = {
  * Step 3 takes the file the AI made; the prompt asks it to hand one back.
  */
 export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
-  useDialog(onClose);
+  const wide = useMediaQuery(WIDE);
   const [pasted, setPasted] = useState('');
   const [notes, setNotes] = useState('');
   const [studies, setStudies] = useState(false);
@@ -150,116 +151,121 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
     }
   }
 
+  const copyButton = (
+    <button type="button" onClick={copyPrompt} disabled={!kinds.length} className="press">
+      <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
+      {copied ? 'Prompt copied' : 'Copy the prompt'}
+    </button>
+  );
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Create a new lecture"
+    <Sheet
+      label="Create a new lecture"
+      title={classCode ? `New lecture for ${classCode}` : 'New lecture'}
+      onClose={onClose}
+      width={wide ? '4xl' : '2xl'}
     >
-      <div className="my-8 w-full max-w-2xl paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
-        <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="font-semibold text-text">{classCode ? `New lecture for ${classCode}` : 'New lecture'}</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">
-            <Icon name="x" size={18} />
-          </button>
-        </div>
-
-        <div className="space-y-6 px-5 py-4">
-          <PromptStep n={1} title="What to make">
-            <MakeKindsField value={kinds} onChange={setKinds} />
-            <div className="mt-3">
-              <StudiesField checked={studies} onChange={setStudies} />
-              <MoreContextField checked={moreContext} onChange={setMoreContext} />
-            </div>
-            <More label="More options">
-              <div className="space-y-3">
-                <TeacherNotesField value={notes} onChange={setNotes} />
-                {Object.keys(lectures).length > 0 && (
-                  <label className="block">
-                    <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-3">
-                      Follows on from
-                    </span>
-                    <span className="mb-1.5 block text-sm text-text-2">
-                      If this starts with slides from the end of another lecture, pick it, so they aren&rsquo;t made twice.
-                    </span>
-                    <select value={after} onChange={(e) => setAfter(e.target.value)} className="field w-full text-sm">
-                      <option value="">None</option>
-                      {Object.entries(lectures).map(([id, c]) => (
-                        <option key={id} value={id}>
-                          {c.metadata.title}
-                          {c.metadata.course_code ? ` · ${c.metadata.course_code}` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                )}
+      <PromptColumns
+        wide={wide}
+        left={
+          <>
+            <PromptStep n={1} title="What to make">
+              <MakeKindsField value={kinds} onChange={setKinds} />
+              <div className="mt-3">
+                <StudiesField checked={studies} onChange={setStudies} />
+                <MoreContextField checked={moreContext} onChange={setMoreContext} />
               </div>
-            </More>
-          </PromptStep>
+              <More label="More options">
+                <div className="space-y-3">
+                  <TeacherNotesField value={notes} onChange={setNotes} />
+                  {Object.keys(lectures).length > 0 && (
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-3">
+                        Follows on from
+                      </span>
+                      <span className="mb-1.5 block text-sm text-text-2">
+                        If this starts with slides from the end of another lecture, pick it, so they aren&rsquo;t made twice.
+                      </span>
+                      <select value={after} onChange={(e) => setAfter(e.target.value)} className="field w-full text-sm">
+                        <option value="">None</option>
+                        {Object.entries(lectures).map(([id, c]) => (
+                          <option key={id} value={id}>
+                            {c.metadata.title}
+                            {c.metadata.course_code ? ` · ${c.metadata.course_code}` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                </div>
+              </More>
+            </PromptStep>
 
-          <PromptStep n={2} title="Copy the prompt">
-            <p className="mb-3 text-sm text-text-2">
-              Paste it into Claude or another AI, and attach your slides, notes or PDF to the same message.
-            </p>
-            <button type="button" onClick={copyPrompt} disabled={!kinds.length} className="press">
-              <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
-              {copied ? 'Prompt copied' : 'Copy the prompt'}
-            </button>
-            <More label="Why attach them to the message?">
-              <p>
-                Files kept only in a project often reach the AI as text, without their diagrams, and the lecture then
-                misses what the diagrams show. The prompt has the AI list every term and idea in your material first, so
-                the lecture covers all of it rather than skimming.
+            <PromptStep n={2} title="Copy the prompt">
+              <p className="mb-3 text-sm text-text-2">
+                Paste it into Claude or another AI, and attach your slides, notes or PDF to the same message.
               </p>
-            </More>
-          </PromptStep>
+              {!wide && copyButton}
+              <More label="Why attach them to the message?">
+                <p>
+                  Files kept only in a project often reach the AI as text, without their diagrams, and the lecture then
+                  misses what the diagrams show. The prompt has the AI list every term and idea in your material first, so
+                  the lecture covers all of it rather than skimming.
+                </p>
+              </More>
+            </PromptStep>
+          </>
+        }
+        right={
+          <>
+            {wide && copyButton}
+            <PromptStep n={3} title="Upload the file">
+              <label className="press tap-safe inline-flex cursor-pointer">
+                <Icon name="upload" size={13} />
+                Upload the file the AI made
+                <input type="file" accept=".json,.study.json" className="hidden" onChange={handleFile} />
+              </label>
+            </PromptStep>
 
-          <PromptStep n={3} title="Upload the file">
-            <label className="press tap-safe inline-flex cursor-pointer">
-              <Icon name="upload" size={13} />
-              Upload the file the AI made
-              <input type="file" accept=".json,.study.json" className="hidden" onChange={handleFile} />
-            </label>
-          </PromptStep>
-
-          {result && 'error' in result && (
-            <div
-              role="alert"
-              className="whitespace-pre-wrap border-l-2 border-error py-2 pl-3 text-sm text-error"
-            >
-              {result.error}
-            </div>
-          )}
-
-          {result && 'cut' in result && result.cut && (
-            <div role="status" className="border-l-2 border-warning py-2 pl-3 text-sm text-text-2">
-              {result.cut}
-            </div>
-          )}
-
-          {course && (
-            <div className="border-l-2 border-border-strong bg-bg py-2 pl-3 text-sm">
-              <div className="font-medium text-text">
-                {course.metadata.title || 'Untitled lecture'}
-                {course.metadata.course_code && (
-                  <span className="font-normal text-text-3"> · {course.metadata.course_code}</span>
-                )}
+            {result && 'error' in result && (
+              <div
+                role="alert"
+                className="whitespace-pre-wrap border-l-2 border-error py-2 pl-3 text-sm text-error"
+              >
+                {result.error}
               </div>
-              <div className="mt-0.5 text-text-2">
-                {plural(course.sections.length, 'section')}, {plural(itemTotal, 'item')}
-                {Object.keys(counts).length > 0 && (
-                  <span className="text-text-3">
-                    {' '}
-                    ({Object.entries(counts)
-                      .map(([type, n]) => plural(n, TYPE_LABELS[type] ?? type))
-                      .join(', ')})
-                  </span>
-                )}
+            )}
+
+            {result && 'cut' in result && result.cut && (
+              <div role="status" className="border-l-2 border-warning py-2 pl-3 text-sm text-text-2">
+                {result.cut}
               </div>
-            </div>
-          )}
-        </div>
+            )}
+
+            {course && (
+              <div className="border-l-2 border-border-strong bg-bg py-2 pl-3 text-sm">
+                <div className="font-medium text-text">
+                  {course.metadata.title || 'Untitled lecture'}
+                  {course.metadata.course_code && (
+                    <span className="font-normal text-text-3"> · {course.metadata.course_code}</span>
+                  )}
+                </div>
+                <div className="mt-0.5 text-text-2">
+                  {plural(course.sections.length, 'section')}, {plural(itemTotal, 'item')}
+                  {Object.keys(counts).length > 0 && (
+                    <span className="text-text-3">
+                      {' '}
+                      ({Object.entries(counts)
+                        .map(([type, n]) => plural(n, TYPE_LABELS[type] ?? type))
+                        .join(', ')})
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        }
+      />
 
         <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
           <button type="button" onClick={onClose} className="rounded px-3 py-1.5 text-sm text-text-2 hover:text-text">
@@ -274,8 +280,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
             Add lecture
           </button>
         </div>
-      </div>
-    </div>
+    </Sheet>
   );
 }
 

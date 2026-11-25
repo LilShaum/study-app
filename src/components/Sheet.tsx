@@ -11,10 +11,10 @@ interface SheetProps {
   /** A form sheet submits; its actions are buttons inside it. */
   onSubmit?: (e: FormEvent<HTMLFormElement>) => void;
   /** How wide it may grow on a larger screen. */
-  width?: 'md' | 'lg' | 'xl' | '2xl';
+  width?: 'md' | 'lg' | 'xl' | '2xl' | '4xl';
 }
 
-const WIDTH = { md: 'sm:max-w-md', lg: 'sm:max-w-lg', xl: 'sm:max-w-xl', '2xl': 'sm:max-w-2xl' };
+const WIDTH = { md: 'sm:max-w-md', lg: 'sm:max-w-lg', xl: 'sm:max-w-xl', '2xl': 'sm:max-w-2xl', '4xl': 'sm:max-w-4xl' };
 
 /** How far down a drag must carry the sheet, in pixels, before letting go closes it. */
 const DROP_PX = 90;
