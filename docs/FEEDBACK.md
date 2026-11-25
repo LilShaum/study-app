@@ -11,6 +11,33 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-25 · Testing 10: the paper texture stops partway down a sheet
+
+**Their words:** "Also the fucking texture doesn't continue the whole way
+through for no apparent reason. You have to really pay attention to when
+you use the paper texture and when you don't and why." (screenshot: New
+lecture on a phone, dark: the top of the sheet has the paper grain, from
+"More" down it is flat.)
+**Question or instruction:** a fault, and a rule to keep.
+**What went wrong:** the grain is painted on a box only as tall as the
+first screen (or on one part of the sheet), so a scrolling sheet runs out
+of paper. Never checked by scrolling to the bottom. (habit: looking at the
+first screen of a long sheet only.)
+**What they are asking:** one surface, one material: wherever paper is
+used it covers the whole surface, however far it scrolls; and a reason,
+written down, for which surfaces are paper and which are not.
+**Expectations, broken down:**
+- *continues the whole way*: grain from top to bottom of every sheet,
+  dialog and page, at any scroll position / checked by: screenshots at the
+  top and bottom of the longest sheet, phone, both themes / not: fixing
+  this one dialog.
+- *pay attention to when and why*: a rule in the design skill naming which
+  surfaces carry the grain and why, applied everywhere / checked by: every
+  surface listed and matched.
+**Lesson for every screen:** a material belongs to a whole surface; check
+long, scrolling surfaces at their bottom, not only their first screen.
+**Status:** noted; to fix and audit after all screenshots.
+
 ### 2026-11-25 · Testing 9: Diagrams on a phone, the row of sections
 
 **Their words:** "My first instinct when testing the diagram feature on the

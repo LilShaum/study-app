@@ -80,6 +80,11 @@ screen, not that one:
   is beside it), then answer each reason with the control's own look and
   motion, in the book's style. "Intuitive" never means simpler or duller,
   and never a line telling the student what to do.
+- **A material covers its whole surface.** If a page, sheet or dialog is
+  paper (the grain), it is paper top to bottom at every scroll position;
+  grain that stops partway reads as a fault. Which surfaces are paper, and
+  why, is decided once and kept to everywhere. Check long surfaces at their
+  bottom, not only their first screen (the owner, 2026-11-25).
 - **Settings are not page content.** Anything the student sets once (their
   name, theme, reminders, account) lives in a settings place they open,
   not as open fields on a page that also displays it.
