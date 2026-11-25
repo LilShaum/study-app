@@ -205,3 +205,12 @@ knows where things stand.
   and the first run rewritten (words, a nicer tree that stays throughout,
   transitions, name, account). Waits on the owner's look at Round 2 and
   three questions at its end; then P4-3 (high effort) for the final check.
+- **2026-11-25, Round 3** (the owner: "Finish the other things you had left
+  to do … before saying you are done"): built and shown on the same page:
+  the end of a sitting on a computer, New lecture's class check
+  (`closeClass`), the glossary's "On this card", J and K through lists
+  (`useListKeys`), the first run's sample lecture as the water cycle.
+  Notifications planned (docs/proposals/notifications.md); they wait on the
+  owner's go-ahead to change the Supabase project, and the first run's
+  reminder question waits with them. Open questions: notifications, swipes
+  on a real phone, New lecture in one column. Then P4-3.
