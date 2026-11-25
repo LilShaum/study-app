@@ -827,11 +827,39 @@ a tap shows a day's minutes and lectures. Four figures: time studied, days
 studied, longest and current streak (from yesterday until today is
 studied). Time by class, most first, then Other, then Removed lectures. A
 removed lecture keeps its days, class code and title (studyLog `retire`,
-kept by sync), so its time stays under its class. Then Sync (a link) and
+kept by sync), so its time stays under its class. Then Sync (a link), Reminders (below) and
 Back up. No streak nudges, no forecast ahead.
 
 **Working means.** "2 of the last 3 days" for a student who began three
 days ago; a finished class removed from the library still counts.
+
+### Reminders
+
+**Goal.** Bring the student back when it is true that something is there
+(the owner, 2026-11-25: notifications "for various things", asked about
+"near the end of onboarding", adjustable "in the settings"; "the most
+obvious kind which is like a daily study reminder"). Never a streak or
+guilt (CLAUDE.md, Today). Plan: docs/proposals/notifications.md.
+
+**How it works.** Web push through Supabase. The device plans the next
+week (`lib/reminderPlan`) and saves it in place of the last plan after
+each sync, when the app opens and when it is put away (`lib/push`,
+`lib/autoSync`); the `arborous-push` function sends what is due each
+minute, at most two a day, and drops anything over six hours late. Kinds,
+each a tick on the student's page (`components/RemindersField`, settings
+per device in `store/reminders`): each day at the chosen time when there
+is something to study, saying what ("12 to review in PSYC 351. About 30
+minutes."), skipped once the day's time is studied; a second look three
+hours after the latest sitting's misses, never 10 pm to 8 am; three days
+and one day before an exam, which takes that day's slot with the day's
+line under it. A tap opens the library, the lecture or the class. Where
+push can't work, one line says why (sign in; add to the Home Screen on an
+iPhone; blocked in settings). The first run asks after the account page,
+only when signed in on a device that can take a push.
+
+**Working means.** A student who studied their time in the morning hears
+nothing that evening; one with an exam in three days hears about the exam,
+once, with what is left.
 
 ## Layout and devices
 

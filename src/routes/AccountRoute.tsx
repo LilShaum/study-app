@@ -7,6 +7,7 @@ import { useMediaQuery } from '@/lib/useMediaQuery';
 import { dayLine, heatmapWeeks, studyStats, summaryLine, sumDays, timeByClass, timeStudied } from '@/lib/heatmap';
 import { StudyHeatmap } from '@/components/StudyHeatmap';
 import { BackupButton, RestoreButton } from '@/components/Backup';
+import { RemindersField } from '@/components/RemindersField';
 
 /** Wide enough for a whole year of weeks at a readable size. */
 const YEAR_WIDE = '(min-width: 640px)';
@@ -113,6 +114,13 @@ export function AccountRoute() {
         <Link to="/sync" className="press tap-safe mt-3">
           Sign in and sync
         </Link>
+      </section>
+
+      <section className="mt-10 max-w-md" aria-labelledby="account-reminders">
+        <h2 id="account-reminders" className="mark text-text-3">
+          Reminders
+        </h2>
+        <RemindersField />
       </section>
 
       <section className="mt-10 max-w-md" aria-labelledby="account-backup">

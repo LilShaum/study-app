@@ -373,6 +373,13 @@ const SECTIONS: HelpSection[] = [
           and opening it does not.
         </p>
         <p className="mt-2">
+          <strong>Reminders</strong> (on your page, under Reminders) need you signed in. Each kind is
+          its own tick: once a day at the time you choose, when there is something to study; a few
+          hours after a sitting with misses, for a second look; and three days and one day before an
+          exam. Never more than two a day, and each is turned on or off per device. On an iPhone they
+          reach only the app added to the Home Screen.
+        </p>
+        <p className="mt-2">
           <strong>Back up everything</strong> saves every lecture, all your progress and your
           settings as one file. Keep it somewhere safe, or restore it on another device or in the
           installed app to carry on exactly where you left off. Restoring replaces what is on the

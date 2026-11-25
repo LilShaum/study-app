@@ -5,6 +5,7 @@ import { usePlanStore, DAILY_CHOICES } from '@/store/plan';
 import { useFallenStore } from '@/store/fallen';
 import { useProfileStore } from '@/store/profile';
 import { cloud, cloudError, syncNow } from '@/lib/cloud';
+import { pushBlock, turnOnReminders } from '@/lib/push';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { CourseTree } from './CourseTree';
@@ -106,7 +107,7 @@ function studied(sectionId: string, at: number): Record<string, ItemResult> {
   return Object.fromEntries(section.items.map((it) => [it.id, { got: 3, missed: 0, lastSeen: at } as ItemResult]));
 }
 
-type Page = 'title' | 'install' | 'grow' | 'fade' | 'find' | 'time' | 'name' | 'account' | 'start';
+type Page = 'title' | 'install' | 'grow' | 'fade' | 'find' | 'time' | 'name' | 'account' | 'remind' | 'start';
 
 /** How long a page's words take to leave before the next page's come in. */
 const LEAVE_MS = 200;
@@ -150,9 +151,23 @@ function FirstRun() {
   const showInstall = !installed && !framed && platform !== 'desktop';
   const touch = platform !== 'desktop';
 
+  // Reminders are asked about only once they can work: signed in, and on a
+  // device that can take a push (docs/proposals/notifications.md).
+  const [canRemind, setCanRemind] = useState(false);
   const pages = useMemo<Page[]>(
-    () => ['title', ...(showInstall ? (['install'] as Page[]) : []), 'grow', 'fade', 'find', 'time', 'name', 'account', 'start'],
-    [showInstall],
+    () => [
+      'title',
+      ...(showInstall ? (['install'] as Page[]) : []),
+      'grow',
+      'fade',
+      'find',
+      'time',
+      'name',
+      'account',
+      ...(canRemind ? (['remind'] as Page[]) : []),
+      'start',
+    ],
+    [showInstall, canRemind],
   );
   const [at, setAt] = useState(0);
   const [leaving, setLeaving] = useState(false);
@@ -177,6 +192,8 @@ function FirstRun() {
   const [named, setNamed] = useState<string | null>(null);
   const [foundOne, setFoundOne] = useState(false);
   const [yourName, setYourName] = useState('');
+  const [reminding, setReminding] = useState(false);
+  const [remindError, setRemindError] = useState<string | null>(null);
   // Came for their own account, not the tour: sign in, then straight to the library.
   const [returning, setReturning] = useState(false);
   const EMPTY = useMemo(() => ({}), []);
@@ -499,9 +516,57 @@ function FirstRun() {
 
     case 'account':
       words = (
-        <AccountStep signingIn={returning} onDone={() => (returning ? finish() : next())} onSkip={next} />
+        <AccountStep
+          signingIn={returning}
+          onDone={() => {
+            if (returning) return finish();
+            setCanRemind(pushBlock() === null);
+            next();
+          }}
+          onSkip={next}
+        />
       );
       action = null;
+      break;
+
+    case 'remind':
+      words = (
+        <Words
+          lead="Remind you when things start to fade?"
+          line="Once a day at a time you choose, a few hours after a miss, and before an exam. You can change what you hear about on your page."
+        />
+      );
+      action = (
+        <div className="flex flex-col items-center gap-3 wide:items-start">
+          <button
+            type="button"
+            disabled={reminding}
+            onClick={async () => {
+              setReminding(true);
+              setRemindError(null);
+              try {
+                await turnOnReminders();
+                next();
+              } catch (e) {
+                setRemindError(cloudError(e));
+              } finally {
+                setReminding(false);
+              }
+            }}
+            className="press press-ink tap-safe"
+          >
+            {reminding ? 'Turning on…' : 'Remind me'}
+          </button>
+          <button type="button" onClick={next} className="tap-safe text-small text-text-3 hover:text-text">
+            Not now
+          </button>
+          {remindError && (
+            <p role="alert" className="max-w-xs text-small text-error">
+              {remindError}
+            </p>
+          )}
+        </div>
+      );
       break;
 
     case 'start':

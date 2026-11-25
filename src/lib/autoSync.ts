@@ -1,4 +1,5 @@
 import { cloudError, hasSavedSignIn, syncNow } from './cloud';
+import { saveReminderPlan } from './push';
 import { toast } from '@/store/toast';
 
 /** Leaving the app more often than this does not sync again. */
@@ -9,12 +10,15 @@ let lastAttempt = 0;
 function attempt(quietly: boolean) {
   if (!hasSavedSignIn() || Date.now() - lastAttempt < MIN_GAP_MS) return;
   lastAttempt = Date.now();
-  syncNow().catch((e) => {
-    // Offline is the normal case on a phone; say nothing then. Anything else
-    // is worth one line, or a sync that silently stopped would go unnoticed.
-    const message = cloudError(e);
-    if (!quietly && !/reach the server/.test(message)) toast(`Sync failed: ${message}`, { type: 'error' });
-  });
+  syncNow()
+    // Reminders are planned from what the device knows after the sync.
+    .then(() => saveReminderPlan())
+    .catch((e) => {
+      // Offline is the normal case on a phone; say nothing then. Anything else
+      // is worth one line, or a sync that silently stopped would go unnoticed.
+      const message = cloudError(e);
+      if (!quietly && !/reach the server/.test(message)) toast(`Sync failed: ${message}`, { type: 'error' });
+    });
 }
 
 /**

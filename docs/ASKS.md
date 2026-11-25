@@ -133,6 +133,9 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   2026-11-25, on the plan: "you missed the most obvious kind which is like a
   daily study reminder"; "yes to notifications if you can do the supabase
   stuff yourself if you are connected".
+  2026-11-25: built on the branch (Supabase tables, function and minute job
+  live; app side on the branch). Open until merged and a reminder is seen
+  on a real phone.
 - **Round 3 feedback (2026-11-25)**: the copy step's model advice "too far
   the other way … it should just be a general suggestion like for best
   results, use a more capable model on high effort"; the leaves "start
