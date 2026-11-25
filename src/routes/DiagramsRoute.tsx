@@ -70,8 +70,8 @@ function SectionRow({
     if (glided.has(courseId) || prefersReducedMotion() || el.scrollWidth <= el.clientWidth + 2) return;
     glided.add(courseId);
     const from = el.scrollLeft;
-    const out = window.setTimeout(() => el.scrollTo?.({ left: from + 56, behavior: 'smooth' }), 650);
-    const back = window.setTimeout(() => el.scrollTo?.({ left: from, behavior: 'smooth' }), 1250);
+    const out = window.setTimeout(() => el.scrollTo?.({ left: from + 56, behavior: scrollBehavior() }), 650);
+    const back = window.setTimeout(() => el.scrollTo?.({ left: from, behavior: scrollBehavior() }), 1250);
     return () => {
       window.clearTimeout(out);
       window.clearTimeout(back);
