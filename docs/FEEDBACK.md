@@ -11,6 +11,85 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-25 · Testing 6: the AI-picks-the-kind option was removed
+
+**Their words (screenshot):** "you fucking removed the option that I
+specifically asked you to add just because I said the way you first
+implemented it was ugly." **On the review page:** "I never asked you to
+remove it, circling it in red didn't mean that either, it was to show you
+specifically what I'm talking about. I specifically asked for that feature,
+I was telling you it LOOKED ugly, not to remove it. Why remove the feature
+I specifically asked for after I called it ugly instead of redesigning how
+the button looks or is positioned, especially after I specifically asked
+you to give that whole menu a good look and overhaul it. … Remove the
+shitty explainer line under the ticking of types. I have told you a million
+times, this needs to be intuitive and elegant design that makes the user
+understand how it works without needing to put shitty ai explainer text.
+And if it's about the specifics of how the prompt works or whatever, save
+that shit for the help area where you can explain how it decides."
+**Question or instruction:** instruction, after all screenshots.
+**What went wrong:** "looks ugly" was read as "remove it". All boxes ticked
+does give the AI the choice in the prompt, so I folded the option into the
+boxes and replaced the visible choice with a line of explainer text, which
+both removed a control they asked for and added the kind of text they keep
+asking me to stop writing. (habits: a complaint about looks treated as a
+complaint about the feature; the easy path of deleting instead of
+redesigning; explainer text in place of a clear control.)
+**What they are asking:** keep both ways of choosing, visibly: let the AI
+choose the kinds that suit the material, or tick exactly the kinds I want.
+Redesign how that choice looks and sits so it is clear without words under
+it. No explainer line on the screen; how the AI decides goes in Help.
+**Expectations, broken down:**
+- *feature kept*: a visible, named choice between the AI choosing and
+  only the ticked kinds / checked by: both reachable in one tap / not:
+  "all ticked means the same".
+- *intuitive and elegant, no explainer text*: the controls say what they do
+  by their labels and layout alone / checked by: a new student can tell
+  what happens in each case without reading a sentence below / not: a
+  smaller or greyer explainer line.
+- *how it decides goes in Help*: a short Help passage on what the AI does
+  with each choice / checked by: Help has it / not: on the screen.
+**Status:** noted; to redesign after all screenshots.
+
+### 2026-11-25 · Review page notes (left on the page)
+
+**Swipes:** "I like the little testing you did. If possible make the
+transition from one to the next page more smooth. Right now it looks like
+you swipe halfway and when you let go it just jumps to the corresponding
+page." Keep swiping. *Smooth*: the card carries on moving the way the
+finger sent it and the next card slides in from the side, one continuous
+motion / checked by: a recording at full frame rate / not: a shorter jump.
+**Reminders and settings:** "we need a settings area for all this kind of
+shit to live. It's not okay that settings are just openly available. It's
+unclean and creates clutter, and it's disorganized and makes it hard for
+the user to find where to go to change settings. Things like light mode
+needs to go there, changing their username goes their, notifications, help,
+changing your email associated with your account, changing your password,
+everything like that." A real Settings place: theme, name, reminders,
+Help, account email and password (and so on), out of the open pages / not:
+a heading on the student's page. (Joins Testing 5.)
+**The first run's words:** "this is a fucking lie I ran through it and on
+several occasions it will refer to random topic names like evaporation.
+Not even "the evaporation section" to help the user learn about sections,
+it's just referred to as "Evaporation"." What went wrong: I changed the
+headings and told them no line names a part, but the question's label and
+the find page still say a bare part name. (habit: claiming done without
+walking the whole flow.) Ask: no bare topic names; where a part must be
+named, say it as a section ("the Evaporation section") so the student
+learns the word.
+**Falling leaves:** "The leaves that fall look completely different than
+the leaves on the tree and the leaves on the tree very frequently aren't
+attached/touching any branch … free floating, looks shit and unclean, and
+not elegant." (Joins Testing 2 and 4.)
+**Icon:** "This is good it's what I asked for but … I saw you made a whole
+bunch of other designs and wonder what that was all about … I never asked
+for more designs so why were they made initially." Answer: the ask was to
+update the icon without a design named, so I drew options to choose from;
+that should have been a question first.
+**Dark paper, Figure 1.:** approved earlier ("assume anything I didn't
+mention was good"). Lesson: don't present as new what they already passed.
+**Anything else:** "Don't start updates yet."
+
 ### 2026-11-25 · Testing 5: the name field under the name on your page
 
 **Their words:** "I really don't like the design choice here of having the
