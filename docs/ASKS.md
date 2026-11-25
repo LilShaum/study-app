@@ -104,6 +104,9 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   whole on judgement ("yes to everything … do your best to make everything
   high quality and not look like ai slop"); feedback after the
   presentation.
+  2026-11-25 (P4-1): built on the branch and shown as one page
+  (part4-brief.md, "Where things stand"); waits on the owner's feedback in
+  P4-2, then P4-3 and the merge.
 - **A code audit** (2026-11-22: "the code itself needs a big audit on how
   efficient it is, how many redundant or useless sections there are, how
   well its annotated for ai to understand the code, how well its
@@ -144,7 +147,7 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   run: a list of the app's own terms, each taught where it is first met.
 - **The daily time asked in the first run** (2026-11-24, on where "Set one
   daily time" belongs: "this is something that would be good to ask in the
-  onboarding").
+  onboarding"). Built on the branch 2026-11-25 (P4-1); waits on P4-2/P4-3.
 - **A scantron layout for the practice test** (2026-11-25, an idea for
   later: "it could be as a tick in the practice test settings called
   scantron multiple choice or something"; from the owner's earlier "like a

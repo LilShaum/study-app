@@ -176,3 +176,22 @@ and closes the asks in docs/ASKS.md.
 Each stage writes down at the end of this brief what it did and what is
 left (a dated line), so the next stage, or a session started by hand,
 knows where things stand.
+
+## Where things stand
+
+- **2026-11-25, P4-1 done.** Built on the branch and presented as one page:
+  https://claude.ai/artifact/PhPcZc61RynCUfeDQGFZ38 (private to the owner).
+  The plan with every screen on both formats, the owner's yes to it, and
+  what building changed are in docs/proposals/design-update.md; the app's
+  words in docs/proposals/terms.md. Built: the tree's arrival (grows out
+  from the trunk, faded leaves fall with a shake; dashed growth and a
+  plain fall kept as switches, `GROWTH` and `ARRIVAL_FALL` in
+  CourseTree.tsx, for the owner to pick), Sheet and ThumbBar, the lecture
+  page as a spread on a computer and sections as sheets on a phone, the
+  sitting with margins on a computer and controls at the bottom with
+  swipes on a phone, the library and class page, Practice and the test,
+  the quieter pages, every dialog as a sheet, the first run, "due" to "to
+  review", New lecture's class pick. Not built: the end of a sitting on a
+  computer, the class check when a file comes back, hover-a-term in a
+  card, J and K outside the glossary. Unchecked: real iPhone Safari and
+  real touch. The page's four questions wait on the owner in P4-2.
