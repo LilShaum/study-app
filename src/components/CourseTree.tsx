@@ -9,6 +9,7 @@ import { sectionMemory } from '@/lib/sectionMemory';
 import { placeTreeKeys, plateTop } from '@/lib/treeKeys';
 import { useFallenStore } from '@/store/fallen';
 import { examRule } from '@/lib/exam';
+import { prefersReducedMotion } from '@/lib/motion';
 
 interface CourseTreeProps {
   courseId: string;
@@ -66,7 +67,47 @@ interface CourseTreeProps {
    * For the end of a session.
    */
   grewFrom?: Record<string, ItemResult>;
+  /**
+   * The lecture page's arrival (docs/proposals/design-update.md, the phone).
+   * The leaves lost since the student last looked fall now, on opening the
+   * lecture, with a small shake of the tree; the first opening of a lecture
+   * in a visit also draws the tree on first. Pointing at a branch no longer
+   * drops anything: it names the branch (the owner, 2026-11-22: "thats when
+   * the leaves fall rather than when you run your fingers over them").
+   */
+  arrive?: boolean;
+  /**
+   * A sitting's tree: the progress the sitting began with. A section's
+   * leaves never go below what they were then (a miss drops no leaf: the
+   * owner, 2026-11-24, "the leaves are meant to fall when the person hasn't
+   * practiced it in a while"), and a leaf the tree's measure newly counts
+   * as learned buds where it grows, while you watch.
+   */
+  growOnly?: Record<string, ItemResult>;
+  /**
+   * Opening a section from the drawing (a tapped number, a picked branch).
+   * Given, it is called instead of going to the section's page: the
+   * computer's lecture page opens it beside the ways to study.
+   */
+  onOpenSection?: (sectionId: string) => void;
 }
+
+/**
+ * Lectures already drawn on in this visit to the app. The drawing-on is the
+ * lecture arriving; coming back to it from a sitting a minute later is not
+ * an arrival, and a tree that redraws itself every time is a spinner.
+ */
+const arrivedThisVisit = new Set<string>();
+
+/** How the arrival brings the leaves down: with a shake of the tree, or a plain fall. */
+const ARRIVAL_FALL: 'shake' | 'plain' = 'shake';
+/** When the arrival's fall begins: after the drawing-on, or almost at once. */
+const FALL_AFTER_UNFURL_MS = 1250;
+const FALL_AFTER_OPEN_MS = 350;
+/** How long the shake lasts (styles/index.css, tree-shake). */
+const SHAKE_MS = 1100;
+/** How long the drawing-on lasts, wood then leaves (styles/index.css, tree-grow). */
+const UNFURL_MS = 1400;
 
 /** A small stable hash, to give each moving leaf its own path and timing. */
 function leafHash(s: string): number {
@@ -227,6 +268,9 @@ export function CourseTree({
   crop = false,
   animate = false,
   grewFrom,
+  arrive = false,
+  growOnly,
+  onOpenSection,
   mode = 'navigate',
   onExpand,
   onPoint,
@@ -249,7 +293,12 @@ export function CourseTree({
   const { tree, sections } = useMemo(() => {
     const sections = sortedSections(course).map((section) => {
       const stats = sectionStats(section, progress);
-      const memory = sectionMemory(section, progress, now, examRule(course, progress, now));
+      const live = sectionMemory(section, progress, now, examRule(course, progress, now));
+      // A sitting's tree never loses what the sitting began with.
+      const floor = growOnly ? sectionMemory(section, growOnly, now, examRule(course, growOnly, now)) : null;
+      const memory = floor
+        ? { ...live, held: Math.max(live.held, floor.held), learned: Math.max(live.learned, floor.learned) }
+        : live;
       const heldPct = memory.learned ? Math.round((memory.held / memory.learned) * 100) : 100;
       return {
         id: section.id,
@@ -267,7 +316,7 @@ export function CourseTree({
       };
     });
     return { tree: growTree(courseId, sections), sections };
-  }, [courseId, course, progress, now]);
+  }, [courseId, course, progress, now, growOnly]);
 
   // The wood never moves with what is learned, so the crop and the numbers'
   // places come from the tree already grown: the lecture page grew a second
@@ -350,7 +399,6 @@ export function CourseTree({
    * branch you were pointing at. Not while the tree grows or a session's
    * regrowth plays: a finished copy would stand over leaves still coming in.
    */
-  const lifted = active && !animate && !(grewFrom && spotlight) ? active : null;
 
   /*
    * The limbs, grouped twice: by layer, then by section. By layer because
@@ -404,7 +452,11 @@ export function CourseTree({
     // Every section with wood or leaves: each has a group in front of the
     // drawing, for when it is picked.
     const ids = [...new Set([...wood.keys(), ...foliage.keys()])];
-    return { wood, foliage, ghosts, litter, structural, structuralFoliage, geometry, ids };
+    // The foot of the trunk: what the whole tree turns about when it shakes.
+    const foot = [...structural, ...[...wood.values()].flat()]
+      .map((l) => startOf(l.d))
+      .reduce<[number, number] | null>((low, p) => (p && (!low || p[1] > low[1]) ? p : low), null);
+    return { wood, foliage, ghosts, litter, structural, structuralFoliage, geometry, ids, foot };
   }, [tree]);
 
   /** How far each section swings while another is being pointed at. */
@@ -515,13 +567,10 @@ export function CourseTree({
   const label = `${course.metadata.title}: ${inLeaf} of ${course.sections.length} sections in leaf`;
 
   /*
-   * The falls playing now. A fall, once started, always finishes, and several
-   * can be under way together; it starts after a short rest, so brushing
-   * across the crown does not shake every branch it crosses. A leaf falls
-   * once: only leaves lost since you last saw that branch fall, kept per
-   * course (store/fallen).
+   * The fall playing now, on arriving at the lecture. A leaf falls once: only
+   * leaves lost since you last saw that branch, kept per course
+   * (store/fallen).
    */
-  const FALL_REST_MS = 180;
   const FALL_LASTS_MS = 3600;
   type Falling = { d: string; style: Record<string, string> };
   const [falls, setFalls] = useState<{ sid: string; at: number; leaves: Falling[] }[]>([]);
@@ -545,7 +594,7 @@ export function CourseTree({
 
   /** A branch's lost leaves, each with where it lands and how it gets there. */
   const fallingFor = useCallback(
-    (ghosts: Limb[]): Falling[] => {
+    (ghosts: Limb[], after = 0): Falling[] => {
       const step = Math.max(1, Math.ceil(ghosts.length / MAX_MOVING));
       return ghosts
         .filter((_, i) => i % step === 0)
@@ -565,7 +614,7 @@ export function CourseTree({
               // A tilt to land at, not a spin: leaves flutter, they do not tumble.
               '--rot': `${((h >> 6) % 70) - 35}deg`,
               animationDuration: `${2200 + ((h >> 12) % 800)}ms`,
-              animationDelay: `${h % 550}ms`,
+              animationDelay: `${after + (h % 550)}ms`,
             } as Record<string, string>,
           };
         });
@@ -573,25 +622,100 @@ export function CourseTree({
     [tree.height],
   );
 
+  /*
+   * The arrival. What fell since the student last looked is decided once, as
+   * the page opens, and kept: recording the fall changes the store, and the
+   * leaves landing must not change their minds half way down.
+   */
+  const [arrival] = useState(() => {
+    if (!arrive) return null;
+    const still = prefersReducedMotion();
+    const unfurl = !still && !arrivedThisVisit.has(courseId);
+    const fresh: Limb[] = [];
+    const landing = new Map<string, Motion>();
+    const from: Record<string, number> = {};
+    for (const [sid, ghosts] of layers.ghosts) {
+      const seenFrom = fellFrom?.[sid] ?? Infinity;
+      const lost = ghosts.filter((l) => clumpOf(l.leafKey ?? '') < seenFrom);
+      if (!lost.length) continue;
+      fresh.push(...lost);
+      from[sid] = shownBySection[sid] ?? 0;
+    }
+    const startAt = unfurl ? FALL_AFTER_UNFURL_MS : FALL_AFTER_OPEN_MS;
+    if (!still) {
+      // The leaves already lying on the ground under a branch that has just
+      // lost them come into the pile as the falling ones land.
+      for (const [sid, litter] of layers.litter) {
+        const seenFrom = fellFrom?.[sid] ?? Infinity;
+        for (const l of litter) {
+          if (!l.leafKey || clumpOf(l.leafKey) >= seenFrom) continue;
+          landing.set(l.leafKey, {
+            className: 'leaf-land',
+            style: { animationDelay: `${startAt + 1700 + (leafHash(l.leafKey) % 700)}ms` },
+          });
+        }
+      }
+    }
+    return { unfurl, still, fresh, landing, from, startAt };
+  });
+  const [unfurling, setUnfurling] = useState(() => !!arrival?.unfurl);
+  const [shaking, setShaking] = useState(false);
+
   useEffect(() => {
-    if (!active) return;
-    const t = setTimeout(() => {
-      const ghosts = layers.ghosts.get(active) ?? [];
-      const seenFrom = fellFrom?.[active] ?? Infinity;
-      const fresh = ghosts.filter((l) => clumpOf(l.leafKey ?? '') < seenFrom);
-      if (!fresh.length) return;
-      fell(courseId, active, shownBySection[active] ?? 0);
-      const at = Date.now();
-      const leaves = fallingFor(fresh);
-      // Three at once at most; the oldest is nearly done by then anyway.
-      setFalls((now) => [...now.filter((f) => at - f.at < FALL_LASTS_MS).slice(-2), { sid: active, at, leaves }]);
-      setTimeout(() => setFalls((now) => now.filter((f) => f.at !== at)), FALL_LASTS_MS);
-    }, FALL_REST_MS);
-    return () => clearTimeout(t);
-    // Only a change of branch starts a fall; the record changing because of
-    // this very fall must not start another.
+    if (!arrival) return;
+    arrivedThisVisit.add(courseId);
+    const timers: number[] = [];
+    if (arrival.unfurl) timers.push(window.setTimeout(() => setUnfurling(false), UNFURL_MS));
+    if (arrival.fresh.length) {
+      // Seen now, whether or not it is shown moving.
+      for (const [sid, from] of Object.entries(arrival.from)) fell(courseId, sid, from);
+      if (!arrival.still) {
+        timers.push(
+          window.setTimeout(() => {
+            if (ARRIVAL_FALL === 'shake') {
+              setShaking(true);
+              timers.push(window.setTimeout(() => setShaking(false), SHAKE_MS));
+            }
+            const at = Date.now();
+            setFalls([{ sid: 'arrival', at, leaves: fallingFor(arrival.fresh, ARRIVAL_FALL === 'shake' ? 120 : 0) }]);
+            timers.push(window.setTimeout(() => setFalls([]), FALL_LASTS_MS + 600));
+          }, arrival.startAt),
+        );
+      }
+    }
+    return () => timers.forEach((t) => window.clearTimeout(t));
+    // Once, as the page opens: the arrival is decided at mount and kept.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active]);
+  }, []);
+
+  /*
+   * A sitting's tree (growOnly): the leaves the tree's measure newly counts,
+   * budding where they grow as it happens. Compared with the tree last drawn,
+   * in render, so the bud is on the very frame the leaf appears.
+   */
+  const [lastTree, setLastTree] = useState(tree);
+  const [buds, setBuds] = useState<Map<string, Motion>>(() => new Map());
+  if (growOnly && lastTree !== tree) {
+    const was = new Set(lastTree.limbs.filter((l) => l.leafKey && l.solid && !l.fallen).map((l) => l.leafKey!));
+    const next = new Map<string, Motion>();
+    const fresh = tree.limbs.filter((l) => l.leafKey && l.solid && !l.fallen && !was.has(l.leafKey));
+    fresh.slice(0, MAX_MOVING).forEach((l) => {
+      const at = startOf(l.d);
+      next.set(l.leafKey!, {
+        className: 'leaf-bud',
+        style: {
+          transformOrigin: at ? `${at[0]}px ${at[1]}px` : 'center',
+          animationDelay: `${clumpOf(l.leafKey!) * 90 + (leafHash(l.leafKey!) % 200)}ms`,
+        },
+      });
+    });
+    setLastTree(tree);
+    setBuds(next);
+  }
+  /** What buds in the foliage: a sitting's new leaves, or the end of a session's regrowth. */
+  const grow = growOnly ? buds : motion.grow;
+  const drawOn = animate || unfurling;
+  const lifted = active && !drawOn && !(grewFrom && spotlight) ? active : null;
 
   const swing = (id: string): CSSProperties | undefined => {
     const geo = layers.geometry.get(id);
@@ -701,6 +825,9 @@ export function CourseTree({
     return best;
   };
 
+  const openSection = (id: string) =>
+    onOpenSection ? onOpenSection(id) : navigate(`/study/${courseId}/section/${encodeURIComponent(id)}`);
+
   const pickAt = (e: { clientX: number; clientY: number }, pointerType: string) =>
     setPointed((held) => nearest({ clientX: e.clientX, clientY: e.clientY, pointerType }, held) ?? held);
 
@@ -785,7 +912,7 @@ export function CourseTree({
             return;
           }
           const key = keyAt(e.clientX, e.clientY);
-          if (key) navigate(`/study/${courseId}/section/${encodeURIComponent(key)}`);
+          if (key) openSection(key);
           else onExpand?.();
         },
         // A finger or a mouse does not focus it: its answer to them is the
@@ -834,7 +961,7 @@ export function CourseTree({
               setPointed(id);
               return;
             }
-            navigate(`/study/${courseId}/section/${encodeURIComponent(id)}`);
+            openSection(id);
           },
         }
       : {};
@@ -859,33 +986,44 @@ export function CourseTree({
       {...revealHandlers}
       // Leaves are filled with the paper they sit on so they hide the wood
       // behind them.
-      className={`tree w-auto shrink-0 text-text [&_.lf]:fill-[var(--color-bg)] ${animate ? 'tree-grow' : ''} ${
+      className={`tree w-auto shrink-0 text-text [&_.lf]:fill-[var(--color-bg)] ${drawOn ? 'tree-grow' : ''} ${
         grewFrom ? 'tree-spotlight' : ''
       } ${interactive ? (reveal ? 'cursor-pointer select-none [-webkit-touch-callout:none]' : pointed ? 'cursor-pointer' : '') : ''} ${className}`}
     >
+      {/* The leaves on the ground, first: they never shake with the tree,
+          and the trunk and a low canopy stand in front of them. */}
+      <g>
+        {[...layers.litter].map(([id, limbs]) => (
+          <g key={`l${id}`} data-dim={(!!id && dim(id)) || undefined} data-back={(!!id && stepsBack(id)) || undefined} className="tree-litter">
+            <LimbPaths limbs={limbs} held={false} animate={drawOn} pointable={false} grow={arrival?.landing} />
+          </g>
+        ))}
+      </g>
+      {/* The whole standing tree, so the arrival can shake it about the
+          foot of its trunk; the leaves on the ground stay where they lie. */}
+      <g
+        className={shaking ? 'tree-shake' : undefined}
+        style={layers.foot ? { transformOrigin: `${layers.foot[0]}px ${layers.foot[1]}px` } : undefined}
+      >
       {/* Wood first, then foliage, so a canopy hides the branches behind it. */}
       <g>
         {layers.structural.map((limb, i) => (
-          <path key={`s${i}`} {...paintLimb(limb, false, animate, false)} />
+          <path key={`s${i}`} {...paintLimb(limb, false, drawOn, false)} />
         ))}
         {[...layers.wood].map(([id, limbs]) => (
           <g key={id} data-sid={id} data-held={id === active || undefined} data-dim={dim(id) || undefined} data-back={stepsBack(id) || undefined} className="limb-set" style={swing(id)}>
-            <LimbPaths limbs={limbs} held={id === active} animate={animate} pointable={interactive} />
+            <LimbPaths limbs={limbs} held={id === active} animate={drawOn} pointable={interactive} />
           </g>
         ))}
       </g>
       <g>
-        {[...layers.litter].map(([id, limbs]) => (
-          <g key={`l${id}`} data-dim={(!!id && dim(id)) || undefined} data-back={(!!id && stepsBack(id)) || undefined} className="tree-litter">
-            <LimbPaths limbs={limbs} held={false} animate={animate} pointable={false} />
-          </g>
-        ))}
-        {layers.structuralFoliage.map((limb, i) => limbWithVein(limb, `sf${i}`, false, animate, false))}
+        {layers.structuralFoliage.map((limb, i) => limbWithVein(limb, `sf${i}`, false, drawOn, false))}
         {[...layers.foliage].map(([id, limbs]) => (
           <g key={id} data-sid={id} data-held={id === active || undefined} data-dim={dim(id) || undefined} data-back={stepsBack(id) || undefined} className="limb-set" style={swing(id)}>
-            <LimbPaths limbs={limbs} held={id === active} animate={animate} pointable={false} grow={motion.grow} />
+            <LimbPaths limbs={limbs} held={id === active} animate={drawOn} pointable={false} grow={grow} />
           </g>
         ))}
+      </g>
       </g>
 
       {/* The picked branch, its wood then its leaves, over everything else.

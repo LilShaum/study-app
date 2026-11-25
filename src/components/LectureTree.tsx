@@ -25,7 +25,9 @@ function TreeLine({ counts }: { counts: TreeCounts }) {
  * (2026-11-06), with the numbered branches of another coming back as
  * something a touch reveals: any touch raises a number on every branch, the
  * branch under the finger picked out and named here, and a tap on a number
- * opens its section (docs/proposals/tree.md §2).
+ * opens its section (docs/proposals/tree.md §2). It arrives with the page:
+ * the leaves lost since the last look fall as the lecture opens
+ * (CourseTree `arrive`).
  */
 export function LectureTree({
   courseId,
@@ -33,6 +35,7 @@ export function LectureTree({
   progress,
   wide,
   onExpand,
+  onOpenSection,
 }: {
   courseId: string;
   course: Course;
@@ -40,6 +43,8 @@ export function LectureTree({
   /** The desktop layout's column, which has the height a phone's first screen does not. */
   wide: boolean;
   onExpand: () => void;
+  /** Open a section beside the page instead of going to it (the computer's spread). */
+  onOpenSection?: (sectionId: string) => void;
 }) {
   // Fading is judged as of drawing, as the tree judges it: rendering must not read the clock.
   const [now] = useState(Date.now);
@@ -60,6 +65,8 @@ export function LectureTree({
           mode="reveal"
           onExpand={onExpand}
           onPoint={setPicked}
+          onOpenSection={onOpenSection}
+          arrive
         />
       </div>
       {/* While a branch is picked, the words name it instead, with a way in
@@ -74,12 +81,22 @@ export function LectureTree({
             {/* The title is what a phone's width is for; the number's own ink
                 says the rest, and only fading is worth the words. */}
             {named.state === 'fading' && <span className="mark shrink-0 text-accent">fading</span>}
-            <Link
-              to={`/study/${courseId}/section/${encodeURIComponent(named.id)}`}
-              className="mark tap-safe inline-flex shrink-0 items-center text-accent hover:underline"
-            >
-              Open ▸
-            </Link>
+            {onOpenSection ? (
+              <button
+                type="button"
+                onClick={() => onOpenSection(named.id)}
+                className="mark tap-safe inline-flex shrink-0 items-center text-accent hover:underline"
+              >
+                Open ▸
+              </button>
+            ) : (
+              <Link
+                to={`/study/${courseId}/section/${encodeURIComponent(named.id)}`}
+                className="mark tap-safe inline-flex shrink-0 items-center text-accent hover:underline"
+              >
+                Open ▸
+              </Link>
+            )}
           </span>
         ) : (
           <TreeLine counts={counts} />

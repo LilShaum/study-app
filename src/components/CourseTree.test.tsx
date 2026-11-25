@@ -71,7 +71,9 @@ describe('CourseTree', () => {
     // branches would land back on top of another's leaves. Document order
     // across the whole drawing is what decides paint order.
     const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
-    const painted = [...container.querySelectorAll('path')];
+    // The leaves lying on the ground are drawn first, so the trunk stands in
+    // front of them; they are not on any branch, so they are left out here.
+    const painted = [...container.querySelectorAll('path')].filter((el) => !el.closest('.tree-litter'));
     // A leaf's vein (.vn) is part of its leaf, drawn straight after it.
     const isLeaf = (el: Element) => el.classList.contains('lf') || el.classList.contains('vn');
     expect(painted.some((el) => el.classList.contains('vn'))).toBe(true);
