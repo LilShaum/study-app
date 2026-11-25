@@ -11,6 +11,36 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-25 · Testing 5: the name field under the name on your page
+
+**Their words:** "I really don't like the design choice here of having the
+name at the top and then "your name ________" right under it. The part
+under looks like it would be better as a setting to change the username,
+but on any app that has this kind of setting, it's not usually right there
+under the name and you have to enter user settings or something to edit
+your profile details. Clutter and also looks redundant because the name
+just repeats twice … it does not belong here by default, it is a setting to
+change the username." (screenshot: the student's page, dark.)
+**Question or instruction:** instruction, after all screenshots.
+**What went wrong:** the page shows the name as its title and again as an
+always-open field right beneath it. (habit: putting an edit control where
+something is displayed, so it reads twice and looks unfinished.)
+**What they are asking:** the page shows the name once. Changing it is a
+setting, reached the way apps usually do it (a settings or edit-profile
+place), not a field sitting on the page.
+**Expectations, broken down:**
+- *not redundant / not cluttered*: the name appears once at the top; no
+  open field on the page by default / checked by: the page at phone size,
+  both themes / not: shrinking or restyling the field in place.
+- *like other apps*: a clear way into settings (with the name among
+  them), as a student would expect to find it / checked by: can a new
+  student find where to change their name without being told / not: a
+  hidden tap-the-title trick with no sign it exists.
+**Ripples:** the first run's name page sets it (stays); EXPECTATIONS (the
+student's page); Help mentions of "your page"; reminders and sync sections
+may belong in the same settings place (to think through, not assume).
+**Status:** noted; to plan after all screenshots.
+
 ### 2026-11-25 · Testing 4: falling leaves look different and cheap
 
 **Their words:** "both have different falling leaves that the ones on the
