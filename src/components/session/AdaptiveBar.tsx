@@ -8,7 +8,7 @@ export function AdaptiveBar({ dueDone }: { dueDone: boolean }) {
   return (
     <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border pb-2 text-small">
       <span className="mark whitespace-nowrap text-text-3">Adaptive quiz</span>
-      {dueDone && <span className="text-text-3">Everything due is done. Carry on, or stop here.</span>}
+      {dueDone && <span className="text-text-3">Everything to review is done. Carry on, or stop here.</span>}
     </div>
   );
 }

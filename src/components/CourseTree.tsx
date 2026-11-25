@@ -1205,7 +1205,7 @@ export function CourseTree({
   const chosen = tracking ? sections.findIndex((s) => s.id === (pointed ?? highlight)) : -1;
   const sel = chosen >= 0 ? sections[chosen] : null;
   const courseDue = sections.reduce((n, s) => n + s.due, 0);
-  const fact = !sel ? null : !sel.studied ? 'not studied yet' : sel.due ? `${sel.due} due for review` : 'nothing due';
+  const fact = !sel ? null : !sel.studied ? 'not studied yet' : sel.due ? `${sel.due} to review` : 'nothing to review';
   const at = (path: string) => `/study/${courseId}${path}`;
 
   return (
@@ -1234,7 +1234,7 @@ export function CourseTree({
           // Nothing selected: the course's own figures, not an instruction.
           <span className="mt-6 text-small text-text-3">
             {sections.length} section{sections.length === 1 ? '' : 's'}
-            {courseDue > 0 ? ` · ${courseDue} due for review` : ''}
+            {courseDue > 0 ? ` · ${courseDue} to review` : ''}
           </span>
         )}
       </div>

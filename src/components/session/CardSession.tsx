@@ -287,13 +287,13 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
     text: "This lecture doesn't have any problems to work out yet. Add questions, on the lecture page, can write some.",
   },
   review: {
-    title: 'Nothing is due',
+    title: 'Nothing to review',
     text: 'Everything you have studied is still fresh.',
   },
   mixed: { title: 'No items', text: 'This lecture has no items yet.' },
   today: {
     title: 'Nothing for today',
-    text: 'Nothing is due, and everything here has been studied.',
+    text: 'Nothing to review, and everything here has been studied.',
   },
   missed: {
     title: 'Nothing to review',
@@ -923,7 +923,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         {appointment && <p className="mt-3 max-w-prose text-small text-text-2">{appointment}</p>}
         {moreDue > 0 && (
           <p className="mt-3 max-w-prose text-small text-text-2">
-            {moreDue} more {moreDue === 1 ? 'is' : 'are'} due.
+            {moreDue} more {moreDue === 1 ? 'is' : 'are'} waiting to review.
           </p>
         )}
         <div className="mt-6 flex flex-wrap justify-center gap-3">

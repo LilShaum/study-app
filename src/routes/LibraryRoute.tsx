@@ -388,7 +388,7 @@ export function LibraryRoute() {
                         <span className="mark text-text group-hover:text-accent">{code}</span>
                         <span className="text-small text-text-3">
                           {inClass.length} lecture{inClass.length === 1 ? '' : 's'}
-                          {classDue > 0 && <span className="text-text"> · {classDue} due</span>}
+                          {classDue > 0 && <span className="text-text"> · {classDue} to review</span>}
                         </span>
                       </button>
                       <Link to={`/class/${encodeURIComponent(code)}`} className="mark tap-safe shrink-0 text-text-3 hover:text-text">
@@ -432,7 +432,7 @@ export function LibraryRoute() {
                         {/* The library's one line about today: which course has
                             something slipping. Opening the app should show
                             where to go before you have picked a course. */}
-                        {stats.due > 0 && <span className="mark block text-text">{stats.due} due</span>}
+                        {stats.due > 0 && <span className="mark block text-text">{stats.due} to review</span>}
                       </span>
                     </Link>
                     <button

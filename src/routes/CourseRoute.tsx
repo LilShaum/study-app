@@ -290,11 +290,11 @@ export function CourseRoute() {
             : ''
         }`
       : today?.catchUp
-        ? `Catch-up: ${plural(today.review, 'card')} that came due since you studied, mostly ones you missed.`
+        ? `A second look: ${plural(today.review, 'question')} back to review since you studied, mostly ones you missed.`
         : !today || today.empty
-      ? 'Nothing is due, and everything added so far has been studied. Add material after your next lecture.'
+      ? 'Nothing to review, and everything added so far has been studied. Add material after your next lecture.'
       : [
-          today.review > 0 ? plural(today.review, 'card') + ' to review' : null,
+          today.review > 0 ? plural(today.review, 'question') + ' to review' : null,
           today.firstNew
             ? `${today.review > 0 ? 'then new' : 'New'}: section ${sectionsInOrder.findIndex((s) => s.id === today.firstNew!._sectionId) + 1}, ${today.firstNew._sectionTitle}`
             : null,

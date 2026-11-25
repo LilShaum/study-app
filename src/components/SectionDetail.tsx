@@ -69,7 +69,7 @@ export function SectionDetail({
     {
       to: practice,
       label: 'Practice this section',
-      unit: due > 0 ? `${due} due` : 'any part',
+      unit: due > 0 ? `${due} to review` : 'any part',
     },
   ];
 
