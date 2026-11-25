@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useRef, useState, type ChangeEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
@@ -19,7 +19,7 @@ import { clearSavedTests } from '@/lib/practiceTest';
 import { KeepSafe } from '@/components/KeepSafe';
 import { RestoreButton } from '@/components/Backup';
 import { useStudyLogStore } from '@/store/studyLog';
-import { usePlanStore } from '@/store/plan';
+import { usePlanStore, DAILY_CHOICES } from '@/store/plan';
 import { todaySuggestions } from '@/lib/todaySuggestions';
 import { roman } from '@/lib/roman';
 import { toastNotesFromAI } from '@/lib/notesFromAI';
@@ -80,7 +80,18 @@ export function LibraryRoute() {
     [courses, allProgress, bookmarks, now],
   );
 
+  // The first run ends on New lecture: it sends the student here with ?new=1.
+  const [params, setParams] = useSearchParams();
   const [creating, setCreating] = useState(false);
+  useEffect(() => {
+    if (params.get('new') !== '1') return;
+    // The library may already be under the first run, so the param is read as it arrives.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCreating(true);
+    const rest = new URLSearchParams(params);
+    rest.delete('new');
+    setParams(rest, { replace: true });
+  }, [params, setParams]);
   const [search, setSearch] = useState('');
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
@@ -560,7 +571,6 @@ function IndexLine({
   );
 }
 
-const DAILY_CHOICES = [30, 45, 60, 90, 120, 180];
 
 /**
  * One daily time for every course together, split by how soon each exam is

@@ -688,6 +688,13 @@
     }
   }
 
+  /* The first run's title page: the name comes up once the tree has drawn
+     itself on (the owner, 2026-11-16: "the tree branches unfurling … and
+     the name of the app arborous appears"). */
+  .first-run-name {
+    animation: tree-leaf 900ms ease-out 1500ms both;
+  }
+
   /* The arrival's shake: the standing tree swung about the foot of its
      trunk, hard once and dying away, as a tree is when something knocks
      it; the faded leaves come off with the first swing. */

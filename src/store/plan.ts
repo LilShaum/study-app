@@ -10,6 +10,9 @@ import { DEFAULT_MINUTES } from '@/lib/today';
  * belong to the course and travel with it to a classmate; how much time you
  * have does not.
  */
+/** The daily times offered, on the library and in the first run. */
+export const DAILY_CHOICES = [15, 30, 45, 60, 90, 120];
+
 interface PlanState {
   byCourse: Record<string, { minutes: number }>;
   /**
