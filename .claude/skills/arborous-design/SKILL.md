@@ -85,6 +85,10 @@ screen, not that one:
   grain that stops partway reads as a fault. Which surfaces are paper, and
   why, is decided once and kept to everywhere. Check long surfaces at their
   bottom, not only their first screen (the owner, 2026-11-25).
+- **When a way of doing something is replaced, remove what the old way
+  needed.** A leftover screen that does nothing new, opened by a stray tap,
+  is clutter and a trap. A tap on empty space or a picture never opens a
+  new layer.
 - **Settings are not page content.** Anything the student sets once (their
   name, theme, reminders, account) lives in a settings place they open,
   not as open fields on a page that also displays it.

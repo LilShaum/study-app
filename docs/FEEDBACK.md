@@ -11,6 +11,33 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-25 · Testing 11: the enlarged tree that opens by accident
+
+**Their words:** "This seems to me like a vestige of the first way to
+interact with the tree. … is there any function in this pop up menu that
+isn't available by default? … Does it serve some purpose I'm not aware of?
+Does it do anything different? I accidentally opened it when trying to
+navigate the page and also when I was trying to unselect some text … by
+tapping somewhere else on the page, and instead of unselecting, I
+accidentally opened this page." (screenshot: the lecture's tree in a sheet,
+title, info and close buttons, "11 sections · 28 to review".)
+**Question or instruction:** questions. Answer: it does nothing the page
+can't. It is the same tree, larger, with the same branch picking, plus an
+info card explaining the tree and the line "11 sections · 28 to review"
+(both already on the page). It opens when a tap lands on the tree but not
+on a number, which is why it opens by accident.
+**What went wrong:** a leftover from when the tree could only be used
+inside it; kept after the tree on the page became usable, and its tap
+target catches stray taps. (habit: not removing what a change made
+pointless.)
+**What they are asking (likely):** remove it, or give it a real reason;
+taps on the page must never open something unexpected. To confirm with
+the owner when work starts; the info card's words may belong in Help.
+**Lesson for every screen:** when a feature is replaced, remove what the
+old way needed; a tap on empty space or a drawing should not open a new
+layer.
+**Status:** answered; decision with the owner.
+
 ### 2026-11-25 · Testing 10: the paper texture stops partway down a sheet
 
 **Their words:** "Also the fucking texture doesn't continue the whole way
