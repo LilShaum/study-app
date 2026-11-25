@@ -224,3 +224,10 @@ knows where things stand.
   page, with New lecture's two layouts side by side. Open questions: New
   lecture's layout, swipes, the reminder's default hour. A reminder on a
   real phone waits for the merge (P4-3).
+- **2026-11-25, Round 5 and 6**: the icon (owner's pick C, the sprig on
+  paper, now icon, tab and header mark; docs/proposals/icon.md), New lecture
+  reorganised as a specimen label (docs/proposals/new-lecture-screen.md),
+  the first run's words made general, and the fall overlapping the shiver
+  (the drawing-on rule had been holding the falling leaves). Open
+  questions: swipes, the reminder hour, chat replies; then P4-3 on the
+  owner's word.
