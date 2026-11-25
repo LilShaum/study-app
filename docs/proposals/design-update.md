@@ -188,3 +188,107 @@ change as the computer, across every screen, not only the lecture page's
 animation: "make the platforms have distinct feels, ui/ux, that take full
 advantage of the benefits and downsides of the form factor". The unfurl and
 fall play on both formats. The scope is set in part4-brief.md.
+
+## Every screen, on both formats (P4-1, 2026-11-25)
+
+The owner's scope: "make the platforms have distinct feels, ui/ux, that
+take full advantage of the benefits and downsides of the form factor".
+The phone gets as much change as the computer.
+
+### How each screen was decided
+
+For each screen, three questions: what a student does there; what the
+phone gives and takes away (a thumb at the bottom, touch and motion, no
+hover, slow typing, a few minutes at a time and interrupted, one thing at
+a time); what the computer gives and takes away (width, a keyboard, a
+pointer that hovers, long sittings, several things at once). A change goes
+in only if it uses a strength or works around a limit for that screen's
+job. The book look holds on both: ruled, not boxed; a sheet from the
+bottom is a page drawn up over the page, ruled at its top edge, not a
+rounded card with a shadow.
+
+### Ideas weighed once, used across screens
+
+- **The thumb bar (phone).** For: every main action in reach, one place to
+  look. Against: a bar on every page is chrome, and the book look has
+  none. **Kept where a screen has one main action** (library, lecture,
+  section, Practice, a sitting's answer), the way the lecture page's
+  pinned Start already works. The top "← Library" stays: it is the way
+  back, not an action.
+- **Sheets from the bottom (phone)** in place of boxes in the middle, and
+  in place of panels a phone has no room for. For: in reach, closed with a
+  swipe down, the page stays in view above. Against: a gesture to learn.
+  **Kept** for the glossary in a sitting, Practice's ticks, the exam and
+  details dialogs, the section's detail from the tree, and New lecture's
+  steps. Each also has a visible Close.
+- **Swipes (phone).** For: fast, one-handed. Against: a swipe can be an
+  accident, and it fights the page's scroll. **Only after an answer is
+  shown**: swipe left for the next card; on a flipped flashcard, right for
+  Got it and left for Missed it (Hard stays a button). Never on a question
+  still waiting for an answer, and the buttons stay.
+- **Picking up where you stopped (phone).** A sitting cut off by a stop or
+  a closed app opens again at the same card, and the library leads with
+  "Carry on" while one is open (the lecture page has this already).
+- **The keyboard for everything (computer).** For: long sittings, no
+  reaching for the mouse. **Kept**: J and K through lists, Enter to open,
+  / to search, ? for the keys of the screen; in a sitting, only the keys
+  that work on the card, in one line under it.
+- **Hover to preview (computer).** A section row lights its branch in the
+  tree; a branch names its section; a term in a card shows its meaning in
+  the glossary column. Never needed: everything hover shows can be
+  clicked.
+- **Side by side (computer).** The spread (two facing pages) and the
+  margins, where a phone goes one after another.
+- **Motion that teaches (both).** The tree draws on and the faded leaves
+  fall on opening a lecture, on both. The finger sweep naming a branch is
+  the phone's; hover does it on a computer.
+
+### The screens
+
+| Screen | Phone | Computer |
+|---|---|---|
+| First run | Full pages, one thing each; you sweep the tree and watch it grow, then watch a part fade and its leaves fall; one tap for daily time; install first | The same pages as a spread: the tree large on the left, the step on the right; the keyboard moves through it |
+| Library | "Carry on" or the day's first suggestion in the thumb bar; suggestions, then classes folded | Spread: suggestions on the left page, classes open on the right with each lecture's small tree; hover a lecture to see its line |
+| Class page | Lectures as a contents list; Practice and test in the thumb bar | Spread: lectures and exams on the left, the class's ways to study on the right |
+| Lecture page | Tree draws on and leaves fall; sweep names a branch; a tapped branch opens its section as a sheet; Learn, Quiz, Practice in the thumb bar | Spread: tree large and sections on the left; ways to study on the right, a picked section's detail beside them; hover a row to light its branch |
+| Section page | Its line and Learn in the thumb bar; items below | Opened inside the lecture spread; its own page stays for links |
+| Large tree | Full screen, sweep to name, tap to open | Replaced by the spread's tree (hover names, click opens) |
+| Sitting, any card | Whole screen, no header; answer controls at the bottom; Not sure and I don't know in reach | Three columns: the tree large, growing as parts are learned; the card at reading width; the glossary always open (shut while a question waits) |
+| Reading card | Swipe left or tap Next | → next; the glossary beside it |
+| Multiple choice, select all | Options large, Check at the bottom; swipe left to go on after the answer | 1–9 choose, Enter check, → next |
+| Flashcard | Tap to flip; after, swipe right Got it, left Missed it, buttons kept | Space flip, G, H, M |
+| Name the term | The field sits above the keyboard with Check beside it | Type, Enter |
+| Written answer | Field grows above the keyboard; after Check, the model answer as a sheet to mark against | Your answer and the model answer side by side; tick the points with 1–9 |
+| Worked problem | Steps one at a time, Show the next step at the bottom | All steps beside the problem, revealed in place |
+| Diagram | Pinch and pan the drawing, full width | The drawing large in the card column, its note in the margin |
+| Pause between steps | One line and Next at the bottom | The same, with what comes next listed in the margin |
+| End of a sitting | The tree grows its new leaves, full width; the next thing in the thumb bar | The tree large, and beside it what was missed and what comes next |
+| Adaptive quiz | As a sitting; Stop here in reach | As a sitting; the margin counts what is due and done |
+| Practice setup | Ticks as a sheet; Start in the thumb bar with the count | Every tick at once in columns, the count beside Start |
+| Practice test setup | One page, Start at the bottom | Setup beside a preview of how many questions and what kinds |
+| Practice test | One question at a time, the question list as a sheet | The question list in the left margin, the question in the middle, the timer on the right |
+| Test review | Misses first, one at a time | List on the left, the question with its reason on the right |
+| New lecture, Add, Fix | Steps as a sheet: tick kinds, copy, come back, paste or upload | Side by side: the steps on the left, the prompt and the paste box on the right |
+| Browse and edit | Sections in a strip at the top, edit in a sheet | Sections at the side, the edit form beside the item |
+| Glossary page | Letters down the right edge for the thumb | Letters at the side, the meaning beside the list; / searches |
+| Diagrams page | One at a time, swipe between | A grid of plates; one opened large with its note beside |
+| Progress | What is fading first, one column | Fading on the left, the forecast and days of study on the right |
+| Help | Folded sections | Contents at the side, the text at reading width |
+| Account, Sync, settings | One column, fields at 16px | One column at reading width (a form gains nothing from width) |
+| Set aside | List, Undo in reach | List with the item beside it |
+| Shared link | Open and save, at the bottom | The same, centred |
+
+### Build order
+
+1. The tree's motion (done on the branch, needs the owner's pick between
+   the shake and the plain fall, and the dashed or the solid growth).
+2. The layout pieces both formats share: the spread, the margin, the thumb
+   bar, the sheet.
+3. The sitting on both formats (where students spend most time), then the
+   lecture and section pages, then the library and class page.
+4. Practice, the test, New lecture and the other sheets.
+5. The quieter pages (Browse, Glossary, Diagrams, Progress, Help, Account).
+6. The first run, which shows off what is built, with the app's own words.
+
+Cost: this is two or three times the earlier plan. Steps 1–3 are the
+biggest gain; 5 could wait for P4-2 or a later round if usage runs short.
