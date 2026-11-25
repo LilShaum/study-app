@@ -144,6 +144,14 @@ this is the intent it serves.
   asked again at the bottom of the next reply, until it is answered or
   dropped (2026-11-11: "if I dont address something that I need to
   address then make sure to bring it up again").
+- **Review pages** (2026-11-25): the page the owner reviews holds only what
+  they have not seen or answered yet; anything changed again later shows
+  only as it is now. Everything to read, and every question, is on the
+  page, each item able to stand alone (what changed, where to look, what is
+  asked), so a reply in chat only points to it. "Do not overcomplicate
+  things for me, do not bombard me with information, do not go so concise
+  and context deprived that I'm not sure what you are referring to, make it
+  intuitive to go through, make it so it's not easy to miss details."
 - **Working with the owner:** usage is limited, so ask before expensive
   work. "What's next?" means work you can do without them. Done means
   tested and live.
