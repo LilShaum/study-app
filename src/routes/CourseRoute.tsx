@@ -13,6 +13,7 @@ import { bookmarkResolves, useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
 import { LectureTree } from '@/components/LectureTree';
+import { ThumbBar } from '@/components/ThumbBar';
 import { SectionDetail } from '@/components/SectionDetail';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
 import { TreeDialog } from '@/components/TreeDialog';
@@ -627,7 +628,7 @@ export function CourseRoute() {
 
   return (
     // Room under the page on a phone for the pinned Start bar.
-    <div className={wide ? '' : 'pb-20 sm:pb-0'}>
+    <div className={wide ? '' : 'pb-24'}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4">
         <span className="flex items-baseline gap-2 text-sm text-text-3">
           <Link to="/" className="tap-safe inline-flex items-center text-text-2 hover:text-text">
@@ -712,7 +713,7 @@ export function CourseRoute() {
       {/* On a phone, Today's Start stays where a thumb is, however far the
           page has scrolled. */}
       {!wide && !today?.empty && !todayInView && (
-        <PinnedBar>
+        <ThumbBar>
           <div className="flex items-center gap-4">
             <span className="min-w-0 flex-1 truncate text-small text-text-2">
               <span className="font-display font-semibold text-text">Today</span> · {today?.minutes ?? minutes} min
@@ -721,7 +722,7 @@ export function CourseRoute() {
               Start
             </Link>
           </div>
-        </PinnedBar>
+        </ThumbBar>
       )}
 
       {examOpen && <ExamDialog courseId={id} course={course} onClose={() => setExamOpen(false)} />}
@@ -733,36 +734,6 @@ export function CourseRoute() {
       {adding && (
         <AddToCourseDialog courseId={id} course={course} initialMode={adding} onClose={() => setAdding(null)} />
       )}
-    </div>
-  );
-}
-
-/**
- * A bar pinned to the bottom of a phone screen. While it shows, it tells the
- * page how tall it is (--pinned-bottom), so messages rise above it instead of
- * covering its button.
- */
-function PinnedBar({ children }: { children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const root = document.documentElement;
-    const set = () => root.style.setProperty('--pinned-bottom', `${el.offsetHeight}px`);
-    set();
-    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(set) : null;
-    observer?.observe(el);
-    return () => {
-      observer?.disconnect();
-      root.style.removeProperty('--pinned-bottom');
-    };
-  }, []);
-  return (
-    <div
-      ref={ref}
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border-strong bg-bg/95 px-5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:hidden"
-    >
-      {children}
     </div>
   );
 }
