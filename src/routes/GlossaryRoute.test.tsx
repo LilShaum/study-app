@@ -76,3 +76,22 @@ describe('GlossaryRoute', () => {
     expect(document.querySelectorAll('a[href*="#term"]')).toHaveLength(0);
   });
 });
+
+describe('GlossaryRoute on a computer', () => {
+  it('shows the meaning of the picked term beside the list, and / searches', () => {
+    window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+    try {
+      renderGlossary();
+      // The first term is shown until another is picked.
+      const meaning = () => screen.getByRole('complementary', { name: 'Meaning' }).textContent ?? '';
+      expect(meaning()).toContain('Substrate concentration.');
+      fireEvent.click(screen.getByRole('button', { name: 'Vmax' }));
+      expect(meaning()).toContain('The rate when every enzyme is saturated.');
+      fireEvent.keyDown(document.body, { key: '/' });
+      expect(document.activeElement).toBe(screen.getByLabelText('Search the glossary'));
+    } finally {
+      // @ts-expect-error back to jsdom's none
+      delete window.matchMedia;
+    }
+  });
+});
