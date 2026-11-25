@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { sortedSections } from '@/lib/sortedSections';
@@ -13,6 +13,111 @@ import { FigureElsewhere } from '@/components/items/GraphicCard';
 import { RichText } from '@/components/items/RichText';
 import { purposeLabel } from '@/lib/figurePurpose';
 import type { GraphicItem } from '@/schema/course';
+import { prefersReducedMotion, scrollBehavior } from '@/lib/motion';
+
+/** Lectures whose row of sections has already shown it moves, this visit. */
+const glided = new Set<string>();
+
+/**
+ * The phone's row of sections: the figures' running head (docs/proposals/
+ * diagrams-row.md; the owner, 2026-11-25, Testing 9: "it needs to be easy
+ * for the users to assume they can scroll it"). Each reason a student missed
+ * it is answered by the row itself, never by a line telling them:
+ *
+ * - it read as a line of text: the section you are in is marked as every
+ *   choice is (accent, underscored), the others quiet, each with its count
+ *   of figures as a small numeral, so it reads as a list of places;
+ * - its cut-off edge looked like a fault: where more names wait, the edge
+ *   fades into the paper instead, on whichever side has more;
+ * - nothing moved: on arrival, when it is wider than the screen, it glides a
+ *   little way and back, once a visit (not with reduced motion);
+ * - Next never touched it: turning a figure moves the mark along it and
+ *   scrolls it to keep the mark in view, so it is seen to be the sequence;
+ * - it went off the top: it stays at the top of the screen, on paper.
+ */
+function SectionRow({
+  courseId,
+  sections,
+  current,
+  onPick,
+}: {
+  courseId: string;
+  sections: { id: string; title: string; count: number }[];
+  current: string | undefined;
+  onPick: (sectionId: string) => void;
+}) {
+  const row = useRef<HTMLDivElement>(null);
+  const [more, setMore] = useState({ left: false, right: false });
+  const measure = useCallback(() => {
+    const el = row.current;
+    if (!el) return;
+    setMore({ left: el.scrollLeft > 2, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 2 });
+  }, []);
+
+  // The mark kept in view, centred where the row allows.
+  useEffect(() => {
+    const el = row.current;
+    const on = el?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (!el || !on) return;
+    el.scrollTo?.({ left: on.offsetLeft - (el.clientWidth - on.offsetWidth) / 2, behavior: scrollBehavior() });
+  }, [current]);
+
+  // The glide on arrival: a little way along, and back.
+  useEffect(() => {
+    const el = row.current;
+    if (!el) return;
+    measure();
+    if (glided.has(courseId) || prefersReducedMotion() || el.scrollWidth <= el.clientWidth + 2) return;
+    glided.add(courseId);
+    const from = el.scrollLeft;
+    const out = window.setTimeout(() => el.scrollTo?.({ left: from + 56, behavior: 'smooth' }), 650);
+    const back = window.setTimeout(() => el.scrollTo?.({ left: from, behavior: 'smooth' }), 1250);
+    return () => {
+      window.clearTimeout(out);
+      window.clearTimeout(back);
+    };
+  }, [courseId, measure]);
+
+  useEffect(() => {
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [measure]);
+
+  const fade = (left: boolean, right: boolean) =>
+    `linear-gradient(to right, ${left ? 'transparent 0, #000 2.5rem' : '#000 0'}, ${right ? '#000 calc(100% - 2.5rem), transparent 100%' : '#000 100%'})`;
+
+  return (
+    <nav
+      aria-label="Sections with figures"
+      // On paper, under the status bar's band in the installed app.
+      className="paper-grain sticky z-10 -mx-5 mt-4 border-b border-border bg-bg px-5"
+      style={{ top: 'env(safe-area-inset-top, 0px)' }}
+    >
+      <div
+        ref={row}
+        onScroll={measure}
+        className="flex gap-x-6 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{ maskImage: fade(more.left, more.right), WebkitMaskImage: fade(more.left, more.right) }}
+      >
+        {sections.map((x) => {
+          const on = x.id === current;
+          return (
+            <button
+              key={x.id}
+              type="button"
+              aria-current={on || undefined}
+              onClick={() => onPick(x.id)}
+              className={`tap-safe shrink-0 whitespace-nowrap text-small ${on ? 'text-accent' : 'text-text-2 hover:text-text'}`}
+            >
+              <span className={on ? 'underline decoration-accent decoration-2 underline-offset-[6px]' : undefined}>{x.title}</span>
+              <span className={`ml-1.5 align-[0.15em] text-micro tabular-nums ${on ? 'text-accent' : 'text-text-3'}`}>{x.count}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
 
 
 interface Plate {
@@ -272,29 +377,31 @@ export function DiagramsRoute() {
             {sections.length === 1 ? '' : 's'}.
           </p>
 
-          {sections.length > 1 && (
-            // Buttons, not anchors: `href="#plate-x"` under a hash router
-            // rewrites the route and throws the reader back to the library.
-            // See scrollToAnchor.
-            <nav
-              className="mt-4 flex gap-x-4 gap-y-1 overflow-x-auto wide:flex-wrap"
-              aria-label="Jump to section"
-            >
-              {sections.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => {
-                    if (wide) scrollToAnchor(s.anchor);
-                    else setAt(plates.findIndex((p) => p.anchor === s.anchor));
-                  }}
-                  className="tap-safe shrink-0 text-small text-text-2 underline decoration-border underline-offset-4 hover:text-text"
-                >
-                  {s.title} ({s.count})
-                </button>
-              ))}
-            </nav>
-          )}
+          {sections.length > 1 &&
+            (wide ? (
+              // Buttons, not anchors: `href="#plate-x"` under a hash router
+              // rewrites the route and throws the reader back to the library.
+              // See scrollToAnchor.
+              <nav className="mt-4 flex flex-wrap gap-x-4 gap-y-1" aria-label="Jump to section">
+                {sections.map((x) => (
+                  <button
+                    key={x.id}
+                    type="button"
+                    onClick={() => scrollToAnchor(x.anchor)}
+                    className="tap-safe shrink-0 text-small text-text-2 underline decoration-border underline-offset-4 hover:text-text"
+                  >
+                    {x.title} ({x.count})
+                  </button>
+                ))}
+              </nav>
+            ) : (
+              <SectionRow
+                courseId={id}
+                sections={sections}
+                current={plates[here]?.sectionId}
+                onPick={(sid) => setAt(plates.findIndex((p) => p.sectionId === sid))}
+              />
+            ))}
 
           {wide ? (
             <div className="mt-8 grid grid-cols-2 gap-x-8 gap-y-10 xl:grid-cols-3">

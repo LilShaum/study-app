@@ -72,8 +72,10 @@ you are). D answers reason 5 only by moving the problem.
    edge has more (mask on the row, updated on scroll), the glide on arrival
    (once per visit, skipped with reduced motion), the row scrolled to keep
    the current name in view whenever the figure changes.
-2. Computer: the row wraps (no scroll), so it keeps only the mark of the
-   section in view; no glide.
+2. Computer: unchanged. The row wraps there (nothing to scroll, so nothing
+   to discover), and every figure is on the page at once, so there is no
+   one figure to mark. (Built 2026-11-25; the plan first said to mark the
+   section in view, which the ask, about the phone, did not need.)
 3. EXPECTATIONS (Diagrams), What's new.
 4. Checked on a 390px phone: arrival, a swipe, Next five times across a
    section boundary, a tap on a name, scrolled to the bottom, light and dark.

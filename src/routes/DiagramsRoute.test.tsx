@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
@@ -78,6 +78,25 @@ describe('DiagramsRoute', () => {
     // reader back to the library — the bug this page shipped with.
     expect(nav.querySelectorAll('a')).toHaveLength(0);
     expect(nav.querySelectorAll('button').length).toBeGreaterThan(0);
+  });
+
+  it('on a phone, marks the section of the figure shown, and moves the mark as the figures turn (Testing 9)', () => {
+    useCoursesStore.setState({ courses: { cell_biology: course } });
+    renderDiagrams();
+    const row = screen.getByRole('navigation', { name: 'Sections with figures' });
+    const marked = () => row.querySelector('[aria-current="true"]')?.textContent;
+    expect(marked()).toMatch(/^Membranes/);
+    // Through every figure with Next: the mark ends on the last section.
+    for (let i = 0; i < 5; i++) {
+      const next = screen.getByRole('button', { name: 'Next →' }) as HTMLButtonElement;
+      if (next.disabled) break;
+      fireEvent.click(next);
+    }
+    expect(marked()).toMatch(/^Transport/);
+    // A tap on a name turns to its first figure, and marks it.
+    fireEvent.click(within(row).getByRole('button', { name: /^Membranes/ }));
+    expect(marked()).toMatch(/^Membranes/);
+    expect(row.querySelectorAll('[aria-current="true"]')).toHaveLength(1);
   });
 
   it('leaves out sections that have no diagram', () => {
