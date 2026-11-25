@@ -107,6 +107,14 @@ prompt's guide to types is guidance the AI may depart from where another
 type tests better (the owner, 2026-11-22). The same rules reach the Add,
 Add questions, Fix and even-out prompts.
 
+**Which class** (2026-11-25): from the library, step 1 first asks which
+class it is for (the classes in the library, Another to type a code, or
+nothing picked); the pick is stamped on the lecture whatever the AI wrote,
+as a class page's New lecture already did (the owner, 2026-11-11: "it would
+now know no matter what"). Checking a new class code against the library's
+when the reply comes back (option C of docs/proposals/onboarding.md) is not
+built.
+
 **How it works.** Three short steps (the owner, 2026-10-29: the prompt
 screens were "massive blocks of text … not intuitive for new users"): what
 to make, copy the prompt, upload the file the AI made (the paste box went
@@ -749,9 +757,15 @@ ones you missed" or anything else that brings misses back (the owner,
   faded to where Review asks it again (`heldShare`): a card missed and not
   yet got right was never learned, and thins the branch through accuracy
   instead, so a section studied today keeps its leaves (the owner,
-  2026-11-03, watched one drop them hours after studying it). Choosing a
-  branch drops the leaves it has lost since it was last chosen, once
-  (`store/fallen`). On the lecture page it is large, with a line of words
+  2026-11-03, watched one drop them hours after studying it). The leaves
+  lost since the student last looked fall when the lecture opens, with a
+  small shake of the tree, on a phone and a computer alike; the first
+  opening of a lecture in a visit draws the tree on first, outward from the
+  foot of its trunk (the owner, 2026-11-22 and 2026-11-25). Pointing at or
+  sweeping over a branch only names it; it drops nothing. A leaf falls
+  once (`store/fallen`). In a sitting the tree grows a leaf only when its
+  measure counts a part learned, and never drops one on a miss
+  (`CourseTree` growOnly; the owner, 2026-11-24). On the lecture page it is large, with a line of words
   that agrees with it ("11 sections · 6 fading · 4 not started", read from
   the same `sectionMemory`). Of three versions the owner chose the drawing
   alone, as large as the first screen holds it (2026-11-06; design audit
@@ -951,6 +965,14 @@ measured against.
   found without reading the rest.
 - **The first run**: from opening the app for the first time to studying a
   first lecture, with no confusion and nothing to learn about the app.
+  Built 2026-11-25 as something to do, not to read (docs/proposals/
+  onboarding.md): the tree draws itself on with the name; on a phone,
+  install first; the student brings two parts of a made-up lecture into
+  leaf by tapping their numbers, lets three weeks pass and watches the
+  parts left unstudied lose their leaves (where "fading" is taught), and
+  sweeps the branches to find one; then the daily time, an account or Not
+  now, and New lecture. Skip on every page. Full pages; on a computer the
+  tree faces the words.
 - **Sync**: the same library, progress and log on every device, nothing
   ever lost or overwritten unseen.
 - **Backup and export**: a student's work is theirs and can never be lost,

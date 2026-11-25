@@ -19,6 +19,16 @@ export interface Change {
 
 export const WHATS_NEW: Change[] = [
   {
+    date: '2026-11-25',
+    items: [
+      'A new first run: grow a tree, watch a part fade, and pick your daily time.',
+      'Opening a lecture, its tree grows and the leaves you have let fade fall. Sweeping a finger over it names a part.',
+      'On a phone, Prev, Next and the glossary sit at the bottom, and a flipped flashcard swipes right for Got it and left for Missed it.',
+      'On a computer, a lecture opens as two facing pages, and a sitting keeps its tree on the left and the glossary open on the right.',
+      'New lecture asks which class it is for.',
+    ],
+  },
+  {
     date: '2026-11-24',
     items: [
       'Adaptive quiz: questions keep coming, picked from what is fading, what you missed and what you have not answered yet.','New lecture can ask the AI to explain more than your slides do: more context where they are thin, labelled as not from your notes.'],
