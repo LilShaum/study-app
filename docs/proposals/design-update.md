@@ -177,3 +177,8 @@ feedback, and then fix it and push it to main", shown "clearly … like a
 presentation almost but don't waste too much usage". So each piece is
 built on the work branch, shown as one page of labelled before-and-after
 screenshots (what changed, where to look), then fixed and merged.
+
+The owner, 2026-11-25: "I think also the tree should do a little shake or
+something to make the leaves fall, perhaps. Just an idea to try out." So on
+opening a lecture: a small shake, and the faded leaves come off with it,
+as one of the motions to try against the plain fall.
