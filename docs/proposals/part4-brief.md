@@ -53,6 +53,37 @@ set apart (CLAUDE.md, "The end of every reply").
 
 Read the owner's words in design-update.md and onboarding.md; in short:
 
+- **The scope is every screen, on both formats** (the owner, 2026-11-25,
+  reading this brief: "The goal is to make the platforms have distinct
+  feels, ui/ux, that take full advantage of the benefits and downsides of
+  the form factor the user is engaging on", and the phone must get as big
+  a change as the computer, not a narrowed computer layout). The plan
+  below names few phone changes and few screens; it is a start, not the
+  scope. Before building, list every screen (library, class, lecture,
+  section, each kind of card in a sitting, the end of a sitting, Practice
+  and the practice test's setup, making a lecture, Progress, Help,
+  settings, the first run) and decide for each what it is on a phone and
+  what it is on a computer, from each format's strengths and limits:
+  - *Phone*: a thumb, touch and gestures, motion, the bottom of the screen
+    within reach, no hover, typing is slow, a few minutes at a time and
+    often interrupted, one thing on screen. Ideas to weigh, not decided:
+    controls and navigation at the bottom in thumb reach; panels as
+    sheets pulled up from the bottom (the glossary, settings, Practice's
+    ticks); swipes where they are natural (next card, a flashcard's
+    verdict); picking up exactly where an interrupted sitting stopped;
+    written answers made bearable to type.
+  - *Computer*: width, a keyboard, a pointer that can hover, long
+    sittings. Ideas to weigh: the spread and the margins below; the
+    keyboard for everything, not only answering; hover to preview (a
+    branch, a section, a term); side by side where a phone goes one after
+    another (your answer beside the passage; the prompt beside where to
+    paste; all of Practice's ticks at once).
+  - Motion that teaches belongs to both: the tree's unfurl and its leaves
+    falling on opening a lecture play on a computer too (on the spread's
+    tree); only the finger sweep is phone-only (hover does it on a
+    computer).
+  Show this screen-by-format table to the owner with the plan, before
+  building.
 - **Each format used for what it is good at.** Phone: one hand, one thing
   at a time, motion. Computer: width, showing several things at once.
 - **Phone, opening a lecture**: the tree unfurls, and that is when the

@@ -182,3 +182,9 @@ The owner, 2026-11-25: "I think also the tree should do a little shake or
 something to make the leaves fall, perhaps. Just an idea to try out." So on
 opening a lecture: a small shake, and the faded leaves come off with it,
 as one of the motions to try against the plain fall.
+
+The owner, 2026-11-25, reading the brief: the phone needs as distinct a
+change as the computer, across every screen, not only the lecture page's
+animation: "make the platforms have distinct feels, ui/ux, that take full
+advantage of the benefits and downsides of the form factor". The unfurl and
+fall play on both formats. The scope is set in part4-brief.md.
