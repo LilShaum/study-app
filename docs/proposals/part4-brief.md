@@ -112,27 +112,27 @@ Read the owner's words in design-update.md and onboarding.md; in short:
 
 ## The three stages, and their codes
 
-Part 4 runs as three sessions, one after another. Each one starts the next
-itself when its work is done (create_session: same repo, this branch as
-both source and outcome branch, model claude-opus-5-5, the effort below,
-and a prompt naming the code and this brief), then tells the owner the new
-session's link in one line at the bottom of its last reply. If a session
-cannot start the next one, it says so and gives the owner the code.
+Part 4 runs as three sessions, one after another. A session cannot start
+the next one itself (cloud sessions do not have that tool), so each stage
+ends by telling the owner, at the bottom of its last reply: "Next: start a
+new session on the branch claude/project-status-review-rv4e28, <effort>
+effort, and type P4-n."
 
-The owner can also start any stage by hand: a new session on the branch
-`claude/project-status-review-rv4e28`, typing only the code (e.g. `P4-2`).
-A session that receives a code reads this brief and does that stage.
+A session that receives only a code (`P4-1`, `P4-2`, `P4-3`) reads this
+brief in full, then does that stage. Read the dated lines at the end of the
+brief first: they say where the last stage left off.
 
 **P4-1 · Build** (high effort). Plan, build every part 4 piece on the
 branch, check it, and present it all as one page (the form above). Small
 questions on the way are fine; the big feedback round is P4-2's. Ends by
-starting P4-2 and telling the owner: "Your feedback goes here: <link>".
+telling the owner to start P4-2 (medium effort) and give their feedback
+there.
 
 **P4-2 · Feedback** (medium effort). Starts by reading this brief, the
 branch's latest presentation page and the commits since parts 1–3, then
 waits for the owner's feedback. Fixes what they say, shows the changed
 screens the same way, repeats until the owner says it is right. Ends by
-starting P4-3 and telling the owner its link.
+telling the owner to start P4-3 (high effort).
 
 **P4-3 · Final check** (high effort). Stress-tests the whole branch (parts
 1–4) as a student would on a phone and a computer, both themes, a first
