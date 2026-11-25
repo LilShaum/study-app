@@ -14,6 +14,7 @@ import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
 import { LectureTree } from '@/components/LectureTree';
 import { ThumbBar } from '@/components/ThumbBar';
+import { Sheet } from '@/components/Sheet';
 import { SectionDetail } from '@/components/SectionDetail';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
 import { TreeDialog } from '@/components/TreeDialog';
@@ -179,6 +180,10 @@ export function CourseRoute() {
   const picked = course && pickedId ? course.sections.find((s) => s.id === pickedId) : undefined;
   // The row under the pointer lights its branch; otherwise the picked one.
   const [hovered, setHovered] = useState<string | null>(null);
+  // On a phone a section opens as a sheet over the lecture, so the tree and
+  // where you were stay underneath; its own page stays for links.
+  const [sheetId, setSheetId] = useState<string | null>(null);
+  const sheetSection = course && sheetId ? course.sections.find((s) => s.id === sheetId) : undefined;
   const pick = useCallback(
     (sid: string | null) =>
       setParams((p) => {
@@ -321,7 +326,7 @@ export function CourseRoute() {
       progress={progress}
       wide={wide}
       onExpand={() => setTreeOpen(true)}
-      onOpenSection={wide ? pick : undefined}
+      onOpenSection={wide ? pick : setSheetId}
       highlight={wide ? (hovered ?? picked?.id ?? null) : null}
     />
   );
@@ -583,7 +588,7 @@ export function CourseRoute() {
               <Row
                 to={`/study/${id}/section/${encodeURIComponent(section.id)}`}
                 onHover={wide ? (on) => setHovered(on ? section.id : null) : undefined}
-                onPick={wide ? () => pick(picked?.id === section.id ? null : section.id) : undefined}
+                onPick={wide ? () => pick(picked?.id === section.id ? null : section.id) : () => setSheetId(section.id)}
                 className="group tap-safe flex w-full items-baseline gap-3 py-3 text-left"
               >
                 <span className="mark w-6 shrink-0 text-right tabular-nums text-text-3">{index + 1}</span>
@@ -723,6 +728,14 @@ export function CourseRoute() {
             </Link>
           </div>
         </ThumbBar>
+      )}
+
+      {sheetSection && !wide && (
+        <Sheet label={sheetSection.title} title={<span className="mark text-text-3">Section {course.sections.indexOf(sheetSection) + 1}</span>} onClose={() => setSheetId(null)}>
+          <div className="px-5 pb-6 pt-4">
+            <SectionDetail courseId={id} course={course} section={sheetSection} progress={progress} compact />
+          </div>
+        </Sheet>
       )}
 
       {examOpen && <ExamDialog courseId={id} course={course} onClose={() => setExamOpen(false)} />}

@@ -60,6 +60,11 @@ describe('going back in a sitting', () => {
   });
 
   it('shuts the glossary while a question is asked, and says when it opens (the owner, 2026-11-17)', () => {
+    // A laptop: the wide layout, below the 1280px that gives the glossary a margin.
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({ matches: query.includes('1024'), addEventListener() {}, removeEventListener() {} }),
+    });
     useCoursesStore.setState({ courses: { back: lecture } });
     render(
       <MemoryRouter initialEntries={['/session/back/quiz']}>
@@ -82,6 +87,7 @@ describe('going back in a sitting', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next →' }));
     expect(screen.queryByText('Fatty sheath around an axon.')).toBeNull();
     expect(screen.getByText(/Shut while a question is asked/)).toBeTruthy();
+    Reflect.deleteProperty(window, 'matchMedia');
   });
 });
 
@@ -89,7 +95,8 @@ describe('the glossary margin at 1280px and up', () => {
   const wideScreen = (matches: boolean) =>
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
-      value: (query: string) => ({ matches: matches && query.includes('1280'), addEventListener() {}, removeEventListener() {} }),
+      // The wide layout as well: 1280px is wider than 1024.
+      value: (query: string) => ({ matches: matches && (query.includes('1280') || query.includes('1024')), addEventListener() {}, removeEventListener() {} }),
     });
   afterEach(() => Reflect.deleteProperty(window, 'matchMedia'));
 
@@ -143,5 +150,27 @@ describe('the pause between steps', () => {
     fireEvent.click(screen.getByRole('button', { name: '← Back' }));
     expect(pauseButton()).toBeNull();
     expect(useSessionStore.getState().index).toBe(after - 1);
+  });
+});
+
+describe('the glossary on a phone', () => {
+  it('sits between Prev and Next, shut until the answer is in, and opens as a sheet', () => {
+    useCoursesStore.setState({ courses: { back: lecture } });
+    render(
+      <MemoryRouter initialEntries={['/session/back/quiz']}>
+        <Routes>
+          <Route path="/session/:id/:mode" element={<SessionRoute />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    const glossary = () => screen.getByRole('button', { name: /^Glossary/ });
+    expect(glossary()).toHaveProperty('disabled', true);
+    expect(screen.getByText('after you answer')).toBeTruthy();
+    const id = useSessionStore.getState().current()!.id;
+    fireEvent.click(screen.getByRole('radio', { name: new RegExp(`${id} right`) }));
+    fireEvent.click(screen.getByRole('button', { name: 'Check answer' }));
+    fireEvent.click(glossary());
+    expect(screen.getByRole('dialog', { name: 'Glossary' })).toBeTruthy();
+    expect(screen.getByText('Fatty sheath around an axon.')).toBeTruthy();
   });
 });

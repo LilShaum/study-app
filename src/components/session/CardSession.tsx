@@ -18,7 +18,10 @@ import { AdaptiveBar } from './AdaptiveBar';
 import { glossaryOf } from '@/lib/glossary';
 import { SessionRail } from './SessionRail';
 import type { CardStage } from '@/lib/useReportStage';
-import { useMediaQuery } from '@/lib/useMediaQuery';
+import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
+import { useSwipe } from '@/lib/useSwipe';
+import { ThumbBar } from '@/components/ThumbBar';
+import { Sheet } from '@/components/Sheet';
 import { MixedLectures } from './MixedLectures';
 import { CATCH_UP_HOURS, inWords, missedThisSitting, nextDueAt, whenLabel, type Grade } from '@/lib/memory';
 import { examRule } from '@/lib/exam';
@@ -419,6 +422,10 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   // Three columns from 1280px: the glossary then has its own margin, so the
   // button that swaps it in only exists below that (and is not drawn twice).
   const threeColumns = useMediaQuery('(min-width: 1280px)');
+  // A phone: Prev and Next at the bottom in thumb reach, the glossary as a
+  // sheet, and a swipe to go on once the answer is in.
+  const wideLayout = useMediaQuery(WIDE);
+  const [phoneGlossary, setPhoneGlossary] = useState(false);
   /** Where each card is (flipped, answered), as the card reports it: the keys under the card follow. */
   const [stages, setStages] = useState<Record<number, CardStage>>({});
   const [keysOpen, setKeysOpen] = useState(false);
@@ -507,6 +514,14 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   // Subscribed, so the step line's switch follows the section's choice.
   const sectionQuestionsFirst = useLearnStore((s) => (current ? s.startedQuestionsFirst(lectureOf(current, courseId), current._sectionId) : false));
   const questionUp = !pause && !!current && QUESTION_TYPES.has(current.type) && !answeredIndices.has(index);
+  // Only once the answer is showing, never on a question still waiting for
+  // one (a swipe can be an accident). A flipped flashcard takes its own
+  // swipes, as its verdict.
+  const cardSwipe = useSwipe({
+    enabled: !wideLayout && !pause && !!current && !questionUp,
+    onLeft: () => handleNext(),
+    onRight: hasPrev ? () => prev() : undefined,
+  });
   const keysNow = keysFor(current, hints, written, stages[index] ?? 'front', answeredIndices.has(index), !!pause);
 
   useEffect(() => {
@@ -990,7 +1005,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   return (
     // Phone: the card alone. 1024px: card and a left margin. 1280px: a margin
     // each side, the card centred even when there is no glossary to fill one.
-    <div className="mx-auto max-w-2xl py-6 short:py-2 sm:px-6 wide:grid wide:max-w-none wide:grid-cols-[13rem_minmax(0,44rem)] wide:justify-center wide:gap-10 xl:grid-cols-[15rem_minmax(0,42rem)_17rem] xl:gap-8">
+    <div className="mx-auto max-w-2xl pb-28 pt-6 short:pt-2 wide:pb-6 sm:px-6 wide:grid wide:max-w-none wide:grid-cols-[13rem_minmax(0,44rem)] wide:justify-center wide:gap-10 xl:grid-cols-[15rem_minmax(0,42rem)_17rem] xl:gap-8">
       <div className="min-w-0 wide:col-start-2 wide:row-start-1">
       <div className="mb-4 flex items-center justify-between">
         <Link to={home} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
@@ -1161,6 +1176,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         * why. Keyed by the card object, which a copy of a missed card is not,
         * so a card that comes back starts unanswered.
         */}
+      <div {...cardSwipe.handlers} style={cardSwipe.style}>
       {items.map((it, n) => {
         const here = n === index;
         if (!here && (!answeredIndices.has(n) || Math.abs(n - index) > KEEP_NEAR)) return null;
@@ -1206,24 +1222,52 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
           </div>
         );
       })}
-
-      <div className={`mt-4 flex justify-between ${pause ? 'hidden' : ''}`}>
-        <button
-          type="button"
-          disabled={!hasPrev}
-          onClick={prev}
-          className="press"
-        >
-          ← Prev
-        </button>
-        <button
-          type="button"
-          onClick={handleNext}
-          className="press"
-        >
-          {hasNext ? 'Next →' : 'Finish'}
-        </button>
       </div>
+
+      {wideLayout ? (
+        <div className={`mt-4 flex justify-between ${pause ? 'hidden' : ''}`}>
+          <button type="button" disabled={!hasPrev} onClick={prev} className="press">
+            ← Prev
+          </button>
+          <button type="button" onClick={handleNext} className="press">
+            {hasNext ? 'Next →' : 'Finish'}
+          </button>
+        </div>
+      ) : (
+        !pause && (
+          // On a phone the way through the sitting is at the bottom, where the
+          // thumb is, with the lecture's glossary between (a sheet, shut
+          // while a question waits for its answer, as on a computer).
+          <ThumbBar>
+            <div className="flex items-center justify-between gap-3">
+              <button type="button" disabled={!hasPrev} onClick={prev} className="press tap-safe">
+                ← Prev
+              </button>
+              {glossary.length > 0 && !mixedClass && (
+                <button
+                  type="button"
+                  onClick={() => setPhoneGlossary(true)}
+                  disabled={questionUp}
+                  className="tap-safe flex flex-col items-center text-small text-text-2 disabled:text-text-3"
+                >
+                  Glossary
+                  {questionUp && <span className="text-[11px] leading-none">after you answer</span>}
+                </button>
+              )}
+              <button type="button" onClick={handleNext} className="press tap-safe">
+                {hasNext ? 'Next →' : 'Finish'}
+              </button>
+            </div>
+          </ThumbBar>
+        )
+      )}
+      {phoneGlossary && !questionUp && (
+        <Sheet label="Glossary" onClose={() => setPhoneGlossary(false)}>
+          <div className="px-5 py-4">
+            <SessionGlossary entries={glossary} />
+          </div>
+        </Sheet>
+      )}
 
       {/* Set a card aside without leaving the sitting: a slide shown to
           illustrate, a table the teacher said to skip, a card that is wrong.
@@ -1289,7 +1333,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       {/* Left margin: the tree large and where you are in the sitting. Below
           1280px the glossary swaps in here instead of having a margin. */}
       <div className="hidden min-w-0 wide:col-start-1 wide:row-start-1 wide:block">
-        {glossary.length > 0 && !threeColumns && (
+        {glossary.length > 0 && wideLayout && !threeColumns && (
           <div className="mb-4">
             <button
               type="button"
