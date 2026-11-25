@@ -89,3 +89,34 @@ describe('NewCourseDialog: what to make', () => {
     expect(added.metadata.make).toBeUndefined();
   });
 });
+
+describe('NewCourseDialog: which class', () => {
+  it('stamps the class picked on the lecture, whatever the AI wrote (the owner, 2026-11-11)', async () => {
+    const existing = JSON.parse(reply);
+    useCoursesStore.setState({ courses: { old: { ...existing, metadata: { title: 'Old', course_code: 'PSYC 351' } } } });
+    render(
+      <MemoryRouter>
+        <NewCourseDialog onClose={() => {}} />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('radio', { name: 'PSYC 351' }));
+    await upload(JSON.stringify({ ...existing, metadata: { title: 'New', course_code: 'BIOL 365' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add lecture' }));
+    const added = Object.values(useCoursesStore.getState().courses).find((c) => c.metadata.title === 'New')!;
+    expect(added.metadata.course_code).toBe('PSYC 351');
+  });
+
+  it('takes a class not yet in the library, typed', async () => {
+    render(
+      <MemoryRouter>
+        <NewCourseDialog onClose={() => {}} />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Type its code' }));
+    fireEvent.change(screen.getByLabelText('Another class'), { target: { value: 'CHEM 200' } });
+    await upload(reply);
+    fireEvent.click(screen.getByRole('button', { name: 'Add lecture' }));
+    const [added] = Object.values(useCoursesStore.getState().courses);
+    expect(added.metadata.course_code).toBe('CHEM 200');
+  });
+});

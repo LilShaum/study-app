@@ -66,6 +66,24 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   });
   const addCourse = useCoursesStore((s) => s.addCourse);
   const navigate = useNavigate();
+  /*
+   * Which class it belongs to, asked here and stamped on the lecture whatever
+   * the AI wrote: notes often never say their class, and a lecture with the
+   * AI's guess, or none, landed away from its class (the owner, 2026-11-11:
+   * "it would now know no matter what"). From a class's page it is set already.
+   */
+  const classes = useMemo(() => {
+    const byKey = new Map<string, string>();
+    for (const c of Object.values(lectures)) {
+      const code = c.metadata.course_code?.trim();
+      const key = classOf(c);
+      if (code && key && !byKey.has(key)) byKey.set(key, code);
+    }
+    return [...byKey.values()].sort();
+  }, [lectures]);
+  const [klass, setKlass] = useState<string>('');
+  const [typing, setTyping] = useState(false);
+  const stamped = classCode ?? (klass.trim() || undefined);
 
   // Parsed on every keystroke so the preview and the error both track the box.
   const result = useMemo((): { course: Course; cut: string | null } | { error: string } | null => {
@@ -118,7 +136,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
       ...course,
       metadata: {
         ...course.metadata,
-        ...(classCode ? { course_code: classCode } : {}),
+        ...(stamped ? { course_code: stamped } : {}),
         // Written before the prompt was copied; kept for every later prompt.
         ...(notes.trim() ? { student_notes: notes.trim() } : {}),
         // What it was made with, so Add material, More practice and Fix keep to it.
@@ -167,6 +185,51 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
         left={
           <>
             <PromptStep n={1} title="What to make">
+              {!classCode && (
+                <div className="mb-4">
+                  <span className="mb-1.5 block text-sm text-text-2">Which class is it for?</span>
+                  <div role="radiogroup" aria-label="Class" className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+                    {classes.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        role="radio"
+                        aria-checked={!typing && klass === c}
+                        onClick={() => {
+                          setTyping(false);
+                          setKlass(klass === c ? '' : c);
+                        }}
+                        className={`tap-safe text-small ${
+                          !typing && klass === c ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : 'text-text-2 hover:text-text'
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                    {typing ? (
+                      <input
+                        autoFocus
+                        value={klass}
+                        onChange={(e) => setKlass(e.target.value)}
+                        placeholder="Class code, e.g. PSYC 351"
+                        aria-label="Another class"
+                        className="field w-48 text-small"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTyping(true);
+                          setKlass('');
+                        }}
+                        className="tap-safe text-small text-text-3 hover:text-text"
+                      >
+                        {classes.length ? 'Another' : 'Type its code'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
               <MakeKindsField value={kinds} onChange={setKinds} />
               <div className="mt-3">
                 <StudiesField checked={studies} onChange={setStudies} />
