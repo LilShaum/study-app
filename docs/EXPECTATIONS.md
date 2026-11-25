@@ -465,9 +465,10 @@ suggestion opens Today. Never a reading card. When
 three are left the next ten are planned (`session.topUp`), leaving out every
 card already in the sitting. A miss comes back three or so cards on (as in
 Learn's requeue). Marked as you go. The line above the card says when
-everything that was due at the start is done ("Carry on, or stop here"),
-and Missed opens every miss so far with its right answer and why. The
-counter has no total. On a class page the lectures are drawn from together
+everything that was due at the start is done ("Carry on, or stop here").
+No list of misses: each answer already shows its why and passage (a
+Missed list was built and taken out, the owner, 2026-11-25). The counter
+has no total. On a class page the lectures are drawn from together
 (`initMixed`).
 
 **Not yet.** A miss re-asked by a different card on the same idea (the plan

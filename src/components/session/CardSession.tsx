@@ -416,21 +416,13 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   /** Learn: the pause between two steps, while it is showing. */
   const [pause, setPause] = useState<Pause | null>(null);
   /** A question on screen, not yet answered: the glossary is shut, as it would hold the answer. */
-  // The adaptive quiz's line: its count, its misses, and whether anything due is left.
+  // The adaptive quiz's line: whether anything that was due is left.
   const sessionResults = useSessionStore((s) => s.results);
   // Due is judged as of opening the sitting; rendering must not read the clock.
   const [openedAt] = useState(Date.now);
   const adaptive = useMemo(() => {
-    if (mode !== 'adaptive') return { missed: [] as SessionItem[], dueLeft: false, dueAtStart: false };
+    if (mode !== 'adaptive') return { dueLeft: false, dueAtStart: false };
     const st = useSessionStore.getState();
-    const missedKeys = new Set(st.stillMissed());
-    const seen = new Set<string>();
-    const missed = st.items.filter((i) => {
-      const k = cardKey(i);
-      if (!missedKeys.has(k) || seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
     const asked = new Set([...sessionResults.keys()].map((n) => st.items[n] && cardKey(st.items[n])));
     const now = openedAt;
     const dueLeft = (st.lectures ?? [courseId]).some((id) => {
@@ -448,7 +440,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       const progress = st.startByCourse[id] ?? {};
       return !!c && buildSessionItems(c, 'review', { progress, now, exam: examRule(c, progress, now), minutes: Infinity }).length > 0;
     });
-    return { missed, dueLeft, dueAtStart };
+    return { dueLeft, dueAtStart };
     // Recomputed after every answer; the course and mode are fixed for a sitting.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionResults, mode]);
@@ -987,7 +979,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       )}
 
       {mode === 'adaptive' && current && !pause && (
-        <AdaptiveBar missed={adaptive.missed} dueDone={adaptive.dueAtStart && !adaptive.dueLeft} />
+        <AdaptiveBar dueDone={adaptive.dueAtStart && !adaptive.dueLeft} />
       )}
       {(mode === 'learn' || mode === 'today') && current && !pause && (
         <StepLine
