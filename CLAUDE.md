@@ -177,6 +177,9 @@ this is the intent it serves.
   reason it wins, and only then write the build plan. Written down in
   `docs/proposals/`, so the reasoning outlives the session.
 
+**Part 4 codes** (2026-11-25): if the owner types `P4-1`, `P4-2` or `P4-3`,
+read `docs/proposals/part4-brief.md` and do that stage.
+
 ## Working on the app
 
 - `prompts/generator.md` is the generator prompt the app hands out (imported
