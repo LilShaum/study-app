@@ -61,17 +61,16 @@ function Glyph({ name }: { name: IconName }) {
 }
 
 
-/**
- * The lecture the first run grows: made up, never saved, and about how
- * memory works, so the tree the student plays with is about the very thing
- * the app runs on (docs/evidence.md).
- */
+/** The lecture the first run grows: made up and never saved. */
 const DEMO_ID = 'arborous:first-run:4';
-// Six parts and this id draw the most balanced tree of the ones tried (2026-11-25).
-const DEMO_PARTS = ['Encoding', 'Forgetting', 'Spacing', 'Retrieval', 'Sleep', 'Interference'];
+// Six parts and this id draw the most balanced tree of the ones tried; the
+// shape comes from the id and the parts' sizes, not their names. A topic
+// every student met at school, so no part name needs explaining (the owner,
+// 2026-11-25: "encoding and retrieval … are very confusing").
+const DEMO_PARTS = ['Evaporation', 'Condensation', 'Clouds', 'Rain', 'Rivers', 'Groundwater'];
 const DEMO: Course = {
   schema_version: '1.0',
-  metadata: { title: 'How memory works' },
+  metadata: { title: 'The water cycle' },
   sections: DEMO_PARTS.map((title, s) => ({
     id: `s${s + 1}`,
     title,
@@ -333,8 +332,8 @@ function FirstRun() {
           line={
             grown.length === 0
               ? touch
-                ? 'Touch the tree, then tap a number to study that part.'
-                : 'Point at the tree, then click a number to study that part.'
+                ? 'Here is a sample lecture on the water cycle. Touch the tree, then tap a number to study a part.'
+                : 'Here is a sample lecture on the water cycle. Point at the tree, then click a number to study a part.'
               : grown.length === 1
                 ? `${first} has grown its leaves. Now study one more.`
                 : `${first} and ${last} have grown their leaves.`
