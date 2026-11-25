@@ -238,3 +238,15 @@ knows where things stand.
   localStorage on first load, and published as a private artifact
   (https://claude.ai/artifact/3EsXFCq7XWcdFH4vj4vbAq). A captioned swipe
   recording is Round 7 on the part 4 page.
+- **2026-11-25, Testing 1 to 11 and the review page notes, fixed** (the
+  owner: "Fix everything in them"; each point broken down in
+  docs/FEEDBACK.md with how it was checked). Plans written first for the
+  three bigger ones: New lecture's "The AI chooses / Only these"
+  (new-lecture-screen.md), Settings (settings.md), the Diagrams row
+  (diagrams-row.md). Built by the session itself (the owner: anything a
+  student sees is never an agent's), checked on an emulated 390px phone,
+  zoomed, both themes, scrolled to the bottom, several taps. The review page
+  (same link) holds only these 11 items with notes boxes; the preview (same
+  link) was rebuilt and now starts fresh, first run included. Open: one
+  question on the page (whether "fading" in the words under the tree stays
+  blue); real-iPhone checks of swipes and the Diagrams row.
