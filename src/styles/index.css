@@ -695,31 +695,37 @@
     animation: tree-leaf 900ms ease-out 1500ms both;
   }
 
-  /* The arrival's shake: the standing tree swung about the foot of its
-     trunk, hard once and dying away, as a tree is when something knocks
-     it; the faded leaves come off with the first swing. */
-  .tree-shake {
-    transform-box: view-box;
-    animation: tree-shake 1100ms cubic-bezier(0.3, 0, 0.4, 1) both;
+  /* The arrival's shiver: each branch trembles about its own base, quick
+     and dying away, the way a gust goes through a tree; the faded leaves
+     come off with it. The trunk and the ground do not move. --amp is set
+     per branch (harder where leaves are falling). */
+  .branch-shiver {
+    animation: branch-shiver 1000ms cubic-bezier(0.3, 0, 0.5, 1) both;
   }
-  @keyframes tree-shake {
+  @keyframes branch-shiver {
     0% {
       transform: rotate(0deg);
     }
-    12% {
-      transform: rotate(1.8deg);
+    8% {
+      transform: rotate(calc(var(--amp, 1) * 1deg));
     }
-    28% {
-      transform: rotate(-1.4deg);
+    18% {
+      transform: rotate(calc(var(--amp, 1) * -0.85deg));
     }
-    46% {
-      transform: rotate(0.9deg);
+    29% {
+      transform: rotate(calc(var(--amp, 1) * 0.65deg));
     }
-    64% {
-      transform: rotate(-0.5deg);
+    41% {
+      transform: rotate(calc(var(--amp, 1) * -0.45deg));
     }
-    82% {
-      transform: rotate(0.2deg);
+    54% {
+      transform: rotate(calc(var(--amp, 1) * 0.28deg));
+    }
+    68% {
+      transform: rotate(calc(var(--amp, 1) * -0.14deg));
+    }
+    84% {
+      transform: rotate(calc(var(--amp, 1) * 0.05deg));
     }
     100% {
       transform: rotate(0deg);

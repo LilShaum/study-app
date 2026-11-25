@@ -116,7 +116,7 @@ const ARRIVAL_FALL = 'shake' as 'shake' | 'plain';
 /** When the arrival's fall begins: after the drawing-on, or almost at once. */
 const FALL_AFTER_UNFURL_MS = GROWTH === 'outward' ? 1700 : 1250;
 const FALL_AFTER_OPEN_MS = 350;
-/** How long the shake lasts (styles/index.css, tree-shake). */
+/** How long the shiver lasts (styles/index.css, branch-shiver). */
 const SHAKE_MS = 1100;
 /** How long the drawing-on lasts, wood then leaves (styles/index.css, tree-grow). */
 const UNFURL_MS = GROWTH === 'outward' ? 2100 : 1400;
@@ -781,8 +781,18 @@ export function CourseTree({
     return {
       transform: pivots.get(id) ?? 'rotate(0deg)',
       transformOrigin: `${geo.anchor[0]}px ${geo.anchor[1]}px`,
+      // The arrival's shiver (styles/index.css, branch-shiver): each branch
+      // on its own, a little after its neighbour; the ones losing leaves
+      // tremble harder.
+      ...(shaking
+        ? ({
+            '--amp': arrival?.from[id] !== undefined ? '1.7' : '0.8',
+            animationDelay: `${leafHash(id) % 160}ms`,
+          } as CSSProperties)
+        : {}),
     };
   };
+  const limbSet = shaking ? 'limb-set branch-shiver' : 'limb-set';
 
   /* ---- the reveal (the lecture page) ---- */
 
@@ -1057,19 +1067,17 @@ export function CourseTree({
           </g>
         ))}
       </g>
-      {/* The whole standing tree, so the arrival can shake it about the
-          foot of its trunk; the leaves on the ground stay where they lie. */}
-      <g
-        className={shaking ? 'tree-shake' : undefined}
-        style={layers.foot ? { transformOrigin: `${layers.foot[0]}px ${layers.foot[1]}px` } : undefined}
-      >
+      {/* The standing tree. On arrival its branches shiver, each about its
+          own base, while the trunk and the ground stay still (the owner,
+          2026-11-25: "more of a shake in the branches almost like a shiver"). */}
+      <g>
       {/* Wood first, then foliage, so a canopy hides the branches behind it. */}
       <g>
         {layers.structural.map((limb, i) => (
           <path key={`s${i}`} {...paintLimb(limb, false, drawOn, false)} style={outward?.get(limb)} />
         ))}
         {[...layers.wood].map(([id, limbs]) => (
-          <g key={id} data-sid={id} data-held={id === active || undefined} data-dim={dim(id) || undefined} data-back={stepsBack(id) || undefined} className="limb-set" style={swing(id)}>
+          <g key={id} data-sid={id} data-held={id === active || undefined} data-dim={dim(id) || undefined} data-back={stepsBack(id) || undefined} className={limbSet} style={swing(id)}>
             <LimbPaths limbs={limbs} held={id === active} animate={drawOn} pointable={interactive} growDelays={outward} />
           </g>
         ))}
@@ -1077,7 +1085,7 @@ export function CourseTree({
       <g>
         {layers.structuralFoliage.map((limb, i) => limbWithVein(limb, `sf${i}`, false, drawOn, false, undefined, outward?.get(limb)))}
         {[...layers.foliage].map(([id, limbs]) => (
-          <g key={id} data-sid={id} data-held={id === active || undefined} data-dim={dim(id) || undefined} data-back={stepsBack(id) || undefined} className="limb-set" style={swing(id)}>
+          <g key={id} data-sid={id} data-held={id === active || undefined} data-dim={dim(id) || undefined} data-back={stepsBack(id) || undefined} className={limbSet} style={swing(id)}>
             <LimbPaths limbs={limbs} held={id === active} animate={drawOn} pointable={false} grow={grow} growDelays={outward} />
           </g>
         ))}
@@ -1091,7 +1099,7 @@ export function CourseTree({
           drawing under it was still settling, two branches for a moment. */}
       <g aria-hidden="true">
         {layers.ids.map((id) => (
-          <g key={id} data-front={id} data-held={id === active || undefined} className="limb-set" style={swing(id)}>
+          <g key={id} data-front={id} data-held={id === active || undefined} className={limbSet} style={swing(id)}>
             {id === lifted && (
               <>
                 <LimbPaths limbs={layers.wood.get(id) ?? NONE} held animate={false} pointable={false} />
