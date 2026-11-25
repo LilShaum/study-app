@@ -122,6 +122,14 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   my suggestions before saying you are done": the end of a sitting on a
   computer, the class check when a file comes back, a term in a card shown
   in the glossary column, J and K in lists.
+  2026-11-25, on the first run's sample lecture: "im confused by what
+  encoding and retrieval mean. they are very confusing" (the part names).
+- **Notifications, and asking about them in the first run** (2026-11-25: "I
+  also think the app should send notifications for various things and near
+  the end of onboarding it should ask if you would like to be sent
+  reminders and that you can adjust what you specifically receive
+  notifications for in the settings"). To plan first
+  (docs/proposals/notifications.md).
 - **A code audit** (2026-11-22: "the code itself needs a big audit on how
   efficient it is, how many redundant or useless sections there are, how
   well its annotated for ai to understand the code, how well its

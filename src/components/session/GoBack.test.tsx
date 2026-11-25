@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
@@ -173,5 +173,29 @@ describe('the glossary on a phone', () => {
     fireEvent.click(glossary());
     expect(screen.getByRole('dialog', { name: 'Glossary' })).toBeTruthy();
     expect(screen.getByText('Fatty sheath around an axon.')).toBeTruthy();
+  });
+});
+
+describe('the end of a sitting on a computer', () => {
+  it('faces the tree with what is still to get right', () => {
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({ matches: query.includes('1024'), addEventListener() {}, removeEventListener() {} }),
+    });
+    useCoursesStore.setState({ courses: { back: lecture } });
+    render(
+      <MemoryRouter initialEntries={['/session/back/quiz']}>
+        <Routes>
+          <Route path="/session/:id/:mode" element={<SessionRoute />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    const card = useSessionStore.getState().current() as unknown as { id: string; question: string };
+    fireEvent.click(screen.getByRole('radio', { name: new RegExp(`${card.id} wrong one`) }));
+    fireEvent.click(screen.getByRole('button', { name: 'Check answer' }));
+    act(() => useSessionStore.getState().finish());
+    const missed = screen.getByRole('region', { name: 'Still to get right' });
+    expect(missed.textContent).toContain(card.question);
+    Reflect.deleteProperty(window, 'matchMedia');
   });
 });

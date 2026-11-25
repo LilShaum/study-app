@@ -11,6 +11,7 @@ import { resumesOnOpen, useResumeStore } from '@/store/resume';
 import { CourseTree } from '@/components/CourseTree';
 import { answered, EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
+import { RichText } from '@/components/items/RichText';
 import type { ComesBack } from '@/components/items/FlashcardCard';
 import { SectionJump } from './SectionJump';
 import { SessionGlossary } from './SessionGlossary';
@@ -901,7 +902,18 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     const pct = attempted > 0 ? Math.round((score.got / attempted) * 100) : 100;
     // Not score.missed: in Learn a miss comes back until it is right, and
     // one put right in the sitting is not still to retry.
-    const missedNow = stillMissed().length;
+    const missedKeys = stillMissed();
+    const missedNow = missedKeys.length;
+    // A computer has room to face the tree with the result (design-update.md).
+    const spreadEnd = wideLayout && !mixedClass;
+    const missedItems = missedKeys
+      .map((key) => items.find((it) => cardKey(it) === key))
+      .filter((it): it is SessionItem => !!it)
+      .map((it) => {
+        const c = it as unknown as { question?: string; front?: string; term?: string; title?: string };
+        return c.question ?? c.front ?? c.term ?? c.title ?? '';
+      })
+      .filter(Boolean);
     return (
       /*
        * The end of a session is where the tree pays off.
@@ -913,21 +925,32 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
        * number cannot show you that a branch you had never opened is now in
        * leaf.
        */
-      <div className="mx-auto flex max-w-2xl flex-col items-center py-10 text-center sm:px-10">
+      <div
+        className={
+          spreadEnd
+            ? 'mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_minmax(0,30rem)] items-start gap-14 py-10'
+            : 'mx-auto flex max-w-2xl flex-col items-center py-10 text-center sm:px-10'
+        }
+      >
         {/* A mixed sitting grew several trees: they are in the list below. */}
         {!mixedClass && (
-          <CourseTree
-            courseId={courseId}
-            course={course}
-            progress={progress}
-            className="h-44 sm:h-56"
-            // What this session changed, shown on the tree: leaves won back
-            // rise from the ground, new ones grow. It replaced a draw-on of the
-            // whole tree, which looked the same whatever the session had done.
-            grewFrom={startProgress}
-          />
+          <div className={spreadEnd ? 'sticky top-6 flex justify-center' : undefined}>
+            <CourseTree
+              courseId={courseId}
+              course={course}
+              progress={progress}
+              className={spreadEnd ? 'h-[30rem] max-w-full' : 'h-44 sm:h-56'}
+              // What this session changed, shown on the tree: leaves won back
+              // rise from the ground, new ones grow. It replaced a draw-on of the
+              // whole tree, which looked the same whatever the session had done.
+              grewFrom={startProgress}
+            />
+          </div>
         )}
-        <h1 className={`${mixedClass ? '' : 'mt-5 '}font-display text-title font-semibold text-text`}>
+        {/* On a computer the right page: the result, what was missed, and
+            what comes next, facing the tree that grew. */}
+        <div className={spreadEnd ? 'flex min-w-0 flex-col items-start border-l border-border pl-10 text-left' : 'contents'}>
+        <h1 className={`${mixedClass || spreadEnd ? '' : 'mt-5 '}font-display text-title font-semibold text-text`}>
           {MODE_LABELS[mode]} finished
         </h1>
         <div className="mt-3 flex justify-center gap-5 text-small tabular-nums">
@@ -942,7 +965,20 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
             {moreDue} more {moreDue === 1 ? 'is' : 'are'} waiting to review.
           </p>
         )}
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
+        {spreadEnd && missedItems.length > 0 && (
+          <section aria-label="Still to get right" className="mt-6 w-full">
+            <h2 className="mark mb-1 text-text-3">Still to get right</h2>
+            <ol className="divide-y divide-border border-y border-border text-small text-text-2">
+              {missedItems.slice(0, 8).map((text, i) => (
+                <li key={i} className="line-clamp-2 py-2">
+                  <RichText text={text} />
+                </li>
+              ))}
+            </ol>
+            {missedItems.length > 8 && <p className="mt-1 text-small text-text-3">and {missedItems.length - 8} more</p>}
+          </section>
+        )}
+        <div className={`mt-6 flex flex-wrap gap-3 ${spreadEnd ? '' : 'justify-center'}`}>
           {/* Straight back over what went wrong, while the correction is
               fresh — the most useful next step when there is one, so it
               leads. */}
@@ -1014,6 +1050,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
             Next: Today in {classCode ? lectureName(nextCourse.title, classCode) : nextCourse.title}
           </Link>
         )}
+        </div>
       </div>
     );
   }
