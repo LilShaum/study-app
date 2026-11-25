@@ -118,6 +118,10 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   and concisely"), a nicer example tree, then a username and an account
   with email, and transitions between pages ("dynamic and elegant …
   impressive and intuitive").
+  2026-11-25: "Finish the other things you had left to do on top of fixing
+  my suggestions before saying you are done": the end of a sitting on a
+  computer, the class check when a file comes back, a term in a card shown
+  in the glossary column, J and K in lists.
 - **A code audit** (2026-11-22: "the code itself needs a big audit on how
   efficient it is, how many redundant or useless sections there are, how
   well its annotated for ai to understand the code, how well its
