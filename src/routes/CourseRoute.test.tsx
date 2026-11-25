@@ -110,3 +110,32 @@ describe('CourseRoute: notes from the AI', () => {
     expect(screen.queryByText('Notes from the AI')).toBeNull();
   });
 });
+
+describe('the computer spread', () => {
+  it('opens a picked section beside the page, without leaving, and Close removes it', () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: true,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+      onchange: null,
+    })) as unknown as typeof window.matchMedia;
+    try {
+      open();
+      expect(screen.queryByRole('region', { name: 'Transport' })).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: /Transport/ }));
+      const panel = screen.getByRole('region', { name: 'Transport' });
+      expect(panel.textContent).toContain('Study just this section');
+      // Still the lecture page: its contents are beside the panel.
+      expect(screen.getByRole('button', { name: /Signals/ })).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+      expect(screen.queryByRole('region', { name: 'Transport' })).toBeNull();
+    } finally {
+      window.matchMedia = original;
+    }
+  });
+});

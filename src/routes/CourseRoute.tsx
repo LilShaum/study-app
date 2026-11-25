@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { PracticeKinds } from '@/components/PracticeKinds';
 import { useCoursesStore } from '@/store/courses';
 import type { Course } from '@/schema/course';
@@ -13,6 +13,7 @@ import { bookmarkResolves, useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
 import { LectureTree } from '@/components/LectureTree';
+import { SectionDetail } from '@/components/SectionDetail';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
 import { TreeDialog } from '@/components/TreeDialog';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
@@ -73,6 +74,37 @@ function ago(ts: number): string {
   if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
   const days = Math.round(hours / 24);
   return `${days} day${days === 1 ? '' : 's'} ago`;
+}
+
+/** A contents row: a link to the section's page, or on the desktop spread a button that opens it in place. */
+function Row({
+  to,
+  onPick,
+  onHover,
+  className,
+  children,
+}: {
+  to: string;
+  onPick?: () => void;
+  onHover?: (on: boolean) => void;
+  className: string;
+  children: ReactNode;
+}) {
+  return onPick ? (
+    <button
+      type="button"
+      onClick={onPick}
+      onMouseEnter={() => onHover?.(true)}
+      onMouseLeave={() => onHover?.(false)}
+      className={className}
+    >
+      {children}
+    </button>
+  ) : (
+    <Link to={to} className={className}>
+      {children}
+    </Link>
+  );
 }
 
 /** The small ink links under the header: things you do to a course, not with it. */
@@ -139,6 +171,31 @@ export function CourseRoute() {
   }, [course, progress, now]);
 
   const wide = useMediaQuery(WIDE);
+  // The picked section lives in the URL so Back un-picks it. Only the wide
+  // layout reads it; on a phone a section is its own page.
+  const [params, setParams] = useSearchParams();
+  const pickedId = wide ? params.get('s') : null;
+  const picked = course && pickedId ? course.sections.find((s) => s.id === pickedId) : undefined;
+  // The row under the pointer lights its branch; otherwise the picked one.
+  const [hovered, setHovered] = useState<string | null>(null);
+  const pick = useCallback(
+    (sid: string | null) =>
+      setParams((p) => {
+        const next = new URLSearchParams(p);
+        if (sid) next.set('s', sid);
+        else next.delete('s');
+        return next;
+      }),
+    [setParams],
+  );
+  useEffect(() => {
+    if (!picked) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') pick(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [picked, pick]);
   // The pinned Start on a phone shows only while Today's own Start cannot be
   // tapped: with both on screen it said the same thing twice and covered the
   // line under it. Watching the button and not its row, because the row now
@@ -263,6 +320,8 @@ export function CourseRoute() {
       progress={progress}
       wide={wide}
       onExpand={() => setTreeOpen(true)}
+      onOpenSection={wide ? pick : undefined}
+      highlight={wide ? (hovered ?? picked?.id ?? null) : null}
     />
   );
   const titleBlock = (
@@ -520,14 +579,22 @@ export function CourseRoute() {
           const stats = sectionStats(section, progress);
           return (
             <li key={section.id}>
-              <Link
+              <Row
                 to={`/study/${id}/section/${encodeURIComponent(section.id)}`}
-                className="group tap-safe flex items-baseline gap-3 py-3"
+                onHover={wide ? (on) => setHovered(on ? section.id : null) : undefined}
+                onPick={wide ? () => pick(picked?.id === section.id ? null : section.id) : undefined}
+                className="group tap-safe flex w-full items-baseline gap-3 py-3 text-left"
               >
                 <span className="mark w-6 shrink-0 text-right tabular-nums text-text-3">{index + 1}</span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-baseline gap-2">
-                    <span className="font-display text-body font-medium text-text group-hover:text-accent">
+                    <span
+                      className={`font-display text-body font-medium group-hover:text-accent ${
+                        picked?.id === section.id
+                          ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
+                          : 'text-text'
+                      }`}
+                    >
                       {section.title}
                     </span>
                     <span className="leaders hidden sm:block" aria-hidden="true" />
@@ -550,7 +617,7 @@ export function CourseRoute() {
                     </span>
                   )}
                 </span>
-              </Link>
+              </Row>
             </li>
           );
         })}
@@ -583,14 +650,48 @@ export function CourseRoute() {
           under it, and everything you do on the right — all of it on one
           screen. Text you read stays at reading width either way. */}
       {wide ? (
-        <div className="mt-6 grid grid-cols-[22rem_minmax(0,1fr)] gap-12">
-          <aside>
+        // An open spread: contents on the left page, held in place as the
+        // right page scrolls, with a gutter rule between. A picked section
+        // opens beside the ways to study, or in their place where there is
+        // no room for both.
+        <div className="mt-6 flex gap-10">
+          <aside className="sticky top-6 max-h-[calc(100vh-3rem)] w-[24rem] shrink-0 self-start overflow-y-auto [scrollbar-width:thin]">
             {treeBlock}
             <div className="mt-6">{contents}</div>
           </aside>
-          <div>
-            {titleBlock}
-            {main}
+          <div className="min-w-0 flex-1 border-l border-border pl-10">
+            {picked ? (
+              // The title runs across the whole right page; under it the
+              // ways to study and the section face each other. In one
+              // narrow column the title broke over three lines.
+              <>
+              <div className="hidden xl:block">{titleBlock}</div>
+              <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] xl:gap-10">
+                <div className="hidden min-w-0 xl:block">
+                  {main}
+                </div>
+                <section
+                  aria-label={picked.title}
+                  className="min-w-0 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:self-start xl:overflow-y-auto xl:[scrollbar-width:thin]"
+                >
+                  <div className="mb-3 flex items-baseline justify-between gap-4">
+                    <button type="button" onClick={() => pick(null)} className="text-sm text-text-2 hover:text-text xl:hidden">
+                      ← Ways to study
+                    </button>
+                    <button type="button" onClick={() => pick(null)} className="ml-auto text-sm text-text-3 hover:text-text">
+                      Close
+                    </button>
+                  </div>
+                  <SectionDetail courseId={id} course={course} section={picked} progress={progress} compact />
+                </section>
+              </div>
+              </>
+            ) : (
+              <>
+                {titleBlock}
+                {main}
+              </>
+            )}
           </div>
         </div>
       ) : (

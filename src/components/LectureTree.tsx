@@ -36,6 +36,7 @@ export function LectureTree({
   wide,
   onExpand,
   onOpenSection,
+  highlight,
 }: {
   courseId: string;
   course: Course;
@@ -45,6 +46,8 @@ export function LectureTree({
   onExpand: () => void;
   /** Open a section beside the page instead of going to it (the computer's spread). */
   onOpenSection?: (sectionId: string) => void;
+  /** A section to light, e.g. the contents row under the pointer (the computer's spread). */
+  highlight?: string | null;
 }) {
   // Fading is judged as of drawing, as the tree judges it: rendering must not read the clock.
   const [now] = useState(Date.now);
@@ -60,12 +63,13 @@ export function LectureTree({
           course={course}
           progress={progress}
           crop
-          className={`${wide ? 'h-[22rem]' : 'h-72'} max-w-full`}
+          className={`${wide ? 'h-[26rem]' : 'h-72'} max-w-full`}
           interactive
           mode="reveal"
           onExpand={onExpand}
           onPoint={setPicked}
           onOpenSection={onOpenSection}
+          highlight={highlight}
           arrive
         />
       </div>
