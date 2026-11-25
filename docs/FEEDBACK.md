@@ -11,6 +11,47 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-25 · Testing 3: the find page's colours and highlighting
+
+**Their words:** "The first branch touched turns blue and doesn't switch to
+the one you are touching … the one you touch does actually change as shown
+by the 4 which seems perhaps bigger or bolded compared to the numbers on the
+right, but then you have the 6 at the top which stays blue no matter what
+and then the 2 on the left randomly is black instead of the same as the
+others which makes it so much more confusing what is supposed to be what
+colour. … branch 4 is the one being touched yet the branch that it is
+sitting on (branch 2) is not turning translucent like I thought I
+established it should be, making it unclear which branch is highlighted and
+what is part of the branch I'm touching. Also on branch 2 we see many more
+floating leaves near the bottom."
+**Question or instruction:** faults to fix, after all screenshots.
+**What went wrong:** (1) the number states are muddled: one stays blue
+from the first touch, the touched one only grows a little bolder, and one
+is black for no reason a student can see. (2) Their note on the grow page
+("branches growing leaves aren't greyed out") was applied to the whole first
+run (`noDim`), so on the find page the other branches no longer fade and
+the touched branch can't be told from the one it grows on. (habit:
+over-applying a correction beyond the screen it was about.) (3) More
+floating leaves, on branch 2.
+**What they are asking:** when sweeping, exactly one branch is clearly the
+touched one: its number marked one way, every other number the same, and
+every other branch (including the one it grows from) faded. No leftover
+marking from an earlier touch. Every leaf on a twig.
+**Expectations, broken down:**
+- *clear which branch is highlighted*: one marked number and one solid
+  branch at a time, the rest faded / checked by: screenshots of three
+  successive touches on a phone, each showing only the current one marked
+  / not: making the blue bolder.
+- *same colour for the same state*: every number not touched looks
+  identical; any difference must mean something the student can learn /
+  checked by: listing each number's style in each state / not: leaving a
+  "visited" or "in leaf" style the student was never told about.
+- *translucent like established*: the fading that the lecture page uses
+  when a branch is picked, here too; only the grow page keeps all branches
+  dark / checked by: the find page with a branch touched / not: removing
+  noDim everywhere and greying the grow page again.
+**Status:** noted; to fix after all screenshots.
+
 ### 2026-11-25 · Testing 2: leaves floating in the air
 
 **Their words:** "Examples of leaves floating in the air" (screenshot: the
