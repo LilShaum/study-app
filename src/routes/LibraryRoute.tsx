@@ -5,6 +5,7 @@ import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { useResumeStore } from '@/store/resume';
+import { useListKeys } from '@/lib/useListKeys';
 import { beginWriteCheck, writesLanded } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
@@ -61,6 +62,8 @@ export function LibraryRoute() {
   const inputRef = useRef<HTMLInputElement>(null);
   const ids = Object.keys(courses);
   const bookmarks = useResumeStore((s) => s.byCourse);
+  // J and K through the lectures, / to search (a computer's keyboard).
+  useListKeys();
   // Two to four suggestions, each into one way to study (lib/todaySuggestions).
   const suggestions = useMemo(
     () =>
@@ -322,6 +325,7 @@ export function LibraryRoute() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="title, code or subject"
                 aria-label="Search lectures"
+                data-find
                 className="field w-full text-small"
               />
             </label>
@@ -408,7 +412,7 @@ export function LibraryRoute() {
                     </li>
                   ),
                   open && <li key={id} className="group relative border-b border-border">
-                    <Link to={`/study/${id}`} className="entry py-4 pr-8">
+                    <Link to={`/study/${id}`} data-list-item className="entry py-4 pr-8">
                       <span className="entry-num mark text-right text-text-3">
                         {roman(numberIn(id))}
                       </span>

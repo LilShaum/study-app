@@ -19,6 +19,7 @@ import { NewCourseDialog } from '@/components/NewCourseDialog';
 import { ClassEvenOutDialog } from '@/components/ClassEvenOutDialog';
 import { classToRework } from '@/lib/evenOptions';
 import { Icon } from '@/components/Icon';
+import { useListKeys } from '@/lib/useListKeys';
 import { ThumbBar } from '@/components/ThumbBar';
 import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 
@@ -65,6 +66,8 @@ export function ClassRoute() {
   const code = raw ?? '';
   const courses = useCoursesStore((s) => s.courses);
   const allProgress = useProgressStore((s) => s.byCourse);
+  // J and K through the lectures (a computer's keyboard).
+  useListKeys();
   const [now] = useState(Date.now);
   const lectures = useMemo(() => lecturesOf(courses, code), [courses, code]);
   const exams = useMemo(() => classExams(lectures, now), [lectures, now]);
@@ -260,7 +263,7 @@ export function ClassRoute() {
             const items = course.sections.reduce((n, s) => n + s.items.length, 0);
             return (
               <li key={id} className="group border-b border-border">
-                <Link to={`/study/${id}`} className={`entry py-3 pr-2 ${wide ? 'entry-stack' : ''}`}>
+                <Link to={`/study/${id}`} data-list-item className={`entry py-3 pr-2 ${wide ? 'entry-stack' : ''}`}>
                   <span className="entry-num mark text-right text-text-3">{roman(i + 1)}</span>
                   <LazyTree courseId={id} course={course} progress={progress} className="entry-art h-10 w-10 sm:h-12 sm:w-12" />
                   <span className="entry-body min-w-0">

@@ -77,8 +77,9 @@ const SHORTCUTS: { keys: string; what: string }[] = [
   { keys: 'Space', what: 'Flip a flashcard' },
   { keys: 'G / H / M', what: 'Mark a flashcard got it, hard (right, but it took effort: it comes back sooner) or missed it' },
   { keys: '1 – 9', what: 'Tick a point of a written answer; Enter when done' },
-  { keys: '← →', what: 'Previous / next item' },
   { keys: 'Esc', what: 'Leave the session' },
+  { keys: 'J / K', what: 'Next or previous row in the library, a lecture\'s sections, a class\'s lectures or the glossary; Enter opens it' },
+  { keys: '/', what: 'Search the library or the glossary' },
 ];
 
 const SECTIONS: HelpSection[] = [
@@ -351,7 +352,7 @@ const SECTIONS: HelpSection[] = [
             </li>
           ))}
         </ul>
-        <p className="mt-2">These are also shown at the bottom of each session.</p>
+        <p className="mt-2">In a sitting on a computer, the keys that work on the card on screen are shown under it, and ? lists them all.</p>
       </>
     ),
   },

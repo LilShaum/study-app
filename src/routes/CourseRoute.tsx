@@ -14,6 +14,7 @@ import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
 import { LectureTree } from '@/components/LectureTree';
 import { ThumbBar } from '@/components/ThumbBar';
+import { useListKeys } from '@/lib/useListKeys';
 import { Sheet } from '@/components/Sheet';
 import { SectionDetail } from '@/components/SectionDetail';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
@@ -95,6 +96,7 @@ function Row({
   return onPick ? (
     <button
       type="button"
+      data-list-item
       onClick={onPick}
       onMouseEnter={() => onHover?.(true)}
       onMouseLeave={() => onHover?.(false)}
@@ -103,7 +105,7 @@ function Row({
       {children}
     </button>
   ) : (
-    <Link to={to} className={className}>
+    <Link to={to} data-list-item className={className}>
       {children}
     </Link>
   );
@@ -173,6 +175,8 @@ export function CourseRoute() {
   }, [course, progress, now]);
 
   const wide = useMediaQuery(WIDE);
+  // J and K through the sections (a computer's keyboard).
+  useListKeys();
   // The picked section lives in the URL so Back un-picks it. Only the wide
   // layout reads it; on a phone a section is its own page.
   const [params, setParams] = useSearchParams();
