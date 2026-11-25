@@ -11,6 +11,38 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-25 · Testing 4: falling leaves look different and cheap
+
+**Their words:** "both have different falling leaves that the ones on the
+trees, the ones on the trees have a line in the middle but the falling ones
+don't. Furthermore, this is more apparent on the dark mode ones but the
+colour they are filled in really makes them stand out and look cheap
+against the background. My suggestion is to make the leaves not filled with
+any colour so they are line art like the trees and so the background can be
+seen through them. And also put a line in the middle for a vein like the
+ones on the tree." (screenshots: the fade page, light and dark, falling and
+fallen leaves circled.)
+**Question or instruction:** instruction with a suggested fix, after all
+screenshots.
+**What went wrong:** the falling and fallen leaves are drawn without the
+vein the standing leaves have, and filled with a colour that reads as a
+pasted shape on the page, most of all in dark mode.
+**What they are asking:** falling and fallen leaves drawn as the same line
+art as the tree: the same outline, the same vein, no fill, the page showing
+through.
+**Expectations, broken down:**
+- *same as the ones on the tree*: same outline weight and vein, so a leaf
+  looks like the one that just let go / checked by: a falling leaf beside a
+  standing one, zoomed, both themes / not: adding a vein but keeping the
+  fill.
+- *not cheap, background seen through*: no fill at all on moving and
+  lying leaves / checked by: dark mode screenshot / not: a fill nearer the
+  background colour.
+- *both themes*: light and dark checked / not: dark only.
+**Note:** standing leaves are filled with the page colour so the wood
+behind is hidden; that stays unless the owner says otherwise.
+**Status:** noted; to fix after all screenshots.
+
 ### 2026-11-25 · Testing 3: the find page's colours and highlighting
 
 **Their words:** "The first branch touched turns blue and doesn't switch to
