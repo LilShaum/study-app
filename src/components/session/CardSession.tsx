@@ -1317,7 +1317,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       {phoneGlossary && !questionUp && (
         <Sheet label="Glossary" onClose={() => setPhoneGlossary(false)}>
           <div className="px-5 py-4">
-            <SessionGlossary entries={glossary} />
+            <SessionGlossary entries={glossary} card={current} />
           </div>
         </Sheet>
       )}
@@ -1415,7 +1415,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
               <span className="sr-only">Shut while a question is asked. It opens after you answer.</span>
             </p>
           ) : (
-            <SessionGlossary entries={glossary} />
+            <SessionGlossary entries={glossary} card={current} />
           )
         ) : (
           <>
@@ -1464,7 +1464,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
                 </p>
               </section>
             ) : (
-              <SessionGlossary entries={glossary} />
+              <SessionGlossary entries={glossary} card={current} />
             )}
           </div>
         )}
