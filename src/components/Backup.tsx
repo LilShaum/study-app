@@ -2,9 +2,8 @@ import { useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { backUpNow, holdingsHere, holdingsOf, keepForUndo, nothingHere, readBackup, restoreAndTell, restoreUndoable, type Backup } from '@/lib/backup';
 import { countAnswers, readBackedUp, writeBackedUp } from '@/lib/keepSafe';
-import { useDialog } from '@/lib/useDialog';
 import { toast } from '@/store/toast';
-import { Icon } from './Icon';
+import { Sheet } from './Sheet';
 
 const plural = (n: number, word: string) => `${n.toLocaleString()} ${word}${n === 1 ? '' : 's'}`;
 const dated = (at: number) =>
@@ -100,7 +99,6 @@ function restore(backup: Backup, undo: boolean): boolean {
  * that the file lacks is named, with the way to keep it.
  */
 function RestoreDialog({ backup, onClose }: { backup: Backup; onClose: () => void }) {
-  useDialog(onClose);
   const file = useMemo(() => holdingsOf(backup), [backup]);
   const [here] = useState(holdingsHere);
   const [last, setLast] = useState(readBackedUp);
@@ -134,77 +132,61 @@ function RestoreDialog({ backup, onClose }: { backup: Backup; onClose: () => voi
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="restore-title"
-    >
-      <div className="my-8 w-full max-w-md paper-grain rounded-sm border border-border-strong bg-surface text-left shadow-md">
-        <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 id="restore-title" className="font-semibold text-text">
-            Restore this backup?
-          </h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">
-            <Icon name="x" size={18} />
-          </button>
-        </div>
+    <Sheet label="Restore this backup?" title="Restore this backup?" onClose={onClose} width="md">
+      <div className="space-y-4 px-5 py-4 text-sm">
+        <dl className="border-y border-border">
+          <div className="border-b border-border py-2">
+            <dt className="mark text-text-3">The backup</dt>
+            <dd className="mt-0.5 text-text">
+              {madeAt(backup)} · {plural(Object.keys(file.lectures).length, 'lecture')} · {plural(file.answers, 'answer')}
+            </dd>
+          </div>
+          <div className="py-2">
+            <dt className="mark text-text-3">This device now</dt>
+            <dd className="mt-0.5 text-text">
+              {plural(Object.keys(here.lectures).length, 'lecture')} · {plural(here.answers, 'answer')}
+              <span className="text-text-2"> · {last?.at ? `last backed up ${dated(last.at)}` : 'never backed up'}</span>
+            </dd>
+          </div>
+        </dl>
 
-        <div className="space-y-4 px-5 py-4 text-sm">
-          <dl className="border-y border-border">
-            <div className="border-b border-border py-2">
-              <dt className="mark text-text-3">The backup</dt>
-              <dd className="mt-0.5 text-text">
-                {madeAt(backup)} · {plural(Object.keys(file.lectures).length, 'lecture')} · {plural(file.answers, 'answer')}
-              </dd>
-            </div>
-            <div className="py-2">
-              <dt className="mark text-text-3">This device now</dt>
-              <dd className="mt-0.5 text-text">
-                {plural(Object.keys(here.lectures).length, 'lecture')} · {plural(here.answers, 'answer')}
-                <span className="text-text-2"> · {last?.at ? `last backed up ${dated(last.at)}` : 'never backed up'}</span>
-              </dd>
-            </div>
-          </dl>
-
-          {saved ? (
-            <p className="text-text-2">Backed up just now.</p>
-          ) : losing.length > 0 ? (
-            <div className="border-l-2 border-warning py-1 pl-3 text-text-2">
-              <p>
-                This device has {losing.join(' and ')} that the backup doesn&rsquo;t. Restoring replaces everything here, so
-                {one ? ' it' : ' they'} would be lost.
-              </p>
-              <BackupButton
-                className="tap-safe mt-1 text-accent underline-offset-4 hover:underline"
-                label="Back up this device first"
-                onSaved={() => {
-                  setSaved(true);
-                  setLast(readBackedUp());
-                }}
-              />
-            </div>
-          ) : (
-            <p className="text-text-2">Restoring replaces every lecture and all progress on this device with the backup.</p>
-          )}
-          <p className="text-text-3">
-            {undo
-              ? 'You can undo it straight after.'
-              : refused
-                ? 'This browser won’t keep a copy to undo with, so it can’t be undone. Back up this device first if you may want it back.'
-                : 'You’re signed in to sync, so it can’t be undone: the next sync carries it to your saved copy.'}
-          </p>
-        </div>
-
-        <div className="flex justify-end gap-3 border-t border-border px-5 py-3">
-          <button type="button" onClick={onClose} className="press">
-            Cancel
-          </button>
-          <button type="button" onClick={replace} className="press press-ink">
-            {refused ? 'Replace without Undo' : 'Replace with this backup'}
-          </button>
-        </div>
+        {saved ? (
+          <p className="text-text-2">Backed up just now.</p>
+        ) : losing.length > 0 ? (
+          <div className="border-l-2 border-warning py-1 pl-3 text-text-2">
+            <p>
+              This device has {losing.join(' and ')} that the backup doesn&rsquo;t. Restoring replaces everything here, so
+              {one ? ' it' : ' they'} would be lost.
+            </p>
+            <BackupButton
+              className="tap-safe mt-1 text-accent underline-offset-4 hover:underline"
+              label="Back up this device first"
+              onSaved={() => {
+                setSaved(true);
+                setLast(readBackedUp());
+              }}
+            />
+          </div>
+        ) : (
+          <p className="text-text-2">Restoring replaces every lecture and all progress on this device with the backup.</p>
+        )}
+        <p className="text-text-3">
+          {undo
+            ? 'You can undo it straight after.'
+            : refused
+              ? 'This browser won’t keep a copy to undo with, so it can’t be undone. Back up this device first if you may want it back.'
+              : 'You’re signed in to sync, so it can’t be undone: the next sync carries it to your saved copy.'}
+        </p>
       </div>
-    </div>
+
+      <div className="flex justify-end gap-3 border-t border-border px-5 py-3">
+        <button type="button" onClick={onClose} className="press">
+          Cancel
+        </button>
+        <button type="button" onClick={replace} className="press press-ink">
+          {refused ? 'Replace without Undo' : 'Replace with this backup'}
+        </button>
+      </div>
+    </Sheet>
   );
 }
