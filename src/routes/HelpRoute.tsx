@@ -574,7 +574,12 @@ export function HelpRoute() {
   const [search] = useSearchParams();
   const wide = useMediaQuery(WIDE);
   // Phone: which sections are unfolded.
-  const [unfolded, setUnfolded] = useState<ReadonlySet<string>>(new Set());
+  // Opened at a section (?s=new, from Settings' What's new): that one unfolded.
+  const [opening] = useState(() => {
+    const id = search.get('s');
+    return id && SECTIONS.some((x) => x.id === id) ? id : null;
+  });
+  const [unfolded, setUnfolded] = useState<ReadonlySet<string>>(() => new Set(opening ? [opening] : []));
   // Computer: the section nearest the top of the page.
   const [current, setCurrent] = useState<string>(SECTIONS[0]!.id);
 
@@ -605,13 +610,9 @@ export function HelpRoute() {
     if (!wide) setUnfolded((u) => new Set(u).add(id));
     scrollToAnchor(id);
   };
-  // Opened at a section (?s=new, from Settings' What's new).
-  const opening = search.get('s');
   useEffect(() => {
-    if (opening && SECTIONS.some((x) => x.id === opening)) jump(opening);
-    // Once, on arriving.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (opening) scrollToAnchor(opening);
+  }, [opening]);
   const toggle = (id: string) =>
     setUnfolded((u) => {
       const next = new Set(u);
