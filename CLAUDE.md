@@ -162,7 +162,12 @@ this is the intent it serves.
   before anything ships. Mind the cost: five at once used a session's
   usage in ten minutes (2026-10-21), so say before a large fan-out. An
   earlier session wrote that complaint down as "one agent at a time"; the
-  owner never said that.
+  owner never said that. **But anything a student sees or feels is built
+  by the session itself, never an agent; agents do mechanical work only
+  (scripts, data, tests)** (2026-11-25).
+- **Done means checked the way the owner tests** (2026-11-25): on a phone,
+  zoomed in, light and dark, scrolled to the bottom, several taps in a
+  row, and against each expectation in its `docs/FEEDBACK.md` entry.
 - **Models** (2026-11-04). Sessions run on Opus 5.5: check before the
   first message (an early switch is cheap; one 22 minutes in made the new
   model reread everything and used the owner's usage). Every agent is

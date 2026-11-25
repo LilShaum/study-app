@@ -72,3 +72,77 @@ wants to see; A would leave the rest as it is.
    folded).
 4. Help, EXPECTATIONS (New lecture), and the tests that find these controls
    by their words.
+
+## The "AI chooses" choice, again (2026-11-25, Testing 6)
+
+The owner, on Round 6, where the choice had been folded into the boxes and a
+line of text put under them: "you fucking removed the option that I
+specifically asked you to add just because I said the way you first
+implemented it was ugly … Remove the shitty explainer line under the
+ticking of types … if it's about the specifics of how the prompt works …
+save that shit for the help area." Broken down in docs/FEEDBACK.md
+(Testing 6).
+
+### How to decide
+
+- **What it is for.** Two ways to choose what a lecture is made of, both
+  wanted: let the AI choose the kinds that suit the material (most
+  students, most of the time), or make only the kinds I tick (a student
+  who wants only flashcards gets only flashcards).
+- **What it must keep.** Both ways, visible and named, each one tap away;
+  the boxes in view (the owner preferred the boxes in view to a choice that
+  hid them, Round 4); no sentence under the controls explaining them; "how
+  it decides" in Help.
+- **Who meets it.** A first-time student, right after the first run, and a
+  regular making their tenth lecture who just wants to copy the prompt.
+  The first must understand it from the labels alone; the second must not
+  have to touch it.
+
+### The options
+
+- **A. A master box above the kinds** ("Any kind that suits it"), the kinds
+  greyed and ticked under it. For: one control, boxes in view. Against: a
+  box above boxes reads as "tick all", so the AI choosing is never named as
+  a way of its own; it is the "all ticked means the same" reading the owner
+  rejected.
+- **B. Two named ways, the boxes shown only under the second.** For: the
+  clearest pair. Against: hides the boxes in the AI's way, which is what
+  Round 4's "What suits my material" did and what the owner found less
+  clear than boxes in view.
+- **C. Two named ways side by side, the boxes always in view under them.**
+  "The AI chooses" and "Only these", set as the app sets every one-of
+  choice (the selected one in the accent, underscored: the minute choices,
+  the class pick). Under them the boxes: in the AI's way they show every
+  kind, ticked and quiet (the AI may use any of them); touching any box
+  moves to "Only these" with that box changed, so the boxes are never
+  dead. For: both ways named and one tap away, the boxes in view, the
+  state of the boxes always says what will be made, the app's own form.
+  Against: one more line than today.
+- **D. Keep the boxes only, and name the state** ("Make: whatever suits it"
+  when all are ticked). Against: no control for the AI's way, only a
+  caption that changes; the owner asked for the option, not a label.
+
+### The pick: C
+
+It is the only one that gives the AI's way a name and a control of its own
+(A and D don't), keeps the boxes in view (B doesn't), and explains itself
+by its labels and by what the boxes show, with no sentence under it. The
+quiet ticked boxes in the AI's way are the explanation: every kind is open
+to it.
+
+### The build
+
+1. `MakeKindsField` takes a mode: `ai` or `only`. The pair at the top of the
+   Make row; the boxes under it, ticked and in `text-text-3` in `ai`; any
+   box tapped in `ai` switches to `only` with that box toggled. In `only`,
+   "Choose at least one" stays (in the error colour, only when none). The
+   explainer line and "Tick all" go.
+2. The prompt: `ai` sends no WHAT TO MAKE block (the spec's "Which type for
+   what" decides); `only` sends the block for the ticked kinds, as now.
+   `only` with every box ticked is the same prompt, which is right.
+3. New lecture and Add material both use it.
+4. Help, New lecture: a passage on what each way does and how the AI
+   decides (from the spec's "Which type for what", in plain words). The
+   "why attach" fold from step 2 moves there too (Testing 7).
+5. EXPECTATIONS (New lecture), What's new, the tests that find these
+   controls by their words.

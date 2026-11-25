@@ -11,6 +11,34 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-25 · Who builds what, and how it is checked
+
+**Their words:** "Build anything a student sees yourself, not with agents;
+use Sonnet only for mechanical work (scripts, data, tests). Before calling
+anything done, check it the way the owner tests: on a phone, zoomed in,
+light and dark, scrolled to the bottom, trying several taps, and against
+each expectation in its docs/FEEDBACK.md entry."
+**Question or instruction:** instruction, standing.
+**What went wrong:** I was about to hand the swipe motion and the paper
+grain, both things a student sees and feels, to Sonnet agents as
+"exact-spec work". (habit: treating a screen change as mechanical because
+it can be written as a spec.)
+**What they are asking:** every change a student sees or feels (layout,
+words, motion, the tree, a control) is built by the session itself;
+agents only write scripts, data, fixtures and tests. And "done" means
+walked as the owner walks it: 390px phone, zoomed screenshots, both
+themes, every long surface scrolled to its bottom, several taps in a row
+(not one), then each broken-down expectation in its entry ticked off.
+**Expectations, broken down:**
+- *yourself*: no agent edits a component, a style or a word on screen /
+  checked by: every agent's diff touches only scripts, tests, fixtures /
+  not: an agent "just doing the CSS".
+- *the way the owner tests*: phone first, zoomed, light and dark, bottom of
+  every scroll, repeated taps / checked by: those screenshots exist for
+  each item before it is marked done / not: one desktop screenshot.
+**Rules and ripples:** CLAUDE.md "Use agents" line updated; HANDOFF unchanged.
+**Status:** standing rule from now.
+
 ### 2026-11-25 · Testing 11: the enlarged tree that opens by accident
 
 **Their words:** "This seems to me like a vestige of the first way to

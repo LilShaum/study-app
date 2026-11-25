@@ -29,7 +29,35 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
 - **Testing feedback, one screenshot at a time** (2026-11-25: "I took a lot
   of screenshots while testing I need to go over one by one with you … only
   after I have shown all of them can you begin"). Replies a line or two
-  until they say to start.
+  until they say to start. 2026-11-25: start given ("Fix everything in
+  them"), each point broken down in docs/FEEDBACK.md, Testing 1 to 11 and
+  the review page notes:
+  - the find page's numbers: one marked, following the finger, the rest
+    alike, the other branches faded (Testing 1, 3);
+  - every leaf on a twig (Testing 2, review notes);
+  - falling and fallen leaves as the tree's line art, vein, no fill
+    (Testing 4);
+  - a Settings place: name, theme, reminders, Help, account email and
+    password; the name once on the page (Testing 5, review notes); planned
+    in docs/proposals/settings.md;
+  - New lecture keeps a visible "the AI chooses" choice, redesigned, no
+    explainer line, how it decides in Help (Testing 6); planned in
+    docs/proposals/new-lecture-screen.md;
+  - New lecture's step 2 heading says prompt and notes together; the Why
+    fold goes (Testing 7);
+  - no specks where hidden numbers sit, dark mode (Testing 8);
+  - Diagrams' sideways row obviously scrolls (Testing 9); planned in
+    docs/proposals/diagrams-row.md;
+  - paper grain to the bottom of every surface, and a rule on which
+    surfaces are paper (Testing 10);
+  - the enlarged tree sheet removed, its info card's words in Help
+    (Testing 11; the owner: "remove it, and move its info card's wording
+    into Help");
+  - swipes turn the page in one smooth motion (review notes);
+  - no bare section names in the first run: "the Evaporation section"
+    (review notes).
+  Then the review page and the preview rebuilt with only what is new, with
+  notes boxes.
 
 - **A new app icon** (2026-11-25: "I also think the apps icon needs an
   update since the current icon I think was made once at the start and
