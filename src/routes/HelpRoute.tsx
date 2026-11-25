@@ -103,8 +103,8 @@ const SECTIONS: HelpSection[] = [
             where the slides are thin, such as a lecture you missed: a longer file.
           </li>
           <li>
-            Copy the prompt and paste it into the strongest AI you can use, on its highest effort
-            setting (a quick model makes a weaker lecture). Attach your slides
+            Copy the prompt and paste it into a chat with an AI; for the best results, use a more
+            capable model on high effort. Attach your slides
             or notes to that same message. Files kept only in a project often reach the AI as text,
             without the diagrams, and the lecture then misses what the diagrams show. If a key
             diagram is dense, attach a screenshot of that slide too.

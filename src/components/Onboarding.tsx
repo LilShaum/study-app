@@ -215,6 +215,7 @@ function FirstRun() {
         crop
         className="h-full max-w-full"
         arrive
+        noDim
         growOnly={page === 'grow' ? EMPTY : undefined}
         interactive={playing}
         mode="reveal"
@@ -463,7 +464,7 @@ function FirstRun() {
       words = (
         <Words
           lead="Now make your first lecture."
-          line="Arborous gives you a prompt. Paste it into a strong AI with your slides or notes, then bring back the file it makes."
+          line="Arborous gives you a prompt. Paste it into an AI chat with your slides or notes, then bring back the file it makes."
         />
       );
       action = (

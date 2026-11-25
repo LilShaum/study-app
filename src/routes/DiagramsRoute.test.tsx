@@ -64,9 +64,9 @@ describe('DiagramsRoute', () => {
     useCoursesStore.setState({ courses: { cell_biology: course } });
     renderDiagrams();
     // The number IS the figure's name, so it never restarts per section.
-    expect(screen.getByText(/^Figure 1$/)).toBeTruthy();
+    expect(screen.getByText(/^Figure 1\.$/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Next/ }));
-    expect(screen.getByText(/^Figure 2$/)).toBeTruthy();
+    expect(screen.getByText(/^Figure 2\.$/)).toBeTruthy();
   });
 
   it('jumps to a section without leaving the page', () => {

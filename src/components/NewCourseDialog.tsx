@@ -270,7 +270,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
 
             <PromptStep n={2} title="Copy the prompt">
               <p className="mb-3 text-sm text-text-2">
-                Paste it into the strongest AI you can use, on its highest effort setting, and attach your slides, notes or PDF to the same message. A quick model makes a weaker lecture.
+                Paste it into an AI chat, and attach your slides, notes or PDF to the same message. For the best results, use a more capable model on high effort.
               </p>
               {copyButton}
               <More label="Why attach them to the message?">

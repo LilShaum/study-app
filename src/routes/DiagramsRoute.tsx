@@ -57,8 +57,9 @@ function PlateFigure({
       className="scroll-mt-20 border-t border-border pt-5"
     >
       <div className="flex items-baseline justify-between gap-3 text-micro uppercase tracking-wider text-text-3">
-        <span className="whitespace-nowrap">
-          Figure {plate.number}
+        {/* Set as a paper sets it: "Figure 1." in its own case (the owner, 2026-11-25). */}
+        <span className="whitespace-nowrap font-semibold normal-case tracking-normal text-text">
+          Figure {plate.number}.
           {purpose && <span className="normal-case tracking-normal"> · {purpose}</span>}
         </span>
         <Link
@@ -152,7 +153,7 @@ function PlateDetail({
   }, [onStep]);
 
   return (
-    <Sheet label={`Figure ${plate.number}: ${item.title}`} title={`Figure ${plate.number}`} onClose={onClose} width="4xl">
+    <Sheet label={`Figure ${plate.number}: ${item.title}`} title={`Figure ${plate.number}.`} onClose={onClose} width="4xl">
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(14rem,18rem)] gap-x-8 p-6">
         <div className="flex min-h-64 items-center justify-center text-text [&_svg]:max-h-[70vh] [&_svg]:max-w-full">
           {svg ? (

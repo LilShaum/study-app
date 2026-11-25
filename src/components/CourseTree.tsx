@@ -90,6 +90,11 @@ interface CourseTreeProps {
    * computer's lecture page opens it beside the ways to study.
    */
   onOpenSection?: (sectionId: string) => void;
+  /**
+   * Keep every branch in full ink while one is picked (the first run, where
+   * the branches growing leaves are the point: the owner, 2026-11-25).
+   */
+  noDim?: boolean;
 }
 
 /**
@@ -302,6 +307,7 @@ export function CourseTree({
   arrive = false,
   growOnly,
   onOpenSection,
+  noDim = false,
   mode = 'navigate',
   onExpand,
   onPoint,
@@ -422,7 +428,7 @@ export function CourseTree({
   /** Stepping back while a session's regrowth plays: the group's opacity, eased (styles/index.css). */
   const stepsBack = (sid: string) => !!grewFrom && spotlight && motion.changed.size > 0 && !motion.changed.has(sid);
   /** Set in the lighter ink because another branch is picked. */
-  const dim = (sid: string) => !!active && sid !== active;
+  const dim = (sid: string) => !noDim && !!active && sid !== active;
   /**
    * The picked branch, drawn again in front of the whole drawing. Every leaf
    * is painted after every branch, so a canopy hides the wood behind it; in
@@ -645,7 +651,9 @@ export function CourseTree({
               // A tilt to land at, not a spin: leaves flutter, they do not tumble.
               '--rot': `${((h >> 6) % 70) - 35}deg`,
               animationDuration: `${2200 + ((h >> 12) % 800)}ms`,
-              animationDelay: `${after + (h % 550)}ms`,
+              // Off with the first tremble, a few at a time (the owner, 2026-11-25:
+              // "start falling when it starts shaking, not after").
+              animationDelay: `${after + (h % 320)}ms`,
             } as Record<string, string>,
           };
         });
@@ -708,7 +716,7 @@ export function CourseTree({
               timers.push(window.setTimeout(() => setShaking(false), SHAKE_MS));
             }
             const at = Date.now();
-            setFalls([{ sid: 'arrival', at, leaves: fallingFor(arrival.fresh, ARRIVAL_FALL === 'shake' ? 120 : 0) }]);
+            setFalls([{ sid: 'arrival', at, leaves: fallingFor(arrival.fresh, 0) }]);
             timers.push(window.setTimeout(() => setFalls([]), FALL_LASTS_MS + 600));
           }, arrival.startAt),
         );
