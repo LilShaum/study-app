@@ -11,6 +11,89 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-26 · Review page round 2: all the leaves alike
+
+**Their words:** "I didn't specifically mean the falling and on the ground
+ones. I meant ALL of them, including the ones on the tree. The whole issue …
+was literally that I hated how the falling leaves were not the same as the
+ones on the tree … Now that I think about it though, if we make them not
+filled in it may look weird when they are sitting on the tree with all the
+overlapping lines. How about instead all the leaves are just filled in with
+the same colour and texture of the background plus the vein."
+**Question or instruction:** instruction, with the fix named.
+**What went wrong:** I read "make the leaves line art" as applying only to
+the moving and fallen leaves, because the standing ones already had a vein;
+the point was one look for every leaf. (habit: narrowing an ask to the
+literal subject of the sentence instead of the problem it described.)
+**What they are asking:** every leaf, on the branch, falling and on the
+ground, drawn one way: outline, vein, filled with the paper itself (its
+colour AND its grain), so a leaf hides the lines behind it yet looks cut
+from the same page.
+**Expectations, broken down:**
+- *the same*: a standing, a falling and a fallen leaf are indistinguishable
+  apart from where they are / checked by: zoomed shots of each, both themes
+  / not: the same outline with different fills.
+- *colour and texture of the background*: the fill shows the grain, at the
+  page's scale, not a flat patch / checked by: zoomed dark screenshot, the
+  grain continuous through a leaf / not: fill with the flat bg colour (what
+  standing leaves had, and why they "looked cheap" in dark).
+**Status:** noted; building.
+
+### 2026-11-26 · Review page round 2: blue means tappable; the first run's tree
+
+**Their words:** "I'd say the blue could indicate that they are a
+"hyperlink" like they are clickable. If that's the case then keep them
+blue. If they are static on touch then make them plain. Also, in the
+onboarding, the background branches still do not turn translucent until
+like the third or fourth page … after you get the first question right and
+the first branch grows leaves, they do not go translucent. I also really
+don't like how the tree will like jump up when new text appears below it.
+There are other smooth tree transitions in the onboarding so please go iron
+out the remaining things … it may be more than just there."
+**Question or instruction:** an answer (blue only on what can be tapped),
+and two faults, with "go iron out the remaining things" meaning walk the
+whole first run, not just the spots named.
+**What went wrong:** (1) I kept every branch dark on the grow page because
+of the earlier note "branches growing leaves aren't greyed out"; that note
+was about the leaves growing, not about touching a branch. (habit:
+over-applying an old note to a moment it was not about.) (2) The phone
+layout centres the tree and the words together, so any change in the
+words' height moves the tree. Never watched across page changes.
+**What they are asking:** on every page of the first run, touching a branch
+fades the others, as on a lecture; while a branch is growing its leaves,
+the whole tree is in full ink (both notes kept). The tree stays exactly
+where it is when the words under it change; it moves only by a deliberate,
+smooth transition. Walk every page change and smooth any jump.
+Blue: tappable things only. The tree's numbers open a section, so the
+touched one stays blue; "fading" in the words under the tree opens nothing,
+so it goes plain.
+**Expectations, broken down:**
+- *translucent from the first page*: touch on the grow page fades the rest /
+  checked by: screenshot of a touch on the grow page / not: removing the
+  full-ink moment while leaves grow.
+- *no jump*: the tree's position is identical before and after any words
+  change on a page / checked by: measuring the tree's box across every
+  state of every page / not: animating the jump.
+- *iron out the remaining*: every page-to-page change of the tree is a
+  smooth transition or none / checked by: a list of each transition and
+  how it moves.
+**Status:** noted; building.
+
+### 2026-11-26 · Review page round 2: what grows leaves
+
+**Their words:** ""Get a section right, and its branch grows leaves" … is
+wrong … A branch does not grow leaves when a "section" is right. It grows
+leaves when a question is answered correctly … the leaves grow on the
+branch corresponding to the "section" … that the question answered
+correctly belongs to."
+**Question or instruction:** correction.
+**What went wrong:** I swapped "part" for "section" mechanically, which made
+a section the thing you get right. (habit: a find-and-replace fix without
+rereading what each sentence now claims.)
+**What they are asking:** the words say what happens: a question answered
+right grows leaves on the branch of the section it belongs to.
+**Status:** noted; building.
+
 ### 2026-11-25 · Who builds what, and how it is checked
 
 **Their words:** "Build anything a student sees yourself, not with agents;

@@ -58,6 +58,13 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
     (review notes).
   Then the review page and the preview rebuilt with only what is new, with
   notes boxes.
+  2026-11-26, round 2 notes on that page: every leaf (on the tree too)
+  filled with the paper's colour and grain, plus the vein; blue only on
+  what can be tapped ("fading" under the tree goes plain); the first run's
+  other branches fade on touch from its first page, and the tree never
+  jumps when the words under it change ("go iron out the remaining
+  things"); the grow page says a question answered right grows leaves on
+  its section's branch.
 
 - **A new app icon** (2026-11-25: "I also think the apps icon needs an
   update since the current icon I think was made once at the start and
