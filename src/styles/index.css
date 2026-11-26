@@ -594,6 +594,13 @@
      falling leaves: this rule outranks .leaf-fall, and held every leaf on its
      branch until the drawing-on ended, so the fall came after the shiver
      instead of with it. */
+  /* Every leaf, on the branch, falling or on the ground, is filled with the
+     paper: its colour and grain (CourseTree's pattern, lib/usePaperFill),
+     the flat paper colour until that is measured. */
+  .tree .lf,
+  .tree .lfm {
+    fill: var(--leaf-paper, var(--color-bg));
+  }
   .tree-grow .lf:not(.leaf-fall),
   .tree-grow .vn {
     animation: tree-leaf 700ms ease-out 650ms both;

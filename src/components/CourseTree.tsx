@@ -1,4 +1,4 @@
-import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { Fragment, memo, useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
@@ -10,6 +10,7 @@ import { placeTreeKeys, plateTop } from '@/lib/treeKeys';
 import { useFallenStore } from '@/store/fallen';
 import { examRule } from '@/lib/exam';
 import { prefersReducedMotion } from '@/lib/motion';
+import { usePaperFill } from '@/lib/usePaperFill';
 
 interface CourseTreeProps {
   courseId: string;
@@ -203,10 +204,10 @@ function paintLimb(limb: Limb, held: boolean, animate: boolean, pointable: boole
     // alone had to be so deep to register that the whole crown went to a
     // ghost, and a tree you cannot see is not locating anything.
     strokeWidth: held ? limb.weight * 1.5 : limb.weight,
-    // A leaf on the ground is line art, the page showing through it; only a
-    // leaf on the branch is filled with the paper, to hide the wood behind
-    // it (the owner, 2026-11-25, Testing 4).
-    className: limb.fallen ? 'lf fl' : limb.solid ? 'lf' : limb.ink ? 'ink' : 'wd',
+    // Every leaf, on the branch or on the ground, is the same: outline, vein,
+    // and filled with the paper itself, colour and grain (the owner,
+    // 2026-11-26; styles/index.css .lf, lib/usePaperFill).
+    className: limb.solid ? 'lf' : limb.ink ? 'ink' : 'wd',
     // The trunk is a filled outline in the line colour (see growTree).
     fill: limb.ink ? 'currentColor' : undefined,
     stroke: limb.ink ? 'none' : undefined,
@@ -514,6 +515,46 @@ export function CourseTree({
   }, [interactive, active, layers]);
 
   const svgRef = useRef<SVGSVGElement>(null);
+  const paper = usePaperFill(svgRef);
+  const paperId = `paper${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  /*
+   * The paper as a fill: the page's colour with its grain over it, at the
+   * page's own scale, one tile of the coarser grain with the finer repeated
+   * across it. A leaf filled with it hides the lines behind it and still
+   * looks cut from the page.
+   */
+  const paperDefs = useMemo(() => {
+    if (!paper) return null;
+    const k = paper.unitsPerPx;
+    const tile = Math.max(...paper.layers.map((l) => l.px)) * k;
+    return (
+      <defs>
+        <pattern id={paperId} patternUnits="userSpaceOnUse" width={tile} height={tile}>
+          <rect width={tile} height={tile} fill="var(--color-bg)" stroke="none" />
+          {paper.layers.flatMap((l, li) => {
+            const size = l.px * k;
+            const n = Math.ceil(tile / size);
+            const out = [];
+            for (let i = 0; i < n; i++)
+              for (let j = 0; j < n; j++)
+                out.push(
+                  <image
+                    key={`${li}-${i}-${j}`}
+                    href={l.href}
+                    x={i * size}
+                    y={j * size}
+                    width={size}
+                    height={size}
+                    preserveAspectRatio="none"
+                    style={{ mixBlendMode: paper.blend as CSSProperties['mixBlendMode'], opacity: paper.opacity }}
+                  />,
+                );
+            return out;
+          })}
+        </pattern>
+      </defs>
+    );
+  }, [paper, paperId]);
   const cloud = useRef<Sample[]>([]);
   /**
    * What the last press came from. A tap fires `click` with no pointermove
@@ -1039,16 +1080,23 @@ export function CourseTree({
       // every one of those links from a screen reader.
       role={interactive ? 'group' : 'img'}
       tabIndex={reveal ? 0 : undefined}
-      // An up-and-down drag that starts on the tree scrolls the page.
-      style={interactive ? { touchAction: 'pan-y' } : undefined}
+      style={
+        {
+          // An up-and-down drag that starts on the tree scrolls the page.
+          ...(interactive ? { touchAction: 'pan-y' } : {}),
+          // What every leaf is filled with (styles/index.css .lf).
+          ...(paper ? { '--leaf-paper': `url(#${paperId})` } : {}),
+        } as CSSProperties
+      }
       aria-label={reveal ? `${label}. Touch or focus it to number its sections` : label}
       {...revealHandlers}
       // Leaves are filled with the paper they sit on so they hide the wood
       // behind them.
-      className={`tree w-auto shrink-0 text-text [&_.lf:not(.fl)]:fill-[var(--color-bg)] ${drawOn ? 'tree-grow' : ''} ${
+      className={`tree w-auto shrink-0 text-text ${drawOn ? 'tree-grow' : ''} ${
         grewFrom ? 'tree-spotlight' : ''
       } ${interactive ? 'cursor-pointer select-none [-webkit-touch-callout:none]' : ''} ${className}`}
     >
+      {paperDefs}
       {/* The leaves on the ground, first: they never shake with the tree,
           and the trunk and a low canopy stand in front of them. */}
       <g>
@@ -1106,8 +1154,8 @@ export function CourseTree({
         <g aria-hidden="true">
           {motion.clearing.map((c, i) => (
             <g key={i} className="leaf-clear" style={c.style}>
-              <path d={c.d} className="fl" strokeWidth={0.7} />
-              {c.vein && <path d={c.vein} className="fl" strokeWidth={0.35} />}
+              <path d={c.d} className="lfm" strokeWidth={0.7} />
+              {c.vein && <path d={c.vein} className="fv" strokeWidth={0.35} />}
             </g>
           ))}
         </g>
@@ -1118,12 +1166,14 @@ export function CourseTree({
           does not play, and the thinned branch and the pile carry the news. */}
       {falls.map((f) => (
         <g key={f.at} data-fall={f.sid} aria-hidden="true">
-          {/* Line art with its vein, as on the branch and on the ground: one
-              group, so leaf and vein turn about the same centre. */}
+          {/* The same leaf as on the branch, paper and vein: one group, so
+              leaf and vein turn about the same centre. Its own class (lfm),
+              so the drawing-on's fade, meant for leaves on the branch, never
+              holds a falling one. */}
           {f.leaves.map((leaf, i) => (
             <g key={i} className="leaf-fall" style={leaf.style}>
-              <path d={leaf.d} className="fl" strokeWidth={0.7} />
-              {leaf.vein && <path d={leaf.vein} className="fl" strokeWidth={0.35} />}
+              <path d={leaf.d} className="lfm" strokeWidth={0.7} />
+              {leaf.vein && <path d={leaf.vein} className="fv" strokeWidth={0.35} />}
             </g>
           ))}
         </g>

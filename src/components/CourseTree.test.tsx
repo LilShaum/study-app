@@ -170,14 +170,14 @@ describe('CourseTree', () => {
     expect(width(veins[0].vein)).toBeCloseTo(width(unpicked) * 1.5, 5);
   });
 
-  it('draws a leaf lying on the ground as line art: its vein, and no paper fill (Testing 4)', () => {
+  it('draws a leaf lying on the ground as the leaf it was: paper and vein (the owner, 2026-11-26)', () => {
     const { container } = render(<CourseTree courseId="c1" course={course} progress={progress} interactive />);
     const litter = container.querySelectorAll('g.tree-litter path.lf');
     expect(litter.length).toBeGreaterThan(0);
     expect(container.querySelectorAll('g.tree-litter path.vn')).toHaveLength(litter.length);
-    // The paper fill is for leaves on the branch only (.lf without .fl).
-    for (const leaf of litter) expect(leaf.classList.contains('fl')).toBe(true);
-    expect(container.querySelector('svg')!.getAttribute('class')).toContain('[&_.lf:not(.fl)]:fill-');
+    // The same class as a leaf on the branch: one fill rule for every leaf.
+    const onBranch = container.querySelector('g.limb-set path.lf')!;
+    expect([...litter].every((l) => l.getAttribute('class') === onBranch.getAttribute('class'))).toBe(true);
   });
 
   it('buds each vein with its leaf at the end of a session: the same stalk, the same moment', () => {
