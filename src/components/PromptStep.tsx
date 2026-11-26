@@ -14,7 +14,7 @@ export function PromptStep({ n, title, children }: { n: number; title: string; c
           It was a grey small-caps label, which suited a name ("Copy the
           prompt") and not a task. */}
       <h3 className="mb-2.5 flex items-baseline gap-2.5 font-display text-body font-semibold text-text">
-        <span className="mark shrink-0 text-accent">{n}</span>
+        <span className="mark shrink-0 text-text-3">{n}</span>
         <span>{title}</span>
       </h3>
       {children}

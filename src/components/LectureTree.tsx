@@ -12,7 +12,9 @@ function TreeLine({ counts }: { counts: TreeCounts }) {
       {treeWordParts(counts).map((part, i) => (
         <span key={part.text}>
           {i > 0 && ' · '}
-          <span className={part.fading ? 'text-accent' : undefined}>{part.text}</span>
+          {/* Plain: blue is for what can be tapped, and these words open
+              nothing (the owner, 2026-11-26). */}
+          <span>{part.text}</span>
         </span>
       ))}
     </p>
@@ -80,7 +82,7 @@ export function LectureTree({
             <span className="min-w-0 truncate font-display text-text">{named.title}</span>
             {/* The title is what a phone's width is for; the leaves say the
                 rest, and only fading is worth the words. */}
-            {named.state === 'fading' && <span className="mark shrink-0 text-accent">fading</span>}
+            {named.state === 'fading' && <span className="mark shrink-0 text-text-3">fading</span>}
             {onOpenSection ? (
               <button
                 type="button"

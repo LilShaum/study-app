@@ -551,7 +551,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                         .map((s) => (
                           <li key={s.id}>
                             → {s.title}
-                            {s.isNew && <span className="text-accent"> (new section)</span>}:{' '}
+                            {s.isNew && <span className="text-text-3"> (new section)</span>}:{' '}
                             {plural(s.added.length, 'item')}
                           </li>
                         ))}
