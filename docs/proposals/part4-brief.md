@@ -250,3 +250,11 @@ knows where things stand.
   link) was rebuilt and now starts fresh, first run included. Open: one
   question on the page (whether "fading" in the words under the tree stays
   blue); real-iPhone checks of swipes and the Diagrams row.
+- **2026-11-26, round 2 notes fixed** (from the notes on the review page):
+  every leaf filled with the paper (colour and grain) plus its vein; the
+  first run's tree fades others on touch from the first page, rests while
+  leaves grow, and never moves as the words change; the grow line says a
+  right answer grows its section's branch; blue only on what can be tapped.
+  Review page and preview (same links) rebuilt with only these. Open: real
+  iPhone checks; whether the practice test's ? marks and the glossary's
+  held letter go plain too.
