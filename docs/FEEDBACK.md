@@ -37,7 +37,7 @@ from the same page.
   page's scale, not a flat patch / checked by: zoomed dark screenshot, the
   grain continuous through a leaf / not: fill with the flat bg colour (what
   standing leaves had, and why they "looked cheap" in dark).
-**Status:** noted; building.
+**Status:** built (CourseTree's paper pattern, lib/usePaperFill): every leaf filled with the page's colour and grain, at the page's scale, outline and vein. Checked: a lecture's tree mid-fall and settled, zoomed, light and dark: standing, falling and fallen leaves alike, the grain continuous through them.
 
 ### 2026-11-26 · Review page round 2: blue means tappable; the first run's tree
 
@@ -77,7 +77,7 @@ so it goes plain.
 - *iron out the remaining*: every page-to-page change of the tree is a
   smooth transition or none / checked by: a list of each transition and
   how it moves.
-**Status:** noted; building.
+**Status:** built. A touch fades the others from the first page; while a question is open and for 2.2 s after a right answer the tree rests in full ink, numbers away. The phone layout anchors the tree at a fixed place from the top, the words below it; on a computer the row has a fixed height; the install page keeps the tree (small) instead of dropping and redrawing it. Checked: the tree's box measured at every state of every page on a 390 and a 375 phone and a computer: it never moves; it changes size only in the animated shrink when the questions end. "Fading" under the tree, the step numbers and "(new section)" are plain; the rule is in the design skill.
 
 ### 2026-11-26 · Review page round 2: what grows leaves
 
@@ -92,7 +92,7 @@ a section the thing you get right. (habit: a find-and-replace fix without
 rereading what each sentence now claims.)
 **What they are asking:** the words say what happens: a question answered
 right grows leaves on the branch of the section it belongs to.
-**Status:** noted; building.
+**Status:** built: "Answer a question right, and its section's branch grows leaves." I reread every first-run line for what it now claims.
 
 ### 2026-11-25 · Who builds what, and how it is checked
 

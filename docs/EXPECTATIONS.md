@@ -800,11 +800,15 @@ ones you missed" or anything else that brings misses back (the owner,
   but the picked one, in the accent and larger; a branch's state is never a
   colour on its number (the owner could not tell a fading branch's blue
   from the one touched, Testing 1 and 3). Hidden numbers draw nothing, in
-  either theme (Testing 8). In the first run's find page the other branches
-  fade as here; only its grow page keeps every branch dark. Every leaf on a
+  either theme (Testing 8). In the first run a touch fades the other
+  branches on every page, as here; the tree rests in full ink while a
+  question is open and while its leaves grow (2026-11-26), and it stands
+  at a fixed place as the words under it change. Every leaf on a
   branch grows from its twig's wood (`growTree` nearestOnWood; Testing 2),
-  and falling and fallen leaves are the same line art as standing ones,
-  outline and vein, with no fill (Testing 4). Mouse: hover;
+  and every leaf, standing, falling or fallen, is drawn the same: outline,
+  vein, and filled with the paper, its colour and grain at the page's
+  scale (`lib/usePaperFill`; the owner, 2026-11-26). The words under the
+  tree are plain: blue is only for what can be tapped. Mouse: hover;
   keyboard: focus, Tab through the numbers, Enter (docs/proposals/tree.md
   §2; live 2026-11-07, look C the same day). Picking a branch sets the rest
   in a flat lighter ink, never per-stroke see-through (overlaps darkened
