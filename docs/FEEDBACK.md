@@ -11,6 +11,24 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-26 · The first run's tree feels laggier than a lecture's
+
+**Their words:** "in the onboarding the tree felt more laggy than when in an
+actual lecture. Does that have to do with it being on the preview or is it
+with how the tree in the onboarding differs from the lecture ones?"
+**Question or instruction:** a question; answered, the fix waits on the owner.
+**Answer (measured, emulated phone at a quarter speed):** not the preview.
+Sweeping is equally smooth in both (17 ms frames). The first run has short
+freezes at moments a lecture has only once, on opening: each right answer
+regrows the whole tree, "Skip ahead three weeks" draws the whole tree again
+with the shake and the fall, and the change to the find page. The time is the
+browser painting about a thousand paths at once, not the app's code. The
+paper-filled leaves of round 2 (after the owner's test) make those moments
+about two to three times heavier.
+**What they are asking:** whether it is the preview or the first run's tree;
+implied, that it should not lag.
+**Status:** answered; fix proposed, waiting on the owner.
+
 ### 2026-11-26 · Review page round 2: all the leaves alike
 
 **Their words:** "I didn't specifically mean the falling and on the ground
