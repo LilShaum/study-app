@@ -228,7 +228,10 @@ function FirstRun() {
     const right = DEMO_QUESTIONS[sid]?.right === choice;
     setAnswer({ sid, right });
     setAsking(null);
-    if (right) grow(sid);
+    if (right) {
+      setGrowing(true);
+      grow(sid);
+    }
   };
   const letTimePass = () => {
     // Three weeks on: every part studied fades, but the last one, reviewed
@@ -250,7 +253,20 @@ function FirstRun() {
   // lecture does and the leaves lost since fall.
   const playing = page === 'grow' || page === 'find';
   const big = ['title', 'grow', 'fade', 'find'].includes(page) || wide;
-  const tree = page === 'install' ? null : (
+  // While a question is open, and while the leaves its right answer grew are
+  // coming in, the tree is at rest: no branch picked, so none faded (the
+  // owner, 2026-11-25: the branches growing leaves are not greyed), while a
+  // touch at any other time fades the rest, from the first page on (the
+  // owner, 2026-11-26).
+  const [growing, setGrowing] = useState(false);
+  useEffect(() => {
+    if (!growing) return;
+    const t = window.setTimeout(() => setGrowing(false), 2200);
+    return () => window.clearTimeout(t);
+  }, [growing]);
+  // The tree stays on every page, the install page included (small there):
+  // it was taken away and drawn again, a jump between the first pages.
+  const tree = (
     <div
       className="first-run-tree flex justify-center"
       style={{ height: wide ? (big ? '30rem' : '24rem') : big ? '19rem' : '8.5rem' }}
@@ -264,11 +280,7 @@ function FirstRun() {
         crop
         className="h-full max-w-full"
         arrive
-        // Every branch in full ink only while leaves are being grown: there,
-        // the branches growing are the point. Finding one, the others fade as
-        // on a lecture, so the touched branch stands out from the one it grows
-        // on (the owner, 2026-11-25, Testing 3).
-        noDim={page === 'grow'}
+        quiet={!!asking || growing}
         growOnly={page === 'grow' ? EMPTY : undefined}
         interactive={playing}
         onOpenSection={page === 'grow' ? ask : () => undefined}
@@ -396,7 +408,13 @@ function FirstRun() {
         </div>
       ) : (
         <Words
-          lead={grown.length === 0 ? 'Get a section right, and its branch grows leaves.' : grown.length === 1 ? 'Leaves grow when you learn a section.' : 'The more you learn, the fuller the tree.'}
+          lead={
+            grown.length === 0
+              ? 'Answer a question right, and its section’s branch grows leaves.'
+              : grown.length === 1
+                ? 'Leaves grow when you learn a section.'
+                : 'The more you learn, the fuller the tree.'
+          }
           line={
             answer && !answer.right
               ? `Not quite: ${DEMO_QUESTIONS[answer.sid].options[DEMO_QUESTIONS[answer.sid].right].toLowerCase()}. Tap a number to try again.`
@@ -655,16 +673,20 @@ function FirstRun() {
 
       {wide ? (
         <div className="page-block is-wide flex flex-1 flex-col justify-center py-6">
-          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,26rem)] items-center gap-16">
+          {/* A row of a fixed height, the words centred beside the tree: the
+              words changing never moves the tree (the owner, 2026-11-26). */}
+          <div className="grid min-h-[30rem] grid-cols-[minmax(0,1fr)_minmax(0,26rem)] items-center gap-16">
             {tree ?? <div aria-hidden="true" />}
             {wordsBlock}
           </div>
         </div>
       ) : (
-        // On a phone the tree and its words take the room above, and the
-        // page's one action sits at the bottom, under the thumb.
+        // On a phone the tree stands at a fixed place from the top and the
+        // words run below it, so words of another length never move it (it
+        // was centred with them and jumped as they changed: the owner,
+        // 2026-11-26); the page's one action sits at the bottom, under the thumb.
         <>
-          <div className="page-block flex flex-1 flex-col items-center justify-center gap-6 py-4">
+          <div className="page-block flex flex-1 flex-col items-center justify-start gap-6 pb-4 pt-[clamp(0.5rem,5vh,2.5rem)]">
             {tree}
             {wordsBlock}
           </div>

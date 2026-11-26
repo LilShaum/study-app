@@ -83,10 +83,11 @@ interface CourseTreeProps {
    */
   onOpenSection?: (sectionId: string) => void;
   /**
-   * Keep every branch in full ink while one is picked (the first run, where
-   * the branches growing leaves are the point: the owner, 2026-11-25).
+   * At rest: no branch picked, the numbers put away, nothing faded. The
+   * first run sets it while a question is open and while the leaves its
+   * right answer grew come in (the branches growing are the point there).
    */
-  noDim?: boolean;
+  quiet?: boolean;
 }
 
 /**
@@ -309,7 +310,7 @@ export function CourseTree({
   arrive = false,
   growOnly,
   onOpenSection,
-  noDim = false,
+  quiet = false,
   onPoint,
 }: CourseTreeProps) {
   const [pointed, setPointed] = useState<string | null>(null);
@@ -324,7 +325,7 @@ export function CourseTree({
   /* The pointer picks branches while the numbers are up: a tree that
      followed every pass of the pointer flickered between sections for
      nothing. */
-  const tracking = interactive && revealed;
+  const tracking = interactive && revealed && !quiet;
   const active = (tracking ? pointed : null) ?? highlight;
 
   const { tree, sections } = useMemo(() => {
@@ -428,7 +429,7 @@ export function CourseTree({
   /** Stepping back while a session's regrowth plays: the group's opacity, eased (styles/index.css). */
   const stepsBack = (sid: string) => !!grewFrom && spotlight && motion.changed.size > 0 && !motion.changed.has(sid);
   /** Set in the lighter ink because another branch is picked. */
-  const dim = (sid: string) => !noDim && !!active && sid !== active;
+  const dim = (sid: string) => !!active && sid !== active;
   /**
    * The picked branch, drawn again in front of the whole drawing. Every leaf
    * is painted after every branch, so a canopy hides the wood behind it; in
@@ -887,6 +888,17 @@ export function CourseTree({
     focusFirstKey.current = false;
     svgRef.current?.querySelector<SVGAElement>('.tree-keys a')?.focus();
   }, [revealed]);
+
+  // Going quiet puts the numbers away (set while rendering, React's way of
+  // following a prop, rather than an effect a frame later).
+  const [wasQuiet, setWasQuiet] = useState(quiet);
+  if (quiet !== wasQuiet) {
+    setWasQuiet(quiet);
+    if (quiet) {
+      setRevealed(false);
+      setPointed(null);
+    }
+  }
 
   // Which branch is picked, for the words under the drawing.
   useEffect(() => {
