@@ -65,6 +65,10 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   jumps when the words under it change ("go iron out the remaining
   things"); the grow page says a question answered right grows leaves on
   its section's branch.
+  2026-11-26: the first run without the made-up lecture ("I wanted a more
+  general explanation of the tree and what its parts represent"), asked
+  about difficulty and cost first; and the first run's lag (measured: the
+  freezes at its redraws), fix proposed. Both wait on the owner.
 
 - **A new app icon** (2026-11-25: "I also think the apps icon needs an
   update since the current icon I think was made once at the start and

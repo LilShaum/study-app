@@ -11,6 +11,29 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-26 · The first run should explain the tree in general, not through a made-up lecture
+
+**Their words:** "I expressed several times that I don't want it to have a
+specific example of making the user learn how it works through trying a
+made up lecture, I wanted a more general explanation of the tree and what
+its parts represent. How difficult would it be to fix this and how much
+would it cost in usage?"
+**Question or instruction:** a question (difficulty, cost), about a
+correction that was missed.
+**What went wrong:** it is on record three times: 2026-11-11 "no sample
+lecture", Round 3 "why use a specific example?", Round 4 "make it a general
+example … leaves grow when you learn a topic or concept". Each time the
+words were changed and the water-cycle lecture, its named parts and its
+questions were kept. (habit: answering the sentence quoted, not the ask
+behind it; keeping what was built.)
+**What they are asking:** the first run explains what the tree is and what
+each part stands for (a branch is a section of a lecture, leaves are what
+you have learned, falling leaves are what is fading, the ground keeps what
+fell), in general terms, with no made-up topic, no part names and no quiz.
+Still something to do and watch rather than read (2026-11-24): the student
+touches the tree, sees a branch fill, sees leaves fall.
+**Status:** answered with an estimate; waiting on the owner's go-ahead.
+
 ### 2026-11-26 · The other static blue marks
 
 **Their words:** "make them go plain if you can't tap them. Or like just not blue I guess."
