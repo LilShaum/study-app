@@ -373,7 +373,7 @@ function LetterIndex({
       {vertical === 'phone' && held && (
         <span
           aria-hidden="true"
-          className="paper-grain pointer-events-none fixed right-12 top-1/2 -translate-y-1/2 border-b-2 border-accent bg-bg px-4 font-display text-display font-semibold text-accent"
+          className="paper-grain pointer-events-none fixed right-12 top-1/2 -translate-y-1/2 border-b-2 border-text bg-bg px-4 font-display text-display font-semibold text-text"
         >
           {held}
         </span>

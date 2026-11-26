@@ -11,6 +11,12 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-26 · The other static blue marks
+
+**Their words:** "make them go plain if you can't tap them. Or like just not blue I guess."
+**What they are asking:** the practice test's "?" (marked to come back to) and the glossary's held letter, neither tappable, not blue.
+**Status:** built: both in the text ink, the ? set bold so it still stands out; the picked answer in the test stays blue (a choice you tap).
+
 ### 2026-11-26 · The first run's tree feels laggier than a lecture's
 
 **Their words:** "in the onboarding the tree felt more laggy than when in an

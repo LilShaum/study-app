@@ -1144,7 +1144,8 @@ function QuestionGrid({
                 }`}
               >
                 {n + 1}
-                {flagged[n] && <sup className="ml-px text-accent">?</sup>}
+                {/* Not blue: it marks, it is not something to tap (the owner, 2026-11-26). */}
+                {flagged[n] && <sup className="ml-px font-semibold text-text">?</sup>}
               </button>
             </li>
           );
@@ -1183,7 +1184,7 @@ function QuestionList({
               className={`tap-safe flex w-full items-baseline gap-2 py-1.5 text-left text-small tabular-nums ${done ? 'text-text' : 'text-text-3'} hover:text-accent`}
             >
               <span className={here ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : done ? 'font-semibold' : ''}>{n + 1}</span>
-              <span className="ml-auto text-xs text-accent">{flagged[n] ? '?' : ''}</span>
+              <span className="ml-auto text-xs font-semibold text-text">{flagged[n] ? '?' : ''}</span>
               <span className="w-3 text-xs text-text-3" aria-hidden="true">
                 {done ? '✓' : ''}
               </span>
