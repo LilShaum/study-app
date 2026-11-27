@@ -32,6 +32,31 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   Rubric `docs/rubric.md`, scorer `src/lib/rubric.ts`, procedure
   `.claude/skills/generate-lecture`, log `docs/rubric-log.md`. Open until the
   first real lecture is made and graded.
+
+- **A phone round for Today, Learn, the lecture page, Practice and
+  Progress** (2026-11-27: "i wanna go ahead with all your suggestions btw",
+  on the fresh-eyes review's findings; plan in
+  `docs/proposals/phone-round.md`). Before part 4's final check.
+
+- **Make how Arborous gets built work better** (2026-11-27: "while working
+  on arborous I want any inefficiencies in the process of making it to be
+  fixed and also like if any new skills are required then I approve.
+  Anything that helps with coding, to designing user interface, especially
+  since claude struggles to understand human taste and what matters to a
+  human. also, an issue I faced a lot … is asking for big wider scoped
+  macro updates … and then the ai goes and focuses on minute fixes or
+  changes that a user would barely notice"; and "I am not a software
+  developer nor a manager … help guide me and this project to be worked on
+  the best way possible … if you cant download skills … tell me what
+  skills would be good to get and where … I want to give claude all the
+  abilities it needs to be great at coding, designing, testing, and making
+  an elegant solution instead of a solution that goes backwards/feels
+  cheap"). Built on claude/project-thread-dfsq36 (a PR into the work
+  branch): the `scope-check` and `taste-review` skills,
+  `scripts/compare-shots.mjs`, `scripts/preview.mjs`, every phone screen
+  shot in dark too, a one-line-per-ask session start, `docs/WORKFLOW.md`.
+  Code organisation and CI are a separate thread. Open until merged and
+  the owner has seen the skills work on a real ask.
 - **Take feedback in properly** (2026-11-25: "whenever I give you feedback
   on something and explain expectations, you mark them down, write what you
   did wrong, write what I'm asking, all in your own words … break down each
