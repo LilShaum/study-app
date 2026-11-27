@@ -20,6 +20,20 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
 
 ## Open
 
+- **Diagrams, end to end** (2026-11-27: "another thing I think needs
+  attention in every level it is handles in this app is diagrams and how
+  they are made and their quality and when they are made and why they are
+  made and this leads into the interactive diagrams or sometimes when a
+  diagram on the given notes is important but too complex to meaningfully
+  reproduce … could the generating ai somehow include screenshots of it
+  from the provided notes in the generated file? again this is last resort
+  because it wouldnt match with the theme of the app so id prefer the
+  imrpoving diagrams in general and making interactive illustrative
+  diagrams instead"). Takes in the interactive diagrams ask below. Plan:
+  docs/proposals/diagrams.md (the AI describes, the app draws and makes it
+  interactive and askable; the student's own figure as the last resort).
+  Waits on the owner's yes to phase 1.
+
 - **Take feedback in properly** (2026-11-25: "whenever I give you feedback
   on something and explain expectations, you mark them down, write what you
   did wrong, write what I'm asking, all in your own words … break down each
