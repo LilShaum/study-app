@@ -299,6 +299,7 @@ Plans, each with the options weighed and why one won (CLAUDE.md, "Plans").
 - `design-update.md`: Design update: each format used for what it is good at
 - `diagrams-row.md`: Diagrams on a phone: the row of sections
 - `ecosystem.md`: The ways to study, as one system
+- `first-run-general.md`: The first run without a made-up lecture
 - `grade-2026-11-16.md`: Arborous graded against its goals
 - `heatmap.md`: A heatmap of study each day
 - `icon.md`: The app icon
