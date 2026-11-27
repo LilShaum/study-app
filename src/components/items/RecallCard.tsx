@@ -222,7 +222,7 @@ export function RecallCard({
       )}
 
       {/* After a miss the passage is open: the lesson again, not only the right word. */}
-      {verdict && <SourceNote excerpt={item.source_excerpt} open={learning || !verdict.correct} />}
+      {verdict && <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={learning || !verdict.correct} />}
     </div>
   );
 }

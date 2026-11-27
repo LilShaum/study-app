@@ -378,7 +378,7 @@ export function ProblemCard({
         </div>
       )}
 
-      {answered && <SourceNote excerpt={item.source_excerpt} open={learning || dontKnow || counted === false} />}
+      {answered && <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={learning || dontKnow || counted === false} />}
     </div>
   );
 }

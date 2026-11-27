@@ -91,6 +91,11 @@ this is the intent it serves.
   gets only those ("if they just want flash cards for example they will
   just get flash cards"); prompt screens are a few short steps, details
   folded, clear to a new user (2026-10-29).
+- **Trusting a lecture** (2026-11-27): a student who missed class must be
+  able to trust the lecture. The owner already dislikes that AI has to make
+  lectures, so no extra AI step for checking: the generator prompt audits
+  its own lecture by a method, and where the app can check without AI
+  (slide accounting, the slides themselves) it does (`docs/proposals/trust.md`).
 - **Wrong options:** a well-reasoned wrong answer that shows a gap in
   what you know matters more than equal length. Words like never, only,
   often are what test the nuance and are not a giveaway (2026-10-20).

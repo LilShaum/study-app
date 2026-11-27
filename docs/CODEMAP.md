@@ -216,6 +216,7 @@ Logic with no screen: scheduling, Learn steps, prompts handed to the AI, content
 - `readReply.ts`: The JSON in a chat reply, however the reply arrived.
 - `reminderPlan.ts`: The next week of reminders, worked out on the device, which has the memory model and the lectures; the server only sends them at their time (docs/proposals/notifications.md).
 - `roman.ts`: The entry's number in the contents list.
+- `rubric.ts`: The measured half of the course-generation rubric (docs/rubric.md): what a script can count on a generated lecture, the same way every time, so runs on different classes and prompt versions can be compared.
 - `safeStorage.ts`: localStorage wrapper that never throws.
 - `scored.ts`: The id a definition's typed-recall question is scored under.
 - `scrollToAnchor.ts`: Jump to an element on the current page, without touching the URL.
@@ -227,6 +228,7 @@ Logic with no screen: scheduling, Learn steps, prompts handed to the AI, content
 - `shuffle.ts`: Fisher–Yates shuffle.
 - `slugify.ts`: Derives a course's storage id, exactly matching the vanilla app's Store.save() algorithm — required so ids stay stable across the legacy → Zustand migration.
 - `sortedSections.ts`: Sections in their intended order.
+- `sourceCoverage.ts`: Every slide of the student's material accounted for (docs/proposals/trust.md).
 - `sprigMark.ts`: The sprig, as path data in a 0 0 512 512 viewBox.
 - `statusBarFallback.ts`: Room for the iPhone status bar when iOS will not say how much.
 - `studies.ts`: The cards about empirical studies, grouped by study.
@@ -274,9 +276,11 @@ Command-line tools: screenshots, icons, course audit, this map.
 - `audit-course.mjs`: Audits a generated .study.json against the source material it claims to come from.
 - `calibrate-log.mjs`: Reads a real study log and measures what the simulator and the memory model only assume.
 - `code-map.mjs`: Writes docs/CODEMAP.md: every source file with the first sentence of its header comment, and every plan by title.
+- `compare-shots.mjs`: How much did a change visibly change?
 - `contrast-report.mjs`: Prints the contrast ratio of every token pair that matters, for every tree/mode combination, so a palette can be tuned against numbers instead of guessed at and eyeballed.
 - `make-icons-set.mjs`: Draws the icon set and writes src/components/iconPaths.ts.
 - `make-icons.mjs`: Draws the app icon and writes public/icons/* and the header mark's path data (src/lib/sprigMark.ts).
+- `preview.mjs`: Builds a preview of the current branch that the owner can try on their own phone before anything is merged, as a private claude.ai artifact.
 - `screenshots.mjs`: Screenshots every route, in the states a real person meets.
 - `ui-dashes.mjs`: Lists em dashes in text a student sees: string literals and JSX text under src/, not comments.
 
@@ -311,12 +315,14 @@ Plans, each with the options weighed and why one won (CLAUDE.md, "Plans").
 - `notifications.md`: Notifications
 - `onboarding.md`: The first run
 - `part4-brief.md`: Brief: part 4, the design update with the first run
+- `phone-round.md`: Phone round: Today, Learn, the lecture page, Practice, Progress
 - `practice.md`: Practice, the practice test and flashcards: one job each
 - `prompt-rewrite.md`: The generator prompt, round of 2026-11-22: what the PSYC run taught
 - `settings.md`: A Settings place
 - `swipes.md`: Swipes in a sitting on a phone
 - `terms.md`: The app's own words
 - `tree.md`: The tree: how it is grown, how it moves and speaks, how it looks
+- `trust.md`: Trusting a lecture the AI made
 - `understanding.md`: Understanding, not memorising: confidence, explanations, questions
 - `zen.md`: Continuous adaptive quiz: the master prompt as a way to study
 

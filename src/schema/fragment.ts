@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CourseSchema, InventorySchema, narration, StudyItemSchema, type Section, type StudyItem } from './course';
+import { CourseSchema, InventorySchema, narration, SourcePagesSchema, StudyItemSchema, type Section, type StudyItem } from './course';
 import { formatZodError } from './formatZodError';
 
 /* ============================================================
@@ -41,8 +41,10 @@ export const FragmentSchema = z
     inventory: InventorySchema.optional(),
     /** What the whole lecture builds to, for a lecture that does not say yet. */
     builds_to: narration(600),
+    /** Slides Fix found teach nothing, joined to the lecture's (docs/proposals/trust.md). */
+    source_pages: SourcePagesSchema.optional().catch(undefined),
   })
-  .refine((f) => (f.sections?.length ?? 0) > 0 || (f.corrections?.length ?? 0) > 0, {
+  .refine((f) => (f.sections?.length ?? 0) > 0 || (f.corrections?.length ?? 0) > 0 || !!f.source_pages?.not_taught?.length, {
     message: 'Expected at least one section of items, or at least one correction.',
   });
 

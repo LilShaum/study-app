@@ -19,6 +19,12 @@ export interface Change {
 
 export const WHATS_NEW: Change[] = [
   {
+    date: '2026-11-27',
+    items: [
+      'Lectures made from now account for every slide. Each card names the slide it came from, and the lecture check names any slide skipped.',
+    ],
+  },
+  {
     date: '2026-11-25',
     items: [
       'A new first run: grow a tree by studying its branches, watch a section fade, and pick your daily time.',
