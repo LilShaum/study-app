@@ -91,8 +91,9 @@ describe('buildExplainPrompt: the narration, for a lecture made before it', () =
   });
 
   it('only asks for figures the student chose to have', () => {
-    expect(buildExplainPrompt(lecture())).toContain('no\n`svg`');
-    expect(buildExplainPrompt(lecture({}, ['mcq', 'explain']))).not.toContain('no\n`svg`');
+    expect(buildExplainPrompt(lecture())).toContain('drawn as a `diagram`');
+    expect(buildExplainPrompt(lecture())).toContain('"kind": "flow"');
+    expect(buildExplainPrompt(lecture({}, ['mcq', 'explain']))).not.toContain('drawn as a `diagram`');
   });
 
   it('labels a reason from outside the slides', () => {

@@ -20,6 +20,22 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
 
 ## Open
 
+- **Diagrams, end to end** (2026-11-27: "another thing I think needs
+  attention in every level it is handles in this app is diagrams and how
+  they are made and their quality and when they are made and why they are
+  made and this leads into the interactive diagrams or sometimes when a
+  diagram on the given notes is important but too complex to meaningfully
+  reproduce … could the generating ai somehow include screenshots of it
+  from the provided notes in the generated file? again this is last resort
+  because it wouldnt match with the theme of the app so id prefer the
+  imrpoving diagrams in general and making interactive illustrative
+  diagrams instead"). Takes in the interactive diagrams ask below. Plan:
+  docs/proposals/diagrams.md (the AI describes, the app draws and makes it
+  interactive and askable; the student's own figure as the last resort).
+  Phase 1 approved 2026-11-27, being built. Fill-in-the-blank diagrams
+  (2026-11-27: "diagrams for example of an action potential and the user
+  has to fill in the blanks of the diagram") go in phase 2, planned first.
+
 - **Lectures a student can trust** (2026-11-27: "it needs to be built in a
   way where users can trust that the course they are studying is very
   accurate to what they are meant to be studying, even if they missed

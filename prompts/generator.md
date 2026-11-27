@@ -283,7 +283,7 @@ suggestions:
 | Each comparison the slides only imply | the same `mcq`, **and** an `explain` that sets the two side by side |
 | Each caveat or flagged misconception | an `mcq` whose distractors encode that specific misconception |
 | Each meaningful figure | the relationship it shows, tested in a gradable item |
-| Each figure the lecture turns on | a `graphic` carrying `why` and `purpose`, with your own drawing in `svg` only if it makes the relationship clearer than the source's own figure does |
+| Each figure the lecture turns on, and each mechanism or comparison a picture would make clearer | a `graphic` carrying `why` and `purpose`, drawn as a `diagram` where it is parts and links or things side by side |
 | Each run of slides that builds to one point (Pass 1) | the section's `builds_to` |
 | Each handwritten note that says more than its slide | wherever it belongs, as "Writing the narration" below says |
 | Example questions the student gave (past questions, a study guide, assignments) | questions of their types and style (Item types, "Which type for what") |
@@ -359,12 +359,16 @@ figure marked `know` that nothing asks about. Mark by what the figure is for,
 never to quiet that report.
 
 Write a `graphic` for each figure the lecture turns on, once, at its first
-showing, and none for decoration. Where you cannot honestly redraw it (a
-labelled anatomical plate, a photograph, a results plot), leave out `svg` and
-give `where`: the figure's place in the student's own material, unit included
-("slide 10", "page 4", "figure 3.2"), or the title of its slide when the
-source has no numbers. A note and a pointer to the real figure are worth more
-than a crude copy.
+showing, and none for decoration. Write one too where the slides describe a
+mechanism, a process or a comparison in words with no figure, and a picture
+would make the relationship clearer than the sentences: the teacher would
+have drawn it on the board. Draw it as a `diagram` (see `graphic` below),
+from what the slides say and nothing else. Where you cannot honestly redraw
+a figure (a labelled anatomical plate, a photograph, a results plot), leave
+out the drawing. Either way, give `where` for a figure that is in the
+student's material: its place, unit included ("slide 10", "page 4", "figure
+3.2"), or the title of its slide when the source has no numbers. A note and
+a pointer to the real figure are worth more than a crude copy.
 
 **An implied comparison**: slides often set two things against each other
 without ever putting them side by side: one is taught on three slides, the
@@ -714,35 +718,61 @@ with no method to carry out gets no problems.
 - `difficulty`: easy is one formula used once; medium chains two or three
   steps; hard needs the method chosen, or one result carried into another.
 
-**`graphic`** — a figure the lecture turns on: your own drawing, only when a
-picture genuinely clarifies a spatial/structural/process relationship the
-source describes (e.g. anatomy, a cycle, a flowchart), or, with no drawing, a
-note on a figure in the student's own material. Don't manufacture a diagram
-for content that's just as clear as text.
+**`graphic`** — a figure the lecture turns on, or a mechanism or comparison
+the slides describe that a picture makes clearer (Pass 3). Don't manufacture
+a diagram for content that's just as clear as text.
 ```
-{ "id", "type": "graphic", "title", "svg"? (inline <svg>...</svg> markup),
+{ "id", "type": "graphic", "title",
+  "diagram"? (the drawing, described; below), "svg"? (only when no diagram kind fits),
   "alt_text"? (describes the drawing for screen readers), "caption"?,
   "why" (why it is shown, what to look at), "purpose": "know" | "picture",
-  "where"? (the figure's place in the student's material, when there is no `svg`),
+  "where"? (the figure's place in the student's material, when it has one),
   "difficulty", "tags", "source_excerpt", "source_page" }
 ```
 `why`, `purpose` and `where` are in Pass 3, "Writing the narration".
 
-**Diagram colors — this matters.** Arborous has a light and a dark mode, and
-the same diagram is drawn in both. A diagram with hardcoded dark strokes
-(`#000`, `#222`, `stroke="black"`) renders as a nearly invisible smudge in
-dark mode.
+**`diagram`: describe it, the app draws it.** You give the parts and how they
+connect; the app lays it out in its own type and colours, in light and dark,
+at phone width, and lets the student step through it, tap a part for its
+note, and try each what-if. So write no coordinates, sizes or colours. Three
+kinds:
 
-- Use `currentColor` for every stroke and for text fills, so the diagram
-  inherits the reader's theme.
-- Use `fill="none"` for shape interiors rather than white.
-- Only use a literal color when the color *is* the information (e.g. a red
-  arrow for "inhibits" vs a green one for "activates"), and pick mid-tone
-  values that stay legible on both light and dark backgrounds.
-- Include a `viewBox` and **no** `width` or `height` attributes at all, so the
-  diagram scales to the width it is given on a phone.
-- No `<script>`, no `on*` event attributes, no external `<image href>` — they
-  are stripped on render and will simply not appear.
+```
+{ "kind": "flow",       // a pathway, process, signal route, cause and effect
+  "parts": [{ "id", "label" (a few words), "note"? (one sentence: what it is or does here) }],
+  "links": [{ "from", "to", "label"? (a few words), "kind"? "leads" | "blocks" }],
+  "what_ifs"?: [{ "ask": "What if …?", "name"?, "breaks": [part ids, or link ids "from>to"],
+                  "affects"?: [part ids that stop working], "then": what follows, as the slides say }] }
+{ "kind": "cycle", "parts": [...in order around the cycle], "links"?: [labels for steps], "what_ifs"? }
+{ "kind": "compare",    // 2 to 4 things on the same rows
+  "columns": [{ "label" }], "rows": [{ "label", "values": [one per column] }] }
+```
+
+- **Parts in teaching order.** The student steps through them in the order
+  written, so list them the way the teacher would walk the figure: the
+  pathway's direction, the cycle's turn. At most 16 parts; a figure with
+  more is several diagrams or a `where`.
+- **Every part the slides name, and only those.** A part's `note` says what
+  it does in this figure, from the slides. Labels are the slides' own terms.
+- **`blocks`** for inhibition, suppression or any link that stops its
+  target; drawn with a bar, as textbooks draw it.
+- **A what-if is a consequence the lecture teaches**: a lesion and the
+  disorder it causes, an inhibitor and what builds up, a mutation and what
+  fails. Never one the slides do not support. Give `affects` when the loss
+  is not simply everything downstream (a cut link that spares one function).
+  At most 6.
+- **Compare** where the slides set things against each other on the same
+  properties; a row whose values are all the same is shown as shared, so the
+  rows that differ are the lesson.
+
+A diagram is still read, never scored: a figure marked `know` needs its
+questions too.
+
+**`svg`, the fallback.** Only for a figure no kind fits that you can still
+draw honestly. Use `currentColor` for every stroke and text fill (the app has
+a dark mode), `fill="none"` for interiors, a literal colour only when the
+colour is the information, a `viewBox` and no `width` or `height`. No
+`<script>`, `on*` attributes or external images: they are stripped.
 
 ## Quality bar
 

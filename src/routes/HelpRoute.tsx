@@ -180,7 +180,9 @@ const SECTIONS: HelpSection[] = [
     body: (
       <p>
         If a lecture has diagrams, its page has a <strong>Diagrams</strong> link that shows them all
-        on one page.
+        on one page. Diagrams in lectures made from now are drawn by the app: tap a part to read what
+        it does, <strong>Step through it</strong> to follow it in order, and try each{' '}
+        <strong>What if</strong> to see what breaks when a part fails.
       </p>
     ),
   },

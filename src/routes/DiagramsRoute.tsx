@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { sortedSections } from '@/lib/sortedSections';
 import { prepareSvg } from '@/lib/prepareSvg';
+import { normalizeDiagram } from '@/schema/diagram';
 import { scrollToAnchor } from '@/lib/scrollToAnchor';
 import { Icon } from '@/components/Icon';
 import { Sheet } from '@/components/Sheet';
@@ -10,6 +11,7 @@ import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 import { useSwipe } from '@/lib/useSwipe';
 import { SourceNote } from '@/components/items/SourceNote';
 import { FigureElsewhere } from '@/components/items/GraphicCard';
+import { DrawnDiagram } from '@/components/items/DrawnDiagram';
 import { RichText } from '@/components/items/RichText';
 import { purposeLabel } from '@/lib/figurePurpose';
 import type { GraphicItem } from '@/schema/course';
@@ -153,6 +155,7 @@ function PlateFigure({
   const { item } = plate;
   // Sanitized + theme-adapted; see prepareSvg for why raw markup isn't used.
   const svg = useMemo(() => prepareSvg(item.svg), [item.svg]);
+  const diagram = useMemo(() => normalizeDiagram(item.diagram), [item.diagram]);
   const purpose = purposeLabel(item.purpose);
 
   return (
@@ -175,12 +178,23 @@ function PlateFigure({
         </Link>
       </div>
 
-      {svg && (
+      {diagram ? (
+        tile ? (
+          // A plate in the grid shows the drawing still; opening it gives the parts to tap.
+          <FitTile onOpen={onOpen}>
+            <DrawnDiagram key={item.id} diagram={diagram} title={item.alt_text || item.title} still />
+          </FitTile>
+        ) : (
+          <div className="mt-4 border-y border-border py-5">
+            <DrawnDiagram key={item.id} diagram={diagram} title={item.alt_text || item.title} />
+          </div>
+        )
+      ) : svg && (
         <div
           role="img"
           aria-label={item.alt_text || item.title}
           onClick={tile ? onOpen : undefined}
-          className={
+          className={'figure-svg ' + 
             tile
               ? 'mt-4 flex h-48 cursor-zoom-in items-center justify-center text-text [&_svg]:max-h-full [&_svg]:max-w-full'
               : // On a phone the plate runs the full width of the page, ruled above and below.
@@ -190,7 +204,7 @@ function PlateFigure({
         />
       )}
 
-      <figcaption className={svg ? 'mt-4' : 'mt-3'}>
+      <figcaption className={svg || diagram ? 'mt-4' : 'mt-3'}>
         {tile ? (
           <button
             type="button"
@@ -213,7 +227,7 @@ function PlateFigure({
         {!tile && item.caption && <p className="mt-1 max-w-prose text-small text-text-3">{item.caption}</p>}
         {/* A figure with no drawing of ours is still a plate: it says where
             the real one is, so the gallery indexes what the lecture turns on. */}
-        {!svg && (
+        {!svg && !diagram && (
           <div className="mt-2">
             <FigureElsewhere where={item.where} />
           </div>
@@ -228,6 +242,33 @@ function PlateFigure({
     </figure>
   );
 }
+
+/**
+ * A drawn diagram shrunk whole into a grid tile's height, so a tall pathway
+ * shows end to end rather than cut off at the tile's edge.
+ */
+function FitTile({ onOpen, children }: { onOpen?: () => void; children: ReactNode }) {
+  const inner = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  useLayoutEffect(() => {
+    const el = inner.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const fit = () => setScale(Math.min(1, TILE_HEIGHT / Math.max(1, el.scrollHeight)));
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div onClick={onOpen} className="mt-4 cursor-zoom-in overflow-hidden" style={{ height: TILE_HEIGHT }}>
+      <div ref={inner} style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+const TILE_HEIGHT = 192;
 
 /** One plate opened large, its note beside it (a leaf over the page on a computer). */
 function PlateDetail({
@@ -245,6 +286,7 @@ function PlateDetail({
 }) {
   const { item } = plate;
   const svg = useMemo(() => prepareSvg(item.svg), [item.svg]);
+  const diagram = useMemo(() => normalizeDiagram(item.diagram), [item.diagram]);
   const purpose = purposeLabel(item.purpose);
 
   // The arrow keys turn the plate, as pages are turned.
@@ -261,8 +303,10 @@ function PlateDetail({
     <Sheet label={`Figure ${plate.number}: ${item.title}`} title={`Figure ${plate.number}.`} onClose={onClose} width="4xl">
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(14rem,18rem)] gap-x-8 p-6">
         <div className="flex min-h-64 items-center justify-center text-text [&_svg]:max-h-[70vh] [&_svg]:max-w-full">
-          {svg ? (
-            <div role="img" aria-label={item.alt_text || item.title} className="w-full [&_svg]:mx-auto [&_svg]:h-auto [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: svg }} />
+          {diagram ? (
+            <DrawnDiagram key={item.id} diagram={diagram} title={item.alt_text || item.title} />
+          ) : svg ? (
+            <div role="img" aria-label={item.alt_text || item.title} className="figure-svg w-full [&_svg]:mx-auto [&_svg]:h-auto [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: svg }} />
           ) : (
             <FigureElsewhere where={item.where} />
           )}

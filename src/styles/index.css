@@ -965,3 +965,22 @@
   }
 }
 
+
+/* A label on a drawn diagram's line (DrawnDiagram.tsx): the book's face,
+   small, with a halo of the page's own colour so a line passing under it
+   never runs through the words. */
+.diagram-link-label {
+  font-family: var(--font-display);
+  font-size: var(--text-micro);
+  paint-order: stroke;
+  stroke: var(--color-bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+/* A hand-drawn course figure (svg) set in the book's face, so an older
+   figure reads as part of the same book as the ones the app draws. CSS
+   outranks the font the drawing names for itself. */
+.figure-svg text {
+  font-family: var(--font-display);
+}

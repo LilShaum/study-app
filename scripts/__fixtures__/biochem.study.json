@@ -201,7 +201,44 @@
             "steady-state",
             "kinetics"
           ],
-          "source_excerpt": "An enzyme-catalysed reaction proceeds through an enzyme–substrate complex (ES): E + S ⇌ ES → E + P"
+          "source_excerpt": "An enzyme-catalysed reaction proceeds through an enzyme–substrate complex (ES): E + S ⇌ ES → E + P",
+          "diagram": {
+            "kind": "flow",
+            "parts": [
+              {
+                "id": "es_in",
+                "label": "E + S",
+                "note": "Free enzyme and substrate."
+              },
+              {
+                "id": "es",
+                "label": "ES complex",
+                "note": "Substrate bound at the active site: formed at k1, falls apart again at k−1."
+              },
+              {
+                "id": "ep",
+                "label": "E + P",
+                "note": "Product released, and the enzyme free to bind again (k2, the irreversible step)."
+              }
+            ],
+            "links": [
+              {
+                "from": "es_in",
+                "to": "es",
+                "label": "k1"
+              },
+              {
+                "from": "es",
+                "to": "es_in",
+                "label": "k−1"
+              },
+              {
+                "from": "es",
+                "to": "ep",
+                "label": "k2"
+              }
+            ]
+          }
         }
       ]
     },
@@ -2587,7 +2624,53 @@
             "regulation",
             "exam-key"
           ],
-          "source_excerpt": "Key: the four mechanisms differ chiefly in timescale and in whether they are reversible. Proteolytic activation is the only one that cannot be undone."
+          "source_excerpt": "Key: the four mechanisms differ chiefly in timescale and in whether they are reversible. Proteolytic activation is the only one that cannot be undone.",
+          "diagram": {
+            "kind": "compare",
+            "columns": [
+              {
+                "label": "Allosteric"
+              },
+              {
+                "label": "Covalent"
+              },
+              {
+                "label": "Proteolytic"
+              },
+              {
+                "label": "Enzyme amount"
+              }
+            ],
+            "rows": [
+              {
+                "label": "How",
+                "values": [
+                  "An effector binds reversibly",
+                  "A kinase adds a phosphate, a phosphatase removes it",
+                  "A zymogen is cut to its active form",
+                  "Transcription or breakdown changes"
+                ]
+              },
+              {
+                "label": "How fast",
+                "values": [
+                  "Milliseconds",
+                  "Seconds to minutes",
+                  "Seconds to minutes",
+                  "Hours to days"
+                ]
+              },
+              {
+                "label": "Reversible",
+                "values": [
+                  "Yes",
+                  "Yes",
+                  "No",
+                  "Yes, slowly"
+                ]
+              }
+            ]
+          }
         }
       ]
     },
@@ -2732,7 +2815,79 @@
             "feedback-inhibition",
             "regulation"
           ],
-          "source_excerpt": "In feedback inhibition, the end product of a pathway inhibits an enzyme early in that pathway. The target is usually the committed step."
+          "source_excerpt": "In feedback inhibition, the end product of a pathway inhibits an enzyme early in that pathway. The target is usually the committed step.",
+          "diagram": {
+            "kind": "flow",
+            "parts": [
+              {
+                "id": "a",
+                "label": "A (starting substrate)",
+                "note": "Enters the pathway. Its supply alone does not set the pathway's speed."
+              },
+              {
+                "id": "e1",
+                "label": "Enzyme 1: the committed step",
+                "note": "The first irreversible reaction: once A becomes B, it can only go on to D. This is where control pays off."
+              },
+              {
+                "id": "b",
+                "label": "B",
+                "note": "An intermediate, committed to the pathway."
+              },
+              {
+                "id": "c",
+                "label": "C",
+                "note": "A second intermediate."
+              },
+              {
+                "id": "d",
+                "label": "D (end product)",
+                "note": "What the cell needs. As it builds up it binds an allosteric site on enzyme 1."
+              }
+            ],
+            "links": [
+              {
+                "from": "a",
+                "to": "e1"
+              },
+              {
+                "from": "e1",
+                "to": "b"
+              },
+              {
+                "from": "b",
+                "to": "c"
+              },
+              {
+                "from": "c",
+                "to": "d"
+              },
+              {
+                "from": "d",
+                "to": "e1",
+                "kind": "blocks",
+                "label": "inhibits"
+              }
+            ],
+            "what_ifs": [
+              {
+                "ask": "What if D can no longer bind enzyme 1?",
+                "name": "Feedback lost",
+                "breaks": [
+                  "d>e1"
+                ],
+                "affects": [],
+                "then": "Nothing stops the committed step, so D is made even when the cell has plenty: substrate and energy are wasted."
+              },
+              {
+                "ask": "What if enzyme 1 is inhibited?",
+                "breaks": [
+                  "e1"
+                ],
+                "then": "No B is made, so C and D run out; this is exactly what high D does on purpose."
+              }
+            ]
+          }
         }
       ]
     },

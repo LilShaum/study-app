@@ -849,6 +849,8 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       // card's own handler owns them there.
       const inRadioGroup = document.activeElement?.closest('[role="radiogroup"]');
       if (inRadioGroup) return;
+      // Inside a drawn diagram the keys belong to its own buttons (a step, a part, a what-if).
+      if (document.activeElement?.closest('[data-diagram]')) return;
 
       if (e.key === 'ArrowRight') {
         e.preventDefault();

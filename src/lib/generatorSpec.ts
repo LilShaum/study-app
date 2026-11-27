@@ -76,5 +76,8 @@ function itemTypeSpec(type: string, source: string = ITEM_TYPES_SPEC): string {
 /** What an explanation is and how to write one. */
 export const EXPLAIN_SPEC = itemTypeSpec('explain');
 
+/** What a figure item is and how its drawing is described (a `diagram` the app draws). */
+export const GRAPHIC_SPEC = itemTypeSpec('graphic');
+
 /** How to write what the slides leave out: what a section builds to, a figure's note, an implied comparison. */
 export const NARRATION_SPEC = specSection('#### Writing the narration');

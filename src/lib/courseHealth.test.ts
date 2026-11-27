@@ -106,6 +106,17 @@ describe('analyseCourseHealth — structural problems', () => {
     expect(find(h, 'unsafe-svg')).toMatchObject({ severity: 'warning' });
   });
 
+  it('flags a described diagram the app cannot draw, and passes one it can', () => {
+    const bad = analyseCourseHealth(
+      course([{ id: 'g1', type: 'graphic', title: 'G', diagram: { kind: 'flow', parts: [{ id: 'a', label: 'A' }] } } as StudyItem]),
+    );
+    expect(find(bad, 'diagram-undrawable')).toMatchObject({ severity: 'warning', items: ['g1'] });
+    const good = analyseCourseHealth(
+      course([{ id: 'g1', type: 'graphic', title: 'G', diagram: { kind: 'flow', parts: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }] } } as StudyItem]),
+    );
+    expect(find(good, 'diagram-undrawable')).toBeUndefined();
+  });
+
   it('reports a clean course as clean', () => {
     const h = analyseCourseHealth(course([mcq('q1', 'A?'), mcq('q2', 'B?')]));
     expect(h.findings).toHaveLength(0);
