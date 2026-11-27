@@ -216,6 +216,7 @@ Logic with no screen: scheduling, Learn steps, prompts handed to the AI, content
 - `readReply.ts`: The JSON in a chat reply, however the reply arrived.
 - `reminderPlan.ts`: The next week of reminders, worked out on the device, which has the memory model and the lectures; the server only sends them at their time (docs/proposals/notifications.md).
 - `roman.ts`: The entry's number in the contents list.
+- `rubric.ts`: The measured half of the course-generation rubric (docs/rubric.md): what a script can count on a generated lecture, the same way every time, so runs on different classes and prompt versions can be compared.
 - `safeStorage.ts`: localStorage wrapper that never throws.
 - `scored.ts`: The id a definition's typed-recall question is scored under.
 - `scrollToAnchor.ts`: Jump to an element on the current page, without touching the URL.

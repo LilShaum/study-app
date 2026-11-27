@@ -27,4 +27,5 @@ Before a change is committed:
 | Where a setting lives, or a new setting (name, theme, reminders, account, backups) | `SettingsRoute` and its tests, the foot of every page (`RootLayout`), Help's "Your data" section, the first run's lines that say where to change things, EXPECTATIONS Settings and Your page, What's new |
 | The tree's drawing, its numbers or its leaves | `growTree` and its contract tests (leaves on the wood), `CourseTree` and its tests, the numbers' styles in `index.css` (one marked ink, nothing drawn when hidden), Help's The tree, the first run (grow, fade, find), EXPECTATIONS lecture page; check zoomed, both themes |
 | Anything a student reads | Help, the first run (`Onboarding`), What's new, tests that match the copy, `node scripts/ui-dashes.mjs` |
+| The generator prompt's rules, or what a lecture must contain | `docs/rubric.md` (its targets), `src/lib/rubric.ts` and its test, `.claude/skills/generate-lecture`, `courseHealth.ts` (a fault the app can see), `buildFixPrompt` |
 | The memory model or scheduling | the simulator, Today, Review, the adaptive quiz's planner, Progress's forecast |

@@ -26,6 +26,12 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   lecture"). Plan: `docs/proposals/trust.md` (every slide accounted for and
   a slide on every card, then a check by a second AI in a fresh chat, then
   the app reading the slides itself). Open until built and live.
+- **Make lectures here, and grade them** (2026-11-27: "maybe we should make
+  a rubric … ways to measure the variables of the course generating …
+  especially since different classes can provide wide ranges of examples").
+  Rubric `docs/rubric.md`, scorer `src/lib/rubric.ts`, procedure
+  `.claude/skills/generate-lecture`, log `docs/rubric-log.md`. Open until the
+  first real lecture is made and graded.
 - **Take feedback in properly** (2026-11-25: "whenever I give you feedback
   on something and explain expectations, you mark them down, write what you
   did wrong, write what I'm asking, all in your own words … break down each
