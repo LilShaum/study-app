@@ -325,7 +325,7 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   the gaps, even to the point of suggesting overhauling certain things if
   necessary. Idk how I should do this tho. If I just need you to make me a
   prompt and that's enough or if there is more prep required"). Prepared
-  2026-11-03: the prompt in docs/prompts/grade-the-app.md, drafted goals
+  2026-11-03: the prompt in docs/archive/prompts/grade-the-app.md, drafted goals
   for the components EXPECTATIONS lacked (to confirm). Not yet: the owner
   will run it after the open changes are built (2026-11-03: "I want to do
   it after you have finished doing a bunch of the changes I've asked you
@@ -1140,7 +1140,7 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   before one. (lib/practice examSoon)
 - 2026-10-18 Better systems suggested and tested: mixed-lecture class
   Practice, modelled in the simulator first.
-- 2026-10-17 Audit of the app's weak points. (docs/audits/2026-10-17)
+- 2026-10-17 Audit of the app's weak points. (docs/archive/audits/2026-10-17)
 - 2026-10-17 iPhone header: dropped by the owner ("stop wasting time on
   it"). Do not try again unless asked.
 - 2026-10-15 Practise every lecture of a class together, and a class

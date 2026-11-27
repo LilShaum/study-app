@@ -7,7 +7,7 @@ import { usePlanStore } from '@/store/plan';
 import { useCoursesStore } from '@/store/courses';
 
 /**
- * Found by the fresh-eyes review (docs/audits/2026-10-13-fresh-eyes.md) with
+ * Found by the fresh-eyes review (docs/archive/audits/2026-10-13-fresh-eyes.md) with
  * sim/lecture.sim.ts on the owner's lectures, in studied states.
  */
 

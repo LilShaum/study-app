@@ -14,7 +14,7 @@ the address follows the repo name on GitHub Pages:
 - `.github/workflows/deploy.yml` (live-site check URL)
 - `scripts/screenshots.mjs`, `README.md`
 - comments in `src/lib/basePath.ts`, `src/sw.ts`, `src/store/migrateLegacy.ts`
-- `docs/briefs/fable-audit.md` (historical, can stay)
+- `docs/archive/briefs/fable-audit.md` (historical, can stay)
 
 ## Why it isn't just a find-and-replace
 

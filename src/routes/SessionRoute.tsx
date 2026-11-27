@@ -1,3 +1,7 @@
+/**
+ * The route that starts a study session for a lecture in a given mode and shows it.
+ * Reads the mode, section and kind filters from the URL and picks Browse or Card session.
+ */
 import { useLayoutEffect } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';

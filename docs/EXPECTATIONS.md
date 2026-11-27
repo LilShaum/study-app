@@ -1047,7 +1047,7 @@ phone column across it.
 
 ## Goals to confirm
 
-Drafted 2026-11-03 for the grading session (docs/prompts/grade-the-app.md),
+Drafted 2026-11-03 for the grading session (docs/archive/prompts/grade-the-app.md),
 from CLAUDE.md and the owner's words in docs/ASKS.md. These parts have no
 **Goal** line above. Each is a draft until the owner confirms or corrects
 it; then it moves into its entry. A grade is only as good as the goal it is

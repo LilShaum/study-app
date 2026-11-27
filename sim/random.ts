@@ -12,4 +12,3 @@ export function rng(seed: number): Rand {
   };
 }
 
-export const pick = <T>(r: Rand, list: readonly T[]): T => list[Math.floor(r() * list.length)];

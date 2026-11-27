@@ -1,3 +1,7 @@
+/**
+ * Shows a multiple choice question, shuffles the options, and marks the pick with its reasons.
+ * Reports the pick and whether the student was sure to the session through onAnswered.
+ */
 import { useMemo, useState, type KeyboardEvent } from 'react';
 import type { McqItem } from '@/schema/course';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';

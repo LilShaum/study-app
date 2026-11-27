@@ -9,7 +9,7 @@ own midterms, and the person who will read your report.
 Read `CLAUDE.md`, `docs/HANDOFF.md` (sections 0, 2 and 7 at least),
 `.claude/skills/simulate/SKILL.md`, `sim/FINDINGS.md` (newest entries
 first), `docs/evidence.md`, `docs/proposals/content-quality.md`, and the
-earlier audit `docs/audits/2026-10-fable-audit.md` before you change
+earlier audit `docs/archive/audits/2026-10-fable-audit.md` before you change
 anything. That audit drove the scheduling code and the simulator; it did
 not drive the app in a browser, use real lectures, or look at Learn's
 ordering or the content checks. Those are yours.
@@ -504,7 +504,7 @@ nutrition lectures; a made-up maths or history lecture).
 
 ## 7. What to hand back
 
-A report in `docs/audits/` (dated), most important first. Each finding:
+A report in `docs/archive/audits/` (dated), most important first. Each finding:
 
 - what a student experiences, in one or two plain sentences;
 - the evidence (a reproduction, numbers, a walk excerpt, a source);

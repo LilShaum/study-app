@@ -1,3 +1,7 @@
+/**
+ * Shows a definition card to read, with its source note and related terms.
+ * Used in Learn and Browse; the typed recall of the term is a separate card (RecallCard).
+ */
 import type { DefinitionItem } from '@/schema/course';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { DifficultyBadge } from './DifficultyBadge';

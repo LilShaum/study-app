@@ -25,7 +25,7 @@ interface RemindersState extends ReminderSettings {
   set: (patch: Partial<ReminderSettings>) => void;
 }
 
-export const DEFAULT_TIME = '18:00';
+const DEFAULT_TIME = '18:00';
 
 export const useRemindersStore = create<RemindersState>()(
   persist(

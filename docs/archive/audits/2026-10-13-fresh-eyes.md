@@ -1,6 +1,6 @@
 # Fresh-eyes review: 2026-10-13 (partial)
 
-Brief: `docs/briefs/fresh-eyes-review.md`. This session ran out of time early;
+Brief: `docs/archive/briefs/fresh-eyes-review.md`. This session ran out of time early;
 what was done, shipped and left open is below. Most important first.
 
 ## Shipped (live)

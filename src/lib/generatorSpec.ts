@@ -66,7 +66,7 @@ export const QUALITY_BAR_SPEC = specSection('## Quality bar');
  * One item type's entry in the spec, from its bold name to the next type's,
  * for a prompt that asks for that type alone.
  */
-export function itemTypeSpec(type: string, source: string = ITEM_TYPES_SPEC): string {
+function itemTypeSpec(type: string, source: string = ITEM_TYPES_SPEC): string {
   const start = source.indexOf(`**\`${type}\`**`);
   if (start < 0) return '';
   const next = source.slice(start + 1).search(/\n\*\*`[a-z]+`\*\*/);
