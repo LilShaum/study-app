@@ -845,7 +845,7 @@ ones you missed" or anything else that brings misses back (the owner,
   30 min) that sizes this sitting only (`?min=`, store/session
   pendingMinutes; not the plan, and not a resumed sitting or Keep going),
   and one wide Start that says the time. Learn, Adaptive quiz and Practice
-  follow as rows you tap, each with its use and a ›; on a phone the View
+  follow as rows you tap, each with its use and a › (the owner chose these rows over one quiet line of links, 2026-11-27); on a phone the View
   and Lecture tools and the lecture check fold under one "More" line, which
   says when the check found something to fix. Sections say "5 of 10
   studied" and then "% right", not "100% · 5 studied".
