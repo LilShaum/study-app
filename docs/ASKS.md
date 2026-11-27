@@ -69,6 +69,12 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   general explanation of the tree and what its parts represent"), asked
   about difficulty and cost first; and the first run's lag (measured: the
   freezes at its redraws), fix proposed. Both wait on the owner.
+  2026-11-27: go-ahead given ("ill give you the full go ahead"). Built on
+  the branch: the first run explains the tree in general (numbered
+  sections, no topic, no questions; docs/proposals/first-run-general.md),
+  and the leaves' paper is baked into one picture, so the freeze at "Skip
+  ahead three weeks" went from 1.3 s to 0.25 s on a phone at quarter
+  speed. Open until the owner has seen it.
 
 - **A new app icon** (2026-11-25: "I also think the apps icon needs an
   update since the current icon I think was made once at the start and
