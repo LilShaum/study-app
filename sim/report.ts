@@ -1,3 +1,6 @@
+/**
+ * Summarises simulator runs per scenario and renders them as a markdown table against a baseline.
+ */
 import type { Metrics, RunResult, Scenario } from './engine';
 
 export interface Summary {

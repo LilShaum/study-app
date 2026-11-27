@@ -1,3 +1,7 @@
+/**
+ * Copies the old vanilla app's localStorage data into the current stores, once.
+ * Guarded by a sentinel key so it never runs twice.
+ */
 import type { Course } from '@/schema/course';
 import type { ItemResult } from './progress';
 import { useCoursesStore } from './courses';

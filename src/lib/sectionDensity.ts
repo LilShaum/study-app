@@ -61,7 +61,7 @@ const median = (xs: number[]): number => {
 };
 
 /** Too few sections with ranges to say what is typical: no report. */
-export const MIN_SECTIONS = 4;
+const MIN_SECTIONS = 4;
 
 export function sectionDensity(course: Course): DensityReport | null {
   const rows: SectionDensity[] = [];

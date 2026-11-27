@@ -5,8 +5,8 @@
  *
  * Two accounts, because the second finds more than the first: one populated
  * with a real course and partial progress, one brand new — no course, no
- * progress, onboarding never dismissed. Both at phone and desktop width, and
- * the course page in both themes.
+ * progress, onboarding never dismissed. Both at phone and desktop width; every
+ * phone screen in both themes, the computer's course and progress pages too.
  *
  * PHONE SHOTS EMULATE TOUCH MEDIA. Playwright's `isMobile`/`hasTouch` set the
  * viewport and the touch API but leave the `hover` and `pointer` media
@@ -199,13 +199,22 @@ for (const size of ['desktop', 'phone']) {
     await p.goto(B + hash);
     await theme('light');
     await shot(p, `${size}-${name}`);
+    // The phone in dark too, every screen: the owner tests on a phone in
+    // both themes, and dark paper shows faults light paper hides (specks,
+    // flat patches, lost grain; docs/FEEDBACK.md, Testing 8).
+    if (size === 'phone') {
+      await theme('dark');
+      await shot(p, `${size}-${name}-dark`);
+    }
   }
 
-  // Dark, on the two screens carrying the most colour.
-  for (const [name, hash] of [['course', `#/study/${id}`], ['progress', `#/study/${id}/progress`]]) {
-    await p.goto(B + hash);
-    await theme('dark');
-    await shot(p, `${size}-${name}-dark`);
+  // The computer in dark, on the two screens carrying the most colour.
+  if (size === 'desktop') {
+    for (const [name, hash] of [['course', `#/study/${id}`], ['progress', `#/study/${id}/progress`]]) {
+      await p.goto(B + hash);
+      await theme('dark');
+      await shot(p, `${size}-${name}-dark`);
+    }
   }
 
   // The focus ring, which no static screenshot would otherwise show.

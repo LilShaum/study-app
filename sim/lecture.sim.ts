@@ -1,3 +1,7 @@
+/**
+ * Simulation of days of study on a real lecture through the app's own Learn, Review and Today code.
+ * Writes sim/results/lecture.md; never commit a lecture.
+ */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { CourseSchema, type Course } from '@/schema/course';

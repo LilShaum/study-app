@@ -151,7 +151,14 @@ before anything is redrawn.
 5. Look at hidden and resting states zoomed in, in dark mode as well as
    light: dark paper shows specks (a hidden label's dot, a stroke's round
    cap) that light paper hides (the owner found them, 2026-11-25).
-6. After shipping, confirm the live site serves it (grep the live JS for a
+6. For a big change, compare before and after
+   (`node scripts/compare-shots.mjs <before> <after>`, the `scope-check`
+   skill): the screens it names should read "reworked". Then the
+   `taste-review` skill: a fresh-eyes critic, then fix every Felt item
+   before the owner sees it. Give the owner a preview to try on their
+   phone (`node scripts/preview.mjs <scratch>/preview`, published as a
+   private artifact, the same link each round).
+7. After shipping, confirm the live site serves it (grep the live JS for a
    string from the change), then report what you looked at.
 
 ## Checking what a student is asked

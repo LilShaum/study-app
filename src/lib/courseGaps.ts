@@ -1,3 +1,6 @@
+/**
+ * Finds where a lecture is weak, such as terms never tested and thin sections, to aim a follow-up prompt.
+ */
 import type { Course, StudyItem } from '@/schema/course';
 import { sortedSections } from './sortedSections';
 import { someTextCoversTerm } from './termMatch';

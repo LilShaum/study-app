@@ -1,3 +1,6 @@
+/**
+ * Shows a flashcard open, question and answer together, to read before it is asked in Learn.
+ */
 import type { PreviewItem } from '@/lib/buildSessionItems';
 import { Icon } from '@/components/Icon';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';

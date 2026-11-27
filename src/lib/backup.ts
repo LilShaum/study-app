@@ -118,7 +118,7 @@ function fromNewerApp(backup: Backup): boolean {
   });
 }
 
-export function backupFileName(now = new Date()): string {
+function backupFileName(now = new Date()): string {
   return `arborous-backup-${dayKey(now.getTime())}.json`;
 }
 

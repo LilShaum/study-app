@@ -11,6 +11,42 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-27 · Big asks answered with small fixes; taste
+
+**Their words:** "an issue I faced a lot while working on arborous is
+asking for big wider scoped macro updates changes and improvements to how
+the app functions and feels, and then the ai goes and focuses on minute
+fixes or changes that a user would barely notice"; "claude struggles to
+understand human taste and what matters to a human".
+**Question or instruction:** instruction: fix the process, skills
+pre-approved.
+**What went wrong:** on record: the grading session "kept focusing on the
+smallest things that didnt matter" (2026-11-17); an overhaul reworked only
+step 1 of New lecture (Testing 7); "realistic" became 0.2 s sooner; "no
+made-up lecture" asked three times and kept each time (2026-11-26). Small
+edits are safe and easy to verify, so they win by default, and nothing
+checked the size of a change against the size of the ask. Screens were
+judged by whoever built them, who reads them through what they meant.
+(habit: cheapest reading of a big ask; the builder as the only judge.)
+**What they are asking:** a big ask produces a change a returning student
+notices at a glance, shown with before and after; an ask made before gets
+a different approach; screens are judged by how a person feels using
+them, not by whether the code is right.
+**Expectations, broken down:**
+- *macro*: layout, flow, hierarchy or what a screen is for changes /
+  checked by: `scripts/compare-shots.mjs`, the named screens mostly
+  "reworked" (over 20% visibly changed), and a sentence per screen on what
+  a student notices / not: a long list of small fixes.
+- *human taste*: judged by a reviewer that has not seen the code or plan,
+  as a student with ADHD with 15 minutes / checked by: the `taste-review`
+  report, every Felt item fixed before the owner sees it / not: the
+  builder's own screenshots, or a list of fine print.
+**Rules and ripples:** CLAUDE.md lines "Big asks get big changes" and
+"Judged as a student, by fresh eyes", skill table; arborous-design's
+Checking a change; RIPPLES row; docs/WORKFLOW.md.
+**Status:** built (skills and scripts on claude/project-thread-dfsq36);
+first taste review run on part 4's phone screens.
+
 ### 2026-11-26 · The first run should explain the tree in general, not through a made-up lecture
 
 **Their words:** "I expressed several times that I don't want it to have a

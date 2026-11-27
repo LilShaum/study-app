@@ -10,7 +10,7 @@
  * when storage is filling up, before a save fails.
  */
 
-export const BACKED_UP_KEY = 'arborous:backed-up';
+const BACKED_UP_KEY = 'arborous:backed-up';
 
 /** What the last backup held, to tell whether anything has changed since. */
 export interface BackedUp {
@@ -29,11 +29,11 @@ export type KeepSafe =
 
 const DAY = 86_400_000;
 /** A backup this recent is enough, whatever changed since. */
-export const BACKUP_FRESH_DAYS = 7;
+const BACKUP_FRESH_DAYS = 7;
 /** "Not now" keeps it quiet this long. */
-export const SNOOZE_DAYS = 3;
+const SNOOZE_DAYS = 3;
 /** Storage this full is worth a word before it is completely full. */
-export const STORAGE_WARN_PCT = 75;
+const STORAGE_WARN_PCT = 75;
 
 export function keepSafe(input: {
   lectures: number;

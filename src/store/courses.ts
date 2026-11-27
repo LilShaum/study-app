@@ -1,3 +1,7 @@
+/**
+ * Holds every imported lecture, persisted, with actions to import, merge, edit and remove them.
+ * Imports go through parseCourseFile so only valid files are stored.
+ */
 import { withNormalCode } from '@/lib/courseCode';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';

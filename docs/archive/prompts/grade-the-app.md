@@ -9,7 +9,7 @@ bunch of the changes I've asked you for".
 typing anything, choose **Fable 5.2** and **high** effort (CLAUDE.md,
 Models: a switch after the first message makes the new model reread
 everything). Attach the material below and say: *"Read
-docs/prompts/grade-the-app.md and do it."*
+docs/archive/prompts/grade-the-app.md and do it."*
 
 **Attach**: the **slides** (PDF) of one or two real lectures, nothing else.
 The session makes each lecture's file itself with the current prompt, on
@@ -94,11 +94,11 @@ app was made and checked, not as decisions to defend.
   main` first. `git log --reverse --format='%ad %s' --date=short` reads as
   a timeline.
 - **Earlier reviews**, each with what it found:
-  - in `docs/audits/`: the code audit and the first test of the prompt on
+  - in `docs/archive/audits/`: the code audit and the first test of the prompt on
     real slides (both 2026-09-27), the audit of the learning logic
     (2026-10), the fresh-eyes review (2026-10-13), and the weak points
     found by using the app as a student on a phone (2026-10-17);
-  - the briefs two of them were given, in `docs/briefs/`;
+  - the briefs two of them were given, in `docs/archive/briefs/`;
   - the design audit (2026-11-03), in `docs/proposals/design-audit.md`.
 - **Decisions.** Each proposal in `docs/proposals/` argues its options and
   names the pick; `decisions.md` holds the owner's choices of 2026-10-11.
