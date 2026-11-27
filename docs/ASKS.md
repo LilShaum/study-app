@@ -20,6 +20,12 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
 
 ## Open
 
+- **Lectures a student can trust** (2026-11-27: "it needs to be built in a
+  way where users can trust that the course they are studying is very
+  accurate to what they are meant to be studying, even if they missed
+  lecture"). Plan: `docs/proposals/trust.md` (every slide accounted for and
+  a slide on every card, then a check by a second AI in a fresh chat, then
+  the app reading the slides itself). Open until built and live.
 - **Take feedback in properly** (2026-11-25: "whenever I give you feedback
   on something and explain expectations, you mark them down, write what you
   did wrong, write what I'm asking, all in your own words … break down each
