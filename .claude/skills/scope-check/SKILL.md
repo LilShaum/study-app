@@ -37,6 +37,13 @@ instruction: "If scope is unclear, propose the big version first"). Do not
 shrink an ask because the big version is harder to verify or touches code
 that already works.
 
+Size the effort to the ask too. For a **micro** ask, the size line, the
+repeat check (section 2) and a sweep for the same fault elsewhere are the
+whole check: skip the contract and the before/after proof, and keep the
+plan and the reply short. Tested 2026-11-27: on a two-colour fix, a session
+following every section of this skill wrote a plan 67% longer than one
+without it, for the same result.
+
 ## 2. Has the owner asked this before?
 
 Search `docs/ASKS.md` and `docs/FEEDBACK.md` for the subject (the feature's
@@ -67,7 +74,11 @@ is one):
 4. **Which screens move**, and which of them the student meets first.
 
 Keep the list ordered by how much a student would notice, largest first,
-and build in that order. Polish that comes up along the way goes to the
+and build in that order. The session builds it: anything a student sees is
+built by the session, never handed to agents screen by screen (CLAUDE.md,
+"Use agents"); agents take the scripts, tests and mechanical edits around
+it. (Tested 2026-11-27: asked to plan a whole-app rework, sessions with and
+without this skill both planned one Sonnet agent per screen.) Polish that comes up along the way goes to the
 end of the list, or to ASKS as its own small item; it never stands in for
 the big change.
 
@@ -89,6 +100,12 @@ the big change.
    the changes marked. The numbers are coarse on purpose: a recoloured
    hairline does not count, a new layout does. A reworded paragraph
    counts a little, so read the pictures, not only the numbers.
+   **Motion is not in a screenshot.** For a change to how something moves,
+   record frames before and after (Playwright, a frame every 50 to 100 ms
+   from the trigger until everything settles) and measure what the owner
+   described: when each thing starts and stops relative to the others. A
+   new number in the CSS is not proof; "0.2 s sooner" shipped unmeasured
+   once and the motion still read as steps.
 2. **For a macro ask, the screens the contract names should mostly read
    "reworked".** If they read "touched" or "untouched", the work is not
    done, whatever the diff size. Go back to the contract's first line.
