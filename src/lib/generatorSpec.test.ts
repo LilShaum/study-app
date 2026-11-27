@@ -59,7 +59,7 @@ describe('the sections the prompts quote from prompts/generator.md', () => {
     // A question that asked two things read as an unrelated answer (the owner, 2026-10-26).
     expect(QUALITY_BAR_SPEC).toMatch(/One question per stem/);
     expect(QUALITY_BAR_SPEC).toMatch(/never only that the source does not say/);
-    expect(ITEM_TYPES_SPEC).toMatch(/not a word from its family/);
+    expect(ITEM_TYPES_SPEC).toMatch(/must not all be in it/);
   });
 
   it('is quoted verbatim, so the prompts cannot drift from the spec', () => {

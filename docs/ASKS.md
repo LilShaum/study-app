@@ -30,8 +30,10 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   a rubric … ways to measure the variables of the course generating …
   especially since different classes can provide wide ranges of examples").
   Rubric `docs/rubric.md`, scorer `src/lib/rubric.ts`, procedure
-  `.claude/skills/generate-lecture`, log `docs/rubric-log.md`. Open until the
-  first real lecture is made and graded.
+  `.claude/skills/generate-lecture`, log `docs/rubric-log.md`. Also (same
+  day) fold the four pasted session summaries into the prompt, "with a
+  grain of salt" (`docs/proposals/trust.md` §6). Open until the first real
+  lecture is made and graded.
 
 - **A phone round for Today, Learn, the lecture page, Practice and
   Progress** (2026-11-27: "i wanna go ahead with all your suggestions btw",
