@@ -86,6 +86,7 @@ One card per item type (multiple choice, flashcard, definition, problem...), plu
 - `AddItemButton.tsx`: A button on a section that lets the student add a blank item of a chosen type and edit it.
 - `DefinitionCard.tsx`: Shows a definition card to read, with its source note and related terms.
 - `DifficultyBadge.tsx`: _no header yet_
+- `DrawnDiagram.tsx`: A diagram the app draws from the generator's description (docs/proposals/diagrams.md): in the book's type, in both themes, at the width it is given.
 - `EditItemForm.tsx`: _no header yet_
 - `ExampleCard.tsx`: _no header yet_
 - `ExplainCard.tsx`: A key idea explained, to read before the questions on it: what it is, why, and how it follows from what came before, as a tutor would say it in class.
@@ -142,6 +143,7 @@ Zustand stores: lectures, progress, the study log, settings. Everything saved on
 The .study.json format (Zod) and its parser.
 
 - `course.ts`: .study.json SCHEMA — must match the vanilla app's format exactly.
+- `diagram.ts`: A diagram the generator describes and the app draws (docs/proposals/diagrams.md).
 - `formatZodError.ts`: Turns a ZodError into a few lines a student can act on — and, more to the point, paste back into the chat that produced the bad JSON.
 - `fragment.ts`: COURSE FRAGMENT — the shape accepted when ADDING to an existing course, as opposed to importing a whole new one.
 - `parseCourse.ts`: _no header yet_
@@ -171,6 +173,7 @@ Logic with no screen: scheduling, Learn steps, prompts handed to the AI, content
 - `createBlankItem.ts`: A minimal, valid starting point for a new item of the given type, used by "+ Add item".
 - `dailyShare.ts`: One daily time, shared between courses.
 - `dayLeaf.ts`: A day of study drawn as a leaf (look L3 of docs/proposals/heatmap.md §6): the more time that day, the larger and deeper the leaf; a day without is a small bud.
+- `diagram.ts`: The thinking behind a drawn diagram, kept out of the component so it can be tested: which rows a flow is laid out in, and what a "what if" breaks.
 - `evenOptions.ts`: Builds the small repair prompt that rewrites wrong options so the right answer is no longer the longest.
 - `exam.ts`: When the exam date starts to steer Review, and for which items.
 - `examLabel.ts`: 1,2,3,5,7,8 → "1–3, 5, 7–8".
@@ -202,6 +205,7 @@ Logic with no screen: scheduling, Learn steps, prompts handed to the AI, content
 - `opticalStroke.ts`: The stroke weight a mark should carry at the size it is drawn.
 - `optionOrder.ts`: Multiple-choice options in a new order each time a question is shown.
 - `packedStorage.ts`: Lectures kept compressed, one storage key each.
+- `partCount.ts`: Says where a Learn or Today card is within its part of the sitting, for the session's header.
 - `personalScale.ts`: How much slower (above 1) or faster (below 1) this student forgets than the memory model assumes, fitted from their own review answers.
 - `plural.ts`: "1 card", "3 cards"; pass `pluralWord` where adding "s" is wrong.
 - `practice.ts`: The Practice page's choices, shared by a lecture's Practice, a class's Practice and the end of a practice session (which offers the class's next lecture with cards for the same choice).
@@ -302,6 +306,7 @@ Plans, each with the options weighed and why one won (CLAUDE.md, "Plans").
 - `design-audit.md`: The UI/UX and design-language audit
 - `design-update.md`: Design update: each format used for what it is good at
 - `diagrams-row.md`: Diagrams on a phone: the row of sections
+- `diagrams.md`: Diagrams, end to end: how, when and why they are made, and how they teach
 - `ecosystem.md`: The ways to study, as one system
 - `first-run-general.md`: The first run without a made-up lecture
 - `grade-2026-11-16.md`: Arborous graded against its goals
