@@ -11,6 +11,34 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-27 · The new diagrams, first try (preview of PR #7)
+**Their words:** "I tried them out and they are a good start but I feel like
+improvements could be made or maybe the examples just arent doing them
+justice. id wanna know how they fair going through the tests we have to have
+a student go through it and stuff"
+**Question or instruction:** Both. A question (how do they do when a
+student goes through them, by our tests?) and an implied instruction (make
+them better; find out whether the examples or the design is the limit).
+**What went wrong:** The preview showed the diagrams only on a made-up
+lecture with three hand-written figures, so the owner could not tell the
+design from the examples. (habit: shown on the cheapest example, not the
+real case the ask came from.)
+**What they are asking:** Judge the diagrams on real lectures (their
+Language slides; ideally a diagram-heavy BIOL one), with a student task and
+the fresh-eyes review, and with before/after proof of size; then show what
+would make them better as two or three visual options to pick from.
+**Expectations, broken down:**
+- *"a good start, but improvements could be made"*: means the student
+  should learn more from a diagram than from the slide's figure alone /
+  checked by a fresh critic doing a timed task on a real lecture (can they
+  explain the pathway after?) / not: polish to the boxes and arrows.
+- *"the tests we have to have a student go through it"*: means
+  taste-review with a real task and time limit, and scope-check's
+  before/after / checked by both reports, shown / not: my own read of
+  screenshots.
+**Rules and ripples:** none yet; the options decide.
+**Status:** noted; waiting on the Language lecture run.
+
 ### 2026-11-27 · The audit's cost
 **Their words:** "I thought it did before? … generating a lecture based on
 two sets of slides takes ~30 minutes. if you are making it do two checks now
