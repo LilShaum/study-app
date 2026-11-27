@@ -26,6 +26,7 @@ import { isDueFor } from '@/lib/memory';
 import { roman } from '@/lib/roman';
 import type { Course } from '@/schema/course';
 import { Sheet } from '@/components/Sheet';
+import { plural } from '@/lib/plural';
 import { ThumbBar } from '@/components/ThumbBar';
 import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 
@@ -233,7 +234,7 @@ function PracticePage() {
   const nothingStudied = lectures.every(([lid]) => Object.keys(byCourse[lid] ?? {}).length === 0);
 
   /** A ready-made sitting: these ticks over the whole lecture or class. */
-  const ready = (label: string, preset: Pick<PracticeChoice, 'kinds' | 'which' | 'order' | 'newCap'>) => {
+  const ready = (label: string, use: string, preset: Pick<PracticeChoice, 'kinds' | 'which' | 'order' | 'newCap'>) => {
     const c: PracticeChoice = { ...preset };
     const per = lectures.map(([lid, l]) => ({
       lid,
@@ -241,15 +242,15 @@ function PracticePage() {
     }));
     const firstWith = per.find((p) => p.n > 0);
     const total = per.reduce((a, p) => a + p.n, 0);
-    return { label, total, to: firstWith ? choiceLink(firstWith.lid, c, id ? undefined : code, !id && c.order === 'mixed' && per.filter((p) => p.n > 0).length > 1) : '' };
+    return { label, use, total, to: firstWith ? choiceLink(firstWith.lid, c, id ? undefined : code, !id && c.order === 'mixed' && per.filter((p) => p.n > 0).length > 1) : '' };
   };
   const everyKind = present.filter((k) => k !== 'written');
   const presets = [
-    ready('To review', { kinds: everyKind.length ? everyKind : present, which: ['due'], order: 'weakest' }),
-    ready('Mistakes', { kinds: present, which: ['missed'], order: 'mixed' }),
+    ready('To review', 'What is fading, faintest first.', { kinds: everyKind.length ? everyKind : present, which: ['due'], order: 'weakest' }),
+    ready('Mistakes', 'Every one you have missed, mixed.', { kinds: present, which: ['missed'], order: 'mixed' }),
     // Anki's way: what is fading first, then up to ten new (docs/proposals/practice.md).
-    ...(present.includes('flashcards') ? [ready('Flashcards', { kinds: ['flashcards'], which: ['due', 'missed', 'new'], order: 'weakest', newCap: FLASHCARDS_NEW })] : []),
-    ...(present.includes('problems') ? [ready('Problems', { kinds: ['problems'], which: ALL_WHICH, order: 'mixed' })] : []),
+    ...(present.includes('flashcards') ? [ready('Flashcards', `The ones fading, then up to ${FLASHCARDS_NEW} new.`, { kinds: ['flashcards'], which: ['due', 'missed', 'new'], order: 'weakest', newCap: FLASHCARDS_NEW })] : []),
+    ...(present.includes('problems') ? [ready('Problems', 'Every problem, mixed.', { kinds: ['problems'], which: ALL_WHICH, order: 'mixed' })] : []),
   ].filter((p) => p.total > 0);
 
   const toggle = <T,>(list: T[], v: T): T[] => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -291,14 +292,14 @@ function PracticePage() {
       ? 'Tick at least one kind and one set of cards.'
       : n === 0
         ? 'No card matches these ticks.'
-        : `${n} card${n === 1 ? '' : 's'}${reached.length > 1 ? (mixing ? `, from ${reached.length} lectures mixed` : `, starting in ${firstTitle}`) : ''}.`;
+        : `${n} card${n === 1 ? '' : 's'}: ${PRACTICE_KINDS.filter((k) => kinds.includes(k.value)).map((k) => k.label.toLowerCase()).join(', ')}, ${(ORDERS.find((o) => o.value === order)?.label ?? '').toLowerCase()}${reached.length > 1 ? (mixing ? `, from ${reached.length} lectures mixed` : `, starting in ${firstTitle}`) : ''}.`;
   const startButton =
     n > 0 ? (
-      <Link to={to} className="press press-ink tap-safe shrink-0">
+      <Link to={to} className="press press-ink tap-safe shrink-0 px-6 py-3">
         Start
       </Link>
     ) : (
-      <span className="press tap-safe shrink-0 cursor-default opacity-40" aria-disabled="true">
+      <span className="press tap-safe shrink-0 cursor-default px-6 py-3 opacity-40" aria-disabled="true">
         Start
       </span>
     );
@@ -356,10 +357,19 @@ function PracticePage() {
       <ul className="border-t border-border">
         {presets.map((p) => (
           <li key={p.label} className="border-b border-border">
-            <Link to={p.to} className="group tap-safe flex items-baseline gap-3 py-3">
-              <span className="font-display text-body text-text group-hover:text-accent">{p.label}</span>
-              <span className="leaders hidden sm:block" aria-hidden="true" />
-              <span className="mark ml-auto shrink-0 tabular-nums text-text-3">{p.total}</span>
+            {/* Rows you tap, saying what each is: a word and a number alone
+                did not look like something to start (docs/proposals/phone-round.md). */}
+            <Link to={p.to} className="group tap-safe flex items-center gap-3 py-3">
+              <span className="min-w-0 flex-1">
+                <span className="flex items-baseline gap-3">
+                  <span className="font-display text-body font-semibold text-text group-hover:text-accent">{p.label}</span>
+                  <span className="mark tabular-nums text-text-3">{plural(p.total, 'card')}</span>
+                </span>
+                <span className="mt-0.5 block text-small text-text-3">{p.use}</span>
+              </span>
+              <span aria-hidden="true" className="shrink-0 font-display text-[1.75rem] leading-none text-text-2 group-hover:text-accent">
+                ›
+              </span>
             </Link>
           </li>
         ))}
@@ -602,9 +612,10 @@ function PracticePage() {
 
       {/* Start in thumb reach, with what it gives: every tick shows its effect here. */}
       <ThumbBar>
+        {/* What the ticks add up to on the left, Start under the thumb on the right. */}
         <div className="flex items-center gap-4">
+          <span className="min-w-0 flex-1 text-small text-text-2">{status}</span>
           {startButton}
-          <span className="min-w-0 text-small text-text-2">{status}</span>
         </div>
       </ThumbBar>
     </div>

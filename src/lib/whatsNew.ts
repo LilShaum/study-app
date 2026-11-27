@@ -21,6 +21,9 @@ export const WHATS_NEW: Change[] = [
   {
     date: '2026-11-27',
     items: [
+      'A lecture leads with Today: what it holds, a 10, 15 or 30 minute choice that sizes the sitting, and one Start.',
+      'Learn and Today count within the part you are in, like Review 2 of 5, and a section opens on Start reading.',
+      'Progress says what needs you first, lists the sections not started, and keeps Review at your thumb.',
       'Diagrams in lectures made from now are drawn by the app: step through a pathway, tap a part, and see what breaks in each "what if".',
       'Lectures made from now account for every slide. Each card names the slide it came from, and the lecture check names any slide skipped.',
     ],

@@ -1,3 +1,4 @@
+import { partCount } from '@/lib/partCount';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
@@ -327,14 +328,15 @@ function StepLine({ item, questionsFirst, onSwitch }: { item: SessionItem; quest
       </div>
     );
   }
-  if (item._step === undefined || !phase) return null;
+  // A section's start names the section and asks how to begin; a part
+  // name above it ("Read") said nothing yet.
+  if (item.type === 'slides' || item._step === undefined || !phase) return null;
   const at = PHASES.findIndex((p) => p.key === phase);
   return (
     <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border pb-2 text-small">
-      <span className="mark whitespace-nowrap text-text-3">
-        Step {item._step + 1} of {item._steps}
-      </span>
-      {/* All three parts where there is room; on a phone, the one you are in. */}
+      {/* All three parts where there is room; on a phone, the one you are in.
+          No step count: the header says where you are in the section, and
+          two counts on one screen read as two different promises. */}
       <span className="flex items-baseline gap-2 whitespace-nowrap" aria-label={`Part: ${PHASES[at].label}`}>
         {PHASES.map((p, i) => (
           <span
@@ -349,15 +351,13 @@ function StepLine({ item, questionsFirst, onSwitch }: { item: SessionItem; quest
       {item._again ? <span className="whitespace-nowrap text-text-2">Again, from earlier</span> : null}
       {/* The section's choice, changed partway (the owner, 2026-11-22). Not
           on the section's first card, which asks it. */}
-      {item.type !== 'slides' && (
-        <button
-          type="button"
-          onClick={onSwitch}
-          className="tap-safe ml-auto whitespace-nowrap text-text-3 underline-offset-4 hover:text-text hover:underline"
-        >
-          {questionsFirst ? 'Read it here first' : 'Questions first'}
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={onSwitch}
+        className="tap-safe ml-auto whitespace-nowrap text-text-3 underline-offset-4 hover:text-text hover:underline"
+      >
+        {questionsFirst ? 'Read it here first' : 'Questions first'}
+      </button>
     </div>
   );
 }
@@ -1058,8 +1058,12 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
             {MODE_LABELS[mode]}
           </span>
           <span className="whitespace-nowrap text-xs tabular-nums text-text-3">
-            {/* The adaptive quiz has no end, so no total. */}
-            {mode === 'adaptive' ? index + 1 : `${index + 1} / ${items.length}`}
+            {/* The adaptive quiz has no end, so no total. Learn and Today
+                count within the part you are in ("Review 2 of 5", "Section
+                1 · 3 of 9"), which is what the lecture page promised; the
+                bar under it keeps the whole sitting. 1 of 57 across it read
+                as a broken promise (the fresh-eyes review, 2026-11-27). */}
+            {mode === 'adaptive' ? index + 1 : mode === 'learn' || mode === 'today' ? partCount(items, index, course) : `${index + 1} / ${items.length}`}
           </span>
         </span>
         <div className="flex gap-3 text-sm">

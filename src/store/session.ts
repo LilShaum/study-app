@@ -103,6 +103,13 @@ interface SessionState {
   /** A Practice sitting as the student built it (lib/practiceChoice). Set and kept like pendingKind. */
   pendingPractice: PracticeChoice | null;
   setPendingPractice: (choice: PracticeChoice | null) => void;
+  /**
+   * The minutes the student picked for this Today sitting on the lecture
+   * page ("I have 15"), or null for the planned time. Set like pendingKind;
+   * a resumed sitting or Keep going ignores it.
+   */
+  pendingMinutes: number | null;
+  setPendingMinutes: (minutes: number | null) => void;
   /** `fullDay`: Today planned at the full daily time, ignoring what was studied today ("Keep going"). */
   init: (courseId: string, course: Course, mode: StudyMode, sectionId?: string, resumeItemId?: string, fullDay?: boolean) => void;
   /**
@@ -320,6 +327,7 @@ function listFor(
         ? // A resumed sitting is the one already under way: the time spent in it
           // is already in the day's total, so re-planning from what is left
           // would shrink it, or empty it, under the bookmark.
+          (!resuming && useSessionStore.getState().pendingMinutes) ||
           todaySitting(courseId, course, progress, Date.now(), resuming).minutes
         : usePlanStore.getState().minutesFor(courseId),
     pace: measuredPace(useStudyLogStore.getState().byCourse),
@@ -363,6 +371,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   setPendingStudy: (study) => set({ pendingStudy: study }),
   pendingPractice: null,
   setPendingPractice: (choice) => set({ pendingPractice: choice }),
+  pendingMinutes: null,
+  setPendingMinutes: (minutes) => set({ pendingMinutes: minutes }),
 
   init: (courseId, course, mode, sectionId, resumeItemId, fullDay = false) => {
     adoptLinkedTerms(courseId);
