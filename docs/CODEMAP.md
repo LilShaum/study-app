@@ -202,6 +202,7 @@ Logic with no screen: scheduling, Learn steps, prompts handed to the AI, content
 - `opticalStroke.ts`: The stroke weight a mark should carry at the size it is drawn.
 - `optionOrder.ts`: Multiple-choice options in a new order each time a question is shown.
 - `packedStorage.ts`: Lectures kept compressed, one storage key each.
+- `partCount.ts`: Says where a Learn or Today card is within its part of the sitting, for the session's header.
 - `personalScale.ts`: How much slower (above 1) or faster (below 1) this student forgets than the memory model assumes, fitted from their own review answers.
 - `plural.ts`: "1 card", "3 cards"; pass `pluralWord` where adding "s" is wrong.
 - `practice.ts`: The Practice page's choices, shared by a lecture's Practice, a class's Practice and the end of a practice session (which offers the class's next lecture with cards for the same choice).
