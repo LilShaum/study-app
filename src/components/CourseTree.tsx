@@ -1045,6 +1045,23 @@ export function CourseTree({
           }
           const shownAtDown = down.current ? down.current.shown : revealed;
           down.current = null;
+          // A mouse points before it clicks, so a click on a branch is aimed:
+          // it opens, numbers up or not. (A fast hand clicking one branch
+          // after another beat the numbers coming back, and the click only
+          // picked; found 2026-11-27 clicking three branches 120 ms apart.)
+          if (lastPointer.current === 'mouse') {
+            const number = shownAtDown ? keyAt(e.clientX, e.clientY) : null;
+            if (number) return openSection(number);
+            // The branch lit under the pointer is the one the student sees,
+            // so it wins a near tie (on a crowded tree the bare nearest
+            // could be its neighbour).
+            const under = nearest({ clientX: e.clientX, clientY: e.clientY, pointerType: 'mouse' }, pointed);
+            if (under) {
+              show();
+              setPointed(under);
+              return openSection(under);
+            }
+          }
           if (!shownAtDown) {
             // The first touch shows the map: the tap that used to open the
             // large tree now raises the numbers, so meeting them needs no
@@ -1058,9 +1075,8 @@ export function CourseTree({
           if (key) return openSection(key);
           // A tap on the branch already picked opens it too, as its number
           // does (the owner, 2026-11-27: "clicking the branch itself doesnt
-          // work. is this intentional?"). With a mouse, pointing picks it, so
-          // one click; with a finger, the first tap picks and the second
-          // opens. A tap on bare paper, or on another branch, only picks
+          // work. is this intentional?"). A mouse click on a branch opened
+          // above; with a finger, the first tap picks and the second opens. A tap on bare paper, or on another branch, only picks
           // (Testing 11: a stray tap must never open anything).
           const under = nearest({ clientX: e.clientX, clientY: e.clientY, pointerType: lastPointer.current }, null);
           if (under && under === pointed) openSection(under);

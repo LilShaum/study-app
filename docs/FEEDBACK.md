@@ -65,7 +65,19 @@ the branch until the moment they let go; a click on a branch counts.
   a shorter gap.
 **Rules and ripples:** EXPECTATIONS (first run, tree), Help (The tree),
 whatsNew, tests.
-**Status:** noted; building.
+**Status:** built 2026-11-27 (docs/proposals/first-run-flow.md, option B):
+the find page folded into the tree page; after the fall the student reviews
+a section and its leaves come back. Measured at quarter speed: the next
+branch picked 0.3 s after a click (was 2.25 s); every probe over a clump
+picks its branch; no frame with a leaf missing across the skip. A
+fresh-eyes check then found the fade page's words came before the fall and
+did not say which branch to tap: the words now wait for the leaves and
+name the sections. Messy-use tests (the owner, 2026-11-27: "challenge the
+assumptions"): erratic sweeps, double clicks, clicks 120 ms apart, Back
+mid-fall, resizing mid-fall, bare-paper clicks, phone scroll from a picked
+branch, lectures of 1, 2, 11 and 22 sections with long titles. They caught
+two faults, both fixed: fast clicks only picked, and on a crowded tree a
+click could open the neighbour of the lit branch.
 
 ### 2026-11-27 · The session summaries, with a grain of salt
 **Their words:** four pasted summaries of how their PSYC and BIOL lectures

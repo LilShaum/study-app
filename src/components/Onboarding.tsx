@@ -219,10 +219,14 @@ function FirstRun() {
     setProgress(after);
     setFadedProgress(after);
     setFaded(true);
+    // The leaves fall first; the words that explain it come once most have
+    // landed, so the tree says it before the page does.
+    window.setTimeout(() => setSettled(true), 1800);
   };
   // After the fall: studying a section again grows its leaves back and
   // clears its pile, the loop the app is built on (docs/proposals/first-run-flow.md).
   const [notThatOne, setNotThatOne] = useState(false);
+  const [settled, setSettled] = useState(false);
   const review = (sid: string) => {
     if (reviewed) return;
     // Only a section that lost its leaves has any to win back.
@@ -238,6 +242,10 @@ function FirstRun() {
 
   const sectionNo = (sid: string | null | undefined) => DEMO.sections.findIndex((s) => s.id === sid) + 1;
   const enough = grown.length >= 2;
+  // The sections that lose their leaves when time passes, by number.
+  const lost = grown.slice(0, -1).map(sectionNo);
+  const lostWords =
+    lost.length === 1 ? `section ${lost[0]}` : `sections ${lost.slice(0, -1).join(', ')} and ${lost[lost.length - 1]}`;
 
   // The one tree: grows on the title page, is pointed at and studied, fades,
   // and is reviewed. Drawn again only once three weeks have passed, so it
@@ -429,19 +437,21 @@ function FirstRun() {
           lead="Review brings the leaves back."
           line="Each day, Arborous brings back what’s fading, before you forget it."
         />
+      ) : faded && !settled ? (
+        <Words lead="Three weeks later." />
       ) : faded ? (
         <Words
           lead="What you don’t review fades, and its leaves fall."
           line={
             notThatOne
-              ? 'That one has no fallen leaves to win back. Try one whose leaves fell.'
-              : `One section was reviewed yesterday and kept its leaves. ${touch ? 'Tap' : 'Click'} one whose leaves fell to review it.`
+              ? `That one has no fallen leaves to win back. Try ${lostWords}.`
+              : `Section ${sectionNo(grown[grown.length - 1])}, reviewed the day before, kept its leaves. ${lostWords.charAt(0).toUpperCase() + lostWords.slice(1)} lost ${grown.length > 2 ? 'their' : 'its'} leaves: ${touch ? 'tap' : 'click'} ${grown.length > 2 ? 'one' : 'it'} to review it.`
           }
         />
       ) : (
         <Words lead="Now leave it for a while." line="Without review, what you learn begins to slip away." />
       );
-      action = faded ? (
+      action = faded && !settled ? null : faded ? (
         <button type="button" onClick={next} disabled={!reviewed} className="press press-ink tap-safe">
           Continue
         </button>
@@ -611,7 +621,7 @@ function FirstRun() {
       break;
   }
 
-  const pageKey = page + (faded ? ':after' : '') + (reviewed ? ':back' : '') + (grown.length > 1 ? ':2' : grown.length);
+  const pageKey = page + (faded ? ':after' : '') + (settled ? ':settled' : '') + (reviewed ? ':back' : '') + (grown.length > 1 ? ':2' : grown.length);
   const motion = `fr-words ${page === 'title' ? 'fr-title' : ''} ${leaving ? 'fr-leaving' : ''}`;
   const wordsBlock = (
     <div key={pageKey} className={`${motion} flex flex-col gap-8 ${wide ? 'items-start' : 'items-center text-center'}`} aria-live="polite">
