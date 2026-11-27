@@ -32,7 +32,18 @@ you have learned, falling leaves are what is fading, the ground keeps what
 fell), in general terms, with no made-up topic, no part names and no quiz.
 Still something to do and watch rather than read (2026-11-24): the student
 touches the tree, sees a branch fill, sees leaves fall.
-**Status:** answered with an estimate; waiting on the owner's go-ahead.
+**Expectations, broken down:**
+- *general*: no topic, no section names, no question anywhere in the first
+  run; every sentence true of any lecture / checked by: reading every page's
+  words and grepping the component for the old topic / not: renaming the
+  water cycle's parts.
+- *what its parts represent*: branch = section, leaves = what you learn,
+  falling leaves and the ground = what fades / checked by: each said on the
+  page where the student acts on that part / not: a labelled diagram to read.
+**Status:** built 2026-11-27 (go-ahead given): sections numbered, no names, a
+tap on a number studies it and its branch grows; checked on a phone and a
+computer, light and dark, the tree's box identical across every state.
+Waiting on the owner's look.
 
 ### 2026-11-26 · The other static blue marks
 
@@ -56,7 +67,13 @@ paper-filled leaves of round 2 (after the owner's test) make those moments
 about two to three times heavier.
 **What they are asking:** whether it is the preview or the first run's tree;
 implied, that it should not lag.
-**Status:** answered; fix proposed, waiting on the owner.
+**Status:** built 2026-11-27: the grain's images (turbulence filters with a
+blend mode) were painted inside every leaf; now baked once into one picture
+per theme and density (lib/usePaperFill), same look (leaf interiors measured
+equal to the page in both themes). Emulated phone at a quarter speed: "Skip
+ahead three weeks" longest freeze 1.3 s → 0.25 s; a branch growing 0.35 →
+0.2-0.3 s; the change to the find page 0.7 → 0.45-0.55 s. Waiting on the
+owner's feel on a real phone.
 
 ### 2026-11-26 · Review page round 2: all the leaves alike
 

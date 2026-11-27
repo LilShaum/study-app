@@ -258,3 +258,9 @@ knows where things stand.
   Review page and preview (same links) rebuilt with only these. Open: real
   iPhone checks; whether the practice test's ? marks and the glossary's
   held letter go plain too.
+- **2026-11-27, the first run made general, and its lag**: the made-up
+  lecture and its questions gone; the tree's sections are numbered, a tap
+  studies one and its branch grows (docs/proposals/first-run-general.md).
+  The leaves' paper is baked into one picture (lib/usePaperFill): the
+  first run's freezes cut to a quarter. Waits on the owner's look on the
+  review page and the preview; then P4-3.

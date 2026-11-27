@@ -21,7 +21,7 @@ export const WHATS_NEW: Change[] = [
   {
     date: '2026-11-25',
     items: [
-      'A new first run: answer a question to grow a tree, watch a section fade, and pick your daily time.',
+      'A new first run: grow a tree by studying its branches, watch a section fade, and pick your daily time.',
       'Opening a lecture, its tree grows and the leaves you have let fade fall. Sweeping a finger over it names a section.',
       'On a phone, Prev and Next sit at the bottom, a swipe turns the page, and Diagrams shows which section you are in.',
       'Settings, at the foot of every page: your name, light or dark, reminders, your account, backups and Help.',

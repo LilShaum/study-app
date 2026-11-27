@@ -38,6 +38,12 @@ losing the nuance; testing comprehension and mastery, not recall alone. And
 it must help them reach that, not only test it, even if they never went to
 the lecture or opened the slides.
 
+The owner, 2026-11-27: the first and last resort for a student, looking
+and feeling good; studying made effortless, "especially for people with
+adhd like me, where decreasing the difficulty to study helps a lot"; no
+"cheap tricks like duolingo"; and a course a student can trust is accurate
+to what they must study, even if they missed the lecture.
+
 How the app actually works and feels can drift from it: check a feature
 against its line before changing it, treat a gap as work worth proposing,
 and add a line here whenever the owner says how something should be
