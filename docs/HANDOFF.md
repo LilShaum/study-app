@@ -249,4 +249,7 @@ devices.
   made-up fixtures in `scripts/__fixtures__/`.
 - Never ask for or accept the Supabase secret / service_role key.
 - No model names or IDs in code, comments or commits.
-- No pull requests unless asked.
+- Every change goes through a pull request; the owner merges it (2026-11-27:
+  "if you suggest it I am down"). The owner is new to GitHub: write the PR
+  description in plain words, what changes for a student first, and say
+  what to look at before merging.
