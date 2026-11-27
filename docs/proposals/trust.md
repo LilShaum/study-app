@@ -187,7 +187,53 @@ Opus 5.5 at high effort: time, reply size, and the lecture check's
 findings (length pattern, difficulty mix, coverage) side by side. The
 owner approved this test on 2026-11-27; it waits on their slides.
 
-## 6. Questions for the owner
+## 6. The owner's four session summaries (2026-11-27)
+
+The owner pasted summaries of the sessions that made their PSYC 351C and
+BIOL 365 (Circulatory, Muscles and movement, Nervous system) lectures, each
+listing what went wrong and what to change, with the caveat: "take some of
+the problems and stuff with a grain of salt. like some of them are less of
+problems" (one was their own half-attached deck). So a point was adopted
+only if it recurs across sessions or clearly cost quality, and only where
+today's prompt does not already cover it. Those sessions used an older
+prompt; much of what they asked for had been added since.
+
+**Adopted** (each the smallest change, where the rule already lives):
+
+| Point | Seen in | Change |
+|---|---|---|
+| Notes marked unsure ("idk", "maybe", red, unfinished) were dropped; the owner wanted them answered | Circulatory, Muscles | "Handwriting and highlights": answer them, never drop; a "maybe" may be the teacher's hedge |
+| Notes that disagree with the slide: an obvious slip needs the right version and why; a teacher's in-class correction wins; check the figure before calling a conflict | Circulatory, Muscles, PSYC | "When the notes and the slide disagree": all three |
+| Image-only pages cost most of the 30 to 50 minutes | all three BIOL | "Sources differ in shape": read each page once, enlarge only what is unreadable |
+| Two versions of a deck; repeated slides | Nervous system, Muscles | taught once, from the newer version; repeats in `not_taught` |
+| Which page to cite with two slides per page or several files | Nervous system, PSYC | `source_page`: the numbers of the file the student opens, file named |
+| Abbreviations not spelled out | Circulatory, Nervous system | Wording rule 5 |
+| "Definition must not contain its term's words" forced awkward rewording of common words | all three BIOL | the rule now matches what the app checks: all of the term's words, not one shared word |
+| "No card answers another" stripped facts out of definitions | all three BIOL | a definition keeps the source's meaning; the question asks the fact as a use instead |
+| Option length in words or characters? | Nervous system | characters, as the app counts |
+| Correct answers all at index 0, balanced by hand | Circulatory, Muscles | the app shuffles at every showing; said where `correct_index` is |
+| A "why" card with no reason in the source came out circular | Muscles | "Explain why" side: ask how or what instead |
+| The previous lecture's terms only listed its last sections | Circulatory | the prompt block lists every term it defines, and skipped repeats go in `not_taught` (they went in the description, which the slide accounting does not read) |
+
+**Already in the prompt:** delivering a file, `notes_for_student`, notes
+addressed to Arborous, "None of the other options" and its answer share,
+written answers sized to the exam, studies only when taught, keeping the
+source's qualifier, no invented labels, the wrong option's rationale naming
+the belief, fixing overlap by rewording, re-covering after a swap, Learn's
+real order, model-evidence questions as hard.
+
+**Not adopted:** half the deck attached (the owner's slip); several note
+takers and two slide numberings (one class, one session, covered by citing
+the file the student opens); a fixed item-mix share (dropped from the
+prompt earlier on purpose: the mix follows the material); speed tricks
+naming a tool (the student's chat decides how it views pages); the
+graphic-or-decoration line (the diagrams thread owns `graphic`).
+
+The rubric's judged part now reads the student's notes, abbreviations and
+the example questions' style; its profile records whether the pages have
+text to copy.
+
+## 7. Questions for the owner
 
 1. One real lecture's slides for the before-and-after test (kept off the
    repo, as always).

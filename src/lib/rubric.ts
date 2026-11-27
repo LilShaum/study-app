@@ -108,11 +108,17 @@ export function scoreCourse(course: Course, raw: string, pages?: string[]): Scor
     const onPage: StudyItem[] = [];
     const elsewhere: StudyItem[] = [];
     const missing: StudyItem[] = [];
+    // An item that names no slide is looked up on its section's slides, so a
+    // lecture from before source_page still shows quotes filed in the wrong place.
+    const rangeOf = new Map(course.sections.flatMap((s) => s.items.map((i) => [i.id, s.source_range] as const)));
     for (const i of checkable) {
-      const named = pagesIn(i.source_page ?? (i.type === 'graphic' ? i.where : undefined)).filter((n) => n >= 1 && n <= texts.length);
-      if (named.length && quoteIn(i.source_excerpt!, named.map((n) => texts[n - 1]).join(' '))) onPage.push(i);
-      else if (quoteIn(i.source_excerpt!, whole)) elsewhere.push(i);
-      else missing.push(i);
+      const own = i.source_page ?? (i.type === 'graphic' ? i.where : undefined);
+      const named = pagesIn(own ?? rangeOf.get(i.id)).filter((n) => n >= 1 && n <= texts.length);
+      const found = quoteIn(i.source_excerpt!, whole);
+      if (!found) missing.push(i);
+      else if (!named.length) continue;
+      else if (quoteIn(i.source_excerpt!, named.map((n) => texts[n - 1]).join(' '))) onPage.push(i);
+      else elsewhere.push(i);
     }
     add({
       id: 'quote-found',
@@ -124,10 +130,10 @@ export function scoreCourse(course: Course, raw: string, pages?: string[]): Scor
     });
     add({
       id: 'quote-on-page',
-      label: 'Quotes on the slide they name',
-      value: share(onPage.length, checkable.length - missing.length),
+      label: 'Quotes on the slide they name (or their section names)',
+      value: share(onPage.length, onPage.length + elsewhere.length),
       target: '≥ 95%',
-      verdict: !numbered ? 'n/a' : pct(elsewhere.length, checkable.length - missing.length) <= 5 ? 'pass' : 'warn',
+      verdict: !numbered || !(onPage.length + elsewhere.length) ? 'n/a' : pct(elsewhere.length, onPage.length + elsewhere.length) <= 5 ? 'pass' : 'warn',
       detail: elsewhere.length ? ids(elsewhere) : undefined,
     });
     const figures = quoted.length - checkable.length;

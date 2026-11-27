@@ -11,6 +11,31 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-27 · The session summaries, with a grain of salt
+**Their words:** four pasted summaries of how their PSYC and BIOL lectures
+were made, then: "im ngl some of this isnt a real issue. like this was just
+a little thing on my end … I dont expect it to predict when I only
+accidentally provided half a lecture … just take some of the problems and
+stuff with a grain of salt. like some of them are less of problems".
+**Question or instruction:** Instruction: weigh the summaries' points, do
+not adopt them wholesale.
+**What went wrong:** Nothing yet; the risk was a rule per listed problem.
+(habit: treating every reported problem as a prompt fault.)
+**What they are asking:** Fix what recurs or clearly cost a lecture its
+quality; leave their one-off slips alone; keep the prompt lean.
+**Expectations, broken down:**
+- *grain of salt*: means a point is adopted only if it recurs across
+  sessions or cost quality, and not already covered / checked by the
+  adopted and not-adopted tables in `docs/proposals/trust.md` §6 / not: one
+  new rule per bullet.
+- *less of problems*: means a slip on the student's side (half a deck
+  attached) is never a rule / checked by that table's "not adopted" row /
+  not: a warning paragraph for every way a student can err.
+**Rules and ripples:** `prompts/generator.md` (eleven small edits in place),
+`previousLecture.ts`, `docs/rubric.md` (judged part), What's new.
+**Status:** built on branch `claude/project-thread-tckngc`; scored test
+running.
+
 ### 2026-11-27 · The audit's cost
 **Their words:** "I thought it did before? … generating a lecture based on
 two sets of slides takes ~30 minutes. if you are making it do two checks now
