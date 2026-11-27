@@ -74,7 +74,7 @@ export function todayAcrossCourses(
  * spend or the minute changes (the clock only in steps of REUSE_MS: a card
  * that falls due a minute later shows in the sitting itself). Coming back to
  * the library from a lecture page rebuilt every lecture's Today, the
- * library's main cost after the first visit (docs/audits/2026-10-17).
+ * library's main cost after the first visit (docs/archive/audits/2026-10-17).
  */
 const REUSE_MS = 60_000;
 const remembered = new WeakMap<Course, { progress: Record<string, ItemResult> | undefined; key: string; value: CourseToday | null }>();

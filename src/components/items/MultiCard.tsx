@@ -1,3 +1,7 @@
+/**
+ * Shows a select-all-that-apply question, lets the student tick statements, and marks them.
+ * Also exports MultiStatements, the tick list reused where the statements are shown without the card.
+ */
 import { useMemo, useState, type ReactNode } from 'react';
 import type { MultiItem } from '@/schema/course';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';

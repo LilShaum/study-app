@@ -190,7 +190,7 @@ interface SessionState {
 }
 
 /** How many cards on a missed card comes back in Learn. */
-export const AGAIN_AFTER = 3;
+const AGAIN_AFTER = 3;
 /** Comes back at most this many times; after that it is left to Review. */
 export const AGAIN_MAX = 3;
 
@@ -711,7 +711,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
  * the student's other lectures. Every way of answering a card goes through
  * here: a study session (record, above) and a practice test (TestRoute).
  */
-export function recordAnswer(courseId: string, item: { id: string; type: string }, got: boolean, grade?: Grade, sure?: boolean): void {
+function recordAnswer(courseId: string, item: { id: string; type: string }, got: boolean, grade?: Grade, sure?: boolean): void {
   recordAnswers([{ courseId, item, got, grade, sure }]);
 }
 

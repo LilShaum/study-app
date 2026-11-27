@@ -2,7 +2,7 @@
 
 An independent, adversarial audit of Arborous's scheduling and session code,
 the study simulator, and the two open problems in `sim/FINDINGS.md`, as
-briefed in `docs/briefs/fable-audit.md`. Everything below is on branch
+briefed in `docs/archive/briefs/fable-audit.md`. Everything below is on branch
 `claude/fable-audit`; nothing was merged to `main`.
 
 Checks run before writing this: `npm test` (554 pass), `npm run typecheck`,

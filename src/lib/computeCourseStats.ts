@@ -1,3 +1,6 @@
+/**
+ * Turns a lecture's items and the student's progress into the totals and accuracy rows the stats screen shows.
+ */
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { scoredEntries } from './scored';

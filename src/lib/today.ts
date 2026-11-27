@@ -101,11 +101,11 @@ export function splitSitting(
  * drilled first, new material without its examples) lost 6 to 9 points by
  * re-drilling the same cards and leaving more of the exam never studied.
  */
-export const PARTS_WITHIN_DAYS = 3;
+const PARTS_WITHIN_DAYS = 3;
 export const PARTS = 3;
 export const PART_GAP_HOURS = 3;
 /** A day's time below this stays one sitting however close the exam: a part would be too short to be one. */
-export const PARTS_FROM_MINUTES = 30;
+const PARTS_FROM_MINUTES = 30;
 
 /** Minutes in one part of the day, or null when the day is one sitting. `examDays` as libraryToday's daysToExam. */
 export function partMinutes(planned: number, examDays: number | null): number | null {

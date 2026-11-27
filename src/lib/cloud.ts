@@ -1,3 +1,7 @@
+/**
+ * Share links and sync through the Supabase backend: shares a lecture, fetches a shared one, merges devices.
+ * The Supabase client is loaded lazily the first time it is needed.
+ */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Course } from '@/schema/course';
 import { parseCourse } from '@/schema/parseCourse';

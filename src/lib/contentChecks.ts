@@ -88,7 +88,7 @@ function cached(cache: Map<string, Set<string>>, text: string, make: () => Set<s
 }
 
 /** The content words of a text, cut to a stem so a word family matches: signal, signals, signaling. */
-export function stems(text: string): Set<string> {
+function stems(text: string): Set<string> {
   return cached(
     stemCache,
     text,
@@ -163,7 +163,7 @@ function share(a: Set<string>, b: Set<string>): { shared: number; share: number 
  * ("Between 10⁻⁶ and 10⁻¹ M" and "10⁻⁶ to 10⁻¹ M"). Long answers share
  * words without saying the same thing.
  */
-export function sameAnswer(a: Asked, b: Asked): boolean {
+function sameAnswer(a: Asked, b: Asked): boolean {
   const x = norm(a.answer);
   if (x.length >= 3 && x === norm(b.answer)) return true;
   if (sameName(a.answer, b.answer)) return true;

@@ -1,3 +1,6 @@
+/**
+ * Works out how many minutes a Today sitting gets for a lecture, from the plan and what is studied already.
+ */
 import type { Course } from '@/schema/course';
 import { lectureExam } from '@/lib/classExams';
 import type { ItemResult } from '@/store/progress';

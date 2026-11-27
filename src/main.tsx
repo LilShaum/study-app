@@ -1,3 +1,6 @@
+/**
+ * The app's entry point: runs the startup watchers and migration, then mounts the router.
+ */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';

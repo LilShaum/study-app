@@ -1,3 +1,7 @@
+/**
+ * Computes per-section progress (studied, got, missed, accuracy) from the stored item results.
+ * Also says which study modes a section offers and finds a section by id.
+ */
 import type { Course, Section } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { scoredEntries } from './scored';
