@@ -168,6 +168,18 @@ this is the intent it serves.
 - **Done means checked the way the owner tests** (2026-11-25): on a phone,
   zoomed in, light and dark, scrolled to the bottom, several taps in a
   row, and against each expectation in its `docs/FEEDBACK.md` entry.
+- **Big asks get big changes** (2026-11-27: "asking for big wider scoped
+  macro updates changes and improvements to how the app functions and
+  feels, and then the ai goes and focuses on minute fixes or changes that
+  a user would barely notice"). Every ask is sized first and proved at
+  the end with before/after pictures (`scope-check`); an ask made before
+  gets a different approach, not a reworded one.
+- **Judged as a student, by fresh eyes** (2026-11-27: Claude "struggles to
+  understand human taste and what matters to a human"; the app should
+  "make learning and studying feel effortless, especially for people with
+  adhd", with no "cheap tricks like duolingo", and a student who missed
+  the lecture must be able to trust it). Anything a student sees is
+  reviewed by a critic who never saw the code or the plan (`taste-review`).
 - **Models** (2026-11-04). Sessions run on Opus 5.5: check before the
   first message (an early switch is cheap; one 22 minutes in made the new
   model reread everything and used the owner's usage). Every agent is
@@ -213,6 +225,9 @@ read `docs/proposals/part4-brief.md` and do that stage.
 
 ## How to work here
 
+**How a change goes from ask to live**, and who checks what, is in
+`docs/WORKFLOW.md` (roles, the order of checks, the preview).
+
 **Every piece of feedback is broken down before anything is built**
 (2026-11-25: "don't just accept them as adjectives but break down each one
 and see what I really mean"): the `owner-feedback` skill writes it into
@@ -241,6 +256,8 @@ Load these skills when the work matches; don't wait until halfway through:
 | When | Skill |
 |---|---|
 | Start of the session, any multi-step task | `working-method` (if the account has it) |
+| Any ask to build, change, improve, audit or redesign, at its start and before calling it done | `scope-check` |
+| Anything a student sees or feels, before showing the owner; or "it feels cheap / ugly / slop / unintuitive" | `taste-review` |
 | Any feedback, correction or expectation from the owner (screenshots, review-page notes, "you didn't listen") | `owner-feedback`, before replying or building |
 | Anything a student sees: screens, labels, toasts, Help, the tree | `arborous-design` and `app-making` |
 | Scheduling, Review, Learn, Today, the memory model, any "will this help students" question | `simulate` |
@@ -251,5 +268,9 @@ Load these skills when the work matches; don't wait until halfway through:
 
 A new session starts with `npm install` and Playwright already done (the
 SessionStart hook in `.claude/hooks/`). `node scripts/screenshots.mjs <dir>`
-shoots every screen; `node scripts/ui-dashes.mjs` lists the em dashes in the copy, to judge each one.
+shoots every screen (every phone screen in both themes);
+`node scripts/compare-shots.mjs <before> <after> [out]` says how much of each
+screen visibly changed; `node scripts/preview.mjs <dir>` builds a preview the
+owner can try on their phone (published as a private artifact);
+`node scripts/ui-dashes.mjs` lists the em dashes in the copy, to judge each one.
 
