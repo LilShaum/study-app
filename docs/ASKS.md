@@ -20,6 +20,11 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
 
 ## Open
 
+- **A phone round for Today, Learn, the lecture page, Practice and
+  Progress** (2026-11-27: "i wanna go ahead with all your suggestions btw",
+  on the fresh-eyes review's findings; plan in
+  `docs/proposals/phone-round.md`). Before part 4's final check.
+
 - **Make how Arborous gets built work better** (2026-11-27: "while working
   on arborous I want any inefficiencies in the process of making it to be
   fixed and also like if any new skills are required then I approve.
