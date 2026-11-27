@@ -5,6 +5,40 @@ the date, the prompt's commit, the source's profile, the measured scorecard,
 the judged scores with the ids of every 0, the time and size, and what it
 changed. Numbers and ids only: no lecture content, no slide text.
 
+## 2026-11-27 · Language, new prompt, raw (two runs)
+
+Source: PSYC Language, 25 slides with text, typed notes and a few marked
+questions, studies taught. Both runs on Opus 5.5 at high effort, the PDF
+read as page images, raw replies untouched.
+
+| | Run A (this branch, `caf2f52`) | Run B (diagrams branch) | Owner's file (old prompt, hand-revised) |
+|---|---|---|---|
+| Settings | studies on, study guide and Test 1 key pasted | studies off, nothing pasted | studies on, both pasted |
+| Time | 18 min | 18 min | about 18 hours with revisions |
+| Items / sections | 130 / 8 | 115 / 10 | 163 / 9 |
+| Size (≈ output tokens) | 32k | 32k | 44k |
+| Quotes found word for word | 99% | 99% | 89% |
+| On the slide they name | 100% | 100% | 97% (by section) |
+| Cards naming their slide | 100% | 100% | 4% |
+| Slides accounted for | 25 of 25 | 25 of 25 | not recorded |
+| "Pick the longest" right | 16% | 49% | 34% |
+| Easy / hard MCQs | 4% / 26% | 15% / 30% | 8% / 29% |
+| Lecture check: to fix | 1 (two-questions) | 3 | 2 |
+| Notes for the student | 4 | n/a | 0 |
+
+**Judged (run A, 9 items: 4 hard MCQs, 2 labelled reasons, 3 definitions):**
+all 2 on Accurate and Answer key; wrong options are neighbours and
+reversals from the lecture; the hard MCQs join two slides. Its notes for
+the student flag the left-hander note against the Wada table, the note
+that clashes with the other one on how often Wada is used, and answer the
+student's marked questions; the left-hander slip is the one the owner's
+hand revision found after the fact. Not yet judged: the whole lecture
+against the study guide's model and study emphasis.
+
+**Read:** run B's 49% used the prompt's older "as long … in words"; run A
+counts characters and came in at 16%. One run each, so a hint, not proof;
+the next lectures will show whether it holds.
+
 ## 2026-11-27 · Baseline: five lectures the owner made with the old prompt
 
 Made before this log, with an older prompt (`ARBOROUS_PROMPT.txt`, before
