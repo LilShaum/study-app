@@ -1,3 +1,4 @@
+import { pagesIn } from './sourceCoverage';
 import type { Course, Section, StudyItem } from '@/schema/course';
 import { allItems, duplicateKey, itemPrompt, type Fragment } from '@/schema/fragment';
 import { generateId } from './generateId';
@@ -308,8 +309,15 @@ function joinSourcePages(course: Course, fragment: Fragment): Pick<MergePlan, 's
   const more = fragment.source_pages?.not_taught ?? [];
   const base = was ?? fragment.source_pages;
   if (!base || !more.length) return { totalAccounted: 0 };
-  const seen = new Set((was?.not_taught ?? []).map((r) => r.range.trim().toLowerCase()));
-  const added = more.filter((r) => !seen.has(r.range.trim().toLowerCase()) && seen.add(r.range.trim().toLowerCase()));
+  // A slide already listed, however it is worded ("slide 19", "slides 19"),
+  // is not listed again.
+  const known = new Set((was?.not_taught ?? []).flatMap((r) => pagesIn(r.range)));
+  const added = more.filter((r) => {
+    const pages = pagesIn(r.range);
+    if (pages.length && pages.every((n) => known.has(n))) return false;
+    pages.forEach((n) => known.add(n));
+    return true;
+  });
   if (!added.length) return { totalAccounted: 0 };
   return { source_pages: { ...base, not_taught: [...(was?.not_taught ?? []), ...added].slice(0, 500) }, totalAccounted: added.length };
 }

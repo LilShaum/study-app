@@ -105,6 +105,8 @@ export interface FixPromptPlan {
   thinKeyTerms: string[];
   /** Slides nothing came from and the AI gave no reason for ("slides 19–21, 30"), or empty. */
   missingSlides: string;
+  /** "42 slides": the material's size, as the file states it. */
+  slideCount: string;
   faultyItems: { item: StudyItem; sectionId: string; faults: string[] }[];
   /** How many items had a correctable fault — more than faultyItems when capped. */
   totalFaulty: number;
@@ -160,6 +162,7 @@ export function planFixes(course: Course): FixPromptPlan {
     untestedTerms,
     thinKeyTerms,
     missingSlides,
+    slideCount: coverage ? `${coverage.count} ${coverage.unit}${coverage.count === 1 ? '' : 's'}` : '',
     totalFaulty: faultyItems.length,
     faultyItems: faultyItems.slice(0, MAX_FAULTY_ITEMS),
     empty: missingTerms.length === 0 && untestedTerms.length === 0 && thinKeyTerms.length === 0 && !missingSlides && faultyItems.length === 0,
@@ -275,7 +278,7 @@ export function buildFixPrompt(course: Course, notes = course.metadata.student_n
       [
         `## ${blocks.length + 1}. Slides nothing in the course comes from`,
         '',
-        `You said my material has ${course.metadata.source_pages?.count} ${course.metadata.source_pages?.unit ?? 'slide'}s. No section, card or figure comes`,
+        `You said my material has ${fix.slideCount}. No section, card or figure comes`,
         `from ${fix.missingSlides}, and you did not say why.`,
         '',
         'Look at each one. If it teaches something (a fact, a term, a step, a',

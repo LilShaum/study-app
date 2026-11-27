@@ -396,6 +396,9 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
                           asked by only one card now
                         </li>
                       )}
+                      {fixes.missingSlides && (
+                        <li>look at {fixes.missingSlides}, which nothing in the lecture comes from, and write what they teach</li>
+                      )}
                       {fixes.faultyItems.length > 0 && (
                         <li>
                           repair {plural(fixes.faultyItems.length, 'card')}
