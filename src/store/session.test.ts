@@ -848,3 +848,28 @@ describe('the adaptive quiz keeps going (the owner, 2026-11-22)', () => {
     expect(new Set(firstAsks).size).toBe(firstAsks.length);
   });
 });
+
+describe('session store: Today sized to the time picked', () => {
+  afterEach(() => useSessionStore.getState().setPendingMinutes(null));
+
+  it('plans a shorter sitting from the minutes picked on the lecture page', () => {
+    const many = {
+      schema_version: '1.0',
+      metadata: { title: 'Many' },
+      sections: Array.from({ length: 6 }, (_, n) => ({
+        id: `s${n}`,
+        title: `S${n}`,
+        items: Array.from({ length: 12 }, (_, k) => mcq(`q${n}-${k}`, `Q${n}-${k}?`)),
+      })),
+    } as Course;
+    const s = useSessionStore.getState();
+    s.setPendingMinutes(60);
+    s.init('many', many, 'today');
+    const long = useSessionStore.getState().items.length;
+    s.setPendingMinutes(5);
+    s.init('many', many, 'today');
+    const short = useSessionStore.getState().items.length;
+    expect(short).toBeGreaterThan(0);
+    expect(short).toBeLessThan(long);
+  });
+});

@@ -50,6 +50,9 @@ export function SessionRoute() {
   const study = search.get('study') || null;
   // "?p=…": a Practice sitting as the student built it (lib/practiceChoice).
   const rawPractice = search.get('p');
+  // "?min=15": Today sized to the time the student said they have.
+  const rawMin = Number(search.get('min'));
+  const min = mode === 'today' && rawMin > 0 && rawMin <= 240 ? rawMin : null;
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
   // Handed to the session store before CardSession's effect starts the
   // session (layout effects run first), which reads it when it builds the list.
@@ -57,7 +60,8 @@ export function SessionRoute() {
     useSessionStore.getState().setPendingKind(kind ?? null);
     useSessionStore.getState().setPendingStudy(study);
     useSessionStore.getState().setPendingPractice(mode === 'practice' ? decodeChoice(rawPractice) : null);
-  }, [kind, study, mode, rawPractice]);
+    useSessionStore.getState().setPendingMinutes(min);
+  }, [kind, study, mode, rawPractice, min]);
 
   if (!id || !isStudyMode(mode)) return <Navigate to="/" replace />;
 
@@ -81,7 +85,7 @@ export function SessionRoute() {
   ) : (
     // Keyed by kind, study and mixing, so a link that changes only those starts the session again.
     <CardSession
-      key={`${kind ?? 'all'}|${study ?? ''}|${mixed ? 'mix' : ''}|${rawPractice ?? ''}`}
+      key={`${kind ?? 'all'}|${study ?? ''}|${mixed ? 'mix' : ''}|${rawPractice ?? ''}|${min ?? ''}`}
       courseId={id}
       course={course}
       mode={mode}

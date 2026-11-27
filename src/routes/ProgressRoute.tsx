@@ -9,6 +9,8 @@ import { CourseTree } from '@/components/CourseTree';
 import { examRule } from '@/lib/exam';
 import { mixUps } from '@/lib/mixUps';
 import { forecastDue } from '@/lib/forecast';
+import { plural } from '@/lib/plural';
+import { ThumbBar } from '@/components/ThumbBar';
 import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 import { useStudyLogStore } from '@/store/studyLog';
 import { dayLine, heatmapWeeks, sumDays, summaryLine, timeStudied } from '@/lib/heatmap';
@@ -163,37 +165,80 @@ export function ProgressRoute() {
     .map(({ section, m }) => ({ section, due: m.due, held: Math.round((m.learned ? m.held / m.learned : 1) * 100) }))
     .sort((a, b) => a.held - b.held || b.due - a.due);
 
+  // Sections never studied: on a phone they were missing from the page, so
+  // "5 not started" under the tree had nowhere to go.
+  const notStarted = sortedSections(course)
+    .map((section, n) => ({ section, n }))
+    .filter(({ section }) => sectionMemory(section, progress, now, exam).studied === 0);
+  const dueTotal = fading.reduce((n, f) => n + f.due, 0);
+  const fadingCount = fading.filter((f) => f.due > 0).length;
+  // What needs the student, said first and in words (docs/proposals/phone-round.md).
+  const needs = [
+    fadingCount > 0 ? `${plural(fadingCount, 'section')} fading, ${plural(dueTotal, 'question')} to review` : 'Nothing fading',
+    notStarted.length > 0 ? `${notStarted.length} not started` : null,
+  ]
+    .filter(Boolean)
+    .join('; ');
+
   const fadingBlock = (
     <>
       {fading.length > 0 && (
         <div className="mt-8">
-          <h2 className="mark mb-1 text-text-3">Still remembered</h2>
-          <div className="space-y-3">
+          <h2 className="mark mb-1 text-text-3">Still remembered, weakest first</h2>
+          {/* Each row is one tap to what it needs: review what is fading, or
+              the section's page when nothing is due. */}
+          <ul className="divide-y divide-border border-y border-border">
             {fading.map(({ section, due, held }) => (
-              <div key={section.id}>
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className={`text-small ${due > 0 ? 'text-text' : 'text-text-2'}`}>{section.title}</span>
-                  <span className="shrink-0 whitespace-nowrap text-small tabular-nums text-text-2">
-                    {held}%
-                    {due > 0 && (
-                      <>
-                        {' · '}
-                        <Link
-                          to={`/session/${id}/review?section=${encodeURIComponent(section.id)}`}
-                          className="text-accent hover:underline"
-                        >
-                          Review {due}
-                        </Link>
-                      </>
-                    )}
+              <li key={section.id}>
+                <Link
+                  to={
+                    due > 0
+                      ? `/session/${id}/review?section=${encodeURIComponent(section.id)}`
+                      : `/study/${id}/section/${encodeURIComponent(section.id)}`
+                  }
+                  className="group tap-safe flex items-center gap-3 py-3"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className={`block text-small ${due > 0 ? 'text-text' : 'text-text-2'} group-hover:text-accent`}>
+                      {section.title}
+                    </span>
+                    <span className="relative mt-2 block h-px w-full bg-border" aria-hidden="true">
+                      <span className={`block h-px ${due > 0 ? 'bg-text' : 'bg-text-3'}`} style={{ width: `${held}%` }} />
+                    </span>
+                    <span className="mt-1.5 block text-xs tabular-nums text-text-3">{held}% still held</span>
                   </span>
-                </div>
-                <div className="relative mb-1 mt-2.5 h-px w-full bg-border">
-                  <div className={`h-px ${due > 0 ? 'bg-text' : 'bg-text-3'}`} style={{ width: `${held}%` }} />
-                </div>
-              </div>
+                  <span className={`shrink-0 whitespace-nowrap text-small tabular-nums ${due > 0 ? 'text-accent' : 'text-text-3'}`}>
+                    {due > 0 ? `Review ${due}` : 'Holding'}
+                  </span>
+                  <span aria-hidden="true" className="shrink-0 font-display text-[1.5rem] leading-none text-text-3 group-hover:text-accent">
+                    ›
+                  </span>
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
+        </div>
+      )}
+      {notStarted.length > 0 && (
+        <div className="mt-8">
+          <h2 className="mark mb-1 text-text-3">Not started</h2>
+          <ul className="divide-y divide-border border-y border-border">
+            {notStarted.map(({ section, n }) => (
+              <li key={section.id}>
+                <Link
+                  to={`/session/${id}/learn?section=${encodeURIComponent(section.id)}`}
+                  className="group tap-safe flex items-center gap-3 py-3"
+                >
+                  <span className="mark w-6 shrink-0 text-right tabular-nums text-text-3">{n + 1}</span>
+                  <span className="min-w-0 flex-1 text-small text-text-2 group-hover:text-accent">{section.title}</span>
+                  <span className="shrink-0 text-small text-text-3">Learn</span>
+                  <span aria-hidden="true" className="shrink-0 font-display text-[1.5rem] leading-none text-text-3 group-hover:text-accent">
+                    ›
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </>
@@ -275,7 +320,7 @@ export function ProgressRoute() {
           className="group mt-8 flex items-baseline justify-between gap-4 border-y-2 border-text-3 py-4"
         >
           <span className="font-display text-heading font-semibold text-text">Practise the weakest</span>
-          <span className="shrink-0 text-small text-text-2">{stats.gradableCount} items →</span>
+          <span className="shrink-0 text-small text-text-2">every card, weakest first →</span>
         </Link>
       )}
     </>
@@ -326,7 +371,8 @@ export function ProgressRoute() {
           <h1 className="mt-1 font-display text-title font-semibold text-text sm:text-display">
             {course.metadata.title}
           </h1>
-          <p className="mt-2 text-small text-text-2">{lastSeenText}</p>
+          <p className="mt-2 text-body text-text">{needs}.</p>
+          <p className="mt-1 text-small text-text-3">{lastSeenText}</p>
         </div>
       </div>
 
@@ -350,9 +396,22 @@ export function ProgressRoute() {
       ) : (
         <>
           {fadingBlock}
+          {pracBlock}
           {mixedBlock}
           {detBlock}
-          {pracBlock}
+          {/* What needs doing first, under the thumb however far the list
+              runs: review what is fading, or practise the weakest. */}
+          <div className="pb-24" />
+          <ThumbBar>
+            <div className="flex items-center gap-4">
+              <span className="min-w-0 flex-1 text-small text-text-2">
+                {dueTotal > 0 ? `${plural(dueTotal, 'question')} fading` : 'Nothing fading'}
+              </span>
+              <Link to={dueTotal > 0 ? `/session/${id}/review` : `/session/${id}/weakest`} className="press press-ink shrink-0 px-6 py-3">
+                {dueTotal > 0 ? 'Review' : 'Practise the weakest'}
+              </Link>
+            </div>
+          </ThumbBar>
         </>
       )}
     </div>

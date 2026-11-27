@@ -336,6 +336,11 @@ suggests nothing; on an exam's own day it still counts.
 It replaced one Start over every lecture and a row per lecture with a
 share of the daily time, which shrank as the library grew.
 
+In a Today or Learn sitting the header counts within the part you are
+in, "Review · 2 of 5" then "Section 1 · 3 of 9" (`lib/partCount`), which
+is what the lecture page promised; the bar under it is the whole sitting.
+"1 / 57" across the sitting read as a broken promise (2026-11-27).
+
 **Working means.** A sitting ends close to its planned minutes; nothing
 due is starved; new material is reached; the plan follows the exam.
 
@@ -383,8 +388,10 @@ the card already said the idea twice, and it still opens by itself after
 an answer (design audit 3B, live 2026-11-06; not yet checked on a real
 lecture's sitting). A term defined the same way in two lectures counts
 once. Every section starts with one choice, asked at each section's start
-(the owner, 2026-11-22): **Read it here first** (as above) or **Questions
-first**, for a part just read in the notes or heard in class. Questions
+(the owner, 2026-11-22): **Start reading** (as above), the one wide
+button, or **Questions first** beside it ("Read it already? Questions
+first", 2026-11-27: two equal buttons were a decision before anything was
+taught), for a part just read in the notes or heard in class. Questions
 first leaves out every card that teaches before asking (definitions,
 explanations, worked examples, figures, flashcards shown open): each card
 is asked cold, and the why and the passage open after a miss or Not sure.
@@ -819,9 +826,23 @@ ones you missed" or anything else that brings misses back (the owner,
 - **The lecture page** opens on the tree, the title and Today's Start: the
   file's own details (description, code, subject, exam, contents, tags)
   fold behind "About this lecture ▸" (design audit 3C). What the whole
-  lecture builds to is the first thing inside the fold.
-- **Progress** leads with what is fading, each section with its Review,
-  closest to gone first; how well it was answered (accuracy and the least
+  lecture builds to is the first thing inside the fold. Today is the
+  page's one block (phone round, 2026-11-27, docs/proposals/phone-round.md):
+  what the sitting holds in words ("5 questions to review, then 24 new
+  cards, from section 1, …"), a time choice (the planned time and 10, 15,
+  30 min) that sizes this sitting only (`?min=`, store/session
+  pendingMinutes; not the plan, and not a resumed sitting or Keep going),
+  and one wide Start that says the time. Learn, Adaptive quiz and Practice
+  follow as rows you tap, each with its use and a ›; on a phone the View
+  and Lecture tools and the lecture check fold under one "More" line, which
+  says when the check found something to fix. Sections say "5 of 10
+  studied" and then "% right", not "100% · 5 studied".
+- **Progress** opens with what needs the student in words ("4 sections
+  fading, 5 questions to review; 5 not started"), then each section
+  studied as a row you tap, weakest first ("87% still held", Review n, or
+  Holding), then the sections not started, each one tap into Learn; on a
+  phone Review (or Practise the weakest when nothing is fading) is pinned
+  at the foot. Closest to gone first; how well it was answered (accuracy and the least
   accurate sections and tags) folds below it (design audit 3D, live
   2026-11-06). It also shows the mix-ups on record: answers that named another term of the lecture
   (`lib/mixUps.ts`), typed or picked from the options. Each brings that term

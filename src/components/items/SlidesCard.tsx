@@ -66,12 +66,21 @@ export function SlidesCard({ range, buildsTo, lectureBuildsTo, sectionTitle, key
           {label}
         </p>
       )}
-      <div className="mt-5 flex flex-wrap gap-3">
-        <button type="button" onClick={onTeachHere} className="press press-ink tap-safe">
-          Read it here first
+      {/* Reading is the default, one wide button; answering first is the
+          same choice, offered beside it with the reason to take it. Two
+          equal buttons were a decision before anything had been taught (the
+          fresh-eyes review, 2026-11-27); the owner's choice at each section
+          stays (2026-11-22). */}
+      <div className="mt-5 flex flex-col gap-x-5 gap-y-2 sm:flex-row sm:items-baseline">
+        <button type="button" onClick={onTeachHere} className="press press-ink tap-safe w-full py-3 sm:w-auto">
+          Start reading
         </button>
-        <button type="button" onClick={onReadThem} className="press tap-safe">
-          Questions first
+        <button
+          type="button"
+          onClick={onReadThem}
+          className="tap-safe text-left text-small text-text-2 underline decoration-border-strong underline-offset-4 hover:text-text hover:decoration-text"
+        >
+          Read it already? Questions first
         </button>
       </div>
     </div>

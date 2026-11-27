@@ -58,10 +58,17 @@ describe("the lecture page's first screen", () => {
     }
   });
 
+  it('sizes Today to the time picked, and the Start carries it to the sitting', () => {
+    open();
+    fireEvent.click(screen.getByRole('radio', { name: '10 min' }));
+    const start = screen.getByRole('link', { name: /^Start · 10 min/ });
+    expect(start.getAttribute('href')).toMatch(/\/today\?min=10$/);
+  });
+
   it("keeps the title and Today's Start outside the fold", () => {
     open();
     expect(screen.getByRole('heading', { name: 'Cell Biology' }).closest('details')).toBeNull();
-    expect(screen.getByRole('link', { name: 'Start' }).closest('details')).toBeNull();
+    expect(screen.getByRole('link', { name: /^Start/ }).closest('details')).toBeNull();
   });
 });
 

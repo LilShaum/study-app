@@ -48,8 +48,8 @@ describe('the card that opens a section', () => {
     render(<SlidesCard sectionTitle="Markets" buildsTo="To where two curves cross." onTeachHere={teach} onReadThem={ask} />);
     expect(screen.getByRole('heading', { name: 'Markets' })).toBeTruthy();
     expect(screen.getByText('To where two curves cross.')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Read it here first' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Questions first' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start reading' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Read it already? Questions first' }));
     expect(teach).toHaveBeenCalledTimes(1);
     expect(ask).toHaveBeenCalledTimes(1);
     expect(screen.queryByText(/In your notes/)).toBeNull();
@@ -64,7 +64,7 @@ describe('the card that opens a section', () => {
   it('with nothing more than its title, still asks', () => {
     render(<SlidesCard sectionTitle="Markets" />);
     expect(screen.getByRole('heading', { name: 'Markets' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Questions first' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Read it already? Questions first' })).toBeTruthy();
   });
 
   it('on a lecture\'s first section, says first where the whole lecture is going', () => {
