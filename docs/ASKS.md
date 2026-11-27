@@ -37,6 +37,8 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   Progress** (2026-11-27: "i wanna go ahead with all your suggestions btw",
   on the fresh-eyes review's findings; plan in
   `docs/proposals/phone-round.md`). Before part 4's final check.
+  Built on the work branch 2026-11-27; the owner kept the rows under
+  Start and chose the compact Progress page. Open until part 4 is live.
 
 - **Make how Arborous gets built work better** (2026-11-27: "while working
   on arborous I want any inefficiencies in the process of making it to be
