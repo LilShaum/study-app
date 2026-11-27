@@ -227,6 +227,7 @@ Logic with no screen: scheduling, Learn steps, prompts handed to the AI, content
 - `shuffle.ts`: Fisher–Yates shuffle.
 - `slugify.ts`: Derives a course's storage id, exactly matching the vanilla app's Store.save() algorithm — required so ids stay stable across the legacy → Zustand migration.
 - `sortedSections.ts`: Sections in their intended order.
+- `sourceCoverage.ts`: Every slide of the student's material accounted for (docs/proposals/trust.md).
 - `sprigMark.ts`: The sprig, as path data in a 0 0 512 512 viewBox.
 - `statusBarFallback.ts`: Room for the iPhone status bar when iOS will not say how much.
 - `studies.ts`: The cards about empirical studies, grouped by study.
@@ -317,6 +318,7 @@ Plans, each with the options weighed and why one won (CLAUDE.md, "Plans").
 - `swipes.md`: Swipes in a sitting on a phone
 - `terms.md`: The app's own words
 - `tree.md`: The tree: how it is grown, how it moves and speaks, how it looks
+- `trust.md`: Trusting a lecture the AI made
 - `understanding.md`: Understanding, not memorising: confidence, explanations, questions
 - `zen.md`: Continuous adaptive quiz: the master prompt as a way to study
 
