@@ -274,9 +274,11 @@ Command-line tools: screenshots, icons, course audit, this map.
 - `audit-course.mjs`: Audits a generated .study.json against the source material it claims to come from.
 - `calibrate-log.mjs`: Reads a real study log and measures what the simulator and the memory model only assume.
 - `code-map.mjs`: Writes docs/CODEMAP.md: every source file with the first sentence of its header comment, and every plan by title.
+- `compare-shots.mjs`: How much did a change visibly change?
 - `contrast-report.mjs`: Prints the contrast ratio of every token pair that matters, for every tree/mode combination, so a palette can be tuned against numbers instead of guessed at and eyeballed.
 - `make-icons-set.mjs`: Draws the icon set and writes src/components/iconPaths.ts.
 - `make-icons.mjs`: Draws the app icon and writes public/icons/* and the header mark's path data (src/lib/sprigMark.ts).
+- `preview.mjs`: Builds a preview of the current branch that the owner can try on their own phone before anything is merged, as a private claude.ai artifact.
 - `screenshots.mjs`: Screenshots every route, in the states a real person meets.
 - `ui-dashes.mjs`: Lists em dashes in text a student sees: string literals and JSX text under src/, not comments.
 
@@ -311,10 +313,12 @@ Plans, each with the options weighed and why one won (CLAUDE.md, "Plans").
 - `notifications.md`: Notifications
 - `onboarding.md`: The first run
 - `part4-brief.md`: Brief: part 4, the design update with the first run
+- `phone-round.md`: Phone round: Today, Learn, the lecture page, Practice, Progress
 - `practice.md`: Practice, the practice test and flashcards: one job each
 - `prompt-rewrite.md`: The generator prompt, round of 2026-11-22: what the PSYC run taught
 - `settings.md`: A Settings place
 - `swipes.md`: Swipes in a sitting on a phone
+- `teaching-review.md`: How Arborous teaches, checked against the research
 - `terms.md`: The app's own words
 - `tree.md`: The tree: how it is grown, how it moves and speaks, how it looks
 - `understanding.md`: Understanding, not memorising: confidence, explanations, questions
