@@ -130,7 +130,7 @@ export function readReply(reply: string): ReadReply {
 }
 
 /** What to ask the chat for, when a reply was cut off: the rest, in a shape Add material takes. */
-export const CONTINUE_ASK =
+const CONTINUE_ASK =
   'You were cut off. Send only the items you had not written yet, as {"sections":[{"id":"…","title":"…","items":[…]}]}, in a downloadable file holding only that JSON.';
 
 /** The line to show when a reply was cut off and only its complete part was kept. */

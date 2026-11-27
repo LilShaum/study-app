@@ -1,3 +1,7 @@
+/**
+ * Stores a bookmark per course so Continue returns to where each study mode left off.
+ * Also decides whether a mode resumes on open and whether a bookmark still points at something.
+ */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { safeJSONStorage } from '@/lib/safeStorage';

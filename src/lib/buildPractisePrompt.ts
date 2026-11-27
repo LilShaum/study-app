@@ -1,3 +1,7 @@
+/**
+ * Builds the prompt that asks an AI to make more practice on material the lecture already covers.
+ * Aims at the gaps found by courseGaps and works from excerpts, not the original notes.
+ */
 import type { Course } from '@/schema/course';
 import { sortedSections } from './sortedSections';
 import { itemPrompt } from '@/schema/fragment';

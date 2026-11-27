@@ -1,3 +1,7 @@
+/**
+ * Simulation of a class's Practice before a test: five synthetic lectures studied one after another.
+ * Writes sim/results/class-practice.md.
+ */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { it } from 'vitest';
 import type { Course } from '@/schema/course';

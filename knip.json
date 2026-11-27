@@ -1,0 +1,24 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/sw.ts",
+    "scripts/*.mjs",
+    "sim/**/*.sim.ts",
+    "sim/experiments/*.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "sim/**/*.ts",
+    "scripts/**/*.mjs"
+  ],
+  "ignore": [
+    "sim/node.d.ts",
+    "src/lib/sprigMark.ts"
+  ],
+  "ignoreDependencies": [
+    "playwright"
+  ],
+  "rules": {
+    "types": "off"
+  }
+}

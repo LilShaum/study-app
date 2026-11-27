@@ -13,7 +13,7 @@ import { sectionStats } from './sectionStats';
  * 0.35 on the accuracy term means work always shows — a branch you have
  * struggled with still leafs, just thinly.
  */
-export function learnedShare(studied: number, gradable: number, accuracy: number | null): number {
+function learnedShare(studied: number, gradable: number, accuracy: number | null): number {
   if (!gradable || !studied) return 0;
   const coverage = studied / gradable;
   const confidence = accuracy === null ? 0.5 : 0.35 + (accuracy / 100) * 0.65;

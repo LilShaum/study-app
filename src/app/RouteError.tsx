@@ -1,3 +1,6 @@
+/**
+ * The error screen the router shows when a route fails, with a link back to the Library.
+ */
 import { Link, isRouteErrorResponse, useRouteError } from 'react-router-dom';
 
 export function RouteError() {

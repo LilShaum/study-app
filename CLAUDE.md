@@ -254,7 +254,9 @@ the app had dropped weeks before because nobody looked.
 
 Plan first: keep a task list for anything over two steps, one task in
 progress at a time, and a task is done only when it is tested and live
-(pushed, merged to `main`, and the live site checked). Leave anything blocked
+(pushed, in a pull request the owner merges, and the live site checked once
+it is in `main`; PRs are the default, 2026-11-27, and the owner is new to
+GitHub, so the description is plain words). Leave anything blocked
 open and say what it waits on.
 
 Load these skills when the work matches; don't wait until halfway through:
