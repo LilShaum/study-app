@@ -3,7 +3,6 @@ import type { GraphicItem } from '@/schema/course';
 import { prepareSvg } from '@/lib/prepareSvg';
 import { normalizeDiagram } from '@/schema/diagram';
 import { purposeLabel } from '@/lib/figurePurpose';
-import { DifficultyBadge } from './DifficultyBadge';
 import { FRAME, type ItemFrame } from './frame';
 import { RichText } from './RichText';
 import { DrawnDiagram } from './DrawnDiagram';
@@ -47,7 +46,6 @@ export function GraphicCard({
         Diagram
         {sectionTitle?.trim() && <span className="font-normal normal-case tracking-normal">· {sectionTitle.trim()}</span>}
         {purpose && <span className="font-normal normal-case tracking-normal">· {purpose}</span>}
-        <DifficultyBadge difficulty={item.difficulty} />
       </div>
       <div className="font-display text-heading font-semibold text-text">{item.title}</div>
 
@@ -67,7 +65,7 @@ export function GraphicCard({
         <div
           role="img"
           aria-label={item.alt_text || item.title}
-          className="mt-3 flex items-center justify-center text-text [&_svg]:max-h-80 [&_svg]:max-w-full"
+          className="figure-svg mt-3 flex items-center justify-center text-text [&_svg]:max-h-80 [&_svg]:max-w-full"
           dangerouslySetInnerHTML={{ __html: svg }}
         />
       ) : (

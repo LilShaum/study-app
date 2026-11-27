@@ -11,7 +11,7 @@ import { boxEdgePoint, flowRows, whatIfEffect, type WhatIfEffect } from '@/lib/d
  *   beside the drawing; what is still to come stays faint.
  * - **Tap a part** for what it is or does.
  * - **What if …?**: a failure the lecture teaches (a part damaged, a link
- *   cut), with what breaks drawn struck and what stops working marked,
+ *   cut), with what fails drawn dashed and what is affected marked,
  *   and the consequence in words.
  *
  * Parts are set as HTML (so they wrap, take the book's face and can be
@@ -81,12 +81,15 @@ function FlowView({ diagram, title, still }: { diagram: FlowDiagram; title: stri
         <>
           {effect && (
             <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-micro text-text-3" aria-hidden>
+              {/* Only the marks this case draws, named for what they mean. */}
               <span className="inline-flex items-center gap-1.5">
-                <span className="inline-block w-5 border-t-2 border-dashed border-error" /> cut or damaged
+                <span className="inline-block w-5 border-t-2 border-dashed border-error" /> fails
               </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="inline-block w-5 border-t-2 border-warning" /> stops working
-              </span>
+              {effect.affected.size > 0 && (
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="inline-block w-5 border-t-2 border-warning" /> affected
+                </span>
+              )}
             </p>
           )}
 
@@ -175,18 +178,19 @@ function linkState(l: DiagramLink, effect: WhatIfEffect | null, reached: Set<str
     if (effect.brokenLinks.has(l.id)) return 'broken';
     if (effect.affected.has(l.to) && (effect.affected.has(l.from) || effect.brokenParts.has(l.from) || effect.brokenLinks.has(l.id))) return 'affected';
     if (effect.affected.has(l.from)) return 'affected';
-    return 'faint';
+    return 'rest';
   }
   if (reached) return reached.has(l.from) && reached.has(l.to) ? 'on' : 'faint';
   return 'rest';
 }
 
 const PART_CLASS: Record<PartState, string> = {
-  rest: 'border-border-strong text-text shadow-[0_2px_0_0_var(--color-border-strong)]',
+  // Blue: a part can be tapped, as everything blue in the app can.
+  rest: 'border-border-strong text-accent shadow-[0_2px_0_0_var(--color-border-strong)] hover:text-accent-hover',
   current: 'border-accent text-text shadow-[0_2px_0_0_var(--color-accent)]',
   reached: 'border-text-3 text-text shadow-[0_2px_0_0_var(--color-text-3)]',
   ahead: 'border-border text-text-3 opacity-50',
-  broken: 'border-dashed border-error text-error line-through decoration-error',
+  broken: 'border-dashed border-error text-error',
   affected: 'border-warning text-warning shadow-[0_2px_0_0_var(--color-warning)]',
 };
 

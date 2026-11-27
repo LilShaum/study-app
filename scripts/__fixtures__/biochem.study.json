@@ -203,48 +203,39 @@
           ],
           "source_excerpt": "An enzyme-catalysed reaction proceeds through an enzyme–substrate complex (ES): E + S ⇌ ES → E + P",
           "diagram": {
-            "kind": "cycle",
+            "kind": "flow",
             "parts": [
               {
-                "id": "e",
-                "label": "Free enzyme E",
-                "note": "The catalyst, unchanged at the end of each turn."
+                "id": "es_in",
+                "label": "E + S",
+                "note": "Free enzyme and substrate."
               },
               {
                 "id": "es",
                 "label": "ES complex",
-                "note": "Substrate bound at the active site; formed at k1, falls apart at k−1."
+                "note": "Substrate bound at the active site: formed at k1, falls apart again at k−1."
               },
               {
                 "id": "ep",
-                "label": "EP complex",
-                "note": "The reaction has happened; product still bound."
-              },
-              {
-                "id": "rel",
-                "label": "Product released",
-                "note": "P leaves and E is free to bind again (k2 overall)."
+                "label": "E + P",
+                "note": "Product released, and the enzyme free to bind again (k2, the irreversible step)."
               }
             ],
             "links": [
               {
-                "from": "e",
+                "from": "es_in",
                 "to": "es",
-                "label": "binds S (k1)"
+                "label": "k1"
+              },
+              {
+                "from": "es",
+                "to": "es_in",
+                "label": "k−1"
               },
               {
                 "from": "es",
                 "to": "ep",
-                "label": "catalysis"
-              },
-              {
-                "from": "ep",
-                "to": "rel"
-              },
-              {
-                "from": "rel",
-                "to": "e",
-                "label": "free again"
+                "label": "k2"
               }
             ]
           }
@@ -1523,63 +1514,7 @@
             "plots",
             "exam-key"
           ],
-          "source_excerpt": "Key diagnostic: on a Lineweaver–Burk plot, competitive inhibitors give lines meeting on the y-axis; uncompetitive inhibitors give parallel lines; mixed inhibitors intersect to the left of the y-axis.",
-          "diagram": {
-            "kind": "compare",
-            "columns": [
-              {
-                "label": "Competitive"
-              },
-              {
-                "label": "Uncompetitive"
-              },
-              {
-                "label": "Mixed"
-              }
-            ],
-            "rows": [
-              {
-                "label": "Binds",
-                "values": [
-                  "Free enzyme, at the active site",
-                  "Only the ES complex",
-                  "Either, at another site"
-                ]
-              },
-              {
-                "label": "Vmax",
-                "values": [
-                  "Unchanged",
-                  "Lowered",
-                  "Lowered"
-                ]
-              },
-              {
-                "label": "Apparent Km",
-                "values": [
-                  "Raised",
-                  "Lowered",
-                  "Raised or lowered"
-                ]
-              },
-              {
-                "label": "Lineweaver–Burk lines",
-                "values": [
-                  "Meet on the y-axis",
-                  "Parallel",
-                  "Cross left of the y-axis"
-                ]
-              },
-              {
-                "label": "Reversible",
-                "values": [
-                  "Yes",
-                  "Yes",
-                  "Yes"
-                ]
-              }
-            ]
-          }
+          "source_excerpt": "Key diagnostic: on a Lineweaver–Burk plot, competitive inhibitors give lines meeting on the y-axis; uncompetitive inhibitors give parallel lines; mixed inhibitors intersect to the left of the y-axis."
         }
       ]
     },
@@ -2689,7 +2624,53 @@
             "regulation",
             "exam-key"
           ],
-          "source_excerpt": "Key: the four mechanisms differ chiefly in timescale and in whether they are reversible. Proteolytic activation is the only one that cannot be undone."
+          "source_excerpt": "Key: the four mechanisms differ chiefly in timescale and in whether they are reversible. Proteolytic activation is the only one that cannot be undone.",
+          "diagram": {
+            "kind": "compare",
+            "columns": [
+              {
+                "label": "Allosteric"
+              },
+              {
+                "label": "Covalent"
+              },
+              {
+                "label": "Proteolytic"
+              },
+              {
+                "label": "Enzyme amount"
+              }
+            ],
+            "rows": [
+              {
+                "label": "How",
+                "values": [
+                  "An effector binds reversibly",
+                  "A kinase adds a phosphate, a phosphatase removes it",
+                  "A zymogen is cut to its active form",
+                  "Transcription or breakdown changes"
+                ]
+              },
+              {
+                "label": "How fast",
+                "values": [
+                  "Milliseconds",
+                  "Seconds to minutes",
+                  "Seconds to minutes",
+                  "Hours to days"
+                ]
+              },
+              {
+                "label": "Reversible",
+                "values": [
+                  "Yes",
+                  "Yes",
+                  "No",
+                  "Yes, slowly"
+                ]
+              }
+            ]
+          }
         }
       ]
     },

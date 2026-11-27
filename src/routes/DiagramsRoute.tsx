@@ -194,7 +194,7 @@ function PlateFigure({
           role="img"
           aria-label={item.alt_text || item.title}
           onClick={tile ? onOpen : undefined}
-          className={
+          className={'figure-svg ' + 
             tile
               ? 'mt-4 flex h-48 cursor-zoom-in items-center justify-center text-text [&_svg]:max-h-full [&_svg]:max-w-full'
               : // On a phone the plate runs the full width of the page, ruled above and below.
@@ -306,7 +306,7 @@ function PlateDetail({
           {diagram ? (
             <DrawnDiagram key={item.id} diagram={diagram} title={item.alt_text || item.title} />
           ) : svg ? (
-            <div role="img" aria-label={item.alt_text || item.title} className="w-full [&_svg]:mx-auto [&_svg]:h-auto [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: svg }} />
+            <div role="img" aria-label={item.alt_text || item.title} className="figure-svg w-full [&_svg]:mx-auto [&_svg]:h-auto [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: svg }} />
           ) : (
             <FigureElsewhere where={item.where} />
           )}

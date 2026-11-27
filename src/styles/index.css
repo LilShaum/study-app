@@ -977,3 +977,10 @@
   stroke-width: 4px;
   stroke-linejoin: round;
 }
+
+/* A hand-drawn course figure (svg) set in the book's face, so an older
+   figure reads as part of the same book as the ones the app draws. CSS
+   outranks the font the drawing names for itself. */
+.figure-svg text {
+  font-family: var(--font-display);
+}
