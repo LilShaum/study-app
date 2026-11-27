@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { sortedSections } from '@/lib/sortedSections';
@@ -181,12 +181,12 @@ function PlateFigure({
       {diagram ? (
         tile ? (
           // A plate in the grid shows the drawing still; opening it gives the parts to tap.
-          <div onClick={onOpen} className="mt-4 max-h-48 cursor-zoom-in overflow-hidden">
-            <DrawnDiagram diagram={diagram} title={item.alt_text || item.title} still />
-          </div>
+          <FitTile onOpen={onOpen}>
+            <DrawnDiagram key={item.id} diagram={diagram} title={item.alt_text || item.title} still />
+          </FitTile>
         ) : (
           <div className="mt-4 border-y border-border py-5">
-            <DrawnDiagram diagram={diagram} title={item.alt_text || item.title} />
+            <DrawnDiagram key={item.id} diagram={diagram} title={item.alt_text || item.title} />
           </div>
         )
       ) : svg && (
@@ -243,6 +243,33 @@ function PlateFigure({
   );
 }
 
+/**
+ * A drawn diagram shrunk whole into a grid tile's height, so a tall pathway
+ * shows end to end rather than cut off at the tile's edge.
+ */
+function FitTile({ onOpen, children }: { onOpen?: () => void; children: ReactNode }) {
+  const inner = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  useLayoutEffect(() => {
+    const el = inner.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const fit = () => setScale(Math.min(1, TILE_HEIGHT / Math.max(1, el.scrollHeight)));
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div onClick={onOpen} className="mt-4 cursor-zoom-in overflow-hidden" style={{ height: TILE_HEIGHT }}>
+      <div ref={inner} style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+const TILE_HEIGHT = 192;
+
 /** One plate opened large, its note beside it (a leaf over the page on a computer). */
 function PlateDetail({
   plate,
@@ -277,7 +304,7 @@ function PlateDetail({
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(14rem,18rem)] gap-x-8 p-6">
         <div className="flex min-h-64 items-center justify-center text-text [&_svg]:max-h-[70vh] [&_svg]:max-w-full">
           {diagram ? (
-            <DrawnDiagram diagram={diagram} title={item.alt_text || item.title} />
+            <DrawnDiagram key={item.id} diagram={diagram} title={item.alt_text || item.title} />
           ) : svg ? (
             <div role="img" aria-label={item.alt_text || item.title} className="w-full [&_svg]:mx-auto [&_svg]:h-auto [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: svg }} />
           ) : (

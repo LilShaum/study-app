@@ -250,7 +250,8 @@ function Measured({
     const next: Record<string, Box> = {};
     el.querySelectorAll<HTMLElement>('[data-part]').forEach((node) => {
       const id = node.dataset.part!;
-      next[id] = { x: offsetIn(node, el).x, y: offsetIn(node, el).y, w: node.offsetWidth, h: node.offsetHeight };
+      const at = offsetIn(node, el);
+      next[id] = { x: at.x, y: at.y, w: node.offsetWidth, h: node.offsetHeight };
     });
     setBoxes(next);
     setSize({ w: el.offsetWidth, h: el.offsetHeight });
@@ -267,8 +268,12 @@ function Measured({
     return () => ro.disconnect();
   }, [measure, parts, ring]);
 
-  // A ring's radius follows the width it is given.
+  // A ring's radius follows the width it is given, so once the width is
+  // known the parts move and must be measured again where they landed.
   const ringLayout = ring ? ringPositions(parts.length, size.w) : null;
+  useLayoutEffect(() => {
+    if (ring) measure();
+  }, [ring, size.w, measure]);
 
   return (
     <div ref={ref} className="relative w-full" style={ringLayout ? { height: ringLayout.height } : undefined}>
@@ -314,10 +319,17 @@ function Measured({
   );
 }
 
+/**
+ * Where a part sits inside the drawing, in the drawing's own pixels. Read
+ * from the screen (so a part placed with a transform is where it looks) and
+ * divided by the drawing's own scale, so a drawing shrunk into a grid tile
+ * still lines its arrows up.
+ */
 function offsetIn(node: HTMLElement, root: HTMLElement): { x: number; y: number } {
   const a = node.getBoundingClientRect();
   const b = root.getBoundingClientRect();
-  return { x: a.left - b.left, y: a.top - b.top };
+  const k = root.offsetWidth ? b.width / root.offsetWidth || 1 : 1;
+  return { x: (a.left - b.left) / k, y: (a.top - b.top) / k };
 }
 
 function ringPositions(n: number, width: number) {
@@ -362,6 +374,7 @@ function LinkPath({
   let end: { x: number; y: number };
   let dir: { x: number; y: number };
   let mid: { x: number; y: number };
+  let inward: 'start' | 'end' = 'start';
 
   if (rail != null) {
     // A link back up the page runs up the right-hand side.
@@ -382,6 +395,8 @@ function LinkPath({
     d = `M${s.x},${s.y} Q${c.x},${c.y} ${end.x},${end.y}`;
     dir = unit(end.x - c.x, end.y - c.y);
     mid = { x: 0.25 * s.x + 0.5 * c.x + 0.25 * end.x, y: 0.25 * s.y + 0.5 * c.y + 0.25 * end.y };
+    // Set inside the ring, where there is room, never off the page's edge.
+    inward = mid.x > center.x ? 'end' : 'start';
   } else {
     const s = boxEdgePoint(a, bc.x, bc.y);
     end = boxEdgePoint(b, ac.x, ac.y);
@@ -408,8 +423,9 @@ function LinkPath({
       <path d={head} fill="none" stroke="currentColor" strokeWidth={link.kind === 'blocks' ? 2.25 : 1.5} strokeLinecap="round" strokeLinejoin="round" />
       {link.label && (
         <text
-          x={mid.x + 6}
+          x={inward === 'end' ? mid.x - 6 : mid.x + 6}
           y={mid.y}
+          textAnchor={inward}
           dominantBaseline="middle"
           fill="currentColor"
           className="diagram-link-label"

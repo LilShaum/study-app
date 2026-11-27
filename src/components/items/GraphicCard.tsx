@@ -61,7 +61,7 @@ export function GraphicCard({
 
       {diagram ? (
         <div className="mt-4">
-          <DrawnDiagram diagram={diagram} title={item.alt_text || item.title} />
+          <DrawnDiagram key={item.id} diagram={diagram} title={item.alt_text || item.title} />
         </div>
       ) : svg ? (
         <div
