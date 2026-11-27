@@ -1,0 +1,35 @@
+{
+ "skill_name": "taste-review",
+ "note": "Built 2026-11-27. Screens come from the app at commit d7bd7d2 (before the Testing 1-11 fixes): git worktree add ../old d7bd7d2, build, node scripts/screenshots.mjs. with_skill = the reviewer prompt in references/reviewer-prompt.md filled as the skill says; baseline = the builder reviewing its own screenshots with a note on what it built and why. Results then: 8/9 vs 6/9. The fresh reviewer found the trust problems and the structural change later built (Today sized to the student's time); it also proposed replacing the Diagrams row the owner had asked to keep (now handled in section 4). Shots taken mid-animation misled the builder (now in section 1).",
+ "evals": [
+  {
+   "id": 1,
+   "name": "diagrams",
+   "prompt": "My exam is Friday and I want to go through the diagrams from the enzyme lecture on my phone.",
+   "files": [
+    "phone-diagrams.png at d7bd7d2"
+   ],
+   "assertions": [
+    "Flags that the sections row does not read as scrollable / its cut-off looks like a fault",
+    "Fix keeps the row (no instruction line, no replacing or removing it)",
+    "Notes that paging with Next only is restrictive or the screen is passive",
+    "Ranks findings as Felt / Seen / Fine print, with student-level Felt items"
+   ]
+  },
+  {
+   "id": 2,
+   "name": "lecture-page",
+   "prompt": "I have 15 minutes before class and want to study the enzyme lecture from Tuesday.",
+   "files": [
+    "phone-course.png and phone-course-dark.png at d7bd7d2"
+   ],
+   "assertions": [
+    "Flags too many equal-weight choices / no single obvious next step",
+    "Flags that mode names and links do not look tappable (and 4 FADING is blue but static)",
+    "Flags '100% \u00b7 N studied' on a bigger section as reading like mastery",
+    "Gives an effort count (taps, decisions, words before acting)",
+    "Top changes include a structural change, not only polish"
+   ]
+  }
+ ]
+}

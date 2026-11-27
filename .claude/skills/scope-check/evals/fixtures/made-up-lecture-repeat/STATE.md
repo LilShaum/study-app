@@ -1,0 +1,2 @@
+# The app today (first run / onboarding)
+Five pages. Page 2 shows a tree for a made-up lecture "The water cycle" with three labelled branches (Evaporation, Condensation, Precipitation). Page 3 asks one multiple-choice question per section ("What turns liquid water into vapour?"); a right answer grows that branch's leaves. Page 4 "Skip ahead three weeks" shakes the tree and leaves fall. Page 5 install + reminders. Component: src/components/FirstRun.tsx, sample data src/lib/sampleLecture.ts.

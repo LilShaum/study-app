@@ -1,0 +1,2 @@
+# The app today: the tree's leaves
+Standing leaves (on branches): outline + vein, filled with the flat background colour (no paper grain) so they hide the branch lines behind them; in dark mode this flat fill reads as a darker patch on the grainy paper. Falling and fallen leaves: outline + vein, no fill, so the paper and any branch lines show through. The page background is a paper texture (colour + grain) in both themes. Code: src/components/CourseTree.tsx.
