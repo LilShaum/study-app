@@ -185,6 +185,10 @@ diagrams, as the owner asked.
 3. Generator: rewrite the diagram passages (sections 3 and the kinds),
    coordinated with the "Make generated courses trustworthy" thread, which
    is also editing the prompt. Lecture check and Fix learn the new field.
+   That thread (PR #3, 2026-11-27): build on its version of the prompt;
+   it adds `source_page` to every item shape, and `lib/sourceCoverage.ts`
+   counts a graphic's `where` as the slide it covers, so `where` keeps a
+   slide reference (or tell that thread if it moves).
 4. Test lectures: the made-up fixtures, plus a lecture with a what-if made
    on Opus 5.5 at high effort as the app hands the prompt out. The aphasia
    pathway is the showcase test.
