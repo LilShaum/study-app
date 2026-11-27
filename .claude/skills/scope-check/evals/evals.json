@@ -1,0 +1,133 @@
+{
+ "skill_name": "scope-check",
+ "evals": [
+  {
+   "id": 1,
+   "name": "made-up-lecture-repeat",
+   "prompt": "Plan this ask (fixtures/made-up-lecture-repeat/ASK.txt) and write the reply to the owner, before building.",
+   "assertions": [
+    "Identifies the ask as a repeat and cites at least two earlier dated asks",
+    "Explains why the earlier attempts failed (wording changed, the made-up lecture kept)",
+    "Plan removes the made-up lecture entirely: no topic, no section names, no questions",
+    "Names the cheap version to avoid (rewording or renaming inside the sample lecture)",
+    "Answers the owner's actual question: how difficult and roughly what usage it costs"
+   ],
+   "files": [
+    "fixtures/made-up-lecture-repeat/"
+   ]
+  },
+  {
+   "id": 2,
+   "name": "realistic-motion",
+   "prompt": "Plan this ask (fixtures/realistic-motion/ASK.txt) and write the reply to the owner, before building.",
+   "assertions": [
+    "Does not size it as only a timing tweak (sized meso or larger, or explicitly treats 'realistic' as the goal over the 0.1-0.2 s number)",
+    "Plan has leaves letting go one by one during the shake, overlapping it, until the shake ends",
+    "Looks for the cause (the drawing-on hold rule) or plans to measure when the shake starts and leaves move",
+    "Names 'start the fall a bit earlier' as the cheap version not to stop at"
+   ],
+   "files": [
+    "fixtures/realistic-motion/"
+   ]
+  },
+  {
+   "id": 3,
+   "name": "overhaul-new-lecture",
+   "prompt": "Plan this ask (fixtures/overhaul-new-lecture/ASK.txt) and write the reply to the owner, before building.",
+   "assertions": [
+    "Sizes the ask as macro",
+    "Change contract covers all three steps, not only step 1 (the part added last)",
+    "Removes something: the 'Why attach' fold or other explainer sentences/captions",
+    "Fixes step headings that repeat their button or are labels instead of the student's task",
+    "Keeps every existing option reachable (no loss of function)"
+   ],
+   "files": [
+    "fixtures/overhaul-new-lecture/"
+   ]
+  },
+  {
+   "id": 4,
+   "name": "all-leaves-alike",
+   "prompt": "Plan this ask (fixtures/all-leaves-alike/ASK.txt) and write the reply to the owner, before building.",
+   "assertions": [
+    "States the goal as one look for every leaf: standing, falling and fallen",
+    "Fill is the paper's colour AND grain (texture), not the flat background colour",
+    "Plans a check: zoomed screenshots in both themes of standing vs falling vs fallen leaves",
+    "Acknowledges the last round narrowed the ask to the falling leaves"
+   ],
+   "files": [
+    "fixtures/all-leaves-alike/"
+   ]
+  },
+  {
+   "id": 5,
+   "name": "static-blue-micro",
+   "prompt": "Plan this ask (fixtures/static-blue-micro/ASK.txt) and write the reply to the owner, before building.",
+   "assertions": [
+    "Sizes the ask as micro",
+    "Does not inflate it into a redesign or new features",
+    "Plans to look for any other static (non-tappable) blue marks as ripples",
+    "Plan and reply are short and proportionate (under about 350 words total)"
+   ],
+   "files": [
+    "fixtures/static-blue-micro/"
+   ]
+  },
+  {
+   "id": 6,
+   "name": "whole-app-feel",
+   "prompt": "Plan this ask (fixtures/whole-app-feel/ASK.txt) and write the reply to the owner, before building.",
+   "assertions": [
+    "Sizes the ask as macro",
+    "Finds the two earlier asks and says the polish-list approach failed; the new approach differs in kind",
+    "Names concrete things removed or replaced (e.g. per-control captions, pills, bordered cards, explainer lines)",
+    "Names the cheap version (another list of small polish fixes) so it is not built",
+    "Each 'what a student will notice' line is concrete and pointable in a screenshot, not 'improved spacing'",
+    "Proposes the big version to the owner before building (plan/proposal or a decision), given the size"
+   ],
+   "files": [
+    "fixtures/whole-app-feel/"
+   ]
+  },
+  {
+   "id": 7,
+   "name": "done-overhaul-step1",
+   "prompt": "You have finished the build in fixtures/done-overhaul-step1/SITUATION.md. Write what you do now and the message to the owner.",
+   "files": [
+    "fixtures/done-overhaul-step1/"
+   ],
+   "assertions": [
+    "Does not call the work done",
+    "Names what is missing against the ask",
+    "Plans the bigger change instead of more of the same"
+   ]
+  },
+  {
+   "id": 8,
+   "name": "done-motion-delay",
+   "prompt": "You have finished the build in fixtures/done-motion-delay/SITUATION.md. Write what you do now and the message to the owner.",
+   "files": [
+    "fixtures/done-motion-delay/"
+   ],
+   "assertions": [
+    "Does not call the work done",
+    "Names what is missing against the ask",
+    "Plans the bigger change instead of more of the same"
+   ]
+  },
+  {
+   "id": 9,
+   "name": "done-whole-app-polish",
+   "prompt": "You have finished the build in fixtures/done-whole-app-polish/SITUATION.md. Write what you do now and the message to the owner.",
+   "files": [
+    "fixtures/done-whole-app-polish/"
+   ],
+   "assertions": [
+    "Does not call the work done",
+    "Names what is missing against the ask",
+    "Plans the bigger change instead of more of the same"
+   ]
+  }
+ ],
+ "note": "Built 2026-11-27 from real failures in docs/FEEDBACK.md and docs/ASKS.md. Each fixture is the project's logs as they stood before the ask. Run with and without the skill on Opus 5.5 (skill-creator). Results then: both 37/38 (sessions here already get CLAUDE.md's 'Big asks get big changes'); the skill made micro plans 67% longer (fixed) and both configs planned agents per screen for a macro UI rework (fixed)."
+}

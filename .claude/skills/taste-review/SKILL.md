@@ -31,6 +31,12 @@ the top and the bottom of every long screen; a few frames of any motion
 Make sure the screenshots are viewed at the size a person sees them and
 also zoomed to 2x on the parts that changed: the owner looks both ways.
 
+Shoot every state at rest: wait until drawing, growing and page-turn
+animations have finished, unless the motion itself is under review (then
+take a labelled series of frames). A frame caught mid-animation reads as a
+bug: in the 2026-11-27 test a reviewer spent its top finding on a "broken,
+dashed" tree that was only half drawn.
+
 ## 2. Fresh eyes: a reviewer who never saw the code
 
 Spawn one reviewer agent on **Opus 5.5** (judging is Opus work, CLAUDE.md
@@ -39,8 +45,11 @@ Spawn one reviewer agent on **Opus 5.5** (judging is Opus work, CLAUDE.md
 
 - the screenshots (paths), in the order a student meets them;
 - one line on what the student is trying to do on these screens, in a
-  student's words ("I have 15 minutes before class and want to study the
-  lecture from Tuesday");
+  student's words, with a real constraint in it: time, place or a deadline
+  ("I have 15 minutes before class and want to study the lecture from
+  Tuesday"). The constraint is what exposes friction: in the 2026-11-27
+  test, "15 minutes" is what made the reviewer see that Today offered only
+  30, which became the time choice the phone round later built;
 - the vision paragraph below and the house style's short list (the look,
   the words) from `arborous-design`.
 
@@ -119,6 +128,15 @@ Merge the reviewer's findings with yours into one list, each marked:
 - **Felt** (a student would notice or be slowed by it in normal use),
 - **Seen** (noticed if looked for),
 - **Fine print** (only a designer would notice).
+
+The reviewer is right about problems and often wrong about fixes, because
+it has never heard the owner. Before choosing a fix, read what the owner has
+said about that element (`docs/FEEDBACK.md`, `docs/ASKS.md`): when the
+suggested fix removes or replaces something the owner asked to keep, keep
+the element and answer the reason instead. (In the 2026-11-27 test, the
+reviewer rightly found that Diagrams' row of sections did not look
+scrollable, then proposed replacing the row; the owner had asked for that
+exact row to be kept and made discoverable.)
 
 Fix every *Felt* item before the owner sees the work. A list of fine-print
 fixes is not a taste pass; if that is all you found, look again at the
