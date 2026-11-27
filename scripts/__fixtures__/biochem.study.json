@@ -201,7 +201,53 @@
             "steady-state",
             "kinetics"
           ],
-          "source_excerpt": "An enzyme-catalysed reaction proceeds through an enzyme–substrate complex (ES): E + S ⇌ ES → E + P"
+          "source_excerpt": "An enzyme-catalysed reaction proceeds through an enzyme–substrate complex (ES): E + S ⇌ ES → E + P",
+          "diagram": {
+            "kind": "cycle",
+            "parts": [
+              {
+                "id": "e",
+                "label": "Free enzyme E",
+                "note": "The catalyst, unchanged at the end of each turn."
+              },
+              {
+                "id": "es",
+                "label": "ES complex",
+                "note": "Substrate bound at the active site; formed at k1, falls apart at k−1."
+              },
+              {
+                "id": "ep",
+                "label": "EP complex",
+                "note": "The reaction has happened; product still bound."
+              },
+              {
+                "id": "rel",
+                "label": "Product released",
+                "note": "P leaves and E is free to bind again (k2 overall)."
+              }
+            ],
+            "links": [
+              {
+                "from": "e",
+                "to": "es",
+                "label": "binds S (k1)"
+              },
+              {
+                "from": "es",
+                "to": "ep",
+                "label": "catalysis"
+              },
+              {
+                "from": "ep",
+                "to": "rel"
+              },
+              {
+                "from": "rel",
+                "to": "e",
+                "label": "free again"
+              }
+            ]
+          }
         }
       ]
     },
@@ -1477,7 +1523,63 @@
             "plots",
             "exam-key"
           ],
-          "source_excerpt": "Key diagnostic: on a Lineweaver–Burk plot, competitive inhibitors give lines meeting on the y-axis; uncompetitive inhibitors give parallel lines; mixed inhibitors intersect to the left of the y-axis."
+          "source_excerpt": "Key diagnostic: on a Lineweaver–Burk plot, competitive inhibitors give lines meeting on the y-axis; uncompetitive inhibitors give parallel lines; mixed inhibitors intersect to the left of the y-axis.",
+          "diagram": {
+            "kind": "compare",
+            "columns": [
+              {
+                "label": "Competitive"
+              },
+              {
+                "label": "Uncompetitive"
+              },
+              {
+                "label": "Mixed"
+              }
+            ],
+            "rows": [
+              {
+                "label": "Binds",
+                "values": [
+                  "Free enzyme, at the active site",
+                  "Only the ES complex",
+                  "Either, at another site"
+                ]
+              },
+              {
+                "label": "Vmax",
+                "values": [
+                  "Unchanged",
+                  "Lowered",
+                  "Lowered"
+                ]
+              },
+              {
+                "label": "Apparent Km",
+                "values": [
+                  "Raised",
+                  "Lowered",
+                  "Raised or lowered"
+                ]
+              },
+              {
+                "label": "Lineweaver–Burk lines",
+                "values": [
+                  "Meet on the y-axis",
+                  "Parallel",
+                  "Cross left of the y-axis"
+                ]
+              },
+              {
+                "label": "Reversible",
+                "values": [
+                  "Yes",
+                  "Yes",
+                  "Yes"
+                ]
+              }
+            ]
+          }
         }
       ]
     },
@@ -2732,7 +2834,79 @@
             "feedback-inhibition",
             "regulation"
           ],
-          "source_excerpt": "In feedback inhibition, the end product of a pathway inhibits an enzyme early in that pathway. The target is usually the committed step."
+          "source_excerpt": "In feedback inhibition, the end product of a pathway inhibits an enzyme early in that pathway. The target is usually the committed step.",
+          "diagram": {
+            "kind": "flow",
+            "parts": [
+              {
+                "id": "a",
+                "label": "A (starting substrate)",
+                "note": "Enters the pathway. Its supply alone does not set the pathway's speed."
+              },
+              {
+                "id": "e1",
+                "label": "Enzyme 1: the committed step",
+                "note": "The first irreversible reaction: once A becomes B, it can only go on to D. This is where control pays off."
+              },
+              {
+                "id": "b",
+                "label": "B",
+                "note": "An intermediate, committed to the pathway."
+              },
+              {
+                "id": "c",
+                "label": "C",
+                "note": "A second intermediate."
+              },
+              {
+                "id": "d",
+                "label": "D (end product)",
+                "note": "What the cell needs. As it builds up it binds an allosteric site on enzyme 1."
+              }
+            ],
+            "links": [
+              {
+                "from": "a",
+                "to": "e1"
+              },
+              {
+                "from": "e1",
+                "to": "b"
+              },
+              {
+                "from": "b",
+                "to": "c"
+              },
+              {
+                "from": "c",
+                "to": "d"
+              },
+              {
+                "from": "d",
+                "to": "e1",
+                "kind": "blocks",
+                "label": "inhibits"
+              }
+            ],
+            "what_ifs": [
+              {
+                "ask": "What if D can no longer bind enzyme 1?",
+                "name": "Feedback lost",
+                "breaks": [
+                  "d>e1"
+                ],
+                "affects": [],
+                "then": "Nothing stops the committed step, so D is made even when the cell has plenty: substrate and energy are wasted."
+              },
+              {
+                "ask": "What if enzyme 1 is inhibited?",
+                "breaks": [
+                  "e1"
+                ],
+                "then": "No B is made, so C and D run out; this is exactly what high D does on purpose."
+              }
+            ]
+          }
         }
       ]
     },

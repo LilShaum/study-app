@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DiagramField } from './diagram';
 
 /* ============================================================
    .study.json SCHEMA — must match the vanilla app's format exactly.
@@ -161,7 +162,12 @@ export const GraphicItemSchema = z.looseObject({
   ...itemBase,
   type: z.literal('graphic'),
   title: z.string(),
-  /** Absent for a figure in the student's own material that the generator cannot honestly redraw. */
+  /**
+   * The figure described as parts and links, which the app draws and makes
+   * interactive (schema/diagram.ts). Preferred over `svg`.
+   */
+  diagram: DiagramField,
+  /** A hand-drawn figure, for what no diagram kind fits. Absent for a figure in the student's own material that the generator cannot honestly redraw. */
   svg: z.string().optional(),
   alt_text: z.string().optional(),
   caption: z.string().optional(),

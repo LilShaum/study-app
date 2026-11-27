@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
 import type { GraphicItem } from '@/schema/course';
 import { prepareSvg } from '@/lib/prepareSvg';
+import { normalizeDiagram } from '@/schema/diagram';
 import { purposeLabel } from '@/lib/figurePurpose';
 import { DifficultyBadge } from './DifficultyBadge';
 import { FRAME, type ItemFrame } from './frame';
 import { RichText } from './RichText';
+import { DrawnDiagram } from './DrawnDiagram';
 import { SourceNote } from './SourceNote';
 
 /**
@@ -36,6 +38,7 @@ export function GraphicCard({
 }) {
   // Sanitized + theme-adapted; see prepareSvg for why raw markup isn't used.
   const svg = useMemo(() => prepareSvg(item.svg), [item.svg]);
+  const diagram = useMemo(() => normalizeDiagram(item.diagram), [item.diagram]);
   const purpose = purposeLabel(item.purpose);
 
   return (
@@ -56,7 +59,11 @@ export function GraphicCard({
         </p>
       )}
 
-      {svg ? (
+      {diagram ? (
+        <div className="mt-4">
+          <DrawnDiagram diagram={diagram} title={item.alt_text || item.title} />
+        </div>
+      ) : svg ? (
         <div
           role="img"
           aria-label={item.alt_text || item.title}

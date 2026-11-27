@@ -196,7 +196,20 @@ diagrams, as the owner asked.
    both themes; before/after; the fresh-eyes design critic; code and
    security review; a phone preview for the owner.
 
-**Phase 2: diagrams in the questions.** Name the part, order the steps,
+**Phase 2: diagrams in the questions.** The owner, 2026-11-27: "what
+about diagrams for example of an action potential and the user has to fill
+in the blanks of the diagram? … it might be a whole thing that will require
+a lot more planning and testing and iterating and ripple checking". That is
+the "name the hidden part" question above, done on the drawing itself: the
+diagram is shown with some parts' labels blanked and the student fills
+them in (typed, or picked from the hidden labels), marked per blank. Phase
+1's format already makes it possible, since every part has an id and a
+label the app can hide. An action potential is a curve with named phases,
+so it needs the plot kind (labelled points on a curve) first. Its own
+plan before building: which parts to blank and how many at once, typed or
+picked, how a half-right diagram is scored and scheduled, how it sits next
+to name-the-term cards so the same label is not asked twice in a row, and
+its place in Learn's Recall. Name the part, order the steps,
 what-if questions; scheduled like any card; Practice kinds; simulator run,
 since it changes what Learn and Review serve.
 

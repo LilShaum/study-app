@@ -32,7 +32,9 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   diagrams instead"). Takes in the interactive diagrams ask below. Plan:
   docs/proposals/diagrams.md (the AI describes, the app draws and makes it
   interactive and askable; the student's own figure as the last resort).
-  Waits on the owner's yes to phase 1.
+  Phase 1 approved 2026-11-27, being built. Fill-in-the-blank diagrams
+  (2026-11-27: "diagrams for example of an action potential and the user
+  has to fill in the blanks of the diagram") go in phase 2, planned first.
 
 - **Take feedback in properly** (2026-11-25: "whenever I give you feedback
   on something and explain expectations, you mark them down, write what you
