@@ -162,7 +162,8 @@ of its own). Do not return the whole course. ${FILE_FALLBACK}
 }
 
 Every item needs an \`id\` starting with "${freshIdPrefix(course, 'more')}" (no id in the
-course starts that way, so none can collide), a \`type\` and a \`source_excerpt\`. The exact
+course starts that way, so none can collide), a \`type\`, a \`source_excerpt\` quoting its
+passage word for word and, when the slides are numbered, a \`source_page\` ("slide 12"). The exact
 shape of each type, and the rules for what makes an item good rather than
 merely valid, are below — they are the same rules the course was generated
 under, and the app checks the result against them. Harder questions are

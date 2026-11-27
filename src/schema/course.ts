@@ -21,6 +21,15 @@ const itemBase = {
   // to fill it in — it's the main lever against fabricated content, and
   // lets a student spot-check an item against their own notes.
   source_excerpt: z.string().optional(),
+  // Where that passage is in the student's material, unit included: "slide
+  // 12", "slides 12–13", "page 4" (docs/proposals/trust.md). Shown beside
+  // the passage so a card can be checked against the deck in seconds, and
+  // counted by the lecture check to find slides nothing came from. A bare
+  // number is kept as written; anything malformed is dropped, never the item.
+  source_page: z.preprocess(
+    (v) => (typeof v === 'number' ? String(v) : typeof v === 'string' && v.trim() ? v.trim().slice(0, 60) : undefined),
+    z.string().optional(),
+  ),
   // Set aside by the student while studying: kept in the file, out of every
   // session, plan and count, and put back from the lecture's Set aside list.
   // "wrong" also goes to the Fix prompt. Dropped from shared copies.
@@ -264,6 +273,25 @@ const noteList = (maxLength: number, maxItems: number) =>
     z.array(z.string()).optional(),
   );
 
+/**
+ * The student's material, every slide or page accounted for
+ * (docs/proposals/trust.md): how many there are, and the ones nothing in the
+ * lecture comes from, each with why (a title slide, a repeat, unreadable).
+ * The lecture check sets it against the sections' ranges and the items'
+ * pages to find slides skipped without a word. Bounded, and dropped whole if
+ * malformed, since it only points.
+ */
+export const SourcePagesSchema = z.looseObject({
+  count: z.number().int().min(1).max(2000),
+  /** "slide" or "page": how the material numbers itself. */
+  unit: z.string().max(20).optional().catch(undefined),
+  not_taught: z
+    .array(z.looseObject({ range: z.string().max(60), why: z.string().max(200) }))
+    .max(500)
+    .optional()
+    .catch(undefined),
+});
+
 export const InventorySchema = z.looseObject({
   terms: noteList(300, 2000),
   /** Terms the source only names (a label, a caption): listed, never defined. */
@@ -317,6 +345,7 @@ export const CourseMetadataSchema = z.looseObject({
   total_items: z.number().optional(),
   item_counts: ItemCountsSchema.optional(),
   inventory: InventorySchema.optional(),
+  source_pages: SourcePagesSchema.optional().catch(undefined),
 });
 
 export const CourseSchema = z.looseObject({

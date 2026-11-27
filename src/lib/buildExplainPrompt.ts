@@ -105,7 +105,8 @@ answer as a fact to remember.
 Second: for each section whose slides build to something, its \`builds_to\`, a
 field on the section beside its id${course.metadata.builds_to ? '' : ', and the `builds_to` of the whole lecture, beside `sections`'}.${figureNotes}
 
-Ground each one: its \`source_excerpt\` quotes the passage it explains.
+Ground each one: its \`source_excerpt\` quotes the passage it explains,
+and its \`source_page\` says where it is ("slide 12") when the slides are numbered.
 Where the slides only name a study or a figure and you fill in what it
 showed from your own knowledge, start the excerpt with "Outside the
 slides:" and name the source, and write it only if you are sure. The same

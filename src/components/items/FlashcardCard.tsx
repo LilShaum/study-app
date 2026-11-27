@@ -197,7 +197,7 @@ function FlipCard({ item, onGot, onMissed, comesBack, keyboardEnabled = false, l
         </div>
       </div>
 
-      {flipped && <SourceNote excerpt={item.source_excerpt} open={learning || dontKnow} />}
+      {flipped && <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={learning || dontKnow} />}
     </div>
   );
 }
@@ -414,7 +414,7 @@ function WrittenCard({
               </div>
             </>
           )}
-          <SourceNote excerpt={item.source_excerpt} open={learning || dontKnow} />
+          <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={learning || dontKnow} />
         </div>
       )}
     </div>

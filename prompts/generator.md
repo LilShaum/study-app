@@ -39,13 +39,22 @@ The one case where you genuinely produce little is a genuinely thin source:
 three bullet points cannot become forty items. Judge by what is actually in
 front of you, not by a general instinct to be conservative.
 
-Grounding is enforced structurally: **every item carries a `source_excerpt`**
-— a short direct quote or tight paraphrase of the passage it comes from. If
-you cannot point to the passage, do not write the item. This is cheap; it is
-not a reason to write fewer items. When the passage is inside a figure, table
-or equation rather than the running text, start the excerpt with `Figure:`,
-`Table:` or `Equation:` and quote its labels exactly as printed, so it can be
-checked against the page.
+Grounding is enforced structurally: **every item carries a `source_excerpt`
+and a `source_page`**. The excerpt is the passage it comes from, quoted word
+for word (a few words cut with `…` is fine; a paraphrase is only for a spoken
+transcript or handwriting, where there is no printed text to quote). The page
+says where that passage is, unit included: `"slide 12"`, `"slides 12–13"`,
+`"page 4"`. The student checks the card against that slide, and the app looks
+the quote up there, so a quote that is not on its slide marks the card as
+untrustworthy. Write each card from its passage, not from memory of it: a
+card says what its passage says and no more, with the same direction of
+change, the same qualifier (always, usually, only), the same number and unit,
+about the same one of two similar things. If you cannot point to the
+passage, do not write the item.
+This is cheap; it is not a reason to write fewer items. When the passage is
+inside a figure, table or equation rather than the running text, start the
+excerpt with `Figure:`, `Table:` or `Equation:` and quote its labels exactly
+as printed, so it can be checked against the page.
 
 <!-- studies -->
 **One labelled exception: a cited study the slides show but do not explain.**
@@ -229,6 +238,11 @@ a student cannot detect for themselves.
 
 Capture:
 
+- **The slides themselves, by number.** How many slides or pages the source
+  has, first to last, and for each one in a word what it carries (a title,
+  an outline, a term, a figure, a question for the class). This list is
+  what Pass 4 walks, so a slide is never skipped just because nothing on it
+  made the term list.
 - **Stated learning objectives**, verbatim (Pass 1, the teacher's own
   list). They are a required checklist.
 - **Explicitly flagged concepts.** Anything bold, boxed, highlighted, starred,
@@ -370,6 +384,14 @@ term in `mentioned` that the source explains is covered by another item.
 If something is uncovered, either write the item or satisfy yourself that
 the source genuinely says nothing about it.
 
+Then walk your Pass 2 list of slides, first to last. A slide nothing in your
+draft comes from (no section's range, no item's `source_page`, no figure's
+`where`) either gets its items now or teaches nothing: a title, an outline,
+a repeat, a question for the class, a slide you could not read. Those go in
+`metadata.source_pages.not_taught` with the reason. The app counts every
+slide and shows the student any that is in neither, so a slide left out
+here reads to them as a gap in their lecture.
+
 As a calibration check, add up what each idea's weight calls for (Quality
 bar, part 2) and compare your draft with it, never with how many pages or
 words the source happens to be. Far below it, you have skipped content: go
@@ -428,6 +450,11 @@ out item counts and totals as well; the app counts.
     "description": string?,
     "builds_to": string?,          // what the whole lecture builds to (Pass 3, "Writing the narration")
     "tags": string[]?,
+    "source_pages": {              // Pass 4: every slide accounted for
+      "count": number,             // how many slides or pages the source has
+      "unit": "slide" | "page",
+      "not_taught": [ { "range": string, "why": string } ]? // slides nothing comes from, unit included ("slides 1–2"), and why: "title and outline"
+    }?,
     "notes_for_student": string[]?, // short plain lines: a note that disagreed with its slide and which you used, slides missing from what you were given, notes that stop partway, anything to check against class
     "inventory": {                 // your Pass 2 inventory — see below
       "terms": string[],           // EVERY term you give a definition item
@@ -463,12 +490,15 @@ When the source numbers its slides or pages, give each section its
 read that part of their own slides and then answer the section's questions
 from memory, so the range must cover exactly the slides the section's items
 come from. Leave it out when the source has no numbers; never guess one.
+The same goes for `source_pages` and each item's `source_page`.
 
 Every item, of any type, carries these common fields:
 
 - `id` (string, required) — unique within the file, slug-like (e.g. `"q_km_1"`)
 - `type` (required) — one of `mcq` | `multi` | `flashcard` | `definition` | `explain` | `example` | `problem` | `graphic`
 - `source_excerpt` (string, **required**) — see obligation 1
+- `source_page` (string, **required** when the source numbers its slides or
+  pages) — where the excerpt is, unit included: `"slide 12"`
 - `difficulty` (`"easy" | "medium" | "hard"`, optional but strongly encouraged)
 - `tags` (string[], optional) — consistent keywords for later filtering; reuse
   the same tag spelling across items instead of inventing near-duplicates.
@@ -512,7 +542,7 @@ its place), one correct answer.
 { "id", "type": "mcq", "question", "options": [4 or 5 strings],
   "correct_index": 0-based, "explanation",
   "distractor_rationale": [4 strings],   // required — see quality bar below
-  "difficulty", "tags", "source_excerpt" }
+  "difficulty", "tags", "source_excerpt", "source_page" }
 ```
 `correct_index` is **0-based** — `0` means the first option in the array, not
 the second. Getting this off by one silently teaches the wrong answer, so
@@ -551,7 +581,7 @@ statements, any number of them true.
 { "id", "type": "multi", "question", "options": [4–6 statements],
   "correct": [0-based indices of every true statement], "explanation",
   "option_rationale": [one per option],
-  "difficulty", "tags", "source_excerpt" }
+  "difficulty", "tags", "source_excerpt", "source_page" }
 ```
 Write one where an idea has several things true of it that a student
 could confuse: the properties of one structure, what a mechanism does and
@@ -582,7 +612,7 @@ others ("all of the above", "both 1 and 3"): each is judged on its own.
 **`flashcard`** — one atomic fact, front as a question/prompt (not just a bare term).
 ```
 { "id", "type": "flashcard", "front", "back", "hint"?,
-  "difficulty", "tags", "source_excerpt" }
+  "difficulty", "tags", "source_excerpt", "source_page" }
 ```
 **A written flashcard** has its `back` as numbered points, "(1) … (2) …",
 and is tagged `short-answer` (or `long-answer`). The app asks it as "Write
@@ -599,7 +629,7 @@ near-misses, or each member where it is taught.
 **`explain`** — a key idea explained the way a good tutor says it in class,
 to read before the questions on it. Not scored.
 ```
-{ "id", "type": "explain", "title", "text", "difficulty", "tags", "source_excerpt" }
+{ "id", "type": "explain", "title", "text", "difficulty", "tags", "source_excerpt", "source_page" }
 ```
 The student may never have been to the lecture: the slides' bullets are
 often all they have, and the connections the teacher made out loud are what
@@ -623,7 +653,7 @@ a sentence.
 ```
 { "id", "type": "definition", "term", "definition", "example_sentence"?,
   "related_terms": string[]?, "also_known_as": string[]?,
-  "difficulty", "tags", "source_excerpt" }
+  "difficulty", "tags", "source_excerpt", "source_page" }
 ```
 The app turns every definition into a question — it shows the definition and
 the student types the term — so write the `definition` so that it identifies
@@ -639,7 +669,7 @@ source never uses does not belong in it.
 **`example`** — a worked, step-by-step example pulled from the source.
 ```
 { "id", "type": "example", "title", "context"?, "steps": string[]?,
-  "takeaway"?, "difficulty", "tags", "source_excerpt" }
+  "takeaway"?, "difficulty", "tags", "source_excerpt", "source_page" }
 ```
 
 **`problem`** — a problem to work out, set as the exam sets it: a
@@ -648,7 +678,7 @@ student works it on paper or in their head, then types the answer.
 ```
 { "id", "type": "problem", "question", "code"?, "answer"?, "unit"?,
   "accept"?: string[], "tolerance"?, "steps": string[], "takeaway"?,
-  "mistakes"?: [{ "answer", "why" }], "difficulty", "tags", "source_excerpt" }
+  "mistakes"?: [{ "answer", "why" }], "difficulty", "tags", "source_excerpt", "source_page" }
 ```
 Write one wherever the source teaches a method the student is expected to
 carry out: a formula to compute with, a worked example, an algorithm, code
@@ -694,7 +724,7 @@ for content that's just as clear as text.
   "alt_text"? (describes the drawing for screen readers), "caption"?,
   "why" (why it is shown, what to look at), "purpose": "know" | "picture",
   "where"? (the figure's place in the student's material, when there is no `svg`),
-  "difficulty", "tags", "source_excerpt" }
+  "difficulty", "tags", "source_excerpt", "source_page" }
 ```
 `why`, `purpose` and `where` are in Pass 3, "Writing the narration".
 
@@ -1067,8 +1097,8 @@ Check your own draft:
    Anything missing gets written now. Is every fact a question tests taught
    first in its section, by a definition, explanation, flashcard or
    example? A result met only inside a question is learned by guessing.
-2. Does every item have a `source_excerpt` that really is in the source?
-   Delete or fix any that don't.
+2. Does every item have a `source_excerpt` quoted from its `source_page`,
+   and is every slide either the source of something or in `not_taught`?
 3. Does every MCQ have four or five options, a 0-based `correct_index`
    pointing at the genuinely correct one, and a `distractor_rationale` per
    option naming the belief that picks it? Do "None" and "All of the other

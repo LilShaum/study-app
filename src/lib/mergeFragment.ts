@@ -46,6 +46,10 @@ export interface MergePlan {
   inventory?: Fragment['inventory'];
   /** What the whole lecture builds to, when the reply gives it and the lecture does not say yet. */
   builds_to?: string;
+  /** The lecture's slide accounting with the reply's slides-that-teach-nothing joined in, when that adds any. */
+  source_pages?: Course['metadata']['source_pages'];
+  /** How many slide ranges that adds. */
+  totalAccounted: number;
 }
 
 export interface MergeOptions {
@@ -205,6 +209,7 @@ export function planMerge(course: Course, fragment: Fragment, options: MergeOpti
     countsByType,
     inventory: fragment.inventory,
     builds_to: course.metadata.builds_to ? undefined : fragment.builds_to,
+    ...joinSourcePages(course, fragment),
   };
 }
 
@@ -249,6 +254,7 @@ export function applyMerge(course: Course, plan: MergePlan): Course {
 
   const merged: Course = { ...course, sections };
   if (plan.builds_to) merged.metadata = { ...course.metadata, builds_to: plan.builds_to };
+  if (plan.source_pages) merged.metadata = { ...merged.metadata, source_pages: plan.source_pages };
 
   // New material brings new terms: join its inventory to the course's, so
   // the coverage check covers what was added too. A term already listed as
@@ -289,4 +295,21 @@ export function applyMerge(course: Course, plan: MergePlan): Course {
   }
 
   return merged;
+}
+
+/**
+ * Fix asks about slides nothing came from; the ones that teach nothing come
+ * back as `source_pages.not_taught`, joined to the lecture's so the check
+ * stops reporting them. The lecture's own slide count stands: a reply about a
+ * few slides does not get to recount the deck.
+ */
+function joinSourcePages(course: Course, fragment: Fragment): Pick<MergePlan, 'source_pages' | 'totalAccounted'> {
+  const was = course.metadata.source_pages;
+  const more = fragment.source_pages?.not_taught ?? [];
+  const base = was ?? fragment.source_pages;
+  if (!base || !more.length) return { totalAccounted: 0 };
+  const seen = new Set((was?.not_taught ?? []).map((r) => r.range.trim().toLowerCase()));
+  const added = more.filter((r) => !seen.has(r.range.trim().toLowerCase()) && seen.add(r.range.trim().toLowerCase()));
+  if (!added.length) return { totalAccounted: 0 };
+  return { source_pages: { ...base, not_taught: [...(was?.not_taught ?? []), ...added].slice(0, 500) }, totalAccounted: added.length };
 }

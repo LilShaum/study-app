@@ -37,7 +37,7 @@ export function ExampleCard({ item, frame = 'card', notesOpen = false }: { item:
           </span>
         </div>
       )}
-      <SourceNote excerpt={item.source_excerpt} open={notesOpen} />
+      <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={notesOpen} />
     </div>
   );
 }

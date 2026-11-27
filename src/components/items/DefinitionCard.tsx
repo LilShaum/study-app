@@ -63,7 +63,7 @@ export function DefinitionCard({ item, keyboardEnabled = false, onNext, frame = 
             after an answer, where restudying the source is what the evidence
             supports (Karpicke & Roediger 2010), and on a card with no example
             sentence nothing changes. */}
-        <SourceNote excerpt={item.source_excerpt} open={notesOpen && !item.example_sentence} />
+        <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={notesOpen && !item.example_sentence} />
       </div>
     </div>
   );

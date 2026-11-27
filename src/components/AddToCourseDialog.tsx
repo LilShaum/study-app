@@ -145,7 +145,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   }, [pasted, course, firstSectionId, skipDuplicates, mode]);
 
   const plan = result && 'plan' in result ? result.plan : null;
-  const canApply = !!plan && plan.totalAdded + plan.totalCorrected + plan.totalFramed + (plan.builds_to ? 1 : 0) > 0;
+  const canApply = !!plan && plan.totalAdded + plan.totalCorrected + plan.totalFramed + plan.totalAccounted + (plan.builds_to ? 1 : 0) > 0;
 
   const gaps = useMemo(() => analyseCourseGaps(course), [course]);
   // The same list the More practice prompt puts first (buildPractisePrompt).
@@ -227,6 +227,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
     if (plan.totalAdded) parts.push(`Added ${plural(plan.totalAdded, 'item')}`);
     if (plan.totalCorrected) parts.push(`fixed ${plural(plan.totalCorrected, 'item')}`);
     if (plan.totalFramed || plan.builds_to) parts.push('added what the lecture builds to');
+    if (plan.totalAccounted) parts.push(`noted ${plural(plan.totalAccounted, 'slide')} that teach nothing`);
     const said = parts.join(', ');
     toast(
       `${said.charAt(0).toUpperCase()}${said.slice(1)}.${renamed ? ` ${plural(renamed, 'id')} renamed to avoid a clash.` : ''}`,
@@ -523,7 +524,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
 
             {plan && (
               <div className="border-l-2 border-border-strong py-2 pl-3 text-sm">
-                {plan.totalAdded === 0 && plan.totalCorrected === 0 && plan.totalFramed === 0 ? (
+                {plan.totalAdded === 0 && plan.totalCorrected === 0 && plan.totalFramed === 0 && plan.totalAccounted === 0 ? (
                   <div className="text-text-2">
                     Nothing new to add
                     {plan.totalDuplicates > 0

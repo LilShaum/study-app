@@ -70,7 +70,7 @@ export function GraphicCard({
       )}
 
       {item.caption && <div className="mt-2 text-sm text-text-2">{item.caption}</div>}
-      <SourceNote excerpt={item.source_excerpt} open={notesOpen} />
+      <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={notesOpen} />
     </div>
   );
 }

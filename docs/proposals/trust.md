@@ -54,9 +54,9 @@ sees the slides.
    asks the AI to say so, which depends on it noticing.
 4. **Handwriting or a figure misread.** Reported only if the AI knows it
    was unsure.
-5. **What the AI left out or doubted never reaches the student.**
-   `notes_for_student` and `unclear_figures` are shown in the lecture
-   check's lower groups; a student opening Learn never meets them.
+5. **What the AI doubted is easy to miss.** `notes_for_student` is shown
+   on import and in About this lecture; `unclear_figures` only in the
+   lecture check.
 
 1 and 2 are the ones that break trust. A wrong fact studied well is worse
 than a gap.
@@ -114,53 +114,63 @@ reported, and C makes them visible.
 unclear figures where the student studies. Needed, but it does not catch
 anything new.
 
-## 4. The pick
+## 4. The pick, after the owner's answers
 
-**C, then A, then B, with E folded into C.** C is the foundation and cheap,
-and alone it makes the big failure (a skipped slide) visible. A is the only
-option that catches a wrong fact on any source, which is the failure that
-does real harm; its friction is one paste, offered once after a lecture is
-made, never required to study. B is the strongest proof but the narrowest
-reach and the most code, so it waits until A and C have shown what real
-lectures need.
+First pick (C, then A as a second chat, then B) was overruled twice, for
+good reasons:
 
-What the student sees, all together: after making a lecture, one line on
-its page, e.g. **"Checked against your slides: 42 of 42 slides covered,
-208 of 214 cards confirmed, 3 held back for Fix."** Each card shows its
-slide ("slide 12") on its "From your notes" line. A held-back card is out
-of study until fixed, the way Set aside "wrong" already works. A lecture
-nobody checked says so plainly, without nagging.
+- 2026-11-27, on A: the owner dislikes that AI has to make lectures at
+  all, so no extra AI step: the prompt audits itself (`docs/FEEDBACK.md`).
+- 2026-11-27, on cost: a lecture from two decks already takes about 30
+  minutes on Opus 5.5. A second walk over every card was the first draft of
+  that audit, and Anthropic's guidance argues against it: Opus 5 and later
+  check their own work unprompted, and explicit verification steps "cause
+  over-verification … removing them reduces wasted tokens with no loss in
+  quality" ([Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5)).
+  What it recommends against made-up facts is grounding in word-for-word
+  quotes and citing each claim's source
+  ([Reduce hallucinations](https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations)).
+
+**So: C, folded into writing, then B.** Every card quotes its passage word
+for word and names its slide as it is written (no extra pass; about seven
+output tokens a card). Pass 4, which already walked the inventory, also
+walks the slide list once and accounts for every slide. The app, not the
+AI, finds the slides nothing came from. A (a second chat) is dropped. B
+(the app reads the slides itself, no AI) is next: with word-for-word quotes
+and slide numbers in the file, it can confirm each quote is on its slide.
+
+Estimated cost of phase 1: the prompt grows by about 360 words, read once;
+the reply by about 2%. Not yet measured on a real lecture.
 
 ## 5. Build plan
 
-**Phase 1 (C + E).** Schema: optional `source_page` on items, optional
-`metadata.source_map` (`[{ page, title?, covered_by?: sectionId, skip?:
-reason }]`). Prompt: one short section in Pass 2 and the output contract,
-excerpts quoted word for word where the slide has text, plus the same
-fields in Add and Fix. App: the slide on `SourceNote`'s line; a lecture
-check finding for holes in the map and for slides with no section;
-`notes_for_student` and unclear figures shown on the lecture's page, not
-only in the check. Tests, EXPECTATIONS, RIPPLES row, What's new.
+**Phase 1 (built on `claude/project-thread-tckngc`).** Schema: `source_page`
+on every item, `metadata.source_pages` (`count`, `unit`, `not_taught`),
+cleaned on import, dropped whole if malformed. Prompt: quote word for word
+and name the slide in obligation 1; the slide list in Pass 2; the slide walk
+in Pass 4; the output contract; More practice, Explain, Add and Fix ask for
+`source_page`. App: `lib/sourceCoverage.ts`; the lecture check's
+`uncovered-slides`; Fix asks about those slides and takes back the ones
+that teach nothing; "From your notes, slide 12" on every card; "42 slides,
+all accounted for" in About this lecture. Help, EXPECTATIONS, What's new.
 
-**Phase 2 (A).** `buildCheckPrompt.ts`, a compact card list and a strict
-reply format; import of the reply (`lib/checkReply.ts`, Zod, bounded,
-untrusted input); a `checked` mark per item and per lecture; wrong cards
-set aside as "wrong" with the slide's version, so Fix rewrites them. The
-lecture page line above.
+Known limit: a lecture with material added later (Add) may number a second
+deck from 1 again; its slides then count against the first deck's numbers.
+Add leaves `source_pages` out, so nothing is marked untaught wrongly; a
+skipped slide of the second deck can go unreported.
 
-**Phase 3 (B).** Local PDF/PPTX text, verbatim lookup, page per card. Decide
-after phase 2 is used on real lectures.
+**Phase 2 (B).** The student opens their PDF or PPTX in the app (read on
+the device, never uploaded); each quote is looked up on its slide; a card
+whose quote is not there is marked to check. Needs a PDF reader loaded only
+when used.
 
-**Proof before trust.** A real lecture made with the new prompt on Opus 5.5
-at high effort (the owner's way, `CLAUDE.md`), read for whether the slide
-map and pages are right, before the app relies on them. Then the check
-prompt run on it in a fresh chat, with one planted wrong card, to see it
-caught. Both cost the owner's usage, so they wait for a yes.
+**Next, proposed: the prompt's efficiency.** The same guidance suggests the
+prompt's own twelve-point final checklist may cause over-verification.
+A read-through for repetition, contradictions and over-checking, then one
+real lecture timed before and after (owner's usage, so on their yes).
 
 ## 6. Questions for the owner
 
-1. Is one extra paste after making a lecture acceptable for the check, or
-   should it be folded into making it (cheaper for the student, weaker,
-   since it is the same chat)?
-2. Can a real lecture's slides be used to test (kept off the repo, as
-   always)?
+1. The prompt-efficiency read-through: go ahead?
+2. Can a real lecture's slides be used to time and test (kept off the
+   repo, as always)?

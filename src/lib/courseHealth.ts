@@ -8,6 +8,7 @@ import { answerPoints, isListOfNames } from './answerPoints';
 import { givesAway, restatesDefinition, sameFact, sameName, type Asked } from './contentChecks';
 import { acceptedForms, normalise } from './typedAnswer';
 import { sectionDensity } from './sectionDensity';
+import { runsOf, sourceCoverage } from './sourceCoverage';
 import { kindsOf } from './makeKinds';
 import { answerReached } from './problemAnswer';
 import { multiKey, multiReasons } from './multiKey';
@@ -384,6 +385,20 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     });
   }
 
+  // Slides the file neither taught nor said why it left out (lib/sourceCoverage,
+  // docs/proposals/trust.md): the one gap the generator's own inventory
+  // cannot show, since a skipped slide is missing from that list too.
+  const coverage = sourceCoverage(course);
+  if (coverage?.missing.length) {
+    const n = coverage.missing.length;
+    const unit = n === 1 ? coverage.unit : `${coverage.unit}s`;
+    findings.push({
+      id: 'uncovered-slides',
+      severity: 'warning',
+      message: `Nothing here comes from ${unit} ${runsOf(coverage.missing)}, and the AI didn't say why. Look at ${n === 1 ? 'it' : 'them'} on your ${coverage.unit}s: anything to know there is missing from this lecture.`,
+    });
+  }
+
   // Items per slide, section against section (lib/sectionDensity). Only a
   // pointer: a dense key slide deserves its cards, and only the student,
   // with the slides, can tell that from basics written up at length.
@@ -634,6 +649,7 @@ const GROUPS: Record<string, FindingGroup> = {
   'written-many': 'fix',
   'unsafe-svg': 'fix',
   'unclear-figures': 'slides',
+  'uncovered-slides': 'slides',
   'untested-figures': 'slides',
   'sparse-sections': 'slides',
   'dense-sections': 'slides',

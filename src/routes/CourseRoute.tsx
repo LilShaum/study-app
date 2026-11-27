@@ -33,6 +33,7 @@ import { usePlanStore } from '@/store/plan';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { ExamDialog } from '@/components/ExamDialog';
 import { notesFromAI } from '@/lib/notesFromAI';
+import { runsOf, sourceCoverage } from '@/lib/sourceCoverage';
 import { examLabel, ranges } from '@/lib/examLabel';
 import { classOf, lectureExam } from '@/lib/classExams';
 import { plural } from '@/lib/plural';
@@ -375,6 +376,9 @@ export function CourseRoute() {
                 course.sections.length
               } section${course.sections.length === 1 ? '' : 's'}`,
             },
+            // Every slide accounted for (lib/sourceCoverage): the one count
+            // that says whether the lecture skipped part of the deck.
+            { label: 'Slides', value: slidesLine(course) },
             {
               label: 'Studied',
               value:
@@ -780,4 +784,13 @@ async function share(course: Course) {
   } catch (e) {
     toast(cloudError(e), { type: 'error' });
   }
+}
+
+/** "42 slides, all accounted for", or which ones nothing came from; null when the file does not say. */
+function slidesLine(course: Course): string | null {
+  const c = sourceCoverage(course);
+  if (!c) return null;
+  const units = `${c.count} ${c.unit}${c.count === 1 ? '' : 's'}`;
+  if (!c.missing.length) return `${units}, all accounted for`;
+  return `${units}, nothing from ${c.missing.length === 1 ? c.unit : `${c.unit}s`} ${runsOf(c.missing)}`;
 }

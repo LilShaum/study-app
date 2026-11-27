@@ -10,12 +10,15 @@ const OUTSIDE = /^\s*outside the (slides|notes|source)\b/i;
  * what your notes actually said. Collapsed by default, except in Learn, so it doesn't compete
  * with the card itself while studying.
  */
-export function SourceNote({ excerpt, open = false }: { excerpt?: string; open?: boolean }) {
+export function SourceNote({ excerpt, page, open = false }: { excerpt?: string; page?: string; open?: boolean }) {
   if (!excerpt?.trim()) return null;
   // The generator's label on what it added itself (prompts/generator.md,
   // obligation 1): said on the closed line too, since the whole point is that
   // the student sees it is not from their material and checks it against class.
-  const from = OUTSIDE.test(excerpt) ? 'Not from your notes' : 'From your notes';
+  const outside = OUTSIDE.test(excerpt);
+  // Where in the deck, so the card can be checked against the slide in
+  // seconds rather than by hunting (docs/proposals/trust.md).
+  const from = outside ? 'Not from your notes' : page ? `From your notes, ${page}` : 'From your notes';
 
   return (
     // Open on Learn's reading cards: there the passage is the lesson, and a
