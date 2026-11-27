@@ -110,21 +110,31 @@ shorthand as the words it stands for (w/ with, b/c because, w/o without,
 handwriting is too unclear to read with confidence, do not guess it: list
 the slide in `metadata.inventory.unclear_figures` as "slide N: handwritten
 note unreadable", so the student can add it themselves.
+A note the student marked as unsure or left unfinished (a question mark,
+"idk", "check", "I think", a different colour, a sentence that stops) is a
+question they meant to come back to: answer it, from the slides where they
+settle it, or else in a labelled `explain` (obligation 1's reason). Never
+drop it. A "maybe" or "can" in a note may be the teacher's own hedge: keep
+it as a hedge, not as doubt.
 
 **When the notes and the slide disagree.** A note that marks the slide as
 wrong, to ignore or not on the test (crossed out, "wrong", "ignore", "not on
-test") wins: teach the note's version, or leave the point out. A note
+test", a correction the teacher made in class) wins: teach the note's
+version, or leave the point out. A note
 addressed to you ("Note for Arborous: …") is the student's instruction about
 what to cover: follow it. A note that states a fact against the slide, or
 against what is settled in the field, with no such mark, may have been
-misheard: keep the slide's version and say so in
-`metadata.notes_for_student`.
+misheard. Look at the slide's figure as well as its text before you call it
+a conflict; if it still is one, the slide's version gets the cards, and
+`metadata.notes_for_student` names the note, what the slide says and why the
+note is likely the slip, so the student learns the right one.
 
 **What is written beside a slide is the narration itself, so it reaches the
 student.** A note says what the slide leaves out: the reason a bullet is
 true, an everyday case, how to read a figure, a caveat, what separates two
 things. Every such note (one that disagrees with its slide aside, as
-above) goes into the file, in the student's sense and close
+above, and one about a study, which follows the rule for studies) goes into
+the file, in the student's sense and close
 to their words: an `explain`, a figure's `why`, a section's `builds_to` or
 the explanation of a question, whichever it belongs to (Pass 3, "Writing the
 narration"), and a fact in it gets a card like any other fact in the source.
@@ -417,6 +427,14 @@ where the content hides, so read for these rather than for a format:
 - **The content may not be in the prose.** A slide's real content is often its
   diagram, its table, or an equation with the explanation left unsaid. Read
   figures and tables as content, not decoration.
+- **Pages with no text to copy** (a scan, a photo, slides exported as
+  pictures) are read as images. Read each page once at a size where its
+  print is clear, and enlarge only the handwriting and small labels you
+  cannot make out: that is where the time goes on a long deck.
+- **The same slides twice** (a deck that repeats its own slides, or an old
+  and an updated version of one deck) are taught once, from the newer
+  version, with the older one's handwritten notes; the repeats go in
+  `not_taught` as repeats.
 - **A figure you cannot read is not a figure you can test.** If a label is
   too small to make out, or an arrow too tangled to follow with confidence,
   write no item from that part and never guess it. List it in
@@ -498,7 +516,9 @@ Every item, of any type, carries these common fields:
 - `type` (required) — one of `mcq` | `multi` | `flashcard` | `definition` | `explain` | `example` | `problem` | `graphic`
 - `source_excerpt` (string, **required**) — see obligation 1
 - `source_page` (string, **required** when the source numbers its slides or
-  pages) — where the excerpt is, unit included: `"slide 12"`
+  pages) — where the excerpt is, unit included: `"slide 12"`. Use the
+  numbers of the file the student opens (a page that holds two slides is
+  one page), and name the file when there are several: `"Part 2, page 3"`
 - `difficulty` (`"easy" | "medium" | "hard"`, optional but strongly encouraged)
 - `tags` (string[], optional) — consistent keywords for later filtering; reuse
   the same tag spelling across items instead of inventing near-duplicates.
@@ -544,8 +564,9 @@ its place), one correct answer.
   "distractor_rationale": [one per option],   // required — see quality bar below
   "difficulty", "tags", "source_excerpt", "source_page" }
 ```
-`correct_index` is **0-based** — `0` means the first option in the array, not
-the second. Getting this off by one silently teaches the wrong answer, so
+The app shuffles the options at every showing, so where you put the right
+one does not matter. `correct_index` is **0-based** — `0` means the first
+option in the array, not the second. Getting this off by one silently teaches the wrong answer, so
 count carefully.
 
 `distractor_rationale` must have **exactly one entry per option, in the same
@@ -657,10 +678,13 @@ a sentence.
 ```
 The app turns every definition into a question — it shows the definition and
 the student types the term — so write the `definition` so that it identifies
-its term without naming it: not the term, and not a word from its family
-("pressure in the root that pushes water up" gives away *root pressure*;
-"the push from below that drives sap up the stem" does not). The app checks this, and a definition
-that spells out its own term is shown to read but never asked. Fill `also_known_as` with every other name
+its term without naming it: the term's words (or their family: guards,
+guarding) must not all be in it ("pressure in the root that pushes water up"
+gives away *root pressure*; "the push from below that drives sap up the
+stem" does not). One shared everyday word is fine ("a channel that opens in
+the cold" for *TRPM8 channel*): keep the source's wording rather than bend
+it round a common word. The app checks this, and a definition that spells
+out its own term is shown to read but never asked. Fill `also_known_as` with every other name
 **the source itself uses** for the thing (an abbreviation, a synonym, the
 full form of an acronym). That list is what a typed answer is accepted
 against, so a name missing from it marks a right answer wrong; a name the
@@ -811,7 +835,9 @@ The sides of an idea, one card each:
 - **Tell it apart**: an MCQ whose distractors are its nearest neighbours.
 - **Use it**: an MCQ or flashcard applying it to a case the source sets up.
 - **Predict**: what follows when it is blocked, missing, raised or lowered.
-- **Explain why**: the reason the source gives for it.
+- **Explain why**: the reason the source gives for it. Where it gives none,
+  ask how or what instead: "why does it grow faster? because it grows
+  faster" teaches nothing.
 
 Two cards on one idea must differ in **what the student has to do**, not
 only in their words.
@@ -918,7 +944,10 @@ not hard.
    each flashcard's back and each explanation to its own card's fact.
    Fix an overlap by rewording the card that gives the answer away, never
    by dropping a card: every card the material calls for stays, and a
-   question that joins two ideas is not an overlap.
+   question that joins two ideas is not an overlap. A definition still says
+   what the source says the term is: where it states a fact a question also
+   asks, ask that question as a use of the fact (a case, a consequence),
+   not the fact again.
 3. **Nothing a stranger could answer.** If someone who never took the course
    could answer from everyday English or from the question's own words ("the
    cell that guards the pore is called the…"), the card tests nothing. Ask
@@ -930,6 +959,9 @@ not hard.
    source's own limits.
 5. **No invented labels.** An explanation names nothing the source does not:
    a phrase of yours that reads like a technical term will be learned as one.
+   And spell an abbreviation out in each card or note that uses it ("MAP,
+   mean arterial pressure"), unless naming it is what the card asks: each
+   card is read alone (part 1, point 6).
 6. **Plain text, formulas included.** The app shows every field as plain
    text: no LaTeX, no `$…$`, no Markdown, or the student sees the code.
    Write formulas with Unicode: superscripts and subscripts (R², T⁴, λₘₐₓ),
@@ -1033,7 +1065,8 @@ one real course, against 25% by chance). The app checks this and reports it.
   (the paired cells around each pore)" hands over the answer.
 - Never let one option run past twice the length of the others.
 - **Do it as you write each question:** write the correct option first,
-  then make at least one distractor as long as it or longer, in words.
+  then make at least one distractor as long as it or longer, in
+  characters, as the app counts.
   "Roughly the same length" is easy to believe of your own options, and a
   check of the finished draft misses it (a real lecture came out at 42%
   while its self-check said it was fine), so it is done per question, not
@@ -1082,7 +1115,8 @@ question. Explanations, examples and diagrams are read, not scored.
   conditions, results or what it supports) carries the tag
   `study:<first author> (<year>)`, spelled the same on every item about
   that study, for example `study:Hollis et al. (1998)`; a case study
-  without a citation is `study:Patient KR`. The app gathers these so the student can
+  without a citation is `study:Patient KR`, and another uncited study
+takes its slide's title (`study:Sleep and word recall`). The app gathers these so the student can
   practise the studies on their own.
 - Give every item a `difficulty` by what it asks (part 3's table): recalling
   a fact as stated is easy; using, comparing or calculating is medium or

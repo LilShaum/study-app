@@ -24,7 +24,8 @@ than averaged into nothing. One line each:
 | Text | dense (full sentences), sparse (bullets, titles), almost none |
 | Figures | none, some, most slides; whether the text talks about them |
 | Maths | none, formulas, worked problems |
-| Handwriting | none, some, most slides |
+| Pages | text to copy, or pictures only (a scan, a OneNote export): the measured quote checks need the pictures read to text first (`tesseract`) |
+| Handwriting | none, some, most slides; notes marked unsure; notes that disagree with a slide |
 | Studies | none, cited, taught (and whether the student's exams ask about them) |
 | Student's extras | teacher notes, past questions, chosen kinds |
 
@@ -76,8 +77,13 @@ what the slide says.
 Then, for the lecture as a whole, a line each: the key ideas (the
 objectives, what the teacher stressed) and whether each is asked from more
 than one side; anything on the slides a student would be examined on that
-no card asks; and, for the profile's kind of class, what it did worst
-(figures for a diagram-heavy deck, problems for maths, handwriting).
+no card asks; the student's own notes (each note marked unsure answered,
+each note that disagrees with its slide named in `notes_for_student` with
+why, none dropped); abbreviations spelled out where a card uses them; and,
+for the profile's kind of class, what it did worst (figures for a
+diagram-heavy deck, problems for maths, handwriting). Where the student
+gave example questions or a study guide, a line on whether the lecture asks
+in that style.
 
 ## 4. What a result changes
 
