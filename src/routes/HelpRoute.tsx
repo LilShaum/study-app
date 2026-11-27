@@ -336,7 +336,15 @@ const SECTIONS: HelpSection[] = [
           The line under a lecture&rsquo;s title checks the lecture the AI made. It shows how many of
           the terms from your notes got a definition, then what is worth fixing (questions you could
           answer without knowing the material), what only your slides can settle (a figure the AI
-          could not read), and, folded away, smaller notes the app already works round.
+          could not read, a slide nothing in the lecture came from), and, folded away, smaller notes
+          the app already works round.
+        </p>
+        <p className="mt-2">
+          Lectures made from 27 November account for every slide: each one is either taught or named
+          as teaching nothing, with why (a title slide, an outline). About this lecture shows the
+          count, and the check lists any slide the AI skipped without saying. Every card says which
+          slide it came from on its <strong>From your notes</strong> line, so you can check it
+          against your slides in seconds.
         </p>
         <p className="mt-2">
           A red cross means something is broken, such as a question that cannot be marked. Tap the

@@ -61,7 +61,7 @@ const answerKey = (a: AnswerEvent) => `${a.at}:${a.type}:${a.got ? 1 : 0}`;
  * answer is kept as many times as the device with more of them has it, which
  * keeps both and still never doubles one that both devices already hold.
  */
-export function mergeLogs(local: CourseLog | undefined, remote: CourseLog | undefined): CourseLog | undefined {
+function mergeLogs(local: CourseLog | undefined, remote: CourseLog | undefined): CourseLog | undefined {
   if (!local || !remote) return local ?? remote;
   const list = (x: CourseLog) => (Array.isArray(x.answers) ? x.answers.filter((a) => a && typeof a.at === 'number') : []);
   const fromRemote = new Map<string, number>();

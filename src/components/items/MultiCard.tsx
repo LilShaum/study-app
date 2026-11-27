@@ -1,3 +1,7 @@
+/**
+ * Shows a select-all-that-apply question, lets the student tick statements, and marks them.
+ * Also exports MultiStatements, the tick list reused where the statements are shown without the card.
+ */
 import { useMemo, useState, type ReactNode } from 'react';
 import type { MultiItem } from '@/schema/course';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
@@ -196,7 +200,7 @@ export function MultiCard({ item: written, onAnswered, onNext, onUnsure, keyboar
       )}
       {/* After a miss the why is open, then the passage: the lesson again, not only the true statements. */}
       {revealed && !keyBroken && <IdeaNote idea={idea} open={!got || unsure} />}
-      {revealed && <SourceNote excerpt={item.source_excerpt} open={(learning || !got || unsure) && !keyBroken} />}
+      {revealed && <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={(learning || !got || unsure) && !keyBroken} />}
     </div>
   );
 }

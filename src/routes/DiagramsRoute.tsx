@@ -237,7 +237,7 @@ function PlateFigure({
             under a caption. The difficulty badge does not — a diagram is read,
             never scored, so a difficulty on it was a field from the data model
             wearing a component. */}
-        {!tile && <SourceNote excerpt={item.source_excerpt} />}
+        {!tile && <SourceNote excerpt={item.source_excerpt} page={item.source_page} />}
       </figcaption>
     </figure>
   );
@@ -298,7 +298,7 @@ function PlateDetail({
             </p>
           )}
           {item.caption && <p className="mt-2 text-small text-text-3">{item.caption}</p>}
-          <SourceNote excerpt={item.source_excerpt} />
+          <SourceNote excerpt={item.source_excerpt} page={item.source_page} />
           <div className="mt-6 flex items-baseline justify-between gap-3 border-t border-border pt-3 text-small text-text-3">
             <button type="button" onClick={() => onStep(-1)} className="press tap-safe">
               ← Previous

@@ -27,7 +27,7 @@ import { sortedSections } from './sortedSections';
  * come through parseCourse, and a hand-edited one could hold anything; a bad
  * entry is skipped rather than breaking every screen that plans.
  */
-export function examsOf(course: Course): ClassExam[] {
+function examsOf(course: Course): ClassExam[] {
   const list: unknown = course.metadata.exams;
   if (!Array.isArray(list)) return [];
   // Read on every plan of every lecture; a stored list is replaced, never

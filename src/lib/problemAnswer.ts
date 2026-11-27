@@ -19,7 +19,7 @@ import type { FlashcardItem, ProblemItem } from '@/schema/course';
 export type AnswerKind = 'number' | 'text' | 'self';
 
 /** How far off a number may be, as a share of it, unless the problem says. */
-export const DEFAULT_TOLERANCE = 0.01;
+const DEFAULT_TOLERANCE = 0.01;
 
 const SUPERSCRIPT: Record<string, string> = {
   '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
@@ -241,7 +241,7 @@ const isNegLiteral = (tokens: { token: Token }[]) =>
   tokens[0].token.kind === 'op' && (tokens[0].token.op === '-' || tokens[0].token.op === '+') && tokens[1]?.token.kind === 'num';
 
 /** Whether a typed number is the answer: within the tolerance, or the answer rounded to the places typed. */
-export function sameNumber(got: Read, want: number, tolerance = DEFAULT_TOLERANCE): boolean {
+function sameNumber(got: Read, want: number, tolerance = DEFAULT_TOLERANCE): boolean {
   if (!Number.isFinite(want)) return false;
   const off = Math.abs(got.value - want);
   if (off <= tolerance * Math.abs(want) + 1e-12) return true;
@@ -263,7 +263,7 @@ function isUnit(unit: string): boolean {
 }
 
 /** The answer as a number, when it is one: a JSON number, or a string of a number and perhaps its unit. */
-export function numberOf(answer: ProblemItem['answer']): number | null {
+function numberOf(answer: ProblemItem['answer']): number | null {
   if (typeof answer === 'number') return Number.isFinite(answer) ? answer : null;
   if (typeof answer !== 'string' || !answer.trim()) return null;
   const read = readNumber(answer);
@@ -288,7 +288,7 @@ export function unitOf(item: Pick<ProblemItem, 'answer' | 'unit'>): string {
 }
 
 /** A text answer reduced to what matters: no case, spaces, quotes or closing full stop. */
-export function normaliseAnswer(text: string): string {
+function normaliseAnswer(text: string): string {
   return text
     .normalize('NFKC')
     .toLowerCase()

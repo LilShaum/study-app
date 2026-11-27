@@ -284,6 +284,18 @@ and sections with far fewer or far more items for their slides than the
 rest of the lecture (`lib/sectionDensity.ts`). Fix turns the findings into
 a prompt for the same chat, which judges each one against the notes.
 
+Every slide accounted for (`lib/sourceCoverage.ts`, docs/proposals/trust.md):
+the file says how many slides there are (`metadata.source_pages`) and which
+teach nothing, with why; the sections' ranges, each item's `source_page`
+and each figure's `where` say what the rest became. A slide in none of them
+is reported (`uncovered-slides`, with the slides to look at), and Fix asks
+the AI to write its cards or say why it teaches nothing, which comes back
+as `source_pages.not_taught`. Material numbered more than once (parts,
+weeks) is left out rather than guessed. About this lecture shows
+"42 slides, all accounted for" or the slides nothing came from. Each
+card's "From your notes" line names its slide ("From your notes, slide
+12").
+
 A figure the generator marked as something to know that no question asks
 about is reported with the slides' findings: a diagram is read, never
 scored, so it is the one way the student learns it will not be tested
@@ -1047,7 +1059,7 @@ phone column across it.
 
 ## Goals to confirm
 
-Drafted 2026-11-03 for the grading session (docs/prompts/grade-the-app.md),
+Drafted 2026-11-03 for the grading session (docs/archive/prompts/grade-the-app.md),
 from CLAUDE.md and the owner's words in docs/ASKS.md. These parts have no
 **Goal** line above. Each is a draft until the owner confirms or corrects
 it; then it moves into its entry. A grade is only as good as the goal it is

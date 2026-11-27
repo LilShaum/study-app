@@ -976,7 +976,7 @@ the default policy, already sized its review block this way).
 
 ## 2026-09-26 — Audit: the suite could not see Review; late reviews are the ones after a miss
 
-An independent audit of the learning logic (`docs/audits/2026-10-fable-audit.md`).
+An independent audit of the learning logic (`docs/archive/audits/2026-10-fable-audit.md`).
 
 **The simulator was blind to Review under its own default policy.** The
 *In Review*, *Too early* and *Too late* columns counted answers only in a

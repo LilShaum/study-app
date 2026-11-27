@@ -1,3 +1,7 @@
+/**
+ * Builds a practice test: understanding questions asked exam-style, marked only at the end.
+ * Also marks written and checked-problem answers.
+ */
 import type { Course, FlashcardItem, McqItem, MultiItem, ProblemItem } from '@/schema/course';
 import { answerPoints, isWrittenExample, writtenFromExample } from './answerPoints';
 import { answerKind, checkAnswer, writtenFromProblem } from './problemAnswer';

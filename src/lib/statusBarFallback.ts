@@ -12,7 +12,7 @@
  */
 
 /** Status bar heights by the screen's height in points (portrait). */
-export function statusBarFor(screenHeight: number): number {
+function statusBarFor(screenHeight: number): number {
   // Dynamic Island: 14 Pro, 15, 16 and their Plus/Pro Max sizes.
   if ([852, 874, 932, 956].includes(screenHeight)) return 59;
   // Notch: X to 14.

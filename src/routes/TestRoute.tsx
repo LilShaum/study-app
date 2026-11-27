@@ -1094,7 +1094,7 @@ function MultiMarked({ item, chosen }: { item: MultiItem; chosen: TestAnswer }) 
             : `✗ Not this time: ${statementsRight(key, Array.isArray(chosen) ? chosen : [], n)} of ${n} statements right.`}
       </p>
       {item.explanation && <p className="mt-1 text-sm text-text-2"><RichText text={item.explanation} /></p>}
-      <SourceNote excerpt={item.source_excerpt} open={!right} />
+      <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={!right} />
     </div>
   );
 }
@@ -1337,7 +1337,7 @@ function ProblemMarked({ item, chosen }: { item: CheckedProblem; chosen: TestAns
           <RichText text={item.takeaway} />
         </p>
       )}
-      <SourceNote excerpt={item.source_excerpt} open={!right} />
+      <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={!right} />
     </div>
   );
 }
@@ -1353,7 +1353,7 @@ function McqMarked({ item, chosen, order }: { item: Extract<TestQuestion['item']
       </p>
       {item.explanation && <p className="mt-1 text-sm text-text-2"><RichText text={item.explanation} /></p>}
       {/* After a miss the passage is open: the lesson again, not only the right option. */}
-      <SourceNote excerpt={item.source_excerpt} open={!right} />
+      <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={!right} />
     </div>
   );
 }
@@ -1481,7 +1481,7 @@ function Results({
                       ))}
                     </ul>
                     <IdeaNote idea={ideaOf(q)} open />
-                    <SourceNote excerpt={q.item.source_excerpt} open />
+                    <SourceNote excerpt={q.item.source_excerpt} page={q.item.source_page} open />
                   </>
                 );
               }
@@ -1503,7 +1503,7 @@ function Results({
                     )}
                     <div className="mt-2 text-small text-success">✓ {shownAnswer(q.item)}</div>
                     <SolutionSteps steps={q.item.steps ?? []} />
-                    <SourceNote excerpt={q.item.source_excerpt} open />
+                    <SourceNote excerpt={q.item.source_excerpt} page={q.item.source_page} open />
                   </>
                 );
               }
@@ -1539,7 +1539,7 @@ function Results({
                       </div>
                     )}
                     <IdeaNote idea={ideaOf(q)} open />
-                    <SourceNote excerpt={q.item.source_excerpt} open />
+                    <SourceNote excerpt={q.item.source_excerpt} page={q.item.source_page} open />
                   </>
                 );
               }
@@ -1559,7 +1559,7 @@ function Results({
                     </div>
                   )}
                   <IdeaNote idea={ideaOf(q)} open />
-                  <SourceNote excerpt={q.item.source_excerpt} open />
+                  <SourceNote excerpt={q.item.source_excerpt} page={q.item.source_page} open />
                 </>
               );
   };
@@ -1622,7 +1622,7 @@ function Results({
                   </div>
                 )}
                 <IdeaNote idea={ideaOf(q)} open />
-                <SourceNote excerpt={q.item.source_excerpt} open />
+                <SourceNote excerpt={q.item.source_excerpt} page={q.item.source_page} open />
               </li>
             ))}
           </ol>

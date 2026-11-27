@@ -36,6 +36,43 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   (2026-11-27: "diagrams for example of an action potential and the user
   has to fill in the blanks of the diagram") go in phase 2, planned first.
 
+- **Lectures a student can trust** (2026-11-27: "it needs to be built in a
+  way where users can trust that the course they are studying is very
+  accurate to what they are meant to be studying, even if they missed
+  lecture"). Plan: `docs/proposals/trust.md` (every slide accounted for and
+  a slide on every card, then a check by a second AI in a fresh chat, then
+  the app reading the slides itself). Open until built and live.
+- **Make lectures here, and grade them** (2026-11-27: "maybe we should make
+  a rubric … ways to measure the variables of the course generating …
+  especially since different classes can provide wide ranges of examples").
+  Rubric `docs/rubric.md`, scorer `src/lib/rubric.ts`, procedure
+  `.claude/skills/generate-lecture`, log `docs/rubric-log.md`. Open until the
+  first real lecture is made and graded.
+
+- **A phone round for Today, Learn, the lecture page, Practice and
+  Progress** (2026-11-27: "i wanna go ahead with all your suggestions btw",
+  on the fresh-eyes review's findings; plan in
+  `docs/proposals/phone-round.md`). Before part 4's final check.
+
+- **Make how Arborous gets built work better** (2026-11-27: "while working
+  on arborous I want any inefficiencies in the process of making it to be
+  fixed and also like if any new skills are required then I approve.
+  Anything that helps with coding, to designing user interface, especially
+  since claude struggles to understand human taste and what matters to a
+  human. also, an issue I faced a lot … is asking for big wider scoped
+  macro updates … and then the ai goes and focuses on minute fixes or
+  changes that a user would barely notice"; and "I am not a software
+  developer nor a manager … help guide me and this project to be worked on
+  the best way possible … if you cant download skills … tell me what
+  skills would be good to get and where … I want to give claude all the
+  abilities it needs to be great at coding, designing, testing, and making
+  an elegant solution instead of a solution that goes backwards/feels
+  cheap"). Built on claude/project-thread-dfsq36 (a PR into the work
+  branch): the `scope-check` and `taste-review` skills,
+  `scripts/compare-shots.mjs`, `scripts/preview.mjs`, every phone screen
+  shot in dark too, a one-line-per-ask session start, `docs/WORKFLOW.md`.
+  Code organisation and CI are a separate thread. Open until merged and
+  the owner has seen the skills work on a real ask.
 - **Take feedback in properly** (2026-11-25: "whenever I give you feedback
   on something and explain expectations, you mark them down, write what you
   did wrong, write what I'm asking, all in your own words … break down each
@@ -347,7 +384,7 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   the gaps, even to the point of suggesting overhauling certain things if
   necessary. Idk how I should do this tho. If I just need you to make me a
   prompt and that's enough or if there is more prep required"). Prepared
-  2026-11-03: the prompt in docs/prompts/grade-the-app.md, drafted goals
+  2026-11-03: the prompt in docs/archive/prompts/grade-the-app.md, drafted goals
   for the components EXPECTATIONS lacked (to confirm). Not yet: the owner
   will run it after the open changes are built (2026-11-03: "I want to do
   it after you have finished doing a bunch of the changes I've asked you
@@ -1162,7 +1199,7 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   before one. (lib/practice examSoon)
 - 2026-10-18 Better systems suggested and tested: mixed-lecture class
   Practice, modelled in the simulator first.
-- 2026-10-17 Audit of the app's weak points. (docs/audits/2026-10-17)
+- 2026-10-17 Audit of the app's weak points. (docs/archive/audits/2026-10-17)
 - 2026-10-17 iPhone header: dropped by the owner ("stop wasting time on
   it"). Do not try again unless asked.
 - 2026-10-15 Practise every lecture of a class together, and a class

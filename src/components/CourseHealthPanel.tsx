@@ -1,3 +1,7 @@
+/**
+ * Lists what the app's own check found wrong or weak in a lecture, grouped by what it asks of the student.
+ * Offers the fix prompt and the even-out repair when the parent passes the handlers.
+ */
 import { useMemo, useState } from 'react';
 import type { Course } from '@/schema/course';
 import { analyseCourseHealth, findingGroup, type HealthFinding } from '@/lib/courseHealth';
