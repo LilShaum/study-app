@@ -11,9 +11,9 @@ Source: PSYC Language, 25 slides with text, typed notes and a few marked
 questions, studies taught. Both runs on Opus 5.5 at high effort, the PDF
 read as page images, raw replies untouched.
 
-| | Run A (this branch, `caf2f52`) | Run B (diagrams branch) | Owner's file (old prompt, hand-revised) |
+| | Run A (this branch) | Run B (diagrams branch) | Owner's file (old prompt, hand-revised) |
 |---|---|---|---|
-| Settings | studies on, study guide and Test 1 key pasted | studies off, nothing pasted | studies on, both pasted |
+| Settings | studies on, study guide and Test 1 key pasted (prompt as at `caf2f52` but for its two study-tag clarifications) | studies off, nothing pasted | studies on, both pasted |
 | Time | 18 min | 18 min | about 18 hours with revisions |
 | Items / sections | 130 / 8 | 115 / 10 | 163 / 9 |
 | Size (≈ output tokens) | 32k | 32k | 44k |
