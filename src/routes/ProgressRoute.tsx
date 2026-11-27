@@ -213,7 +213,7 @@ export function ProgressRoute() {
                     </span>
                   </span>
                   <span className={`shrink-0 whitespace-nowrap text-small tabular-nums ${due > 0 ? 'text-accent' : 'text-text-3'}`}>
-                    {due > 0 ? `Review ${due}` : 'Holding'}
+                    {due > 0 ? `Review ${due}` : 'Nothing due'}
                   </span>
                   <span aria-hidden="true" className="shrink-0 font-display text-[1.5rem] leading-none text-text-3 group-hover:text-accent">
                     ›

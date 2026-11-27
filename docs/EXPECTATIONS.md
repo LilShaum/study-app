@@ -852,7 +852,7 @@ ones you missed" or anything else that brings misses back (the owner,
 - **Progress** opens with what needs the student in words ("4 sections
   fading, 5 questions to review; 5 not started"), then each section
   studied as a row you tap, weakest first ("87% still held", Review n, or
-  Holding), then the sections not started, each one tap into Learn; on a
+  Nothing due), then the sections not started, each one tap into Learn; on a
   phone Review (or Practise the weakest when nothing is fading) is pinned
   at the foot. Closest to gone first; how well it was answered (accuracy and the least
   accurate sections and tags) folds below it (design audit 3D, live
