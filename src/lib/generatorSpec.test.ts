@@ -205,7 +205,10 @@ describe('generatorSpec: the narration', () => {
 
   it('sends every handwritten note to the student', () => {
     expect(on).toMatch(/What is written beside a slide is the narration itself/);
-    expect(on).toMatch(/Walk the handwriting, note by note/);
+    // Listed in the Pass 2 inventory, which Pass 4 walks: no separate
+    // end-of-draft walk (Anthropic: re-checking lists over-verify, trust.md).
+    expect(on).toMatch(/Every note written by hand\*\* beside a slide/);
+    expect(on).toMatch(/walk the Pass 2 inventory and confirm each entry/);
   });
 
   it('lets a reason in from outside only labelled, and never under a card, studies or not', () => {

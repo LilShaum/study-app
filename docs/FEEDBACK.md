@@ -11,6 +11,70 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-27 · The audit's cost
+**Their words:** "I thought it did before? … generating a lecture based on
+two sets of slides takes ~30 minutes. if you are making it do two checks now
+of each slide … i worry about how it will affect course generating costs and
+time. we have to make sure the prompt is as efficient as possible without
+being to vague … and also without having parts that say opposite things …
+Maybe do some looking into what goes into a good prompt and make sure your
+sources are reputable".
+**Question or instruction:** Both: a question (did it audit before?) and
+an instruction (efficient, clear, consistent, researched from reputable
+sources).
+**What went wrong:** The first audit draft added a second walk over every
+card. (habit: met a quality goal by adding work, without weighing its cost
+on the owner's slowest step.)
+**What they are asking:** Every prompt change pays for itself in time and
+tokens; the prompt stays clear, specific and free of contradictions;
+prompt choices rest on Anthropic's own guidance, cited.
+**Expectations, broken down:**
+- *efficient*: means no extra pass where the work can happen while writing /
+  checked by word count of the prompt and an estimate of reply size (timed
+  on a real lecture once approved) / not: "it's only one more section".
+- *not vague, no opposite things*: means each rule stated once, where it is
+  used, with its reason / checked by grepping for the old wording when a
+  rule changes / not: a new rule beside an old one that half-says it.
+- *reputable sources*: means Anthropic's prompting docs for the model the
+  owner uses / checked by links in `docs/proposals/trust.md` / not: blog
+  posts or memory.
+**Rules and ripples:** trust.md section 4 rewritten; the second walk removed
+from `prompts/generator.md`.
+**Status:** built (no second walk); prompt-wide efficiency read-through
+offered, waiting on the owner.
+
+### 2026-11-27 · How a lecture's accuracy gets checked
+**Their words:** "the thing is I already dont like that much that ai has to
+be used to make the lectures but the prompt itself should already have some
+checks or methods to ensure the lectures are audited properly. id go with B
+thou if I had to choose. maybe see what the prompt already does before
+adding new things" (B: fold the check into making the lecture, not a second
+paste in a fresh chat).
+**Question or instruction:** Instruction: no extra AI step for the
+student; the audit belongs inside the generator prompt; read what the
+prompt already does before adding.
+**What went wrong:** I recommended a second AI pass, adding AI and a paste
+for a student who already dislikes needing AI at all. (habit: answered a
+trust problem with more of the thing the owner trusts least.)
+**What they are asking:** The one prompt that makes a lecture must audit it
+properly before handing it back, with a method, not a hope. Build on the
+checks it has (the inventory, Pass 4, "Before you output") rather than
+piling new rules beside them. Where the app can check without AI, it should.
+**Expectations, broken down:**
+- *audited properly*: means every card is checked against the slide it came
+  from and every slide against the cards, by a method the AI follows step by
+  step / checked by a lecture made with the prompt (Opus 5.5, high effort,
+  once the owner OKs the usage) with the audit's slide accounting holding up
+  against the deck / not: one more line in the end checklist.
+- *see what the prompt already does*: means extend Pass 4 and checklist
+  item 2 instead of a parallel section, and say what was there / checked by
+  the diff of `prompts/generator.md` / not: a new block repeating old rules.
+**Rules and ripples:** CLAUDE.md line (courses: the prompt audits itself,
+no extra AI step). `docs/proposals/trust.md` phase 2 changed from a second
+chat to an audit pass inside the prompt; the app reading the slides itself
+(no AI) moved up.
+**Status:** noted; building on branch `claude/project-thread-tckngc`.
+
 ### 2026-11-27 · Big asks answered with small fixes; taste
 
 **Their words:** "an issue I faced a lot while working on arborous is

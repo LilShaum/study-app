@@ -20,6 +20,19 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
 
 ## Open
 
+- **Lectures a student can trust** (2026-11-27: "it needs to be built in a
+  way where users can trust that the course they are studying is very
+  accurate to what they are meant to be studying, even if they missed
+  lecture"). Plan: `docs/proposals/trust.md` (every slide accounted for and
+  a slide on every card, then a check by a second AI in a fresh chat, then
+  the app reading the slides itself). Open until built and live.
+- **Make lectures here, and grade them** (2026-11-27: "maybe we should make
+  a rubric … ways to measure the variables of the course generating …
+  especially since different classes can provide wide ranges of examples").
+  Rubric `docs/rubric.md`, scorer `src/lib/rubric.ts`, procedure
+  `.claude/skills/generate-lecture`, log `docs/rubric-log.md`. Open until the
+  first real lecture is made and graded.
+
 - **A phone round for Today, Learn, the lecture page, Practice and
   Progress** (2026-11-27: "i wanna go ahead with all your suggestions btw",
   on the fresh-eyes review's findings; plan in

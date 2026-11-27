@@ -18,6 +18,10 @@ describe('buildNewCoursePrompt', () => {
   it('carries the coverage rules that stop a thin course', () => {
     expect(prompt).toMatch(/every technical term/i);
     expect(prompt).toMatch(/Audit your own coverage/i);
+    // Every slide accounted for, every card quoted from its slide (docs/proposals/trust.md).
+    expect(prompt).toMatch(/walk your Pass 2 list of slides/);
+    expect(prompt).toContain('source_page');
+    expect(prompt).toContain('source_pages');
   });
 
   it('tells the reader where to put their notes', () => {

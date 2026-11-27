@@ -5,6 +5,7 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { sortedSections } from './sortedSections';
 import { freshIdPrefix } from './idPrefix';
+import { runsOf, sourceCoverage } from './sourceCoverage';
 import { analyseCourseHealth } from './courseHealth';
 import { QUALITY_BAR_SPEC } from './generatorSpec';
 import { teacherNotesBlock } from './teacherNotes';
@@ -106,6 +107,10 @@ export interface FixPromptPlan {
   untestedTerms: string[];
   /** Key terms only one MCQ or flashcard asks about (courseGaps.thinKeyTerms). */
   thinKeyTerms: string[];
+  /** Slides nothing came from and the AI gave no reason for ("slides 19–21, 30"), or empty. */
+  missingSlides: string;
+  /** "42 slides": the material's size, as the file states it. */
+  slideCount: string;
   faultyItems: { item: StudyItem; sectionId: string; faults: string[] }[];
   /** How many items had a correctable fault — more than faultyItems when capped. */
   totalFaulty: number;
@@ -147,6 +152,10 @@ export function planFixes(course: Course): FixPromptPlan {
   const missingTerms = health.declaredTermCoverage?.missing ?? [];
   const untestedTerms = health.gaps.untestedTerms;
   const thinKeyTerms = health.gaps.thinKeyTerms;
+  const coverage = sourceCoverage(course);
+  const missingSlides = coverage?.missing.length
+    ? `${coverage.unit}${coverage.missing.length === 1 ? '' : 's'} ${runsOf(coverage.missing)}`
+    : '';
 
   // Worst fault first, then course order, before the cap is applied.
   const worst = (faults: string[]) => Math.min(...faults.map((f) => RANK.get(f) ?? 99));
@@ -156,9 +165,11 @@ export function planFixes(course: Course): FixPromptPlan {
     missingTerms,
     untestedTerms,
     thinKeyTerms,
+    missingSlides,
+    slideCount: coverage ? `${coverage.count} ${coverage.unit}${coverage.count === 1 ? '' : 's'}` : '',
     totalFaulty: faultyItems.length,
     faultyItems: faultyItems.slice(0, MAX_FAULTY_ITEMS),
-    empty: missingTerms.length === 0 && untestedTerms.length === 0 && thinKeyTerms.length === 0 && faultyItems.length === 0,
+    empty: missingTerms.length === 0 && untestedTerms.length === 0 && thinKeyTerms.length === 0 && !missingSlides && faultyItems.length === 0,
   };
 }
 
@@ -266,6 +277,25 @@ export function buildFixPrompt(course: Course, notes = course.metadata.student_n
     );
   }
 
+  if (fix.missingSlides) {
+    blocks.push(
+      [
+        `## ${blocks.length + 1}. Slides nothing in the course comes from`,
+        '',
+        `You said my material has ${fix.slideCount}. No section, card or figure comes`,
+        `from ${fix.missingSlides}, and you did not say why.`,
+        '',
+        'Look at each one. If it teaches something (a fact, a term, a step, a',
+        'figure the text talks about), write the items it calls for, each with',
+        'its `source_page`, under the section it belongs to. If it teaches',
+        'nothing (a title, an outline, a repeat, a question slide), say so in',
+        'your verdict list: the app learns that from your corrections only if',
+        'you also send `"source_pages"` with those slides added to',
+        '`not_taught`, as shown below.',
+      ].join('\n'),
+    );
+  }
+
   if (fix.faultyItems.length) {
     blocks.push(
       [
@@ -327,15 +357,19 @@ Two things, in this order:
 }
 \`\`\`
 
-Both keys are optional — send only the ones you have something for.
+Both keys are optional — send only the ones you have something for. If
+you were asked about slides nothing comes from, also send
+\`"source_pages": { "count": <as before>, "unit": "<slide or page>", "not_taught": [ { "range": "slide 19", "why": "outline" } ] }\`
+with every slide that teaches nothing, the earlier ones included.
 
 - Compact: no indentation, each item on one line of its own.
 - Do NOT return the whole course. New items go under \`sections\`; fixes go
   under \`corrections\` and must keep the id they already have.
 - Do not re-send items that are already fine.
 - Every NEW item needs an \`id\` starting with "${freshIdPrefix(course, 'fix')}" (no id in the
-  course starts that way), a \`type\`, and a \`source_excerpt\` quoting
-  the passage it comes from.
+  course starts that way), a \`type\`, a \`source_excerpt\` quoting
+  the passage it comes from word for word, and a \`source_page\` saying where
+  it is ("slide 12").
 - Every \`mcq\` needs four or five \`options\`, a 0-based \`correct_index\`, an
   \`explanation\`, and a \`distractor_rationale\` with one entry per option in the
   same order, with an empty string in the correct answer's slot. Each

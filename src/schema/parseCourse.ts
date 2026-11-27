@@ -1,4 +1,4 @@
-import { ClassExamSchema, CourseSchema, InventorySchema, SCHEMA_VERSION, type Course } from './course';
+import { ClassExamSchema, CourseSchema, InventorySchema, SCHEMA_VERSION, SourcePagesSchema, type Course } from './course';
 import { formatZodError } from './formatZodError';
 import { cutMessage, readReply } from '@/lib/readReply';
 
@@ -59,6 +59,34 @@ export function parseCourse(raw: unknown): ParseCourseResult {
     if (inventory.success) metadata.inventory = inventory.data;
     else delete metadata.inventory;
     course = { ...course, metadata };
+  }
+  // The slide accounting (lib/sourceCoverage) is read the same way: kept
+  // cleaned, or dropped whole, never the lecture.
+  if (course.metadata.source_pages !== undefined) {
+    const pages = SourcePagesSchema.safeParse(course.metadata.source_pages);
+    const metadata: Course['metadata'] = { ...course.metadata };
+    if (pages.success) metadata.source_pages = pages.data;
+    else delete metadata.source_pages;
+    course = { ...course, metadata };
+  }
+  // A card's slide: "slide 12" as written, a bare number as text, anything
+  // else dropped. Only items that need it are copied.
+  const odd = (v: unknown) => v !== undefined && (typeof v !== 'string' || v.length > 60);
+  if (course.sections.some((s) => s.items.some((i) => odd(i.source_page)))) {
+    course = {
+      ...course,
+      sections: course.sections.map((s) => ({
+        ...s,
+        items: s.items.map((i) => {
+          if (!odd(i.source_page)) return i;
+          const raw: unknown = i.source_page;
+          const { source_page: _drop, ...rest } = i;
+          void _drop;
+          const kept = typeof raw === 'number' ? String(raw) : typeof raw === 'string' ? raw.slice(0, 60) : undefined;
+          return (kept ? { ...rest, source_page: kept } : rest) as typeof i;
+        }),
+      })),
+    };
   }
   // The AI's notes to the student: a list of strings, or dropped.
   if ('notes_for_student' in course.metadata) {

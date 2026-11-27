@@ -272,7 +272,7 @@ export function McqCard({ item: written, onAnswered, onNext, onUnsure, keyboardE
       )}
       {/* After a miss the why is open, then the passage: the lesson again, not only the right option. */}
       {revealed && !keyBroken && <IdeaNote idea={idea} open={!correct || unsure} />}
-      {revealed && <SourceNote excerpt={item.source_excerpt} open={(learning || !correct || unsure) && !keyBroken} />}
+      {revealed && <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={(learning || !correct || unsure) && !keyBroken} />}
     </div>
   );
 }

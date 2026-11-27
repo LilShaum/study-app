@@ -90,6 +90,7 @@ export interface RecallItem {
   id: string;
   type: 'recall';
   source_excerpt?: string;
+  source_page?: string;
   difficulty?: DefinitionItem['difficulty'];
   tags?: string[];
   /** The definition this asks for. */
@@ -118,6 +119,7 @@ export interface PreviewItem {
   id: string;
   type: 'preview';
   source_excerpt?: string;
+  source_page?: string;
   difficulty?: FlashcardItem['difficulty'];
   tags?: string[];
   target: FlashcardItem;
@@ -184,6 +186,7 @@ function toRecall(item: SessionItem & DefinitionItem, pool: readonly DefinitionI
     id: recallId(item.id),
     type: 'recall',
     source_excerpt: item.source_excerpt,
+    source_page: item.source_page,
     difficulty: item.difficulty,
     tags: item.tags,
     target: original,
@@ -490,6 +493,7 @@ export function buildSessionItems(
       id: item.id,
       type: 'recall',
       source_excerpt: item.source_excerpt,
+      source_page: item.source_page,
       difficulty: item.difficulty,
       tags: item.tags,
       target,
