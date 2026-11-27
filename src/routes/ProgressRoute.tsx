@@ -196,16 +196,21 @@ export function ProgressRoute() {
                       ? `/session/${id}/review?section=${encodeURIComponent(section.id)}`
                       : `/study/${id}/section/${encodeURIComponent(section.id)}`
                   }
-                  className="group tap-safe flex items-center gap-3 py-3"
+                  className="group tap-safe flex items-center gap-3 py-2.5"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className={`block text-small ${due > 0 ? 'text-text' : 'text-text-2'} group-hover:text-accent`}>
+                    <span className={`line-clamp-2 text-small ${due > 0 ? 'text-text' : 'text-text-2'} group-hover:text-accent`}>
                       {section.title}
                     </span>
-                    <span className="relative mt-2 block h-px w-full bg-border" aria-hidden="true">
-                      <span className={`block h-px ${due > 0 ? 'bg-text' : 'bg-text-3'}`} style={{ width: `${held}%` }} />
+                    {/* The share held sits at the end of its own bar: one
+                        line per section, not two (the owner, 2026-11-27:
+                        "is now the screen too scroll heavy"). */}
+                    <span className="mt-1.5 flex items-center gap-2" aria-label={`${held}% still held`}>
+                      <span className="relative block h-px flex-1 bg-border" aria-hidden="true">
+                        <span className={`block h-px ${due > 0 ? 'bg-text' : 'bg-text-3'}`} style={{ width: `${held}%` }} />
+                      </span>
+                      <span className="shrink-0 text-xs tabular-nums text-text-3" aria-hidden="true">{held}%</span>
                     </span>
-                    <span className="mt-1.5 block text-xs tabular-nums text-text-3">{held}% still held</span>
                   </span>
                   <span className={`shrink-0 whitespace-nowrap text-small tabular-nums ${due > 0 ? 'text-accent' : 'text-text-3'}`}>
                     {due > 0 ? `Review ${due}` : 'Holding'}
@@ -220,9 +225,14 @@ export function ProgressRoute() {
         </div>
       )}
       {notStarted.length > 0 && (
-        <div className="mt-8">
-          <h2 className="mark mb-1 text-text-3">Not started</h2>
-          <ul className="divide-y divide-border border-y border-border">
+        <details className="group/ns mt-6" open={wide}>
+          <summary className="tap-safe flex cursor-pointer list-none items-center gap-3 border-b border-border py-2.5">
+            <span className="mark min-w-0 flex-1 text-text-3">Not started · {plural(notStarted.length, 'section')}</span>
+            <span aria-hidden="true" className="shrink-0 font-display text-[1.5rem] leading-none text-text-3 transition-transform group-open/ns:rotate-90">
+              ›
+            </span>
+          </summary>
+          <ul className="divide-y divide-border border-b border-border">
             {notStarted.map(({ section, n }) => (
               <li key={section.id}>
                 <Link
@@ -239,7 +249,7 @@ export function ProgressRoute() {
               </li>
             ))}
           </ul>
-        </div>
+        </details>
       )}
     </>
   );
@@ -317,9 +327,9 @@ export function ProgressRoute() {
       {stats.weakestSections.length > 0 && (
         <Link
           to={`/session/${id}/weakest`}
-          className="group mt-8 flex items-baseline justify-between gap-4 border-y-2 border-text-3 py-4"
+          className={`group flex items-baseline justify-between gap-4 ${wide ? 'mt-8 border-y-2 border-text-3 py-4' : 'tap-safe mt-6 border-y border-border py-2.5'}`}
         >
-          <span className="font-display text-heading font-semibold text-text">Practise the weakest</span>
+          <span className={`font-display font-semibold text-text ${wide ? 'text-heading' : 'text-body'}`}>Practise the weakest</span>
           <span className="shrink-0 text-small text-text-2">every card, weakest first →</span>
         </Link>
       )}
@@ -364,17 +374,20 @@ export function ProgressRoute() {
       <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
         ← Back
       </Link>
-      <div className="mt-4 flex items-start gap-5">
-        <CourseTree courseId={id} course={course} progress={progress} className="h-28 sm:h-36" />
+      {/* On a phone the head is a few lines, so the list starts on the
+          first screen: the page bar already says Progress, and the title
+          at full size took half the screen (2026-11-27). */}
+      <div className="mt-3 flex items-center gap-4 sm:mt-4 sm:items-start sm:gap-5">
+        <CourseTree courseId={id} course={course} progress={progress} className="h-16 shrink-0 sm:h-36" />
         <div className="min-w-0 flex-1">
-          <p className="mark text-text-3">Progress</p>
-          <h1 className="mt-1 font-display text-title font-semibold text-text sm:text-display">
+          <p className="mark hidden text-text-3 sm:block">Progress</p>
+          <h1 className="font-display text-body font-semibold leading-snug text-text sm:mt-1 sm:text-display">
             {course.metadata.title}
           </h1>
-          <p className="mt-2 text-body text-text">{needs}.</p>
-          <p className="mt-1 text-small text-text-3">{lastSeenText}</p>
+          <p className="mt-1 text-xs text-text-3 sm:text-small">{lastSeenText}</p>
         </div>
       </div>
+      <p className="mt-4 text-body text-text">{needs}.</p>
 
       {/* What is fading leads the page.
           It used to open with accuracy — four tiles of past answers — and
