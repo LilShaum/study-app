@@ -569,6 +569,18 @@ export function CourseTree({
         samples.push({ x, y, sectionId });
       }
     }
+    // A branch in leaf is its leaves too: a pointer over a clump is on that
+    // branch, though it may be far from the wood under it (the owner,
+    // 2026-11-27: a sweep across a leafy branch skipped it). Each standing
+    // leaf counts at its centre, so the clump's whole span picks it.
+    for (const g of svg.querySelectorAll<SVGGElement>('g[data-sid]')) {
+      const sectionId = g.dataset.sid!;
+      for (const leaf of g.querySelectorAll<SVGPathElement>('path.lf')) {
+        if (typeof leaf.getBBox !== 'function') return;
+        const b = leaf.getBBox();
+        samples.push({ x: b.x + b.width / 2, y: b.y + b.height / 2, sectionId });
+      }
+    }
     cloud.current = samples;
   }, [tree]);
   useEffect(() => {
@@ -627,8 +639,7 @@ export function CourseTree({
    * (store/fallen).
    */
   const FALL_LASTS_MS = 4500;
-  type Falling = { d: string; vein?: string; style: Record<string, string> };
-  const [falls, setFalls] = useState<{ sid: string; at: number; leaves: Falling[] }[]>([]);
+  type Falling = { d: string; vein?: string; wither?: boolean; style: Record<string, string> };
   const fellFrom = useFallenStore((s) => s.byCourse[courseId]);
   const fell = useFallenStore((s) => s.fell);
   const syncFallen = useFallenStore((s) => s.sync);
@@ -652,9 +663,12 @@ export function CourseTree({
     (ghosts: Limb[], after = 0): Falling[] => {
       const step = Math.max(1, Math.ceil(ghosts.length / MAX_MOVING));
       return ghosts
-        .filter((_, i) => i % step === 0)
-        .map((l) => {
+        .map((l, i) => {
           const h = leafHash(l.leafKey ?? l.d);
+          const letGo = `${after + 60 + Math.round(1300 * ((h % 1000) / 1000) ** 2)}ms`;
+          // Past the few that are shown moving, a leaf withers where it is,
+          // at its own moment, rather than leaving the branch before the rest.
+          if (i % step) return { d: l.d, vein: l.vein, wither: true, style: { animationDelay: letGo } };
           const at = startOf(l.d);
           // Into the thin band along the ground where the fallen leaves lie
           // (lib/growTree), not below it.
@@ -674,7 +688,7 @@ export function CourseTree({
               // one while the shiver goes on, more early than late (the owner,
               // 2026-11-25: "very soon after it starts shaking the leaves should
               // start falling and continuing to do so while the shake continues").
-              animationDelay: `${after + 60 + Math.round(1300 * ((h % 1000) / 1000) ** 2)}ms`,
+              animationDelay: letGo,
             } as Record<string, string>,
           };
         });
@@ -718,6 +732,20 @@ export function CourseTree({
     }
     return { unfurl, still, fresh, landing, from, startAt };
   });
+  /*
+   * Opening on a tree already drawn (no drawing-on), the leaves about to
+   * fall are there from the first frame, on their branch, each letting go at
+   * its own moment: drawn only once the fall began, they were missing for
+   * the wait before it and then came back to fall (the owner, 2026-11-27:
+   * "they first disappear completely and then reappear quickly and then
+   * fall"). After a drawing-on they come with the fall, as the tree has only
+   * just drawn itself.
+   */
+  const [falls, setFalls] = useState<{ sid: string; at: number; leaves: Falling[] }[]>(() =>
+    arrival && arrival.fresh.length && !arrival.still && !arrival.unfurl
+      ? [{ sid: 'arrival', at: 0, leaves: fallingFor(arrival.fresh, arrival.startAt) }]
+      : [],
+  );
   const [unfurling, setUnfurling] = useState(() => !!arrival?.unfurl);
   const [shaking, setShaking] = useState(false);
 
@@ -736,8 +764,7 @@ export function CourseTree({
               setShaking(true);
               timers.push(window.setTimeout(() => setShaking(false), SHAKE_MS));
             }
-            const at = Date.now();
-            setFalls([{ sid: 'arrival', at, leaves: fallingFor(arrival.fresh, 0) }]);
+            if (arrival.unfurl) setFalls([{ sid: 'arrival', at: Date.now(), leaves: fallingFor(arrival.fresh, 0) }]);
             timers.push(window.setTimeout(() => setFalls([]), FALL_LASTS_MS + 600));
           }, arrival.startAt),
         );
@@ -1028,9 +1055,15 @@ export function CourseTree({
             return;
           }
           const key = keyAt(e.clientX, e.clientY);
-          if (key) openSection(key);
-          // A tap on the drawing, not on a number, picks the branch under it:
-          // it never opens anything (the owner, 2026-11-25, Testing 11).
+          if (key) return openSection(key);
+          // A tap on the branch already picked opens it too, as its number
+          // does (the owner, 2026-11-27: "clicking the branch itself doesnt
+          // work. is this intentional?"). With a mouse, pointing picks it, so
+          // one click; with a finger, the first tap picks and the second
+          // opens. A tap on bare paper, or on another branch, only picks
+          // (Testing 11: a stray tap must never open anything).
+          const under = nearest({ clientX: e.clientX, clientY: e.clientY, pointerType: lastPointer.current }, null);
+          if (under && under === pointed) openSection(under);
           else {
             pickAt(e, lastPointer.current);
             if (lastPointer.current !== 'mouse') hideSoon(LINGER_MS);
@@ -1162,7 +1195,7 @@ export function CourseTree({
               so the drawing-on's fade, meant for leaves on the branch, never
               holds a falling one. */}
           {f.leaves.map((leaf, i) => (
-            <g key={i} className="leaf-fall" style={leaf.style}>
+            <g key={i} className={leaf.wither ? 'leaf-clear' : 'leaf-fall'} style={leaf.style}>
               <path d={leaf.d} className="lfm" strokeWidth={0.7} />
               {leaf.vein && <path d={leaf.vein} className="fv" strokeWidth={0.35} />}
             </g>

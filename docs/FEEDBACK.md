@@ -11,6 +11,62 @@ The entries before 2026-11-25 (late) were written afterwards, from the
 conversation, as the first examples of the habits this file is meant to
 stop.
 
+### 2026-11-27 · The first run repeats itself, and its tree lags
+**Their words:** (screenshots of "2 of 8", "Point at the tree, then click a
+number to study that section", and "4 of 8", "Sweep across the tree to find
+any section … That's section 5. On a lecture, click its number to open it.")
+"dont they seem to be kinda showing the same thing? … there is a fair amount
+of endlag when you click a branch to make it grow leaves, making it delayed
+and feel laggy when trying to quickly hover the next branch … when a branch
+has leaves on it, when running my mouse over the leaves … the one with
+leaves will not get selected in that wave … the order of the onboarding
+should be reevaluated and also the contents of it, not only for the
+redundant stuff but also if its maybe missing anything important … when the
+leaves are supposed to fall, they first disappear completely and then
+reappear quickly and then fall/shake." Then: "to click a branch for it to
+start growing leaves, you have to click the number specifically and clicking
+the branch itself doesnt work. is this intentional?"
+**Question or instruction:** both: a question (aren't these the same?),
+answered yes; an instruction to rethink the whole first run's order and
+content; four faults to fix; and a question about clicking a branch.
+**What went wrong:** the find page was kept after the grow page started
+teaching the same gesture (point, a number lights, tap it), so the student
+does the same thing twice, four pages apart (habit: not removing what a
+change made pointless). The grow page puts the tree to rest for 2.2 s after
+each tap, so the next branch ignores the pointer (an old note, "the leaves
+growing are not greyed", met by freezing the tree). Branch picking measures
+distance to the wood only, so a pointer over a leafy clump is "nowhere".
+The faded tree is drawn again before its leaves fall, without the leaves
+that are about to fall, so they vanish for 350 ms and come back as fallers.
+**What they are asking:** one first run where each page teaches one new
+thing, in an order that builds; nothing taught twice; checked for gaps.
+The tree answers the pointer at once after every tap; a branch with leaves
+is picked when the pointer is over its leaves; leaves that fall stay on
+the branch until the moment they let go; a click on a branch counts.
+**Expectations, broken down:**
+- *not the same thing twice*: every page's words and gesture differ from
+  every other page's / checked by: a table of the pages, what each teaches
+  and what the student does / not: rewording page 4.
+- *order reevaluated*: options for the order argued, not the old order kept
+  by default / checked by: docs/proposals/first-run-flow.md / not: moving
+  one page.
+- *missing anything important*: each thing a new student meets on their
+  first lecture is either in the first run or deliberately left to the app
+  / checked by: a list of what a lecture page shows against the first run /
+  not: adding pages.
+- *no end lag*: after a tap, moving to the next branch picks it on the next
+  frame / checked by: Playwright: tap, move, the next branch picked within
+  one frame / not: a shorter freeze.
+- *leafy branch selected*: a sweep across a clump picks that clump's branch
+  / checked by: probes over leaves pick their section / not: bigger reach
+  for everything.
+- *leaves fall, not vanish*: every leaf visible on the branch on every frame
+  until it moves / checked by: frames every 50 ms across the change / not:
+  a shorter gap.
+**Rules and ripples:** EXPECTATIONS (first run, tree), Help (The tree),
+whatsNew, tests.
+**Status:** noted; building.
+
 ### 2026-11-27 · The audit's cost
 **Their words:** "I thought it did before? … generating a lecture based on
 two sets of slides takes ~30 minutes. if you are making it do two checks now

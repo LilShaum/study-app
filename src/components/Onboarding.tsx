@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOnboardingStore } from '@/store/onboarding';
 import { usePlanStore, DAILY_CHOICES } from '@/store/plan';
@@ -101,7 +101,7 @@ function studied(sectionId: string, at: number): Record<string, ItemResult> {
   return Object.fromEntries(section.items.map((it) => [it.id, { got: 3, missed: 0, lastSeen: at } as ItemResult]));
 }
 
-type Page = 'title' | 'install' | 'grow' | 'fade' | 'find' | 'time' | 'name' | 'account' | 'remind' | 'start';
+type Page = 'title' | 'install' | 'tree' | 'fade' | 'time' | 'name' | 'account' | 'remind' | 'start';
 
 /** How long a page's words take to leave before the next page's come in. */
 const LEAVE_MS = 200;
@@ -114,12 +114,14 @@ const LEAVE_MS = 200;
  * impressive and intuitive"). docs/proposals/onboarding.md.
  *
  * One tree stays on the page throughout, so it is the same tree the student
- * grows, lets fade and searches; the words change around it, leaving and
+ * grows, lets fade and wins back; the words change around it, leaving and
  * arriving. The tree draws itself on with the name (the owner's picture,
- * 2026-11-16); the student studies two sections (unnamed: any lecture's) with the
- * lecture page's own gesture, skips three weeks ahead and watches the
- * sections they left lose their leaves (where "fading" is taught, by being seen), and
- * sweeps the branches to find one. Then the daily time, their name, an
+ * 2026-11-16); the student points at the branches and studies two sections
+ * (unnamed: any lecture's) with the lecture page's own gesture, skips three
+ * weeks ahead and watches the sections they left lose their leaves (where
+ * "fading" is taught, by being seen), then reviews one and sees its leaves
+ * come back: the loop the app is built on. One lesson a page, none twice
+ * (docs/proposals/first-run-flow.md; the owner, 2026-11-27). Then the daily time, their name, an
  * account, and the first lecture. A line of words each.
  *
  * Installing comes first on a phone, and that order is not cosmetic: an iOS
@@ -152,9 +154,8 @@ function FirstRun() {
     () => [
       'title',
       ...(showInstall ? (['install'] as Page[]) : []),
-      'grow',
+      'tree',
       'fade',
-      'find',
       'time',
       'name',
       'account',
@@ -184,7 +185,10 @@ function FirstRun() {
   const [grown, setGrown] = useState<string[]>([]);
   const [faded, setFaded] = useState(false);
   const [named, setNamed] = useState<string | null>(null);
-  const [foundOne, setFoundOne] = useState(false);
+  // The section studied again after the fall: its leaves come back.
+  const [reviewed, setReviewed] = useState<string | null>(null);
+  // The progress the fall left, to grow back from (CourseTree grewFrom).
+  const [fadedProgress, setFadedProgress] = useState<Record<string, ItemResult> | null>(null);
   const [yourName, setYourName] = useState('');
   const [reminding, setReminding] = useState(false);
   const [remindAt, setRemindAt] = useState(() => useRemindersStore.getState().time);
@@ -203,7 +207,7 @@ function FirstRun() {
   // Studying a section, here a tap on its number: its branch grows its leaves.
   const grow = (sid: string) => {
     if (grown.includes(sid)) return;
-    setGrowing(true);
+    rest();
     setGrown((g) => [...g, sid]);
     setProgress((p) => ({ ...p, ...studied(sid, now) }));
   };
@@ -211,8 +215,21 @@ function FirstRun() {
     // Three weeks on: every part studied fades, but the last one, reviewed
     // yesterday, keeps its leaves, so the difference is the lesson.
     const kept = grown[grown.length - 1];
-    setProgress(Object.assign({}, ...grown.map((sid) => studied(sid, sid === kept ? now - DAY : now - 24 * DAY))));
+    const after = Object.assign({}, ...grown.map((sid) => studied(sid, sid === kept ? now - DAY : now - 24 * DAY)));
+    setProgress(after);
+    setFadedProgress(after);
     setFaded(true);
+  };
+  // After the fall: studying a section again grows its leaves back and
+  // clears its pile, the loop the app is built on (docs/proposals/first-run-flow.md).
+  const [notThatOne, setNotThatOne] = useState(false);
+  const review = (sid: string) => {
+    if (reviewed) return;
+    // Only a section that lost its leaves has any to win back.
+    if (!grown.includes(sid) || sid === grown[grown.length - 1]) return setNotThatOne(true);
+    rest();
+    setReviewed(sid);
+    setProgress((p) => ({ ...p, ...studied(sid, Date.now()) }));
   };
   const finish = (to?: string) => {
     complete();
@@ -222,21 +239,32 @@ function FirstRun() {
   const sectionNo = (sid: string | null | undefined) => DEMO.sections.findIndex((s) => s.id === sid) + 1;
   const enough = grown.length >= 2;
 
-  // The one tree: grows on the title page, is studied, fades, is searched.
-  // Drawn again only once three weeks have passed, so it arrives as a
-  // lecture does and the leaves lost since fall.
-  const playing = page === 'grow' || page === 'find';
-  const big = ['title', 'grow', 'fade', 'find'].includes(page) || wide;
+  // The one tree: grows on the title page, is pointed at and studied, fades,
+  // and is reviewed. Drawn again only once three weeks have passed, so it
+  // arrives as a lecture does and the leaves lost since fall.
+  const playing = page === 'tree' || (page === 'fade' && faded);
+  const big = ['title', 'tree', 'fade'].includes(page) || wide;
   // While the leaves a tap grew are coming in, the tree is at rest: no
   // branch picked, so none faded (the owner, 2026-11-25: the branches
   // growing leaves are not greyed), while a touch at any other time fades
   // the rest, from the first page on (the owner, 2026-11-26).
   const [growing, setGrowing] = useState(false);
+  // Each tap rests the tree afresh: a second tap within the first's rest
+  // kept the first's end, and the tree woke while the second was growing.
+  const [rests, setRests] = useState(0);
+  function rest() {
+    setGrowing(true);
+    setRests((n) => n + 1);
+  }
+  // ...but only until the pointer moves on: resting the tree for its whole
+  // growth made the next branch ignore the pointer for two seconds (the
+  // owner, 2026-11-27: "a fair amount of endlag when you click a branch").
+  const restAt = useRef<{ x: number; y: number } | null>(null);
   useEffect(() => {
     if (!growing) return;
     const t = window.setTimeout(() => setGrowing(false), 2200);
     return () => window.clearTimeout(t);
-  }, [growing]);
+  }, [growing, rests]);
   // The tree stays on every page, the install page included (small there):
   // it was taken away and drawn again, a jump between the first pages.
   const tree = (
@@ -244,6 +272,14 @@ function FirstRun() {
       className="first-run-tree flex justify-center"
       style={{ height: wide ? (big ? '30rem' : '24rem') : big ? '19rem' : '8.5rem' }}
       aria-hidden={!playing}
+      onPointerDownCapture={(e) => {
+        restAt.current = { x: e.clientX, y: e.clientY };
+      }}
+      onPointerMove={(e) => {
+        if (!growing) return;
+        const from = restAt.current;
+        if (!from || Math.hypot(e.clientX - from.x, e.clientY - from.y) > 16) setGrowing(false);
+      }}
     >
       <CourseTree
         key={faded ? 'after' : 'before'}
@@ -254,17 +290,11 @@ function FirstRun() {
         className="h-full max-w-full"
         arrive
         quiet={growing}
-        growOnly={page === 'grow' ? EMPTY : undefined}
+        growOnly={page === 'tree' ? EMPTY : undefined}
+        grewFrom={faded ? (fadedProgress ?? undefined) : undefined}
         interactive={playing}
-        onOpenSection={page === 'grow' ? grow : () => undefined}
-        onPoint={
-          page === 'find'
-            ? (sid) => {
-                setNamed(sid);
-                if (sid) setFoundOne(true);
-              }
-            : undefined
-        }
+        onOpenSection={page === 'tree' ? grow : page === 'fade' ? review : () => undefined}
+        onPoint={page === 'tree' ? setNamed : undefined}
       />
     </div>
   );
@@ -363,7 +393,7 @@ function FirstRun() {
       );
       break;
 
-    case 'grow':
+    case 'tree':
       words = (
         <Words
           lead={
@@ -375,7 +405,11 @@ function FirstRun() {
           }
           line={
             grown.length === 0
-              ? `${touch ? 'Touch the tree, then tap' : 'Point at the tree, then click'} a number to study that section.`
+              ? named
+                ? `That’s section ${sectionNo(named)}. ${touch ? 'Tap it again' : 'Click it'} to study it.`
+                : touch
+                  ? 'Slide a finger across the tree.'
+                  : 'Move your pointer across the tree.'
               : grown.length === 1
                 ? 'Study another section.'
                 : 'A section you haven’t studied stays bare.'
@@ -390,16 +424,25 @@ function FirstRun() {
       break;
 
     case 'fade':
-      words = faded ? (
+      words = reviewed ? (
+        <Words
+          lead="Review brings the leaves back."
+          line="Each day, Arborous brings back what’s fading, before you forget it."
+        />
+      ) : faded ? (
         <Words
           lead="What you don’t review fades, and its leaves fall."
-          line="They lie on the ground under their branch. One section was reviewed yesterday, and kept its leaves. Arborous brings fading sections back before you forget them."
+          line={
+            notThatOne
+              ? 'That one has no fallen leaves to win back. Try one whose leaves fell.'
+              : `One section was reviewed yesterday and kept its leaves. ${touch ? 'Tap' : 'Click'} one whose leaves fell to review it.`
+          }
         />
       ) : (
         <Words lead="Now leave it for a while." line="Without review, what you learn begins to slip away." />
       );
       action = faded ? (
-        <button type="button" onClick={next} className="press press-ink tap-safe">
+        <button type="button" onClick={next} disabled={!reviewed} className="press press-ink tap-safe">
           Continue
         </button>
       ) : (
@@ -409,30 +452,10 @@ function FirstRun() {
       );
       break;
 
-    case 'find':
-      words = (
-        <Words
-          lead="Sweep across the tree to find any section."
-          line={
-            named
-              ? `That’s section ${sectionNo(named)}. On a lecture, ${touch ? 'tap' : 'click'} its number to open it.`
-              : touch
-                ? 'Slide a finger along the branches.'
-                : 'Move your pointer along the branches.'
-          }
-        />
-      );
-      action = (
-        <button type="button" onClick={next} disabled={!foundOne} className="press press-ink tap-safe">
-          Continue
-        </button>
-      );
-      break;
-
     case 'time':
       words = (
         <div>
-          <Words lead="How long can you study on most days?" line="Each day's session will fit that time. You can change it whenever you like." />
+          <Words lead="How long can you study on most days?" line="Each day’s session brings back what’s fading, then teaches what’s next, in that time. You can change it whenever you like." />
           <div role="radiogroup" aria-label="Minutes a day" className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-3 wide:justify-start">
             {DAILY_CHOICES.map((m) => (
               <button
@@ -588,7 +611,7 @@ function FirstRun() {
       break;
   }
 
-  const pageKey = page + (faded ? ':after' : '') + (grown.length > 1 ? ':2' : grown.length);
+  const pageKey = page + (faded ? ':after' : '') + (reviewed ? ':back' : '') + (grown.length > 1 ? ':2' : grown.length);
   const motion = `fr-words ${page === 'title' ? 'fr-title' : ''} ${leaving ? 'fr-leaving' : ''}`;
   const wordsBlock = (
     <div key={pageKey} className={`${motion} flex flex-col gap-8 ${wide ? 'items-start' : 'items-center text-center'}`} aria-live="polite">

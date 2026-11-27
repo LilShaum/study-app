@@ -811,11 +811,14 @@ ones you missed" or anything else that brings misses back (the owner,
   §4). Any touch on it raises a number on every branch, on a ring round
   the crown, each riding its branch as it swings; the branch under the
   finger is picked out and named under the tree with "Open"; a tap on a
-  number opens its section, a tap on the drawing picks the branch under it
-  and never opens anything (the enlarged tree in a sheet of its own was
-  removed 2026-11-25, Testing 11: it did nothing the page could not, and a
-  stray tap opened it; its info card's words are in Help, The tree), and an
-  up-and-down drag still scrolls the page. Every number is in the same ink
+  number opens its section, and so does a tap on the branch already picked
+  (a mouse picks by pointing, so one click; a finger, the second tap; the
+  owner, 2026-11-27); a tap on bare paper or another branch only picks.
+  A branch in leaf is picked by its leaves as well as its wood (a sweep
+    across a clump skipped it, 2026-11-27). (The enlarged tree in a sheet of
+  its own was removed 2026-11-25, Testing 11: it did nothing the page could
+  not, and a stray tap opened it; its info card's words are in Help, The
+  tree.) An up-and-down drag still scrolls the page. Every number is in the same ink
   but the picked one, in the accent and larger; a branch's state is never a
   colour on its number (the owner could not tell a fading branch's blue
   from the one touched, Testing 1 and 3). Hidden numbers draw nothing, in
@@ -1120,11 +1123,17 @@ measured against.
   install first; the tree stands for any lecture, its branches numbered
   sections with no names (2026-11-27: a general explanation of the tree's
   parts, no made-up topic or questions; docs/proposals/first-run-general.md):
-  "each branch is one section of a lecture", the student taps two numbers
-  to study them and their branches grow leaves ("leaves grow as you learn
-  its topics and concepts"), lets three weeks pass and watches the sections
-  not reviewed lose their leaves to the ground (where "fading" is taught),
-  and sweeps the branches to find one ("That's section 3"); then the daily time, their name, an
+  "each branch is one section of a lecture", the student points across the
+  tree ("That's section 3") and taps two branches or their numbers to study
+  them, and their branches grow leaves ("leaves grow as you learn its topics
+  and concepts"), lets three weeks pass and watches the sections not
+  reviewed lose their leaves to the ground (where "fading" is taught), then
+  reviews one and sees its leaves come back and its pile clear ("Review
+  brings the leaves back"; the loop the app is built on). One lesson a page,
+  none twice: the separate page for finding a section repeated the first
+  (the owner, 2026-11-27; docs/proposals/first-run-flow.md). The tree
+  answers the pointer as soon as it moves after a tap. Then the daily time
+  (a day's session brings back what's fading, then teaches what's next), their name, an
   account (made or signed in to on the page, or Not now; "I already have
   an account" on the title page goes straight to signing in), and New
   lecture. Skip on every page. One tree stays through every page, growing

@@ -32,6 +32,15 @@ describe('the first run', () => {
     expect(screen.getByRole('button', { name: 'Continue' })).toHaveProperty('disabled', true);
   });
 
+  it('teaches each thing once: no separate page for finding a section', () => {
+    open();
+    // title, tree, fade, time, name, account, start (the owner, 2026-11-27:
+    // the find page repeated the tree page).
+    expect(screen.getByText('1 of 7')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Begin' }));
+    expect(screen.queryByText(/Sweep across the tree/)).toBeNull();
+  });
+
   it('takes someone with an account straight to signing in', async () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: 'I already have an account' }));

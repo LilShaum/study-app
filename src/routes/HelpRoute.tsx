@@ -204,8 +204,8 @@ const SECTIONS: HelpSection[] = [
         <p className="mt-2">
           Touch the tree and every branch shows its number. Drag your finger over the tree to choose
           a branch: its number is marked, the other branches fade, and its name shows under the
-          tree. Tap its number, or Open under the tree, to open that section. On a computer, move
-          the pointer over the tree and click a number.
+          tree. Tap it again, its number, or Open under the tree, to open that section. On a
+          computer, move the pointer over the tree and click the branch or its number.
         </p>
         <p className="mt-2">
           In a sitting the tree grows a leaf when a section is learned, and never drops one for a

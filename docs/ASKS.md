@@ -20,6 +20,16 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
 
 ## Open
 
+- **A first run without repeats, and a tree that keeps up** (2026-11-27:
+  "dont they seem to be kinda showing the same thing? … the order of the
+  onboarding should be reevaluated and also the contents of it, not only for
+  the redundant stuff but also if its maybe missing anything important"; and
+  three faults: lag after a tap grows leaves, a leafy branch skipped when
+  sweeping, leaves that vanish and reappear before falling). Also: "to click
+  a branch for it to start growing leaves, you have to click the number …
+  is this intentional?" Broken down in `docs/FEEDBACK.md`; plan in
+  `docs/proposals/first-run-flow.md`. Open until live.
+
 - **Lectures a student can trust** (2026-11-27: "it needs to be built in a
   way where users can trust that the course they are studying is very
   accurate to what they are meant to be studying, even if they missed
