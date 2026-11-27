@@ -1,7 +1,7 @@
 import type { Course, StudyItem } from '@/schema/course';
 import { sortedSections } from './sortedSections';
 import { freshIdPrefix } from './idPrefix';
-import { EXPLAIN_SPEC, NARRATION_SPEC } from './generatorSpec';
+import { EXPLAIN_SPEC, GRAPHIC_SPEC, NARRATION_SPEC } from './generatorSpec';
 import { kindsOf } from './makeKinds';
 import { teacherNotesBlock } from './teacherNotes';
 import { FILE_FALLBACK, handBackFile } from './handBack';
@@ -74,10 +74,11 @@ export function buildExplainPrompt(course: Course, notes = course.metadata.stude
     .join('\n\n');
 
   const figureNotes = kindsOf(course).includes('graphic')
-    ? `\n\nIf you can see my slides or notes, also write a \`graphic\` item with no
-\`svg\` for each figure the lecture turns on that the section does not already
-have, with its \`why\`, \`purpose\` and \`where\`. If you cannot see them, write
-no figures: do not guess at what one shows.`
+    ? `\n\nIf you can see my slides or notes, also write a \`graphic\` item for each
+figure the lecture turns on that the section does not already have, with its
+\`why\`, \`purpose\` and \`where\`, drawn as a \`diagram\` where it is parts and
+links or things side by side (no \`svg\`). If you cannot see them, write no
+figures: do not guess at what one shows.\n\n${GRAPHIC_SPEC}`
     : '';
 
   return `I want EXPLANATIONS added to an Arborous lecture I already have. Its

@@ -3,6 +3,7 @@
  * Also groups each finding by what it asks of the student (fix, slides, minor).
  */
 import type { Course, StudyItem } from '@/schema/course';
+import { normalizeDiagram } from '@/schema/diagram';
 import { analyseCourseGaps, type CourseGaps } from './courseGaps';
 import { itemPrompt } from '@/schema/fragment';
 import { coversTokens, normaliseTerm, termTokens } from './termMatch';
@@ -347,6 +348,19 @@ export function analyseCourseHealth(course: Course): CourseHealth {
     });
   }
 
+  // A described diagram the app cannot draw (a flow with fewer than two
+  // parts, a comparison with one column): the figure falls back to its
+  // svg or its `where`, and the AI that wrote it can rewrite it.
+  const undrawable = items.filter((i) => i.type === 'graphic' && i.diagram !== undefined && !normalizeDiagram(i.diagram));
+  if (undrawable.length) {
+    findings.push({
+      id: 'diagram-undrawable',
+      severity: 'warning',
+      message: `${undrawable.length} diagram${undrawable.length === 1 ? ' is' : 's are'} described in a way the app cannot draw (too few parts, or a comparison with one column).`,
+      items: undrawable.map((i) => i.id),
+    });
+  }
+
   /* ---- coverage against the generator's own declared inventory ---- */
   // Terms the generator says the notes only name were never meant to get a
   // definition (prompts/generator.md), so they are not counted as missing.
@@ -652,6 +666,7 @@ const GROUPS: Record<string, FindingGroup> = {
   'written-list': 'fix',
   'written-many': 'fix',
   'unsafe-svg': 'fix',
+  'diagram-undrawable': 'fix',
   'unclear-figures': 'slides',
   'uncovered-slides': 'slides',
   'untested-figures': 'slides',

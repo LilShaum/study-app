@@ -21,6 +21,7 @@ export const WHATS_NEW: Change[] = [
   {
     date: '2026-11-27',
     items: [
+      'Diagrams in lectures made from now are drawn by the app: step through a pathway, tap a part, and see what breaks in each "what if".',
       'Lectures made from now account for every slide. Each card names the slide it came from, and the lecture check names any slide skipped.',
     ],
   },

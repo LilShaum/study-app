@@ -1089,7 +1089,18 @@ measured against.
 - **Diagrams**: the lecture's figures to look at in one place, each with
   what it shows, what to look at in it, and whether it is to know or just
   to picture it. A figure the app has no drawing of is still a plate: it
-  says where the real one is in the student's own notes.
+  says where the real one is in the student's own notes. A figure the
+  generator described as a `diagram` (flow, cycle or compare; schema/
+  diagram.ts, docs/proposals/diagrams.md) is drawn by the app in the book's
+  type, both themes, at the width given: "Step through it" walks its parts
+  in the order written with each one's note, a tapped part shows its note,
+  and each "What if …?" draws what is cut or damaged (dashed, in the error
+  ink) and what stops working (the warning ink), with the consequence in
+  words. A comparison picks one column or shows all, the rows they share
+  stepping back. The same diagram is interactive in Learn, the section page
+  and here; a grid tile on a computer shows it still. A diagram the app
+  cannot draw falls back to the svg or `where`, and the lecture check
+  reports it (`diagram-undrawable`) for Fix.
 - **Help**: the answer to what a student wonders while studying, short,
   found without reading the rest.
 - **The first run**: from opening the app for the first time to studying a
