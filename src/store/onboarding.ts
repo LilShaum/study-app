@@ -1,3 +1,6 @@
+/**
+ * Remembers whether the student has seen the welcome screen, and lets it be shown again.
+ */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { safeJSONStorage } from '@/lib/safeStorage';

@@ -1,3 +1,7 @@
+/**
+ * Plans and applies the merge of an AI-written fragment into an existing lecture.
+ * Planning is separate from applying so the student can preview what will change.
+ */
 import { pagesIn } from './sourceCoverage';
 import type { Course, Section, StudyItem } from '@/schema/course';
 import { allItems, duplicateKey, itemPrompt, type Fragment } from '@/schema/fragment';

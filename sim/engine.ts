@@ -718,7 +718,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
  * forgets: the scale on the app's stabilities that best explains their
  * answers, by maximum likelihood (a four-option question can be guessed).
  */
-export function fitScale(seen: { days: number; s: number; mcq: boolean; got: boolean }[]): number {
+function fitScale(seen: { days: number; s: number; mcq: boolean; got: boolean }[]): number {
   let best = 1;
   let bestLl = -Infinity;
   for (let m = 0.3; m <= 3; m *= 1.05) {

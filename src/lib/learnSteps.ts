@@ -28,7 +28,7 @@ import { multiKey } from './multiKey';
 export const STEP_TERMS = 4;
 
 /** Cards to write that a section asks in its first sitting; the rest wait for the next. */
-export const WRITTEN_PER_SITTING = 2;
+const WRITTEN_PER_SITTING = 2;
 
 /**
  * Problems a step asks at the first meeting, one after each worked example

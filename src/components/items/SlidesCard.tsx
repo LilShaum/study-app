@@ -1,3 +1,7 @@
+/**
+ * Opens each Learn section with where it sits in the slides and what it builds to.
+ * Offers to go straight to the questions or to teach the section first.
+ */
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { FRAME, type ItemFrame } from './frame';
 import { RichText } from './RichText';

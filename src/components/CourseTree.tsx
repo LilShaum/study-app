@@ -526,32 +526,11 @@ export function CourseTree({
    */
   const paperDefs = useMemo(() => {
     if (!paper) return null;
-    const k = paper.unitsPerPx;
-    const tile = Math.max(...paper.layers.map((l) => l.px)) * k;
+    const tile = paper.tile.px * paper.unitsPerPx;
     return (
       <defs>
         <pattern id={paperId} patternUnits="userSpaceOnUse" width={tile} height={tile}>
-          <rect width={tile} height={tile} fill="var(--color-bg)" stroke="none" />
-          {paper.layers.flatMap((l, li) => {
-            const size = l.px * k;
-            const n = Math.ceil(tile / size);
-            const out = [];
-            for (let i = 0; i < n; i++)
-              for (let j = 0; j < n; j++)
-                out.push(
-                  <image
-                    key={`${li}-${i}-${j}`}
-                    href={l.href}
-                    x={i * size}
-                    y={j * size}
-                    width={size}
-                    height={size}
-                    preserveAspectRatio="none"
-                    style={{ mixBlendMode: paper.blend as CSSProperties['mixBlendMode'], opacity: paper.opacity }}
-                  />,
-                );
-            return out;
-          })}
+          <image href={paper.tile.href} width={tile} height={tile} preserveAspectRatio="none" />
         </pattern>
       </defs>
     );
@@ -1210,7 +1189,7 @@ export function CourseTree({
                 <path className="tree-key-line" d={shortOf(k.tip, k.at, 8)} pathLength={1} />
                 <a
                   href={`#/study/${courseId}/section/${encodeURIComponent(k.sectionId)}`}
-                  aria-label={`Section ${k.n}, ${s?.title ?? ''}: ${said}`}
+                  aria-label={`Section ${k.n}${s?.title ? `, ${s.title}` : ''}: ${said}`}
                   tabIndex={revealed ? 0 : -1}
                   onFocus={() => {
                     show();

@@ -11,7 +11,7 @@ export interface GlossaryEntry {
 }
 
 /** The letter a term files under. "[S]" and "5′ cap" have none, so they go under #, first, as in a printed index. */
-export function letterOf(term: string): string {
+function letterOf(term: string): string {
   const raw = term.trim();
   if (/^[^\p{L}]/u.test(raw)) return '#';
   const first = normaliseTerm(raw)[0] ?? '';

@@ -1,3 +1,7 @@
+/**
+ * Builds the prompt that asks an AI to repair the faults the app's health check found.
+ * Asks for additions and corrections, never a regenerated lecture file.
+ */
 import type { Course, StudyItem } from '@/schema/course';
 import { sortedSections } from './sortedSections';
 import { freshIdPrefix } from './idPrefix';

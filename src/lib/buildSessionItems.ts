@@ -35,7 +35,7 @@ export type StudyMode = (typeof STUDY_MODES)[number];
 export const ADAPTIVE_WINDOW = 10;
 /** Of each window, the slots for what is fading and past mistakes; more within a week of an exam. */
 export const ADAPTIVE_REVIEW = 3;
-export const ADAPTIVE_REVIEW_NEAR_EXAM = 5;
+const ADAPTIVE_REVIEW_NEAR_EXAM = 5;
 /** Of each window, the slots kept for new cards while anything new is left. */
 export const ADAPTIVE_NEW_MIN = 2;
 

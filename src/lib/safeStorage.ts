@@ -120,7 +120,7 @@ export function trimStudyLog(raw: string, keep: number): string | null {
  * that only tunes timing: first its older half, then its older three
  * quarters. It is never deleted outright any more. It used to be, silently,
  * and it is the record the forgetting-rate fit and the owner's calibration
- * depend on (docs/audits/2026-10-17-weak-points.md). Trimming is said out
+ * depend on (docs/archive/audits/2026-10-17-weak-points.md). Trimming is said out
  * loud, once.
  */
 export function trySetItem(name: string, value: string): boolean {

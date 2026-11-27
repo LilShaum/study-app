@@ -38,6 +38,12 @@ losing the nuance; testing comprehension and mastery, not recall alone. And
 it must help them reach that, not only test it, even if they never went to
 the lecture or opened the slides.
 
+The owner, 2026-11-27: the first and last resort for a student, looking
+and feeling good; studying made effortless, "especially for people with
+adhd like me, where decreasing the difficulty to study helps a lot"; no
+"cheap tricks like duolingo"; and a course a student can trust is accurate
+to what they must study, even if they missed the lecture.
+
 How the app actually works and feels can drift from it: check a feature
 against its line before changing it, treat a gap as work worth proposing,
 and add a line here whenever the owner says how something should be
@@ -238,7 +244,9 @@ the app had dropped weeks before because nobody looked.
 
 Plan first: keep a task list for anything over two steps, one task in
 progress at a time, and a task is done only when it is tested and live
-(pushed, merged to `main`, and the live site checked). Leave anything blocked
+(pushed, in a pull request the owner merges, and the live site checked once
+it is in `main`; PRs are the default, 2026-11-27, and the owner is new to
+GitHub, so the description is plain words). Leave anything blocked
 open and say what it waits on.
 
 Load these skills when the work matches; don't wait until halfway through:

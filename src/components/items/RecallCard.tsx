@@ -1,3 +1,7 @@
+/**
+ * Shows a term's meaning and asks the student to type the word, graded against accepted forms.
+ * The student can overrule the grader's verdict; see lib/typedAnswer.
+ */
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import type { RecallItem } from '@/lib/buildSessionItems';
 import { gradeTyped, maskTerm, type Verdict } from '@/lib/typedAnswer';

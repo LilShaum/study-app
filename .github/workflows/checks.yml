@@ -1,0 +1,49 @@
+name: Checks
+
+# Runs on every pull request, so a broken build, a failing test or a leftover
+# (an unused file, export or dependency) is caught before it reaches main.
+# deploy.yml runs the same build and tests again after the merge.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22 # see deploy.yml: jsdom needs Node 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build (tsc -b covers src and sim)
+        run: npm run build
+
+      # Unused files, exports and dependencies. Config: knip.json.
+      - name: Leftovers (knip)
+        run: npm run knip
+
+      # docs/CODEMAP.md is generated from each file's header comment.
+      - name: Code map is current
+        run: |
+          npm run codemap
+          git diff --exit-code docs/CODEMAP.md || {
+            echo "::error::docs/CODEMAP.md is out of date. Run 'npm run codemap' and commit it."
+            exit 1
+          }

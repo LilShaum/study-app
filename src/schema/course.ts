@@ -231,7 +231,7 @@ export const SectionSchema = z.looseObject({
   items: z.array(StudyItemSchema),
 });
 
-export const ItemCountsSchema = z
+const ItemCountsSchema = z
   .object({
     mcq: z.number(),
     multi: z.number(),
@@ -316,7 +316,7 @@ export const ClassExamSchema = z.object({
   sections: z.array(z.string().max(200)).max(500).optional(),
 });
 
-export const CourseMetadataSchema = z.looseObject({
+const CourseMetadataSchema = z.looseObject({
   title: z.string(),
   course_code: z.string().optional(),
   /** YYYY-MM-DD. Set by the student in Course details; drives exam-aware review. */

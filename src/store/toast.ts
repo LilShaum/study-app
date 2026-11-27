@@ -1,3 +1,6 @@
+/**
+ * Holds the queue of toast messages and exposes toast() for showing one from anywhere.
+ */
 import { create } from 'zustand';
 
 export interface ToastItem {

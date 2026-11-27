@@ -55,7 +55,7 @@ first; every scheduling decision so far was made with it.
 - Before claiming anything works: `npm test`, `npm run typecheck`,
   `npm run lint`, and `npm run sim` for anything touching scheduling.
   Re-baseline only with a `sim/FINDINGS.md` entry saying why.
-- Write your report to `docs/audits/2026-10-fable-audit.md`: each finding
+- Write your report to `docs/archive/audits/2026-10-fable-audit.md`: each finding
   with severity, evidence (test, sim run or code reference), and what you
   did or propose. Say plainly what you did not check.
 - Do not restyle the UI or reformat files you are not changing.

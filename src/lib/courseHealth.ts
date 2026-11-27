@@ -1,3 +1,7 @@
+/**
+ * Runs the checks on a lecture that need no source material and returns findings by severity.
+ * Also groups each finding by what it asks of the student (fix, slides, minor).
+ */
 import type { Course, StudyItem } from '@/schema/course';
 import { analyseCourseGaps, type CourseGaps } from './courseGaps';
 import { itemPrompt } from '@/schema/fragment';
@@ -465,7 +469,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
   // noise. Three sigma on at least twenty questions is a real pattern, and
   // it is the one that lets a student who knows nothing beat chance.
   // Also from a share of 35% on 16 questions or more: on the owner's eleven
-  // lectures, three sigma missed two at 41 and 50% (docs/audits/2026-10-17).
+  // lectures, three sigma missed two at 41 and 50% (docs/archive/audits/2026-10-17).
   if (lengthTellFires(quality.length)) {
     const pct = Math.round((quality.length.longestIsCorrect / quality.length.mcqs) * 100);
     findings.push({
@@ -620,7 +624,7 @@ export function analyseCourseHealth(course: Course): CourseHealth {
  * What a finding asks of the student, so the check can lead with the few
  * that change their score or what they learn, and fold the rest. On the
  * owner's lectures every one had 2 to 10 findings, mostly of the third kind,
- * and a flat list of them all read as noise (docs/audits/2026-10-17).
+ * and a flat list of them all read as noise (docs/archive/audits/2026-10-17).
  *
  * - `fix`: a question is broken or can be answered without knowing the
  *   material. Worth an AI round.
@@ -666,7 +670,7 @@ export function findingGroup(f: Pick<HealthFinding, 'id' | 'severity'>): Finding
  * ("What happens, and how else…?"), or two question marks. "…, and why?"
  * is one: the answer and its reason.
  */
-export function asksTwoThings(question: string): boolean {
+function asksTwoThings(question: string): boolean {
   return /,\s*and\s+(what|how|which|when|where|who)\b[^?]*\?\s*$/i.test(question) || (question.match(/\?/g)?.length ?? 0) >= 2;
 }
 

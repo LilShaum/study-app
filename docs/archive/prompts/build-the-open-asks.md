@@ -2,7 +2,7 @@
 
 **To start it** (the owner): open a fresh session on this repo on max (or
 ultracode), attach what is listed below if you have it, and say: *"Read
-docs/prompts/build-the-open-asks.md and do it."*
+docs/archive/prompts/build-the-open-asks.md and do it."*
 
 **Attach, if you can**: the **slides** (PDF) of one real lecture, nothing
 else. The session makes the lecture's file from them itself, with the
@@ -16,7 +16,7 @@ for it to say anything (see `grade-the-app.md`).
 ## What you are doing
 
 Build what the owner has asked for and is still open in `docs/ASKS.md`, so
-that the grading session (`docs/prompts/grade-the-app.md`), which the owner
+that the grading session (`docs/archive/prompts/grade-the-app.md`), which the owner
 runs after this, grades the app they asked for. The session-start hook
 prints the Open list; that list, not this file, is the source of truth if
 they differ.

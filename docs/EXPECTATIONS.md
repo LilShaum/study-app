@@ -1059,7 +1059,7 @@ phone column across it.
 
 ## Goals to confirm
 
-Drafted 2026-11-03 for the grading session (docs/prompts/grade-the-app.md),
+Drafted 2026-11-03 for the grading session (docs/archive/prompts/grade-the-app.md),
 from CLAUDE.md and the owner's words in docs/ASKS.md. These parts have no
 **Goal** line above. Each is a draft until the owner confirms or corrects
 it; then it moves into its entry. A grade is only as good as the goal it is
@@ -1096,11 +1096,14 @@ measured against.
   first lecture, with no confusion and nothing to learn about the app.
   Built 2026-11-25 as something to do, not to read (docs/proposals/
   onboarding.md): the tree draws itself on with the name; on a phone,
-  install first; the student brings two parts of a made-up lecture (the
-  water cycle) into leaf by tapping their numbers and answering one easy
-  question on each, a right answer growing the branch as in the app, lets three weeks pass and watches the
-  parts left unstudied lose their leaves (where "fading" is taught), and
-  sweeps the branches to find one; then the daily time, their name, an
+  install first; the tree stands for any lecture, its branches numbered
+  sections with no names (2026-11-27: a general explanation of the tree's
+  parts, no made-up topic or questions; docs/proposals/first-run-general.md):
+  "each branch is one section of a lecture", the student taps two numbers
+  to study them and their branches grow leaves ("leaves grow as you learn
+  its topics and concepts"), lets three weeks pass and watches the sections
+  not reviewed lose their leaves to the ground (where "fading" is taught),
+  and sweeps the branches to find one ("That's section 3"); then the daily time, their name, an
   account (made or signed in to on the page, or Not now; "I already have
   an account" on the title page goes straight to signing in), and New
   lecture. Skip on every page. One tree stays through every page, growing

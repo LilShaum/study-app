@@ -1,3 +1,7 @@
+/**
+ * Builds the small repair prompt that rewrites wrong options so the right answer is no longer the longest.
+ * Also picks which questions to rework, most lopsided first.
+ */
 import type { Course, McqItem } from '@/schema/course';
 import { givesAwayByLength, lengthBias, longestCredit, toBringDown } from './questionQuality';
 import { lengthTellFires } from './courseHealth';
@@ -11,7 +15,7 @@ import { FILE_FALLBACK, handBackFile } from './handBack';
  *
  * Six of the owner's eleven lectures had the right answer longest in 40 to
  * 55% of their questions (fair is about 25%), so guessing the longest scored
- * well and practice flattered the student (docs/audits/2026-10-17). Fix
+ * well and practice flattered the student (docs/archive/audits/2026-10-17). Fix
  * could repair it, but Fix is a full round: the whole quality rulebook out,
  * whole questions back, an AI session the owner often cannot spare.
  *

@@ -14,7 +14,7 @@ import { formatZodError } from './formatZodError';
  * back to the id rather than rejecting, so a generator that forgets one
  * doesn't cost the student the whole paste).
  */
-export const FragmentSectionSchema = z.looseObject({
+const FragmentSectionSchema = z.looseObject({
   id: z.string().min(1),
   title: z.string().optional(),
   description: z.string().optional(),

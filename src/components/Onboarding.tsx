@@ -67,19 +67,22 @@ function Glyph({ name }: { name: IconName }) {
 }
 
 
-/** The lecture the first run grows: made up and never saved. */
+/**
+ * The tree the first run grows: any lecture, never saved. Its sections have
+ * no names and there are no questions: the first run explains what the
+ * tree's parts mean in general, not through a made-up topic (the owner,
+ * 2026-11-11, 2026-11-25 and 2026-11-26: "a more general explanation of the
+ * tree and what its parts represent"; docs/proposals/first-run-general.md).
+ * Six sections and this id draw the most balanced tree of the ones tried;
+ * the shape comes from the id and the sections' sizes.
+ */
 const DEMO_ID = 'arborous:first-run:4';
-// Six parts and this id draw the most balanced tree of the ones tried; the
-// shape comes from the id and the parts' sizes, not their names. A topic
-// every student met at school, so no part name needs explaining (the owner,
-// 2026-11-25: "encoding and retrieval … are very confusing").
-const DEMO_PARTS = ['Evaporation', 'Condensation', 'Clouds', 'Rain', 'Rivers', 'Groundwater'];
 const DEMO: Course = {
   schema_version: '1.0',
-  metadata: { title: 'The water cycle' },
-  sections: DEMO_PARTS.map((title, s) => ({
+  metadata: { title: 'A lecture' },
+  sections: Array.from({ length: 6 }, (_, s) => ({
     id: `s${s + 1}`,
-    title,
+    title: '',
     items: Array.from({ length: 6 + ((s * 3) % 4) }, (_, i) => ({
       id: `s${s + 1}-q${i + 1}`,
       type: 'mcq',
@@ -90,23 +93,9 @@ const DEMO: Course = {
   })),
 } as unknown as Course;
 
-/**
- * One easy question per part, so growing a branch is what it is in the app:
- * getting that part's questions right (the owner, 2026-11-25: "does the user
- * go through and try a question or something?"). Any student can answer them.
- */
-const DEMO_QUESTIONS: Record<string, { q: string; options: string[]; right: number }> = {
-  s1: { q: 'What turns the water in a lake into vapour?', options: ['Cold air', "The sun's heat", 'The wind alone'], right: 1 },
-  s2: { q: 'What happens when water vapour cools high up?', options: ['It turns back into tiny droplets', 'It disappears', 'It sinks to the ground'], right: 0 },
-  s3: { q: 'What is a cloud made of?', options: ['Smoke', 'Dry air', 'Tiny drops of water'], right: 2 },
-  s4: { q: 'When does a cloud let its water fall as rain?', options: ['When the sun sets', 'When its drops grow too heavy', 'When the wind stops'], right: 1 },
-  s5: { q: 'Where does most river water end up?', options: ['In the sea', 'Back in the clouds at once', 'Underground for good'], right: 0 },
-  s6: { q: 'What is groundwater?', options: ['Rain that has not landed yet', 'Water on top of mountains', 'Water soaked into soil and rock'], right: 2 },
-};
-
 const DAY = 86_400_000;
 
-/** A part studied: every question answered right, last seen `ago` ms before now. */
+/** A section studied: every item answered right, last seen `ago` ms before now. */
 function studied(sectionId: string, at: number): Record<string, ItemResult> {
   const section = DEMO.sections.find((s) => s.id === sectionId)!;
   return Object.fromEntries(section.items.map((it) => [it.id, { got: 3, missed: 0, lastSeen: at } as ItemResult]));
@@ -127,9 +116,9 @@ const LEAVE_MS = 200;
  * One tree stays on the page throughout, so it is the same tree the student
  * grows, lets fade and searches; the words change around it, leaving and
  * arriving. The tree draws itself on with the name (the owner's picture,
- * 2026-11-16); the student studies two parts of a made-up lecture with the
- * lecture page's own gesture, skips three weeks ahead and watches the parts
- * they left lose their leaves (where "fading" is taught, by being seen), and
+ * 2026-11-16); the student studies two sections (unnamed: any lecture's) with the
+ * lecture page's own gesture, skips three weeks ahead and watches the
+ * sections they left lose their leaves (where "fading" is taught, by being seen), and
  * sweeps the branches to find one. Then the daily time, their name, an
  * account, and the first lecture. A line of words each.
  *
@@ -189,7 +178,7 @@ function FirstRun() {
   const next = () => go(at + 1);
   const back = () => go(at - 1);
 
-  // The made-up lecture's progress, and what the student has done with it.
+  // The sample tree's progress, and what the student has done with it.
   const [now] = useState(Date.now);
   const [progress, setProgress] = useState<Record<string, ItemResult>>({});
   const [grown, setGrown] = useState<string[]>([]);
@@ -211,27 +200,12 @@ function FirstRun() {
     return () => fallen.clear(DEMO_ID);
   }, []);
 
+  // Studying a section, here a tap on its number: its branch grows its leaves.
   const grow = (sid: string) => {
     if (grown.includes(sid)) return;
+    setGrowing(true);
     setGrown((g) => [...g, sid]);
     setProgress((p) => ({ ...p, ...studied(sid, now) }));
-  };
-  // The part whose question is open on the study page, and how the last answer went.
-  const [asking, setAsking] = useState<string | null>(null);
-  const [answer, setAnswer] = useState<{ sid: string; right: boolean } | null>(null);
-  const ask = (sid: string) => {
-    if (grown.includes(sid)) return;
-    setAnswer(null);
-    setAsking(sid);
-  };
-  const reply = (sid: string, choice: number) => {
-    const right = DEMO_QUESTIONS[sid]?.right === choice;
-    setAnswer({ sid, right });
-    setAsking(null);
-    if (right) {
-      setGrowing(true);
-      grow(sid);
-    }
   };
   const letTimePass = () => {
     // Three weeks on: every part studied fades, but the last one, reviewed
@@ -245,7 +219,7 @@ function FirstRun() {
     if (to) navigate(to);
   };
 
-  const partName = (sid: string | null | undefined) => DEMO.sections.find((s) => s.id === sid)?.title ?? '';
+  const sectionNo = (sid: string | null | undefined) => DEMO.sections.findIndex((s) => s.id === sid) + 1;
   const enough = grown.length >= 2;
 
   // The one tree: grows on the title page, is studied, fades, is searched.
@@ -253,11 +227,10 @@ function FirstRun() {
   // lecture does and the leaves lost since fall.
   const playing = page === 'grow' || page === 'find';
   const big = ['title', 'grow', 'fade', 'find'].includes(page) || wide;
-  // While a question is open, and while the leaves its right answer grew are
-  // coming in, the tree is at rest: no branch picked, so none faded (the
-  // owner, 2026-11-25: the branches growing leaves are not greyed), while a
-  // touch at any other time fades the rest, from the first page on (the
-  // owner, 2026-11-26).
+  // While the leaves a tap grew are coming in, the tree is at rest: no
+  // branch picked, so none faded (the owner, 2026-11-25: the branches
+  // growing leaves are not greyed), while a touch at any other time fades
+  // the rest, from the first page on (the owner, 2026-11-26).
   const [growing, setGrowing] = useState(false);
   useEffect(() => {
     if (!growing) return;
@@ -280,10 +253,10 @@ function FirstRun() {
         crop
         className="h-full max-w-full"
         arrive
-        quiet={!!asking || growing}
+        quiet={growing}
         growOnly={page === 'grow' ? EMPTY : undefined}
         interactive={playing}
-        onOpenSection={page === 'grow' ? ask : () => undefined}
+        onOpenSection={page === 'grow' ? grow : () => undefined}
         onPoint={
           page === 'find'
             ? (sid) => {
@@ -390,55 +363,37 @@ function FirstRun() {
       );
       break;
 
-    case 'grow': {
-      const question = asking ? DEMO_QUESTIONS[asking] : null;
-      words = question ? (
-        <div className="w-full max-w-sm">
-          <p className="mark text-text-3">The {partName(asking)} section</p>
-          <h1 className="mt-1 font-display text-title font-semibold text-text">{question.q}</h1>
-          <ul className="mt-4 border-t border-border text-left">
-            {question.options.map((o, i) => (
-              <li key={o} className="border-b border-border">
-                <button type="button" onClick={() => reply(asking!, i)} className="tap-safe w-full py-3 text-left text-body text-text hover:text-accent">
-                  {o}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
+    case 'grow':
+      words = (
         <Words
           lead={
             grown.length === 0
-              ? 'Answer a question right, and its section’s branch grows leaves.'
+              ? 'Each branch is one section of a lecture.'
               : grown.length === 1
-                ? 'Leaves grow when you learn a section.'
+                ? 'Leaves grow as you learn its topics and concepts.'
                 : 'The more you learn, the fuller the tree.'
           }
           line={
-            answer && !answer.right
-              ? `Not quite: ${DEMO_QUESTIONS[answer.sid].options[DEMO_QUESTIONS[answer.sid].right].toLowerCase()}. Tap a number to try again.`
-              : grown.length === 0
-                ? `A sample lecture on the water cycle: each branch is one of its sections. ${touch ? 'Touch the tree, then tap' : 'Point at the tree, then click'} a number to answer a question on that section.`
-                : grown.length === 1
-                  ? 'Try another section.'
-                  : 'Each section of a lecture is a branch, and what you get right grows its leaves.'
+            grown.length === 0
+              ? `${touch ? 'Touch the tree, then tap' : 'Point at the tree, then click'} a number to study that section.`
+              : grown.length === 1
+                ? 'Study another section.'
+                : 'A section you haven’t studied stays bare.'
           }
         />
       );
-      action = question ? null : (
+      action = (
         <button type="button" onClick={next} disabled={!enough} className="press press-ink tap-safe">
           Continue
         </button>
       );
       break;
-    }
 
     case 'fade':
       words = faded ? (
         <Words
-          lead="What you don't review starts to fade."
-          line="The section left alone lost its leaves; the one reviewed yesterday kept them. Arborous brings fading sections back before you forget them."
+          lead="What you don’t review fades, and its leaves fall."
+          line="They lie on the ground under their branch. One section was reviewed yesterday, and kept its leaves. Arborous brings fading sections back before you forget them."
         />
       ) : (
         <Words lead="Now leave it for a while." line="Without review, what you learn begins to slip away." />
@@ -460,7 +415,7 @@ function FirstRun() {
           lead="Sweep across the tree to find any section."
           line={
             named
-              ? `That's the ${partName(named)} section. On a lecture, ${touch ? 'tap' : 'click'} its number to open it.`
+              ? `That’s section ${sectionNo(named)}. On a lecture, ${touch ? 'tap' : 'click'} its number to open it.`
               : touch
                 ? 'Slide a finger along the branches.'
                 : 'Move your pointer along the branches.'
@@ -633,7 +588,7 @@ function FirstRun() {
       break;
   }
 
-  const pageKey = page + (faded ? ':after' : '') + (grown.length > 1 ? ':2' : grown.length) + (asking ? `:${asking}` : '') + (answer && !answer.right ? ':x' : '');
+  const pageKey = page + (faded ? ':after' : '') + (grown.length > 1 ? ':2' : grown.length);
   const motion = `fr-words ${page === 'title' ? 'fr-title' : ''} ${leaving ? 'fr-leaving' : ''}`;
   const wordsBlock = (
     <div key={pageKey} className={`${motion} flex flex-col gap-8 ${wide ? 'items-start' : 'items-center text-center'}`} aria-live="polite">
