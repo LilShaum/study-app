@@ -23,6 +23,48 @@ export function FigureElsewhere({ where }: { where?: string }) {
   );
 }
 
+/**
+ * What to take from a figure. When the app drew it, the whole `why` sits by
+ * the drawing. When it could not, a student without the slides needs the
+ * point first and the description of a picture they cannot see second
+ * (the fresh-eyes test, 2026-11-27: "a locked door with a description of
+ * the room"), so the first sentence leads and the rest folds under where
+ * the picture is.
+ */
+export function FigureWhy({ why, where, drawn, className }: { why?: string; where?: string; drawn: boolean; className: string }) {
+  if (!why) return drawn ? null : <FigureElsewhere where={where} />;
+  if (drawn) {
+    return (
+      <p className={className}>
+        <RichText text={why} />
+      </p>
+    );
+  }
+  const [lead, ...rest] = why.split(/(?<=[.!?])\s+(?=[A-Z'"(])/);
+  return (
+    <>
+      <p className={className}>
+        <RichText text={lead} />
+      </p>
+      {rest.length > 0 ? (
+        <details className="group mt-2">
+          <summary className="tap-safe inline-flex cursor-pointer list-none items-center py-1 text-small text-accent hover:text-accent-hover [&::-webkit-details-marker]:hidden">
+            {where ? `What the picture on ${where} shows` : 'What the picture in your notes shows'}
+            <span aria-hidden className="ml-1 inline-block transition-transform group-open:rotate-90 motion-reduce:transition-none">▸</span>
+          </summary>
+          <p className="mt-1 border-l-2 border-border-strong pl-3 text-small text-text-2">
+            <RichText text={rest.join(' ')} />
+          </p>
+        </details>
+      ) : (
+        <div className="mt-2">
+          <FigureElsewhere where={where} />
+        </div>
+      )}
+    </>
+  );
+}
+
 export function GraphicCard({
   item,
   frame = 'card',
@@ -51,11 +93,7 @@ export function GraphicCard({
 
       {/* What to look for, then the figure: the teacher pointing at the
           screen. So it sits with the title, above the drawing. */}
-      {item.why && (
-        <p className="prose-set mt-2 text-body text-text">
-          <RichText text={item.why} />
-        </p>
-      )}
+      <FigureWhy why={item.why} where={item.where} drawn={!!(diagram || svg)} className="prose-set mt-2 text-body text-text" />
 
       {diagram ? (
         <div className="mt-4">
@@ -68,11 +106,7 @@ export function GraphicCard({
           className="figure-svg mt-3 flex items-center justify-center text-text [&_svg]:max-h-80 [&_svg]:max-w-full"
           dangerouslySetInnerHTML={{ __html: svg }}
         />
-      ) : (
-        <div className="mt-3">
-          <FigureElsewhere where={item.where} />
-        </div>
-      )}
+      ) : null}
 
       {item.caption && <div className="mt-2 text-sm text-text-2">{item.caption}</div>}
       <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={notesOpen} />

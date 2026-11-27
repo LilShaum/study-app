@@ -10,9 +10,8 @@ import { Sheet } from '@/components/Sheet';
 import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 import { useSwipe } from '@/lib/useSwipe';
 import { SourceNote } from '@/components/items/SourceNote';
-import { FigureElsewhere } from '@/components/items/GraphicCard';
+import { FigureElsewhere, FigureWhy } from '@/components/items/GraphicCard';
 import { DrawnDiagram } from '@/components/items/DrawnDiagram';
-import { RichText } from '@/components/items/RichText';
 import { purposeLabel } from '@/lib/figurePurpose';
 import type { GraphicItem } from '@/schema/course';
 import { prefersReducedMotion, scrollBehavior } from '@/lib/motion';
@@ -218,16 +217,12 @@ function PlateFigure({
         )}
         {/* Why it is on the screen and what to look at: the sentences that
             went with the figure and never made it onto the slide. */}
-        {!tile && item.why && (
-          <p className="mt-1 max-w-prose text-small text-text-2">
-            <RichText text={item.why} />
-          </p>
-        )}
+        {!tile && <FigureWhy why={item.why} where={item.where} drawn={!!(svg || diagram)} className="mt-1 max-w-prose text-small text-text-2" />}
         {tile && item.caption && <p className="mt-1 line-clamp-2 text-small text-text-3">{item.caption}</p>}
         {!tile && item.caption && <p className="mt-1 max-w-prose text-small text-text-3">{item.caption}</p>}
         {/* A figure with no drawing of ours is still a plate: it says where
             the real one is, so the gallery indexes what the lecture turns on. */}
-        {!svg && !diagram && (
+        {tile && !svg && !diagram && (
           <div className="mt-2">
             <FigureElsewhere where={item.where} />
           </div>
@@ -319,11 +314,9 @@ function PlateDetail({
             </Link>
           </p>
           <h2 className="mt-1 font-display text-title font-semibold text-text">{item.title}</h2>
-          {item.why && (
-            <p className="mt-3 text-small text-text-2">
-              <RichText text={item.why} />
-            </p>
-          )}
+          <div className="mt-3">
+            <FigureWhy why={item.why} where={item.where} drawn={!!(svg || diagram)} className="text-small text-text-2" />
+          </div>
           {item.caption && <p className="mt-2 text-small text-text-3">{item.caption}</p>}
           <SourceNote excerpt={item.source_excerpt} page={item.source_page} />
           <div className="mt-6 flex items-baseline justify-between gap-3 border-t border-border pt-3 text-small text-text-3">

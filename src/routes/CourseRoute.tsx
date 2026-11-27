@@ -434,7 +434,6 @@ export function CourseRoute() {
               {/* Shown whenever anything is set aside, so a card set aside by
                   mistake is always one tap from coming back. */}
               {setAsideCount > 0 && <ToolLink to={`/study/${id}/set-aside`}>Set aside ({setAsideCount})</ToolLink>}
-              {counts.graphic > 0 && <ToolLink to={`/study/${id}/diagrams`}>Diagrams ({counts.graphic})</ToolLink>}
             </div>
           </div>
           <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
@@ -602,6 +601,18 @@ export function CourseRoute() {
               unit: null,
               use: 'Pick the kinds, cards and sections, or a practice test.',
             },
+            // The figures were only a word under More, and a student revising
+            // from the pictures never found them (the fresh-eyes test, 2026-11-27).
+            ...(counts.graphic > 0
+              ? [
+                  {
+                    to: `/study/${id}/diagrams`,
+                    label: 'Diagrams',
+                    unit: `${counts.graphic}`,
+                    use: 'The lecture\'s figures, to look at and work through.',
+                  },
+                ]
+              : []),
           ].map((m) => (
             <li key={m.label}>
               <Link to={m.to} className="group tap-safe flex items-center gap-3 py-3.5">
@@ -639,7 +650,7 @@ export function CourseRoute() {
             <span className="min-w-0 flex-1">
               <span className="font-display text-body text-text-2">More</span>
               <span className="mt-0.5 block text-small text-text-3">
-                Progress, glossary, diagrams; add to or share the lecture{healthNote ? ` · ${healthNote}` : ''}
+                Progress, glossary; add to or share the lecture{healthNote ? ` · ${healthNote}` : ''}
               </span>
             </span>
             <span aria-hidden="true" className="shrink-0 font-display text-[1.75rem] leading-none text-text-3 transition-transform group-open/more:rotate-90">

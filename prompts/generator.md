@@ -349,7 +349,13 @@ what to look at in it. Name the thing to see, and say what its axes, colours,
 line styles or rows stand for where the slide leaves them unsaid, the way a
 teacher walks through a graph before using it ("Follow the two curves to where
 they cross: that point is the price, and every later slide moves one of
-them"). Say it in words, so it teaches even with the slides shut. Set
+them"). Say it in words, so it teaches even with the slides shut. The `why`
+sits beside what the student actually sees. Under a `diagram`, it speaks of
+the app's drawing, never the slide's picture (no syringe, red patch, grey
+branch or "read across each row" that the drawing does not have). With no
+drawing, its first sentence is the point to take from the figure (what it
+shows, not what it looks like), since the app shows that sentence first and
+folds the rest, the walk through the picture, under where it is. Set
 `purpose` to `"know"` where the slide's text talks about what the figure shows
 (a pathway, a cycle, a structure whose parts the bullets name) or its pattern
 is a result the lecture relies on, and `"picture"` where it is there to make
@@ -754,6 +760,13 @@ kinds:
   more is several diagrams or a `where`.
 - **Every part the slides name, and only those.** A part's `note` says what
   it does in this figure, from the slides. Labels are the slides' own terms.
+- **A test or procedure ends in what its result means.** The inference is
+  what an exam asks ("speech stops while the left side is asleep, so
+  language is on the left"): make it the last part, or the last part's note,
+  never only the step that names it.
+- **A decision tree is a `flow`**: each question a part ("Fluent?"), each
+  answer a link labelled with it ("yes", "no"), each end a part with a note
+  saying the answers that lead there. The app sets it down the page.
 - **`blocks`** for inhibition, suppression or any link that stops its
   target; drawn with a bar, as textbooks draw it.
 - **A what-if is a consequence the lecture teaches**: a lesion and the

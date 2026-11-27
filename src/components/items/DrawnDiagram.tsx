@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { CompareDiagram, Diagram, DiagramLink, DiagramPart, FlowDiagram } from '@/schema/diagram';
-import { boxEdgePoint, flowRows, whatIfEffect, type WhatIfEffect } from '@/lib/diagram';
+import { asDecisionTree, boxEdgePoint, flowRows, isWaypoint, whatIfEffect, type WhatIfEffect } from '@/lib/diagram';
+import { TreeView, type TreeVariant } from './TreeView';
 
 /**
  * A diagram the app draws from the generator's description
@@ -23,6 +24,14 @@ type Box = { x: number; y: number; w: number; h: number };
 
 export function DrawnDiagram({ diagram, title, still = false }: { diagram: Diagram; title: string; still?: boolean }) {
   if (diagram.kind === 'compare') return <CompareView diagram={diagram} title={title} still={still} />;
+  const tree = asDecisionTree(diagram);
+  if (tree) {
+    // PROTOTYPE switch for the owner's pick; removed once chosen.
+    const variant = ((globalThis as { __treeVariant?: TreeVariant }).__treeVariant ??
+      new URLSearchParams(globalThis.location?.search).get('tree') ??
+      'key') as TreeVariant;
+    return <TreeView diagram={diagram} tree={tree} title={title} still={still} variant={variant} />;
+  }
   return <FlowView diagram={diagram} title={title} still={still} />;
 }
 
@@ -93,16 +102,6 @@ function FlowView({ diagram, title, still }: { diagram: FlowDiagram; title: stri
             </p>
           )}
 
-          <div aria-live="polite">
-            {effect && whatIfAt != null ? (
-              <Note heading={diagram.what_ifs[whatIfAt].name ?? diagram.what_ifs[whatIfAt].ask} tone="what-if">
-                {diagram.what_ifs[whatIfAt].then}
-              </Note>
-            ) : current ? (
-              <Note heading={stepping ? `${step + 1}. ${current.label}` : current.label}>{current.note}</Note>
-            ) : null}
-          </div>
-
           <div className="mt-4 flex flex-wrap items-center gap-3">
             {stepping ? (
               <>
@@ -111,7 +110,7 @@ function FlowView({ diagram, title, still }: { diagram: FlowDiagram; title: stri
                 </button>
                 {step < diagram.parts.length - 1 ? (
                   <button type="button" className="press press-ink" onClick={() => setStep((s) => (s ?? 0) + 1)}>
-                    Next →
+                    Next part
                   </button>
                 ) : (
                   <button type="button" className="press press-ink" onClick={() => setStep(null)}>
@@ -135,6 +134,16 @@ function FlowView({ diagram, title, still }: { diagram: FlowDiagram; title: stri
                 Step through it
               </button>
             )}
+          </div>
+
+          <div aria-live="polite">
+            {effect && whatIfAt != null ? (
+              <Note heading={diagram.what_ifs[whatIfAt].name ?? diagram.what_ifs[whatIfAt].ask} tone="what-if">
+                {diagram.what_ifs[whatIfAt].then}
+              </Note>
+            ) : current ? (
+              <Note heading={stepping ? `${step + 1}. ${current.label}` : current.label}>{current.note}</Note>
+            ) : null}
           </div>
 
           {diagram.what_ifs.length > 0 && (
@@ -194,10 +203,18 @@ const PART_CLASS: Record<PartState, string> = {
   affected: 'border-warning text-warning shadow-[0_2px_0_0_var(--color-warning)]',
 };
 
+// PROTOTYPE switch for the owner's pick of how a part is set; removed once chosen.
+const PART_STYLE: 'box' | 'label' =
+  ((globalThis as { __partStyle?: 'box' | 'label' }).__partStyle ?? new URLSearchParams(globalThis.location?.search).get('parts')) === 'label' ? 'label' : 'box';
+
 function PartButton({ part, state, still, onTap }: { part: DiagramPart; state: PartState; still: boolean; onTap: () => void }) {
   const cls =
-    'max-w-[11rem] rounded-[1px] border px-2.5 py-1.5 text-center font-display text-small leading-snug transition-[color,border-color,opacity,box-shadow] duration-150 motion-reduce:transition-none ' +
-    PART_CLASS[state];
+    (PART_STYLE === 'label'
+      ? // A label on a plate: the words, ruled once underneath, as a herbarium sheet names its parts.
+        'max-w-[11rem] border-b-2 px-1 pb-1 pt-0.5 text-center font-display text-small leading-snug '
+      : 'max-w-[11rem] rounded-[1px] border px-2.5 py-1.5 text-center font-display text-small leading-snug ') +
+    'transition-[color,border-color,opacity,box-shadow] duration-150 motion-reduce:transition-none ' +
+    (PART_STYLE === 'label' ? PART_CLASS[state].replace(/shadow-\[[^\]]*\]/g, '') : PART_CLASS[state]);
   if (still) {
     return (
       <span data-part={part.id} className={cls}>
@@ -244,7 +261,10 @@ function Measured({
   const [boxes, setBoxes] = useState<Record<string, Box>>({});
   const [size, setSize] = useState({ w: 0, h: 0 });
 
-  const { rows, backLinks } = useMemo(() => (ring ? { rows: [], backLinks: new Set<string>() } : flowRows(diagram)), [diagram, ring]);
+  const { slots, waypoints, backLinks } = useMemo(
+    () => (ring ? { slots: [] as string[][], waypoints: new Map<string, string[]>(), backLinks: new Set<string>() } : flowRows(diagram)),
+    [diagram, ring],
+  );
   const byId = useMemo(() => new Map(parts.map((p) => [p.id, p])), [parts]);
   const hasRail = backLinks.size > 0;
 
@@ -293,9 +313,18 @@ function Measured({
         ))
       ) : (
         <div className={'flex flex-col gap-y-11 py-1 ' + (hasRail ? 'pr-7' : '')}>
-          {rows.map((row, r) => (
-            <div key={r} className="flex flex-wrap items-center justify-center gap-x-3 gap-y-4">
-              {row.map((id) => renderPart(byId.get(id)!))}
+          {slots.map((row, r) => (
+            // One row never wraps: a second line would put parts under parts
+            // and send the arrows through them. The parts narrow instead.
+            <div key={r} className="flex flex-nowrap items-center justify-center gap-x-3">
+              {row.map((id) =>
+                isWaypoint(id) ? (
+                  // Room for a line passing through this row on its way down.
+                  <span key={id} data-part={id} aria-hidden className="h-6 w-3 shrink-0" />
+                ) : (
+                  renderPart(byId.get(id)!)
+                ),
+              )}
             </div>
           ))}
         </div>
@@ -314,6 +343,7 @@ function Measured({
               b={b}
               style={styleOf(l)}
               rail={backLinks.has(l.id) ? Math.max(...Object.values(boxes).map((x) => x.x + x.w)) + 14 : null}
+              via={(waypoints.get(l.id) ?? []).map((w) => boxes[w]).filter(Boolean).map((w) => ({ x: w.x + w.w / 2, y: w.y + w.h / 2 }))}
               center={ringLayout ? { x: size.w / 2, y: ringLayout.height / 2 } : null}
             />
           );
@@ -364,6 +394,7 @@ function LinkPath({
   style,
   rail,
   center,
+  via = [],
 }: {
   link: DiagramLink;
   a: Box;
@@ -371,6 +402,8 @@ function LinkPath({
   style: LinkStyle;
   rail: number | null;
   center: { x: number; y: number } | null;
+  /** Points the line passes through on its way, in rows it skips. */
+  via?: { x: number; y: number }[];
 }) {
   const ac = { x: a.x + a.w / 2, y: a.y + a.h / 2 };
   const bc = { x: b.x + b.w / 2, y: b.y + b.h / 2 };
@@ -401,6 +434,15 @@ function LinkPath({
     mid = { x: 0.25 * s.x + 0.5 * c.x + 0.25 * end.x, y: 0.25 * s.y + 0.5 * c.y + 0.25 * end.y };
     // Set inside the ring, where there is room, never off the page's edge.
     inward = mid.x > center.x ? 'end' : 'start';
+  } else if (via.length) {
+    // Down through the rows it skips, beside the parts there.
+    const first = via[0];
+    const last = via[via.length - 1];
+    const s = boxEdgePoint(a, first.x, first.y);
+    end = boxEdgePoint(b, last.x, last.y);
+    d = `M${s.x},${s.y} ` + via.map((p) => `L${p.x},${p.y}`).join(' ') + ` L${end.x},${end.y}`;
+    dir = unit(end.x - last.x, end.y - last.y);
+    mid = { x: (s.x + first.x) / 2, y: (s.y + first.y) / 2 };
   } else {
     const s = boxEdgePoint(a, bc.x, bc.y);
     end = boxEdgePoint(b, ac.x, ac.y);
@@ -457,40 +499,61 @@ function unit(x: number, y: number) {
  */
 function CompareView({ diagram, title, still }: { diagram: CompareDiagram; title: string; still: boolean }) {
   const [focus, setFocus] = useState<number | null>(null);
-  const differs = diagram.rows.map((r) => new Set(r.values.map((v) => v.toLowerCase())).size > 1);
+  const n = diagram.columns.length;
+  const differs = diagram.rows.map((r) => new Set(r.values.map((v) => v.trim().toLowerCase())).size > 1);
+  const same = n === 2 ? 'the same in both' : 'the same in all';
+  // Side by side when the columns fit a phone: three always, four only when every value is short.
+  const grid = n <= 3 || diagram.rows.every((r) => r.values.every((v) => v.length <= 28));
+  const cols = { gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` };
+  const shown = focus == null ? null : focus;
+
+  // The column names, once, at the top. Tapping one reads that column alone; tapping it again brings the others back.
+  const head = (
+    <div className={grid ? 'grid items-end gap-x-3 border-b border-border-strong pb-2' : 'flex flex-wrap gap-x-4 gap-y-1 border-b border-border-strong pb-2'} style={grid ? cols : undefined}>
+      {diagram.columns.map((c, i) =>
+        still ? (
+          <span key={c.id} className="font-display text-small font-semibold leading-snug text-text">
+            {c.label}
+          </span>
+        ) : (
+          <button
+            key={c.id}
+            type="button"
+            aria-pressed={focus === i}
+            onClick={() => setFocus((f) => (f === i ? null : i))}
+            className={
+              'tap-safe py-1 text-left font-display text-small font-semibold leading-snug text-accent hover:text-accent-hover ' +
+              (focus === i ? 'underline decoration-accent decoration-2 underline-offset-4' : focus != null ? 'opacity-60' : '')
+            }
+          >
+            {c.label}
+          </button>
+        ),
+      )}
+    </div>
+  );
 
   return (
     <div data-diagram className="w-full" role="group" aria-label={title}>
-      {!still && (
-        <div className="flex flex-wrap gap-x-4 gap-y-1 border-b border-border pb-2" role="radiogroup" aria-label="Show">
-          {[null, ...diagram.columns.map((_, i) => i)].map((i) => (
-            <button
-              key={i ?? 'all'}
-              type="button"
-              role="radio"
-              aria-checked={focus === i}
-              onClick={() => setFocus(i)}
-              className={
-                'tap-safe py-1 font-display text-small ' +
-                (focus === i ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : 'text-text-2 hover:text-text')
-              }
-            >
-              {i == null ? 'Side by side' : diagram.columns[i].label}
-            </button>
-          ))}
-        </div>
-      )}
-
+      {head}
       <dl className="divide-y divide-border">
         {diagram.rows.map((row, r) => (
-          <div key={r} className={'py-2.5 ' + (differs[r] ? '' : 'opacity-60')}>
+          <div key={r} className="py-2.5">
             <dt className="mark text-text-3">
               {row.label}
-              {!differs[r] && <span className="normal-case tracking-normal"> · the same in all</span>}
+              {!differs[r] && <span className="normal-case tracking-normal"> · {same}</span>}
             </dt>
-            {focus == null ? (
-              // One line per thing, its name in a column of its own, so the
-              // values sit under one another and read down like a table.
+            {shown != null ? (
+              <dd className="mt-1 text-small text-text">{row.values[shown] || '—'}</dd>
+            ) : !differs[r] ? (
+              <dd className="mt-1 text-small text-text-2">{row.values[0] || '—'}</dd>
+            ) : grid ? (
+              <dd className="mt-1 grid gap-x-3 text-small leading-snug text-text" style={cols}>
+                {diagram.columns.map((c, i) => (
+                  <span key={c.id}>{row.values[i] || '—'}</span>
+                ))}
+              </dd>
+            ) : (
               <dd className="mt-1 grid grid-cols-[max-content_minmax(0,1fr)] gap-x-4 gap-y-1 text-small">
                 {diagram.columns.map((c, i) => (
                   <Fragment key={c.id}>
@@ -499,8 +562,6 @@ function CompareView({ diagram, title, still }: { diagram: CompareDiagram; title
                   </Fragment>
                 ))}
               </dd>
-            ) : (
-              <dd className="mt-1 text-small text-text">{row.values[focus] || '—'}</dd>
             )}
           </div>
         ))}
