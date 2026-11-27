@@ -541,7 +541,7 @@ its place), one correct answer.
 ```
 { "id", "type": "mcq", "question", "options": [4 or 5 strings],
   "correct_index": 0-based, "explanation",
-  "distractor_rationale": [4 strings],   // required — see quality bar below
+  "distractor_rationale": [one per option],   // required — see quality bar below
   "difficulty", "tags", "source_excerpt", "source_page" }
 ```
 `correct_index` is **0-based** — `0` means the first option in the array, not
@@ -760,7 +760,10 @@ well made. Every rule here is one the app checks, measures, or acts on.
    lands, so it is an instruction, not only a label.
 2. **Each section opens by asking: read it here first, or questions
    first.** A student who chose questions first meets no reading card:
-   every card is asked cold and they learn from what opens after it.
+   every card is asked cold and they learn from what opens after it. So
+   every fact a question tests is also taught in its section, by a
+   definition, explanation, flashcard or example: a result met only inside
+   a question is learned by guessing.
 3. **After every answer** the app shows the explanation, the chosen
    option's rationale, and the `source_excerpt` under "From your notes";
    after a miss or "not sure" they open by themselves. For a student who
@@ -826,7 +829,7 @@ and gets a key idea's cards, each part reached from a different side.
 ### 3. MCQs carry the nuance
 
 **This is where most of your effort goes.** Naming a term from its meaning
-is already tested (1.2). An MCQ is for what naming cannot test, usually
+is already tested (part 1, point 4). An MCQ is for what naming cannot test, usually
 because the definition leaves it out or buries it in a clause:
 
 1. **The exception or qualifier.** Every "usually", "most", "only when",
@@ -1029,15 +1032,13 @@ one real course, against 25% by chance). The app checks this and reports it.
 - No option carries a parenthetical gloss the others lack — "Guard cells
   (the paired cells around each pore)" hands over the answer.
 - Never let one option run past twice the length of the others.
-- **A rule you can check on every question:** write the correct option
-  first, then make at least one distractor as long as it or longer, in
-  words. Across the lecture that keeps the correct option the longest in no
-  more than one MCQ in four, and the shortest in no more than
-  one in four either. "Roughly the same length" is easy to believe of your
-  own options; a word count is not. A real lecture made with this prompt
-  still came out at 42% while its self-check said it was fine, so count.
-  "None of the other options" and "All of the other options" are left out
-  of this count.
+- **Do it as you write each question:** write the correct option first,
+  then make at least one distractor as long as it or longer, in words.
+  "Roughly the same length" is easy to believe of your own options, and a
+  check of the finished draft misses it (a real lecture came out at 42%
+  while its self-check said it was fine), so it is done per question, not
+  counted at the end. The app measures it across the lecture and sends any
+  pattern back to you to even out.
 
 **Test understanding, not just recall** (part 3). Recall items are the
 floor: **every section needs at least one gradable item that asks the
@@ -1089,81 +1090,21 @@ question. Explanations, examples and diagrams are read, not scored.
 
 ## Before you output
 
-Check your own draft:
-1. **Coverage.** Walk your Pass 2 inventory. Is every term in `terms` defined,
-   and every explained term in `mentioned` covered by another item? Is every
-   stated objective backed by a gradable item? Is every formula applied
-   somewhere? Do the labels and figures the lecture builds on have items?
-   Anything missing gets written now. Is every fact a question tests taught
-   first in its section, by a definition, explanation, flashcard or
-   example? A result met only inside a question is learned by guessing.
-2. Does every item have a `source_excerpt` quoted from its `source_page`,
-   and is every slide either the source of something or in `not_taught`?
-3. Does every MCQ have four or five options, a 0-based `correct_index`
-   pointing at the genuinely correct one, and a `distractor_rationale` per
-   option naming the belief that picks it? Do "None" and "All of the other
-   options" appear in about one MCQ in eight at most, each the answer about
-   half the time?
-   Does every `multi` have a 0-based `correct` naming every true statement
-   and no false one, at least one of each, an `option_rationale` per
-   option, and a number true that differs from the lecture's other multis
-   somewhere?
-4. **Scan the options alone.** For each MCQ, count the words of each
-   option: is one distractor at least as long as the correct one? Then
-   count the MCQs whose correct option is the longest, and those
-   where it is the shortest: more than one in four either way, and rework
-   distractors until it is not. Are the correct options the most qualified,
-   the only ones with a parenthetical? Could a student who skipped the
-   lecture strike out any option (wrong category, invented, does not fit
-   the stem)? If a stranger could score above 25% seeing only the options
-   and never the questions, fix the distractors: this is the one fault that
-   makes a course flatter a student rather than prepare them.
-5. **Scan the stems alone.** Does any mention the notes, the slides or a
-   figure? Is any one just its `source_excerpt` reworded into a question?
-   Does every section have at least one that asks for more than retrieval?
-6. **Count the MCQs** (Quality bar, part 3). Write down the number that are
-   easy, medium and hard. More than one in four easy, or fewer than one in
-   four hard: rewrite until it holds. Read each hard one again: could a
-   student who memorised the slide's diagram answer it without joining two
-   things? Then it is medium; mark it so and write a real hard one. Then
-   check each MCQ against the
-   table: does any ask a term back from its own definition, or test a
-   detail that only belongs to how an example or figure was drawn (a taught pathway is not that)? Rewrite or delete it.
-   Does every key idea have a medium or hard MCQ?
-7. **Count the cards per idea** (part 2), against your Pass 1 map. Does any
-   background idea have more than one card beyond its definition? Does any
-   key idea (an objective, what later slides build on) have fewer than
-   three, or two cards that ask the same thing in other words? Are the
-   parts of one system written as same-shaped definitions?
-8. **The narration** (Pass 3). Walk the handwriting, note by note: is each one
-   that says more than its slide in the file? Do the lecture, and every section
-   that builds to something, have a `builds_to` that says what, rather than rewording its
-   title or listing its contents? Does every figure the lecture turns on have
-   a `why` that says what to look at, and a `purpose`? Is every figure marked
-   `"know"` asked about by a gradable item? If not, write the question or
-   mark it `"picture"`. Did you write the comparisons the lecture only
-   implies, each with a question that turns on the difference? Does any
-   `Outside the slides:` reason add a fact to learn, or does any card rest on
-   one? Did any note take the place of a card an idea's weight calls for? Fix
-   each.
-9. **Read each section in the app's order** (part 1): the reading, then the
-   easy questions, flashcards and typed terms, then the harder ones. Does any card's answer appear in a card
-   before it? Does any definition contain its own term or a word of its
-   family? Could a stranger answer any card from plain English? Fix each.
-10. **The types.** Is there an idea a type you used nowhere would test
-   better (confusable properties: select-all; a bundle with one wrong
-   detail: None of the other options; a method: a problem; the kind of
-   question the student's examples ask)? Write it. Is any type there only
-   for variety? Make it the plain question. Does any explanation only
-   restate its answer? Say why instead. Does `metadata.notes_for_student` tell the
-   student what to check: notes that disagreed with the slides, parts of
-   the source missing or unreadable?
-11. **Work every problem** from its question alone, as a student would. Do
+Every rule above is met as you write; do not re-read the draft against them.
+Four things cannot be seen while writing, and each one wrong marks a right
+student wrong, so check these, and only these:
+
+1. **Work every problem** from its question alone, as a student would. Do
    your answer, its unit and the last step agree? Does every value it
    needs appear in the question? Does each `mistakes` answer really follow
-   from its mistake? A wrong answer marks a right student wrong.
-12. Is it valid JSON — no trailing commas, no comments, matching quotes —
-   with each item on one line and no indentation?
+   from its mistake?
+2. **The answer keys.** Does every `correct_index` and `correct` point at
+   the right option, counted from 0? Does every `distractor_rationale` and
+   `option_rationale` have one entry per option, in the same order?
+3. **Coverage** (Pass 4): every term in `terms` defined, every slide either
+   the source of something or in `not_taught`.
+4. **Valid JSON**: no trailing commas, no comments, matching quotes, each
+   item on one line and no indentation.
 
 If the student's source material is missing, empty, or too vague to ground
 anything in, say so in plain text instead of generating a file — don't

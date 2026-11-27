@@ -164,13 +164,30 @@ the device, never uploaded); each quote is looked up on its slide; a card
 whose quote is not there is marked to check. Needs a PDF reader loaded only
 when used.
 
-**Next, proposed: the prompt's efficiency.** The same guidance suggests the
-prompt's own twelve-point final checklist may cause over-verification.
-A read-through for repetition, contradictions and over-checking, then one
-real lecture timed before and after (owner's usage, so on their yes).
+**The prompt's efficiency (done 2026-11-27, owner's go-ahead).** Read
+through whole. The substance holds; the waste was the end. "Before you
+output" was twelve points and about 925 words, nearly all repeating rules
+stated where they are used (coverage, options, stems, difficulty, cards per
+idea, narration, order, types), and it had the AI count every option's
+words and tally the MCQs' difficulty, then rewrite until the counts held.
+Anthropic's Opus 5 guidance: explicit verification steps over-verify and
+waste tokens with no loss in quality when removed. The prompt's own history
+agrees: a lecture came out at 42% longest-is-right while its self-check
+passed. Now four checks, about 180 words, only what cannot be seen while
+writing: work every problem, the answer keys, coverage (Pass 4), valid
+JSON. What the old list held that was stated nowhere else moved to its
+home: "every fact a question tests is taught in its section" into Quality
+bar part 1; the option-length rule is now done per question as it is
+written. Fixed on the way: a wrong cross-reference (1.2 for part 1, point
+4) and the MCQ shape's `[4 strings]` rationale when five options are
+allowed. The prompt is about 11,600 words, from 11,970 before this work.
+
+**To measure:** one real lecture made with the old prompt and the new, on
+Opus 5.5 at high effort: time, reply size, and the lecture check's
+findings (length pattern, difficulty mix, coverage) side by side. The
+owner approved this test on 2026-11-27; it waits on their slides.
 
 ## 6. Questions for the owner
 
-1. The prompt-efficiency read-through: go ahead?
-2. Can a real lecture's slides be used to time and test (kept off the
-   repo, as always)?
+1. One real lecture's slides for the before-and-after test (kept off the
+   repo, as always).
