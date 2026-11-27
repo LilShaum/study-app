@@ -234,6 +234,18 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   a removal pass before the redesign, the audit proper after.
   Removal pass done 2026-11-24 on the work branch (shown with parts 1-3);
   the audit proper comes after the design update.
+- **How the app teaches, reviewed with research; diagrams at every level**
+  (2026-11-27: "I really want this app to feel good and look good … a first
+  and last resort for a student … no cheap tricks like duolingo … effortless,
+  especially for people with adhd"; "diagrams and how they are made and their
+  quality and when they are made and why they are made … interactive
+  diagrams … when a diagram on the given notes is important but too complex
+  to meaningfully reproduce … could the generating ai somehow include
+  screenshots of it from the provided notes in the generated file? again
+  this is last resort"; "the simulation and also how the study material is
+  presented to the student in every way to study and the reason and research
+  behind it"). Report written 2026-11-27: docs/proposals/teaching-review.md.
+  Waits on the owner's four questions at its end. Nothing built.
 - **Interactive diagrams** (2026-11-23, idea only, not to start yet: "I
   want to add one more ambitious thing, interactive diagrams. idk if we
   would give the generating ai free reign with only little guidelines for
