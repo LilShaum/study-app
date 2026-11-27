@@ -25,8 +25,7 @@ export const WHATS_NEW: Change[] = [
       'Learn and Today count within the part you are in, like Review 2 of 5, and a section opens on Start reading.',
       'Progress says what needs you first, lists the sections not started, and keeps Review at your thumb.',
       'Clicking a branch opens its section, as its number does, and pointing at a branch’s leaves picks it.',
-      'Lectures made from now account for every slide. Each card names the slide it came from, and the lecture check names any slide skipped.',
-      'Lectures made from now answer the notes you marked unsure, explain a note that disagrees with its slide, and spell out abbreviations.',
+      'Lectures made from now name each card’s slide, answer notes you marked unsure, and spell out abbreviations.',
     ],
   },
   {
