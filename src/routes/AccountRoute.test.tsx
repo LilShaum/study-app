@@ -82,13 +82,13 @@ describe('The account page', () => {
     ]);
   });
 
-  it('takes the student’s name for its heading, saved on leaving the field', () => {
+  it('shows the name once, as its heading, with no field to edit it on the page (Testing 5)', () => {
+    useProfileStore.setState({ name: 'Sam' });
     open();
-    const field = screen.getByLabelText('Your name');
-    fireEvent.change(field, { target: { value: '  Sam ' } });
-    fireEvent.blur(field);
-    expect(useProfileStore.getState().name).toBe('Sam');
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Sam');
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByText('Sync')).toBeNull();
+    expect(screen.queryByText('Reminders')).toBeNull();
   });
 
   it('names itself in the running head, the tab and the footer link', async () => {
@@ -111,6 +111,10 @@ describe('The account page', () => {
     });
     expect(document.title).toBe('Sam · Arborous');
     expect(screen.getByRole('link', { name: 'Sam' }).getAttribute('href')).toBe('/account');
+    // The foot of the page: your page and Settings, nothing else (docs/proposals/settings.md).
+    expect(screen.getByRole('link', { name: 'Settings' }).getAttribute('href')).toBe('/settings');
+    expect(screen.queryByRole('link', { name: 'Help' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Switch to (dark|light) mode/ })).toBeNull();
     scrollTo.mockRestore();
   });
 });

@@ -13,6 +13,7 @@ import { usePlanStore } from '@/store/plan';
 import { useStudyLogStore } from '@/store/studyLog';
 import { useSessionStore } from '@/store/session';
 import { useLearnStore } from '@/store/learn';
+import { useCoursesStore } from '@/store/courses';
 import { makeCourse, SHAPES } from './course';
 import { rng, type Rand } from './random';
 import { chanceRight, FIRST_TIME, MCQ_GUESS, MEMORY, OPENING_SECONDS, SECONDS } from './student';
@@ -151,6 +152,8 @@ export interface Day {
   missedAgain: (capMs: number) => 'done' | 'out' | 'empty';
   /** Open Learn on the section the course page suggests. False when there is none to learn. */
   learn: (capMs?: number) => boolean;
+  /** The adaptive quiz over the sections released so far, until capMs (docs/proposals/zen.md). */
+  adaptive: (capMs?: number) => 'done' | 'out' | 'empty';
   /** Scored items released but never answered. */
   unseen: () => number;
   /** How the app's Today plan would divide this day's minutes (lib/today.ts). */
@@ -217,6 +220,35 @@ const splitLast =
   };
 
 export const POLICIES: Record<string, Policy> = {
+  /** The adaptive quiz alone, every day, for the day's minutes (2026-11-24). */
+  'adaptive-daily': (d) => {
+    d.adaptive();
+  },
+  /**
+   * The ways to study as planned (docs/proposals/ecosystem.md): Learn the
+   * next section while there is one, for up to half the day, then the
+   * adaptive quiz for the rest.
+   */
+  /**
+   * The quiz as the extra (docs/proposals/ecosystem.md, as the simulator left
+   * it): Today for two thirds of the day, the adaptive quiz for the rest.
+   */
+  'today-then-adaptive': (d) => {
+    const main = (d.budgetMs * 2) / 3;
+    for (let k = 0; k < 5 && d.usedMs() < main; k++) if (d.today(main) !== 'done') break;
+    d.adaptive();
+  },
+  /** Control for learn-then-adaptive: the same split with Review in place of the quiz. */
+  'learn-then-review': (d) => {
+    const half = d.budgetMs / 2;
+    for (let k = 0; k < 5 && d.usedMs() < half; k++) if (!d.learn(half)) break;
+    for (let k = 0; k < 20 && d.usedMs() < d.budgetMs; k++) if (d.review() !== 'done') break;
+  },
+  'learn-then-adaptive': (d) => {
+    const half = d.budgetMs / 2;
+    for (let k = 0; k < 5 && d.usedMs() < half; k++) if (!d.learn(half)) break;
+    d.adaptive();
+  },
   /**
    * Experiment, 2026-10-02: the day's minutes less five in one sitting, then
    * six hours later five minutes on only what was missed in it.
@@ -528,8 +560,11 @@ export function simulate(sc: Scenario, seed: number): RunResult {
       store().record(said, grade, item.type === 'mcq' && !mcq ? true : undefined);
     };
 
-    const run = (mode: 'review' | 'learn' | 'today', capMs: number, sectionId?: string, resumeId?: string, items?: SessionItem[]) => {
-      store().init(COURSE_ID, course, mode, sectionId, resumeId);
+    const run = (mode: 'review' | 'learn' | 'today' | 'adaptive', capMs: number, sectionId?: string, resumeId?: string, items?: SessionItem[]) => {
+      // The quiz draws on every section it is given: only those released so far.
+      const given = mode === 'adaptive' ? { ...course, sections: sortedSections(course).slice(0, available) } : course;
+      if (mode === 'adaptive') useCoursesStore.setState({ courses: { ...useCoursesStore.getState().courses, [COURSE_ID]: given } });
+      store().init(COURSE_ID, given, mode, sectionId, resumeId);
       if (items) useSessionStore.setState({ items, index: 0 });
       if (!store().items.length) return 'empty' as const;
       for (;;) {
@@ -569,6 +604,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
         now += hours * 3_600_000;
       },
       missedAgain: (capMs) => run('review', capMs, undefined, undefined, [...missedToday.values()]),
+      adaptive: (capMs = budgetMs) => run('adaptive', capMs),
       learn: (capMs = budgetMs) => {
         const next = nextSectionToLearn(course, useProgressStore.getState().getProgress(COURSE_ID));
         if (!next || next.index >= available || used >= capMs) return false;
@@ -682,7 +718,7 @@ export function simulate(sc: Scenario, seed: number): RunResult {
  * forgets: the scale on the app's stabilities that best explains their
  * answers, by maximum likelihood (a four-option question can be guessed).
  */
-export function fitScale(seen: { days: number; s: number; mcq: boolean; got: boolean }[]): number {
+function fitScale(seen: { days: number; s: number; mcq: boolean; got: boolean }[]): number {
   let best = 1;
   let bestLl = -Infinity;
   for (let m = 0.3; m <= 3; m *= 1.05) {

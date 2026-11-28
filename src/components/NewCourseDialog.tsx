@@ -1,7 +1,6 @@
-import { normalizeCourseCode } from '@/lib/courseCode';
+import { closeClass, normalizeCourseCode } from '@/lib/courseCode';
 import { classOf } from '@/lib/classExams';
 import { useMemo, useState, type ChangeEvent } from 'react';
-import { useDialog } from '@/lib/useDialog';
 import { useNavigate } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { parseCourse } from '@/schema/parseCourse';
@@ -13,10 +12,12 @@ import { Icon } from './Icon';
 import { TeacherNotesField } from './TeacherNotesField';
 import { MoreContextField, StudiesField } from './StudiesField';
 import { MakeKindsField } from './MakeKindsField';
-import { More, PromptStep } from './PromptStep';
+import { PromptBody, PromptStep, Row, Rows } from './PromptStep';
+import { Sheet } from './Sheet';
 import { ALL_KINDS, storedKinds, type MakeKind } from '@/lib/makeKinds';
 import { cutMessage, readReply } from '@/lib/readReply';
 import { toastNotesFromAI } from '@/lib/notesFromAI';
+import { plural } from '@/lib/plural';
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
@@ -38,10 +39,6 @@ const TYPE_LABELS: Record<string, string> = {
   graphic: 'diagram',
 };
 
-function plural(n: number, word: string): string {
-  return `${n} ${word}${n === 1 ? '' : 's'}`;
-}
-
 /**
  * "New course" — the missing first step.
  *
@@ -53,13 +50,14 @@ function plural(n: number, word: string): string {
  * Step 3 takes the file the AI made; the prompt asks it to hand one back.
  */
 export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
-  useDialog(onClose);
   const [pasted, setPasted] = useState('');
   const [notes, setNotes] = useState('');
   const [studies, setStudies] = useState(false);
   const [moreContext, setMoreContext] = useState(false);
-  // Everything, unless the student unticks a kind (lib/makeKinds).
-  const [kinds, setKinds] = useState<MakeKind[]>(ALL_KINDS);
+  // The AI chooses the kinds, unless the student picks "Only these" (lib/makeKinds).
+  const [aiChooses, setAiChooses] = useState(true);
+  const [ticked, setKinds] = useState<MakeKind[]>(ALL_KINDS);
+  const kinds = aiChooses ? ALL_KINDS : ticked;
   const [copied, setCopied] = useState(false);
   const lectures = useCoursesStore((s) => s.courses);
   // In a class, the lecture added last is the likeliest one this deck follows.
@@ -70,6 +68,28 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
   });
   const addCourse = useCoursesStore((s) => s.addCourse);
   const navigate = useNavigate();
+  /*
+   * Which class it belongs to, asked here and stamped on the lecture whatever
+   * the AI wrote: notes often never say their class, and a lecture with the
+   * AI's guess, or none, landed away from its class (the owner, 2026-11-11:
+   * "it would now know no matter what"). From a class's page it is set already.
+   */
+  const classes = useMemo(() => {
+    const byKey = new Map<string, string>();
+    for (const c of Object.values(lectures)) {
+      const code = c.metadata.course_code?.trim();
+      const key = classOf(c);
+      if (code && key && !byKey.has(key)) byKey.set(key, code);
+    }
+    return [...byKey.values()].sort();
+  }, [lectures]);
+  const [klass, setKlass] = useState<string>('');
+  const [typing, setTyping] = useState(false);
+  const picked = classCode ?? (klass.trim() || undefined);
+  // The file's own code, when no class was picked, checked against the
+  // library's: "PSYC351C" from the AI for the student's "PSYC 351" is the
+  // same class, asked about once in the preview (onboarding.md, option C).
+  const [keepOwn, setKeepOwn] = useState(false);
 
   // Parsed on every keystroke so the preview and the error both track the box.
   const result = useMemo((): { course: Course; cut: string | null } | { error: string } | null => {
@@ -116,13 +136,16 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
     navigate(`/study/${id}`);
   };
 
+  const nearClass = !picked && course ? closeClass(course.metadata.course_code, classes) : null;
+  const stamped = picked ?? (nearClass && !keepOwn ? nearClass : undefined);
+
   const confirmPaste = () => {
     if (!course) return;
     const placed = {
       ...course,
       metadata: {
         ...course.metadata,
-        ...(classCode ? { course_code: classCode } : {}),
+        ...(stamped ? { course_code: stamped } : {}),
         // Written before the prompt was copied; kept for every later prompt.
         ...(notes.trim() ? { student_notes: notes.trim() } : {}),
         // What it was made with, so Add material, More practice and Fix keep to it.
@@ -153,116 +176,188 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
     }
   }
 
+  const copyButton = (
+    <button type="button" onClick={copyPrompt} disabled={!kinds.length} className="press">
+      <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
+      {copied ? 'Prompt copied' : 'Copy the prompt'}
+    </button>
+  );
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Create a new lecture"
+    <Sheet
+      label="Create a new lecture"
+      title={classCode ? `New lecture for ${classCode}` : 'New lecture'}
+      onClose={onClose}
+      width="2xl"
     >
-      <div className="my-8 w-full max-w-2xl paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
-        <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="font-semibold text-text">{classCode ? `New lecture for ${classCode}` : 'New lecture'}</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">
-            <Icon name="x" size={18} />
-          </button>
-        </div>
-
-        <div className="space-y-6 px-5 py-4">
-          <PromptStep n={1} title="What to make">
-            <MakeKindsField value={kinds} onChange={setKinds} />
-            <div className="mt-3">
-              <StudiesField checked={studies} onChange={setStudies} />
-              <MoreContextField checked={moreContext} onChange={setMoreContext} />
-            </div>
-            <More label="More options">
-              <div className="space-y-3">
-                <TeacherNotesField value={notes} onChange={setNotes} />
-                {Object.keys(lectures).length > 0 && (
-                  <label className="block">
-                    <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-3">
-                      Follows on from
-                    </span>
-                    <span className="mb-1.5 block text-sm text-text-2">
-                      If this starts with slides from the end of another lecture, pick it, so they aren&rsquo;t made twice.
-                    </span>
-                    <select value={after} onChange={(e) => setAfter(e.target.value)} className="field w-full text-sm">
-                      <option value="">None</option>
-                      {Object.entries(lectures).map(([id, c]) => (
-                        <option key={id} value={id}>
-                          {c.metadata.title}
-                          {c.metadata.course_code ? ` · ${c.metadata.course_code}` : ''}
-                        </option>
+      <PromptBody
+        left={
+          <>
+            <PromptStep n={1} title="Choose what to make">
+              <Rows>
+                {!classCode && (
+                  <Row label="Class">
+                    <div role="radiogroup" aria-label="Which class is it for?" className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+                      {classes.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          role="radio"
+                          aria-checked={!typing && klass === c}
+                          onClick={() => {
+                            setTyping(false);
+                            setKlass(klass === c ? '' : c);
+                          }}
+                          className={`tap-safe text-sm ${
+                            !typing && klass === c ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : 'text-text-2 hover:text-text'
+                          }`}
+                        >
+                          {c}
+                        </button>
                       ))}
-                    </select>
-                  </label>
+                      {typing ? (
+                        <input
+                          autoFocus
+                          value={klass}
+                          onChange={(e) => setKlass(e.target.value)}
+                          placeholder="Class code, e.g. PSYC 351"
+                          aria-label="Another class"
+                          className="field w-48 text-sm"
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTyping(true);
+                            setKlass('');
+                          }}
+                          className="tap-safe text-sm text-text-3 hover:text-text"
+                        >
+                          {classes.length ? 'Another' : 'Type its code'}
+                        </button>
+                      )}
+                    </div>
+                  </Row>
                 )}
+                <Row label="Make">
+                  <MakeKindsField value={ticked} onChange={setKinds} ai={aiChooses} onAi={setAiChooses} />
+                </Row>
+                <Row label="Also">
+                  <StudiesField checked={studies} onChange={setStudies} />
+                  <MoreContextField checked={moreContext} onChange={setMoreContext} />
+                </Row>
+                <Row label="More">
+                  <details>
+                    <summary className="tap-safe cursor-pointer text-sm text-text-2 hover:text-text">
+                      {Object.keys(lectures).length > 0 ? 'Your teacher\u2019s notes, or the lecture it follows' : 'Your teacher\u2019s notes'}
+                    </summary>
+                    <div className="mt-3 space-y-3 text-sm text-text-2">
+                      <TeacherNotesField value={notes} onChange={setNotes} />
+                      {Object.keys(lectures).length > 0 && (
+                        <label className="block">
+                          <span className="mark mb-1 block text-text-3">Follows on from</span>
+                          <span className="mb-1.5 block text-sm text-text-2">
+                            If this starts with slides from the end of another lecture, pick it, so they aren&rsquo;t made twice.
+                          </span>
+                          <select value={after} onChange={(e) => setAfter(e.target.value)} className="field w-full text-sm">
+                            <option value="">None</option>
+                            {Object.entries(lectures).map(([id, c]) => (
+                              <option key={id} value={id}>
+                                {c.metadata.title}
+                                {c.metadata.course_code ? ` · ${c.metadata.course_code}` : ''}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
+                    </div>
+                  </details>
+                </Row>
+              </Rows>
+            </PromptStep>
+
+            {/* The heading is the whole task, the attaching included; the
+                button only names its action (the owner, 2026-11-25, Testing 7:
+                "the title for step 2 should be something like give the prompt
+                and the lecture notes you want to use to the ai"). Why attach
+                them, and how the prompt works, are in Help. */}
+            <PromptStep n={2} title="Give the AI the prompt and your slides or notes, in one message">
+              {copyButton}
+              <p className="mt-2 text-sm text-text-3">For the best results, use a more capable model on high effort.</p>
+            </PromptStep>
+          </>
+        }
+        right={
+          <>
+            <PromptStep n={3} title="Bring back the file it makes">
+              <label className="press tap-safe inline-flex cursor-pointer">
+                <Icon name="upload" size={13} />
+                Upload the file
+                <input type="file" accept=".json,.study.json" className="hidden" onChange={handleFile} />
+              </label>
+            </PromptStep>
+
+            {result && 'error' in result && (
+              <div
+                role="alert"
+                className="whitespace-pre-wrap border-l-2 border-error py-2 pl-3 text-sm text-error"
+              >
+                {result.error}
               </div>
-            </More>
-          </PromptStep>
+            )}
 
-          <PromptStep n={2} title="Copy the prompt">
-            <p className="mb-3 text-sm text-text-2">
-              Paste it into Claude or another AI, and attach your slides, notes or PDF to the same message.
-            </p>
-            <button type="button" onClick={copyPrompt} disabled={!kinds.length} className="press">
-              <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
-              {copied ? 'Prompt copied' : 'Copy the prompt'}
-            </button>
-            <More label="Why attach them to the message?">
-              <p>
-                Files kept only in a project often reach the AI as text, without their diagrams, and the lecture then
-                misses what the diagrams show. The prompt has the AI list every term and idea in your material first, so
-                the lecture covers all of it rather than skimming.
-              </p>
-            </More>
-          </PromptStep>
+            {result && 'cut' in result && result.cut && (
+              <div role="status" className="border-l-2 border-warning py-2 pl-3 text-sm text-text-2">
+                {result.cut}
+              </div>
+            )}
 
-          <PromptStep n={3} title="Upload the file">
-            <label className="press tap-safe inline-flex cursor-pointer">
-              <Icon name="upload" size={13} />
-              Upload the file the AI made
-              <input type="file" accept=".json,.study.json" className="hidden" onChange={handleFile} />
-            </label>
-          </PromptStep>
-
-          {result && 'error' in result && (
-            <div
-              role="alert"
-              className="whitespace-pre-wrap border-l-2 border-error py-2 pl-3 text-sm text-error"
-            >
-              {result.error}
-            </div>
-          )}
-
-          {result && 'cut' in result && result.cut && (
-            <div role="status" className="border-l-2 border-warning py-2 pl-3 text-sm text-text-2">
-              {result.cut}
-            </div>
-          )}
-
-          {course && (
-            <div className="border-l-2 border-border-strong bg-bg py-2 pl-3 text-sm">
-              <div className="font-medium text-text">
-                {course.metadata.title || 'Untitled lecture'}
-                {course.metadata.course_code && (
-                  <span className="font-normal text-text-3"> · {course.metadata.course_code}</span>
+            {course && (
+              <div className="border-l-2 border-border-strong py-2 pl-3 text-sm">
+                <div className="font-medium text-text">
+                  {course.metadata.title || 'Untitled lecture'}
+                  {course.metadata.course_code && (
+                    <span className="font-normal text-text-3"> · {course.metadata.course_code}</span>
+                  )}
+                </div>
+                {nearClass && (
+                  <div role="radiogroup" aria-label="Which class" className="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-text-2">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={!keepOwn}
+                      onClick={() => setKeepOwn(false)}
+                      className={`tap-safe ${!keepOwn ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : 'hover:text-text'}`}
+                    >
+                      Put it with {nearClass}
+                    </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={keepOwn}
+                      onClick={() => setKeepOwn(true)}
+                      className={`tap-safe ${keepOwn ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : 'hover:text-text'}`}
+                    >
+                      Keep {course.metadata.course_code}
+                    </button>
+                  </div>
                 )}
+                <div className="mt-0.5 text-text-2">
+                  {plural(course.sections.length, 'section')}, {plural(itemTotal, 'item')}
+                  {Object.keys(counts).length > 0 && (
+                    <span className="text-text-3">
+                      {' '}
+                      ({Object.entries(counts)
+                        .map(([type, n]) => plural(n, TYPE_LABELS[type] ?? type))
+                        .join(', ')})
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="mt-0.5 text-text-2">
-                {plural(course.sections.length, 'section')}, {plural(itemTotal, 'item')}
-                {Object.keys(counts).length > 0 && (
-                  <span className="text-text-3">
-                    {' '}
-                    ({Object.entries(counts)
-                      .map(([type, n]) => plural(n, TYPE_LABELS[type] ?? type))
-                      .join(', ')})
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </>
+        }
+      />
 
         <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
           <button type="button" onClick={onClose} className="rounded px-3 py-1.5 text-sm text-text-2 hover:text-text">
@@ -277,8 +372,7 @@ export function NewCourseDialog({ onClose, classCode }: NewCourseDialogProps) {
             Add lecture
           </button>
         </div>
-      </div>
-    </div>
+    </Sheet>
   );
 }
 

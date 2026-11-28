@@ -107,6 +107,17 @@ prompt's guide to types is guidance the AI may depart from where another
 type tests better (the owner, 2026-11-22). The same rules reach the Add,
 Add questions, Fix and even-out prompts.
 
+**Which class** (2026-11-25): from the library, step 1 first asks which
+class it is for (the classes in the library, Another to type a code, or
+nothing picked); the pick is stamped on the lecture whatever the AI wrote,
+as a class page's New lecture already did (the owner, 2026-11-11: "it would
+now know no matter what"). Checking a new class code against the library's
+when the reply comes back (option C of docs/proposals/onboarding.md):
+with no class picked, a code a typo or a section letter away from one in
+the library ("PSYC351C", "PYSC 351" for "PSYC 351", `lib/courseCode`
+closeClass) is asked about once in the preview, "Put it with PSYC 351"
+chosen, "Keep PSYC351C" beside it.
+
 **How it works.** Three short steps (the owner, 2026-10-29: the prompt
 screens were "massive blocks of text … not intuitive for new users"): what
 to make, copy the prompt, upload the file the AI made (the paste box went
@@ -114,7 +125,24 @@ to make, copy the prompt, upload the file the AI made (the paste box went
 one code block to save as one; the upload shows the same preview before
 Add lecture); one line each, the reasons and
 options folded behind a "more" line (`PromptStep`, `More`). What to make
-is a box per kind (multiple choice, select all that apply, flashcards,
+is a specimen label of ruled rows, each named in small caps (`Rows`,
+`Row`; docs/proposals/new-lecture-screen.md, after the owner, 2026-11-25:
+"That whole screen honestly needs some reorganization … a lot more
+intuitive without losing function"): Class, Make, Also (studies, explain
+more, each with its cost in quiet type), More (teacher's notes, follows on
+from, folded). Make has two named ways over a box per kind, always in
+view: "The AI chooses" (the default: every kind is open and the AI picks
+the kind that fits each idea, as the spec's "Which type for what" says;
+the boxes show every kind ticked, quiet) or "Only these" (a kind unticked
+is not made). Touching a box in the AI's way moves to Only these with that
+box changed. No line of text under them; how the AI decides is in Help
+(2026-11-25, Testing 6: the choice had been dropped for "looking ugly" and
+replaced by an explainer line; the owner: "I was telling you it LOOKED
+ugly, not to remove it"). The steps' headings are each step's whole task:
+"Choose what to make", "Give the AI the prompt and your slides or notes,
+in one message" (its button "Copy the prompt", and the model advice under
+it; why attach and how the prompt works are in Help, Testing 7), "Bring
+back the file it makes" (its button "Upload the file"). The boxes: (multiple choice, select all that apply, flashcards,
 terms to name, written answers, explanations, step-by-step examples, problem sets, diagrams;
 renamed 2026-11-16 from "worked examples" and "problems to work out",
 which the owner could not tell apart; a problem is any method to carry
@@ -256,6 +284,18 @@ and sections with far fewer or far more items for their slides than the
 rest of the lecture (`lib/sectionDensity.ts`). Fix turns the findings into
 a prompt for the same chat, which judges each one against the notes.
 
+Every slide accounted for (`lib/sourceCoverage.ts`, docs/proposals/trust.md):
+the file says how many slides there are (`metadata.source_pages`) and which
+teach nothing, with why; the sections' ranges, each item's `source_page`
+and each figure's `where` say what the rest became. A slide in none of them
+is reported (`uncovered-slides`, with the slides to look at), and Fix asks
+the AI to write its cards or say why it teaches nothing, which comes back
+as `source_pages.not_taught`. Material numbered more than once (parts,
+weeks) is left out rather than guessed. About this lecture shows
+"42 slides, all accounted for" or the slides nothing came from. Each
+card's "From your notes" line names its slide ("From your notes, slide
+12").
+
 A figure the generator marked as something to know that no question asks
 about is reported with the slides' findings: a diagram is read, never
 scored, so it is the one way the student learns it will not be tested
@@ -297,11 +337,21 @@ In the last 3 days, a day of 30 minutes or more is split into 3 sittings
 catch-up on what was missed. With several lectures, one daily time is
 shared by how soon each exam is. A class page's Today starts in the lecture
 with the nearest exam and carries on through the others. The library's
-Today is one Start for the whole day ("All 3 lectures", their minutes
-added up), which starts in the first lecture and offers the next at the end
-of each; below it, a row for each lecture studies that one alone and stops
-there ("?single=1"). With one lecture to study, its own row is the day
-(design audit 3A, live 2026-11-06).
+Today is two to four suggestions, not a sitting (the owner, 2026-11-22:
+"there will never be a day when I need to review everything I have";
+docs/proposals/ecosystem.md, `lib/todaySuggestions`): a practice test for
+a class whose exam is within three days, Review with how many questions
+are due, Carry on in Learn where it was left, Learn for the first lecture
+not started; the nearest exam first, at most two lines a class and four
+in all, the first struck hardest. A class whose exams are all behind it
+suggests nothing; on an exam's own day it still counts.
+It replaced one Start over every lecture and a row per lecture with a
+share of the daily time, which shrank as the library grew.
+
+In a Today or Learn sitting the header counts within the part you are
+in, "Review · 2 of 5" then "Section 1 · 3 of 9" (`lib/partCount`), which
+is what the lecture page promised; the bar under it is the whole sitting.
+"1 / 57" across the sitting read as a broken promise (2026-11-27).
 
 **Working means.** A sitting ends close to its planned minutes; nothing
 due is starved; new material is reached; the plan follows the exam.
@@ -350,8 +400,10 @@ the card already said the idea twice, and it still opens by itself after
 an answer (design audit 3B, live 2026-11-06; not yet checked on a real
 lecture's sitting). A term defined the same way in two lectures counts
 once. Every section starts with one choice, asked at each section's start
-(the owner, 2026-11-22): **Read it here first** (as above) or **Questions
-first**, for a part just read in the notes or heard in class. Questions
+(the owner, 2026-11-22): **Start reading** (as above), the one wide
+button, or **Questions first** beside it ("Read it already? Questions
+first", 2026-11-27: two equal buttons were a decision before anything was
+taught), for a part just read in the notes or heard in class. Questions
 first leaves out every card that teaches before asking (definitions,
 explanations, worked examples, figures, flashcards shown open): each card
 is asked cold, and the why and the passage open after a miss or Not sure.
@@ -439,6 +491,36 @@ whichever way it is opened again (Back, Learn on the lecture page, a reload
 after switching apps), and says so, with Start from the beginning. Today
 does the same within the day. Practice modes reshuffle, so they start fresh
 unless Continue is pressed (store/resume resumesOnOpen).
+
+### Adaptive quiz
+
+**Goal.** For once a lot has been covered: questions that keep coming,
+picked for where the student needs them, without choosing anything (the
+owner, 2026-11-20 and 2026-11-22; docs/proposals/zen.md). The master
+prompt's loop inside the app.
+
+**How it works.** A row on the lecture page and the class page ("Adaptive
+quiz"). It plans ten questions at a time (`buildSessionItems` 'adaptive'):
+what is due first, all of it up to the window less two slots for new cards,
+and at least three slots for due cards and past mistakes (five within a
+week of an exam); new cards only from sections already met (in Learn or
+before), picked at random, easier before harder; with nothing due or new
+left, what is held least well, so it keeps going. In the simulator it did a
+little worse than Today, alone or as extra time (sim/FINDINGS.md,
+2026-11-24), so Today stays the daily way in and the library's Review
+suggestion opens Today. Never a reading card. When
+three are left the next ten are planned (`session.topUp`), leaving out every
+card already in the sitting. A miss comes back three or so cards on (as in
+Learn's requeue). Marked as you go. The line above the card says when
+everything that was due at the start is done ("Carry on, or stop here").
+No list of misses: each answer already shows its why and passage (a
+Missed list was built and taken out, the owner, 2026-11-25). The counter
+has no total. On a class page the lectures are drawn from together
+(`initMixed`).
+
+**Not yet.** A miss re-asked by a different card on the same idea (the plan
+wants one; the same card is re-asked for now); "I wasn't sure" as half a
+miss.
 
 ### Practice
 
@@ -714,17 +796,41 @@ ones you missed" or anything else that brings misses back (the owner,
   faded to where Review asks it again (`heldShare`): a card missed and not
   yet got right was never learned, and thins the branch through accuracy
   instead, so a section studied today keeps its leaves (the owner,
-  2026-11-03, watched one drop them hours after studying it). Choosing a
-  branch drops the leaves it has lost since it was last chosen, once
-  (`store/fallen`). On the lecture page it is large, with a line of words
+  2026-11-03, watched one drop them hours after studying it). The leaves
+  lost since the student last looked fall when the lecture opens, with a
+  small shake of the tree, on a phone and a computer alike; the first
+  opening of a lecture in a visit draws the tree on first, outward from the
+  foot of its trunk (the owner, 2026-11-22 and 2026-11-25). Pointing at or
+  sweeping over a branch only names it; it drops nothing. A leaf falls
+  once (`store/fallen`). In a sitting the tree grows a leaf only when its
+  measure counts a part learned, and never drops one on a miss
+  (`CourseTree` growOnly; the owner, 2026-11-24). On the lecture page it is large, with a line of words
   that agrees with it ("11 sections · 6 fading · 4 not started", read from
   the same `sectionMemory`). Of three versions the owner chose the drawing
   alone, as large as the first screen holds it (2026-11-06; design audit
   §4). Any touch on it raises a number on every branch, on a ring round
   the crown, each riding its branch as it swings; the branch under the
   finger is picked out and named under the tree with "Open"; a tap on a
-  number opens its section, a tap on the drawing while they show opens the
-  large tree, and an up-and-down drag still scrolls the page. Mouse: hover;
+  number opens its section, and so does a tap on the branch already picked
+  (a mouse picks by pointing, so one click; a finger, the second tap; the
+  owner, 2026-11-27); a tap on bare paper or another branch only picks.
+  A branch in leaf is picked by its leaves as well as its wood (a sweep
+    across a clump skipped it, 2026-11-27). (The enlarged tree in a sheet of
+  its own was removed 2026-11-25, Testing 11: it did nothing the page could
+  not, and a stray tap opened it; its info card's words are in Help, The
+  tree.) An up-and-down drag still scrolls the page. Every number is in the same ink
+  but the picked one, in the accent and larger; a branch's state is never a
+  colour on its number (the owner could not tell a fading branch's blue
+  from the one touched, Testing 1 and 3). Hidden numbers draw nothing, in
+  either theme (Testing 8). In the first run a touch fades the other
+  branches on every page, as here; the tree rests in full ink while a
+  question is open and while its leaves grow (2026-11-26), and it stands
+  at a fixed place as the words under it change. Every leaf on a
+  branch grows from its twig's wood (`growTree` nearestOnWood; Testing 2),
+  and every leaf, standing, falling or fallen, is drawn the same: outline,
+  vein, and filled with the paper, its colour and grain at the page's
+  scale (`lib/usePaperFill`; the owner, 2026-11-26). The words under the
+  tree are plain: blue is only for what can be tapped. Mouse: hover;
   keyboard: focus, Tab through the numbers, Enter (docs/proposals/tree.md
   §2; live 2026-11-07, look C the same day). Picking a branch sets the rest
   in a flat lighter ink, never per-stroke see-through (overlaps darkened
@@ -735,9 +841,23 @@ ones you missed" or anything else that brings misses back (the owner,
 - **The lecture page** opens on the tree, the title and Today's Start: the
   file's own details (description, code, subject, exam, contents, tags)
   fold behind "About this lecture ▸" (design audit 3C). What the whole
-  lecture builds to is the first thing inside the fold.
-- **Progress** leads with what is fading, each section with its Review,
-  closest to gone first; how well it was answered (accuracy and the least
+  lecture builds to is the first thing inside the fold. Today is the
+  page's one block (phone round, 2026-11-27, docs/proposals/phone-round.md):
+  what the sitting holds in words ("5 questions to review, then 24 new
+  cards, from section 1, …"), a time choice (the planned time and 10, 15,
+  30 min) that sizes this sitting only (`?min=`, store/session
+  pendingMinutes; not the plan, and not a resumed sitting or Keep going),
+  and one wide Start that says the time. Learn, Adaptive quiz and Practice
+  follow as rows you tap, each with its use and a › (the owner chose these rows over one quiet line of links, 2026-11-27); on a phone the View
+  and Lecture tools and the lecture check fold under one "More" line, which
+  says when the check found something to fix. Sections say "5 of 10
+  studied" and then "% right", not "100% · 5 studied".
+- **Progress** opens with what needs the student in words ("4 sections
+  fading, 5 questions to review; 5 not started"), then each section
+  studied as a row you tap, weakest first ("87% still held", Review n, or
+  Nothing due), then the sections not started, each one tap into Learn; on a
+  phone Review (or Practise the weakest when nothing is fading) is pinned
+  at the foot. Closest to gone first; how well it was answered (accuracy and the least
   accurate sections and tags) folds below it (design audit 3D, live
   2026-11-06). It also shows the mix-ups on record: answers that named another term of the lecture
   (`lib/mixUps.ts`), typed or picked from the options. Each brings that term
@@ -761,8 +881,8 @@ just account"). Friends are a plan of their own, later.
 
 **How it works.** `#/account` (`routes/AccountRoute`), reached from the
 foot of every page, where the link carries the student's name or
-"Account" (it replaced Sync's link; Sync is reached from the page). A
-name field ("Your name", kept on this device, not synced yet). Days of
+"Account", beside Settings. The name shows once, as the title; changing
+it, Sync, Reminders and Back up are in Settings (Testing 5). Days of
 study: a column a week, Sunday at the top, half a year on a phone, up to a
 year from 640px, from the first week studied; each day a drawn leaf,
 larger and deeper green for more time, a day without a small bud, never a
@@ -772,11 +892,62 @@ a tap shows a day's minutes and lectures. Four figures: time studied, days
 studied, longest and current streak (from yesterday until today is
 studied). Time by class, most first, then Other, then Removed lectures. A
 removed lecture keeps its days, class code and title (studyLog `retire`,
-kept by sync), so its time stays under its class. Then Sync (a link) and
-Back up. No streak nudges, no forecast ahead.
+kept by sync), so its time stays under its class. No streak nudges, no
+forecast ahead.
+
+### Settings
+
+**What it is for.** One place for everything a student sets once (the
+owner, 2026-11-25: "we need a settings area for all this kind of shit to
+live … light mode … their username … notifications, help, changing your
+email … your password"); docs/proposals/settings.md.
+
+**How it works.** `#/settings` (`routes/SettingsRoute`), from the foot of
+every page, which holds only the student's page and Settings. Ruled
+sections: You (name, saved on leaving the field), Appearance (Light, Dark,
+Match this device), Reminders, Account (signed out: sign in or make an
+account; signed in: the email, when it last synced, Sync now, Sign out,
+Change email and Change password opened in place; a new email is confirmed
+by a link Supabase sends), Your lectures (Back up, Restore), Help (Help,
+What's new: `#/help?s=new` opens that section). `#/sync` opens Settings.
+
+**Working means.** The theme, the name and the account are found without
+being told where; nothing set once sits on a page that shows something else.
 
 **Working means.** "2 of the last 3 days" for a student who began three
 days ago; a finished class removed from the library still counts.
+
+### Reminders
+
+**Goal.** Bring the student back when it is true that something is there
+(the owner, 2026-11-25: notifications "for various things", asked about
+"near the end of onboarding", adjustable "in the settings"; "the most
+obvious kind which is like a daily study reminder"). Never a streak or
+guilt (CLAUDE.md, Today). Plan: docs/proposals/notifications.md.
+
+**How it works.** Web push through Supabase. The device plans the next
+week (`lib/reminderPlan`) and saves it in place of the last plan after
+each sync, when the app opens and when it is put away (`lib/push`,
+`lib/autoSync`); the `arborous-push` function sends what is due each
+minute, at most two a day, and drops anything over six hours late. Kinds,
+each a tick on the student's page (`components/RemindersField`, settings
+per device in `store/reminders`): each day at the chosen time when there
+is something to study, saying what ("12 to review in PSYC 351. About 30
+minutes."), skipped once the day's time is studied; a second look three
+hours after the latest sitting's misses, never 10 pm to 8 am; three days
+and one day before an exam, which takes that day's slot with the day's
+line under it. A tap opens the library, the lecture or the class. Where
+push can't work, one line says why (sign in; add to the Home Screen on an
+iPhone; blocked in settings). The first run asks after the account page,
+only when signed in on a device that can take a push, with the daily time
+to tap (8 am, noon, 6 pm, 9 pm; 6 pm chosen). Once four days of the last
+30 have been studied, the page offers "You usually start around 9 pm. Use
+that" (`lib/usualTime`: the middle of each day's first answer, to the
+quarter hour; the owner, 2026-11-25: "why not help the user choose?").
+
+**Working means.** A student who studied their time in the morning hears
+nothing that evening; one with an exam in three days hears about the exam,
+once, with what is left.
 
 ## Layout and devices
 
@@ -799,17 +970,35 @@ its side, sits on a desk with room to look around: the page spreads out.
   Browse's sections scroll in a strip at the top.
 - On a desktop: the lecture page is two columns, the tree and sections on
   the left, the title and ways to work on the right (2026-09-26); a
-  sitting has a side rail with its parts and where you are in them, the
-  score, hints and the figure (`SessionRail`, 2026-09-27); Browse lists
-  its sections at the side, the glossary has a letter rail. In a sitting,
-  "Glossary" at the top of the side column swaps it for the lecture's
-  terms and meanings, with a search, the column widened; "← This sitting"
-  swaps back; the card does not move (the owner, 2026-11-16: "i dont wanna
-  have to exit the mode"). Not in a sitting that mixes lectures. It is shut
-  while a question is on screen and not yet answered, as the term asked
-  would be in it; the button says "Opens after you answer", and open, it
-  says it is shut and why (the owner, 2026-11-17). Reading cards and an
-  answered card have it.
+  sitting has a margin each side from 1280px (P4, 2026-11-25): the tree
+  large on the left with where you are, the sitting's parts and the score
+  (`SessionRail`), the lecture's glossary always on the right, the card
+  between. Below 1280px the glossary has no margin: "Glossary" at the top
+  of the left margin swaps it for the terms, "← This sitting" swaps back.
+  Not in a sitting that mixes lectures. It is shut while a question is on
+  screen and not yet answered, as the term asked would be in it; it says
+  so and why, and opens after the answer (the owner, 2026-11-17). Reading
+  cards and an answered card have it. The keys are one quiet line under
+  the card on a screen with a keyboard, only the ones that work on this
+  card now ("1-4 choose, Enter check" before an answer, "next" after);
+  "?" lists them all, Escape closes that before it leaves. On a phone a
+  sitting is the whole screen: no running head, clear of the status bar.
+  Browse lists its sections at the side, the glossary has a letter rail.
+  The quieter pages differ by format (P4-1, 2026-11-25): the glossary's
+  letters run down the phone's right edge (a thumb can slide along them) and
+  on a computer sit at the side with the picked or hovered term's full
+  meaning beside the list ("/" searches, J and K move); Diagrams is one
+  plate at a time with a swipe on a phone, its row of sections the
+  figures' running head (the section shown marked, a count on each name,
+  the edges fading where more names wait, a glide once on arrival, the
+  mark following Next and swipes, held at the top of the screen;
+  docs/proposals/diagrams-row.md, Testing 9), a grid with the plate opened
+  large beside its note on a computer; Progress on a computer has the
+  forecast of what comes due and this lecture's days of study on the right
+  page; Help folds its sections on a phone and has a contents column on a
+  computer; Set aside's Put back has Undo, and on a computer the picked card
+  shows beside the list; Browse edits in a sheet on a phone and beside the
+  card on a computer.
 - **A phone on its side** (the owner, 2026-11-10: "when it does the view is
   very cut off"). iOS gives a web page no rotation lock, so a short screen
   held sideways (landscape, under 500px tall, 600px or wider) gets the
@@ -821,6 +1010,22 @@ its side, sits on a desk with room to look around: the page spreads out.
   already obvious. Checked at 750x340 (Safari) and 844x390 (home screen).
 - **Opening a page** starts at its top, so a lecture shows its tree
   first; Back returns to where you were (the owner, 2026-11-10).
+
+- **A sitting on a phone** (2026-11-25): the whole screen, no running
+  head; Prev, the glossary and Next in a bar at the bottom; the glossary a
+  sheet, greyed while a question waits. Once an answer is in, a swipe turns
+  the page: left on, right back; never on a waiting question, never a
+  verdict (docs/proposals/swipes.md). One motion (the owner, 2026-11-25:
+  "when you let go it just jumps"): the page stays under the finger 1:1,
+  carries on off the screen at the finger's speed (a quick flick counts),
+  and the next slides in from the far edge at that speed and settles
+  (`lib/useSwipe`; measured frame by frame, no frame over 40px).
+- **Paper** (2026-11-25, Testing 10): every surface that is paper carries
+  the grain to its bottom at every scroll position (the grain sits on a
+  scrolling sheet's content, not on the scrolling box); bands pinned over
+  the page and slips on it (the bottom bar, sticky rows, flashcards,
+  toasts) are paper too; a note is a rule at its side, never a filled box.
+  The rule is in the arborous-design skill.
 
 **Working means.** Every screen fits a 390px phone with its main action on
 the first screen, and uses the room on a desktop rather than stretching a
@@ -878,7 +1083,7 @@ phone column across it.
 
 ## Goals to confirm
 
-Drafted 2026-11-03 for the grading session (docs/prompts/grade-the-app.md),
+Drafted 2026-11-03 for the grading session (docs/archive/prompts/grade-the-app.md),
 from CLAUDE.md and the owner's words in docs/ASKS.md. These parts have no
 **Goal** line above. Each is a draft until the owner confirms or corrects
 it; then it moves into its entry. A grade is only as good as the goal it is
@@ -913,6 +1118,28 @@ measured against.
   found without reading the rest.
 - **The first run**: from opening the app for the first time to studying a
   first lecture, with no confusion and nothing to learn about the app.
+  Built 2026-11-25 as something to do, not to read (docs/proposals/
+  onboarding.md): the tree draws itself on with the name; on a phone,
+  install first; the tree stands for any lecture, its branches numbered
+  sections with no names (2026-11-27: a general explanation of the tree's
+  parts, no made-up topic or questions; docs/proposals/first-run-general.md):
+  "each branch is one section of a lecture", the student points across the
+  tree ("That's section 3") and taps two branches or their numbers to study
+  them, and their branches grow leaves ("leaves grow as you learn its topics
+  and concepts"), lets three weeks pass and watches the sections not
+  reviewed lose their leaves to the ground (where "fading" is taught), then
+  reviews one and sees its leaves come back and its pile clear ("Review
+  brings the leaves back"; the loop the app is built on). One lesson a page,
+  none twice: the separate page for finding a section repeated the first
+  (the owner, 2026-11-27; docs/proposals/first-run-flow.md). The tree
+  answers the pointer as soon as it moves after a tap. Then the daily time
+  (a day's session brings back what's fading, then teaches what's next), their name, an
+  account (made or signed in to on the page, or Not now; "I already have
+  an account" on the title page goes straight to signing in), and New
+  lecture. Skip on every page. One tree stays through every page, growing
+  or shrinking for the words, which leave and arrive line by line (the
+  owner, 2026-11-25: "dynamic and elegant"); on a computer the tree faces
+  the words, on a phone the one action sits at the bottom.
 - **Sync**: the same library, progress and log on every device, nothing
   ever lost or overwritten unseen.
 - **Backup and export**: a student's work is theirs and can never be lost,

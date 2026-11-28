@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { scoredEntries } from '@/lib/scored';
 import { useCoursesStore } from '@/store/courses';
@@ -14,6 +14,7 @@ import { useOnboardingStore } from '@/store/onboarding';
 import { storageUsage } from '@/lib/safeStorage';
 import { scrollToAnchor } from '@/lib/scrollToAnchor';
 import { VERSION } from '@/lib/appUpdate';
+import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 
 interface HelpSection {
   id: string;
@@ -28,17 +29,22 @@ interface HelpSection {
 const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   {
     name: 'Today',
-    what: 'The one to press most days. It reviews what you are starting to forget, then carries on with new material, and ends when your daily time is up. Set the time, and your exam date and what it covers, from the line under Today on the lecture page. If one exam covers several lectures with the same class code, you can set it on all of them at once there. In the last few days before an exam it makes more room for anything on it you have not studied yet, and in the last three it splits your daily time into three sittings a few hours apart, which does more than one long one. Once your time is used up, coming back a few hours later gives a five-minute catch-up on what you missed, which does more for those cards than going over them again straight away. With more than one lecture, you can set one daily time for all of them under Today on the library page: it is shared by how soon each exam is, so the nearest gets the most.',
+    what: 'The one to press most days. It reviews what you are starting to forget, then carries on with new material, and ends when your daily time is up. Short of time today? Pick 10, 15 or 30 minutes above its Start: that sizes this sitting only. Set the daily time, and your exam date and what it covers, from the line under Today on the lecture page. If one exam covers several lectures with the same class code, you can set it on all of them at once there. In the last few days before an exam it makes more room for anything on it you have not studied yet, and in the last three it splits your daily time into three sittings a few hours apart, which does more than one long one. Once your time is used up, coming back a few hours later gives a five-minute catch-up on what you missed, which does more for those cards than going over them again straight away. With more than one lecture, you can set one daily time for all of them under Today on the library page: it is shared by how soon each exam is, so the nearest gets the most. Today on the library page suggests what to study: a class with an exam close, what is fading, where Learn left off, a lecture not started, each one tap away.',
+    scored: true,
+  },
+  {
+    name: 'Adaptive quiz',
+    what: 'Questions keep coming for as long as you want, ten planned at a time from where you are: what is fading or you got wrong before first, then questions you have not answered yet from parts you have already studied, in no fixed order, easier before harder. For a lecture you have not studied, use Learn first. A question you miss comes back a few questions later. When everything to review is done, it says so: carry on, or stop. On a class page it draws from every lecture of the class.',
     scored: true,
   },
   {
     name: 'Learn',
-    what: 'Teaches a section a few terms at a time, about a dozen cards a step. Each step goes Read, Recall, Apply: read the terms; recall them, easy first (an easy multiple choice, the flashcards, then each term named from its meaning); then apply them in the harder multiple choice, with any answer to write last. Where nothing easy comes first, a term is named after the questions, never straight after reading it. Two cards on the same fact are never close together: the second waits for a later step, so you answer it from what you know and not from the card before. A term whose definition spells out its own name is read but not asked; the lecture check lists those, and Fix rewords them. A term gets at most three cards the first time you meet it; the rest, and any card that would come too soon after its twin, open your next sitting as a second look. A term defined the same way in two of your lectures counts once: answer it in one and the other knows. Where a section turns on how or why something works, a short explanation (The idea) comes before the questions on it: what the idea is, why, and how it follows from the one before. Anything you get wrong comes back a few cards later in the same step, with the passage from your notes. After each step you can stop, and Learn picks up at the next one. At the end it offers the next section. Each section starts by asking: Read it here first, or Questions first. Questions first suits a part you have just read in your notes or heard in class: nothing is explained before it is asked, and the why and the passage open when you miss one or are not sure. Trying first helps even when you get it wrong. The step line has the other choice, to change it partway.',
+    what: 'Teaches a section a few terms at a time, about a dozen cards a step. Each step goes Read, Recall, Apply: read the terms; recall them, easy first (an easy multiple choice, the flashcards, then each term named from its meaning); then apply them in the harder multiple choice, with any answer to write last. Where nothing easy comes first, a term is named after the questions, never straight after reading it. Two cards on the same fact are never close together: the second waits for a later step, so you answer it from what you know and not from the card before. A term whose definition spells out its own name is read but not asked; the lecture check lists those, and Fix rewords them. A term gets at most three cards the first time you meet it; the rest, and any card that would come too soon after its twin, open your next sitting as a second look. A term defined the same way in two of your lectures counts once: answer it in one and the other knows. Where a section turns on how or why something works, a short explanation (The idea) comes before the questions on it: what the idea is, why, and how it follows from the one before. Anything you get wrong comes back a few cards later in the same step, with the passage from your notes. After each step you can stop, and Learn picks up at the next one. At the end it offers the next section. Each section starts with where it is going and Start reading, with Questions first beside it. Questions first suits a part you have just read in your notes or heard in class: nothing is explained before it is asked, and the why and the passage open when you miss one or are not sure. Trying first helps even when you get it wrong. The step line has the other choice, to change it partway.',
     scored: true,
   },
   {
     name: 'Practice',
-    what: 'Study whatever you want, however you want, outside the plan: before a class quiz, on a part that feels shaky, only problems, only flashcards on a bus. Each answer is marked as you give it. On top are ready-made sittings, one tap each: Due now (what is fading, weakest first), Mistakes, Flashcards (the ones fading first, then up to ten new, as Anki does) and Problems. Below, Choose it yourself: tick the kinds of card (multiple choice, flashcards, written answers, terms, problems), tick which cards (due now, mistakes, new, already strong), pick an order (Mixed, the way an exam mixes them; In order, as the lectures teach them; Weakest first), and under From tick the sections, or on a class page the lectures and their sections. Start, pinned at the bottom, says how many cards you get. Written answers are left unticked until you tick them. Studies keeps only the cards on empirical studies, or one study. To go straight to one kind, use the links under Practice on the lecture page, or on a section’s page for that section. Mistakes keeps a card you got wrong until you get it right on a later day: right again a minute after the miss is the answer you just saw. On a class page, Mixed puts every lecture in one sitting, so you have to tell apart ideas from different lectures, as an exam does; In order runs one lecture after another. In the last week before one of the class’s exams, Mixed is the default. Each answer counts in its own lecture. Your choices are remembered for next time. Today still decides what comes back when, so a card that is not fading yet gains little from more practice.',
+    what: 'Study whatever you want, however you want, outside the plan: before a class quiz, on a part that feels shaky, only problems, only flashcards on a bus. Each answer is marked as you give it. On top are ready-made sittings, one tap each: To review (what is fading, weakest first), Mistakes, Flashcards (the ones fading first, then up to ten new, as Anki does) and Problems. Below, Choose it yourself: tick the kinds of card (multiple choice, flashcards, written answers, terms, problems), tick which cards (to review, mistakes, new, already strong), pick an order (Mixed, the way an exam mixes them; In order, as the lectures teach them; Weakest first), and under From tick the sections, or on a class page the lectures and their sections. Start, pinned at the bottom, says how many cards you get. Written answers are left unticked until you tick them. Studies keeps only the cards on empirical studies, or one study. To go straight to one kind, use the links under Practice on the lecture page, or on a section’s page for that section. Mistakes keeps a card you got wrong until you get it right on a later day: right again a minute after the miss is the answer you just saw. On a class page, Mixed puts every lecture in one sitting, so you have to tell apart ideas from different lectures, as an exam does; In order runs one lecture after another. In the last week before one of the class’s exams, Mixed is the default. Each answer counts in its own lecture. Your choices are remembered for next time. Today still decides what comes back when, so a card that is not fading yet gains little from more practice.',
     scored: true,
   },
   {
@@ -53,7 +59,7 @@ const MODE_ROWS: { name: string; what: string; scored: boolean }[] = [
   },
   {
     name: 'Glossary',
-    what: 'Every term in the lecture from A to Z, with its meaning, to look things up. Find it under View on the lecture page.',
+    what: 'Every term in the lecture, with its meaning, to look things up. Find it under View on the lecture page.',
     scored: false,
   },
   {
@@ -71,8 +77,9 @@ const SHORTCUTS: { keys: string; what: string }[] = [
   { keys: 'Space', what: 'Flip a flashcard' },
   { keys: 'G / H / M', what: 'Mark a flashcard got it, hard (right, but it took effort: it comes back sooner) or missed it' },
   { keys: '1 – 9', what: 'Tick a point of a written answer; Enter when done' },
-  { keys: '← →', what: 'Previous / next item' },
   { keys: 'Esc', what: 'Leave the session' },
+  { keys: 'J / K', what: 'Next or previous row in the library, a lecture\'s sections, a class\'s lectures or the glossary; Enter opens it' },
+  { keys: '/', what: 'Search the library or the glossary' },
 ];
 
 const SECTIONS: HelpSection[] = [
@@ -87,18 +94,27 @@ const SECTIONS: HelpSection[] = [
         </p>
         <ol className="mt-2 list-decimal space-y-1 pl-5">
           <li>
-            On the library page, tap <strong>New lecture</strong>. Under <strong>What to make</strong>, untick any
-            kind of card you don&rsquo;t want; only flashcards, say, gets you only flashcards, and the lecture keeps
-            that choice for everything added later. Tick <strong>My exams ask about the studies in my
+            On the library page, tap <strong>New lecture</strong>. Beside <strong>Make</strong>, leave{' '}
+            <strong>The AI chooses</strong>, or pick <strong>Only these</strong> and tick the kinds you want.
+            The AI choosing, every kind is open to it and it picks, idea by idea, the kind that tests it best:
+            a term to name becomes a term card, a fact to recall a flashcard, two close ideas to tell apart or
+            an idea to apply a multiple-choice question, a process step by step a worked example then a
+            problem, a structure or a pathway a diagram, a mechanism to explain a written answer. With Only
+            these, a kind left unticked is not made at all, and what it would have asked is asked by the kinds
+            you kept: only flashcards gets you only flashcards. The lecture keeps the choice for everything
+            added later. Tick <strong>My exams ask about the studies in my
             material</strong> only if they do: each study is then taught in full, which uses a lot more of the
             AI&rsquo;s usage. Tick <strong>Explain more than my slides do</strong> for more explanation and context
             where the slides are thin, such as a lecture you missed: a longer file.
           </li>
           <li>
-            Copy the prompt and paste it into a chat with an AI such as Claude. Attach your slides
-            or notes to that same message. Files kept only in a project often reach the AI as text,
-            without the diagrams, and the lecture then misses what the diagrams show. If a key
-            diagram is dense, attach a screenshot of that slide too.
+            Give the AI the prompt and your slides or notes in one message: copy the prompt, paste it
+            into a chat with an AI, and attach your slides or notes to that same message. For the best
+            results, use a more capable model on high effort. Why the same message: files kept only in a
+            project often reach the AI as text, without their diagrams, and the lecture then misses what
+            the diagrams show. If a key diagram is dense, attach a screenshot of that slide too. The prompt
+            has the AI list every term and idea in your material first, so the lecture covers all of it
+            rather than skimming.
           </li>
           <li>
             The AI hands back a <span className="font-mono">.study.json</span> file. Upload it in
@@ -174,18 +190,26 @@ const SECTIONS: HelpSection[] = [
     body: (
       <>
         <ul className="list-disc space-y-1 pl-5">
-          <li>Each branch is a section of the lecture.</li>
+          <li>Each branch is one section of the lecture.</li>
           <li>A section you have not studied has no leaves.</li>
           <li>
-            Leaves grow as you study a section. As you forget it they fall and collect under the
-            tree, but a branch you have studied always keeps a few.
+            Its leaves grow as you study that section. As you forget it, they fall to the ground
+            below, but a branch you have studied always keeps a few.
           </li>
-          <li>Reviewing the section grows them back.</li>
+          <li>Review the section and they grow back.</li>
         </ul>
         <p className="mt-2">
-          Tap the tree on a lecture page to open it larger. Choose a branch to see its name, how many
-          items are due, and a button to review just that section; the leaves it has lost fall as
-          you choose it. At the end of a session, the leaves you won back rise from the ground.
+          Opening a lecture, its tree grows and the leaves you have let fade fall, with a shake.
+        </p>
+        <p className="mt-2">
+          Touch the tree and every branch shows its number. Drag your finger over the tree to choose
+          a branch: its number is marked, the other branches fade, and its name shows under the
+          tree. Tap it again, its number, or Open under the tree, to open that section. On a
+          computer, move the pointer over the tree and click the branch or its number.
+        </p>
+        <p className="mt-2">
+          In a sitting the tree grows a leaf when a section is learned, and never drops one for a
+          wrong answer: leaves fall only from not practising.
         </p>
       </>
     ),
@@ -312,7 +336,15 @@ const SECTIONS: HelpSection[] = [
           The line under a lecture&rsquo;s title checks the lecture the AI made. It shows how many of
           the terms from your notes got a definition, then what is worth fixing (questions you could
           answer without knowing the material), what only your slides can settle (a figure the AI
-          could not read), and, folded away, smaller notes the app already works round.
+          could not read, a slide nothing in the lecture came from), and, folded away, smaller notes
+          the app already works round.
+        </p>
+        <p className="mt-2">
+          Lectures made from 27 November account for every slide: each one is either taught or named
+          as teaching nothing, with why (a title slide, an outline). About this lecture shows the
+          count, and the check lists any slide the AI skipped without saying. Every card says which
+          slide it came from on its <strong>From your notes</strong> line, so you can check it
+          against your slides in seconds.
         </p>
         <p className="mt-2">
           A red cross means something is broken, such as a question that cannot be marked. Tap the
@@ -342,7 +374,7 @@ const SECTIONS: HelpSection[] = [
             </li>
           ))}
         </ul>
-        <p className="mt-2">These are also shown at the bottom of each session.</p>
+        <p className="mt-2">In a sitting on a computer, the keys that work on the card on screen are shown under it, and ? lists them all.</p>
       </>
     ),
   },
@@ -356,11 +388,24 @@ const SECTIONS: HelpSection[] = [
           browser&rsquo;s data, your lectures go with it.
         </p>
         <p className="mt-2">
-          <strong>Sync</strong> (on your page, at the foot of every page under your name or Account) is optional: sign in with an email and a
+          <strong>Settings</strong>, at the foot of every page beside your page, holds everything you
+          set once: your name, light or dark, reminders, your account, backups, and this Help.
+        </p>
+        <p className="mt-2">
+          <strong>Sync</strong> (in Settings, under Account) is optional: sign in with an email and a
           password on each device you study on, and your lectures and progress follow you between
-          them. Without it nothing leaves this device. <strong>Share</strong> on a lecture page makes
+          them. Without it nothing leaves this device. The first time you sign in on a device, what is
+          on it is combined with what is in your account, so nothing on either is lost. Your email and
+          password can be changed there too; a new email is confirmed by a link sent to it. <strong>Share</strong> on a lecture page makes
           a link anyone can open to add that lecture to their own library; it needs you signed in,
           and opening it does not.
+        </p>
+        <p className="mt-2">
+          <strong>Reminders</strong> (in Settings, under Reminders) need you signed in. Each kind is
+          its own tick: once a day at the time you choose, when there is something to study; a few
+          hours after a sitting with misses, for a second look; and three days and one day before an
+          exam. Once you have studied a few days, Settings offers the time you usually start. Never more than two a day, and each is turned on or off per device. On an iPhone they
+          reach only the app added to the Home Screen.
         </p>
         <p className="mt-2">
           <strong>Back up everything</strong> saves every lecture, all your progress and your
@@ -430,7 +475,7 @@ function ReplayWelcome() {
       className="press tap-safe"
     >
       <Icon name="bulb" size={14} />
-      Show the welcome screen again
+      Show the welcome again
     </button>
   );
 }
@@ -526,9 +571,124 @@ function TestingTools() {
   );
 }
 
-/** "/help" — what the app does, including the parts that aren't obvious. */
+/**
+ * "/help" — what the app does, including the parts that aren't obvious.
+ *
+ * A phone gets the sections folded to one line each, so a topic is found
+ * without scrolling past the rest; a computer gets the contents at the side,
+ * the current topic underscored, and the text at reading width.
+ */
 export function HelpRoute() {
   const [search] = useSearchParams();
+  const wide = useMediaQuery(WIDE);
+  // Phone: which sections are unfolded.
+  // Opened at a section (?s=new, from Settings' What's new): that one unfolded.
+  const [opening] = useState(() => {
+    const id = search.get('s');
+    return id && SECTIONS.some((x) => x.id === id) ? id : null;
+  });
+  const [unfolded, setUnfolded] = useState<ReadonlySet<string>>(() => new Set(opening ? [opening] : []));
+  // Computer: the section nearest the top of the page.
+  const [current, setCurrent] = useState<string>(SECTIONS[0]!.id);
+
+  useEffect(() => {
+    if (!wide || typeof IntersectionObserver === 'undefined') return;
+    const seen = new Set<string>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) seen.add(e.target.id);
+          else seen.delete(e.target.id);
+        }
+        // The first section in the book that is in the top part of the screen.
+        const first = SECTIONS.find((x) => seen.has(x.id));
+        if (first) setCurrent(first.id);
+      },
+      { rootMargin: '0px 0px -65% 0px' },
+    );
+    for (const x of SECTIONS) {
+      const el = document.getElementById(x.id);
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, [wide]);
+
+  // A jump into a folded section unfolds it first.
+  const jump = (id: string) => {
+    if (!wide) setUnfolded((u) => new Set(u).add(id));
+    scrollToAnchor(id);
+  };
+  useEffect(() => {
+    if (opening) scrollToAnchor(opening);
+  }, [opening]);
+  const toggle = (id: string) =>
+    setUnfolded((u) => {
+      const next = new Set(u);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+
+  const contents = (
+    <nav aria-label="Help topics">
+      <h2 className="mark mb-2 text-text-3">Contents</h2>
+      <ol className="border-t border-border">
+        {SECTIONS.map((s, i) => (
+          <li key={s.id} className="border-b border-border">
+            <button
+              type="button"
+              onClick={() => jump(s.id)}
+              aria-current={wide && current === s.id ? 'true' : undefined}
+              className="group tap-safe flex w-full items-baseline gap-3 py-2 text-left"
+            >
+              <span className="mark w-5 shrink-0 tabular-nums text-text-3">{i + 1}</span>
+              <span
+                className={`${wide ? 'text-small' : 'text-body'} ${
+                  wide && current === s.id
+                    ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
+                    : 'text-text group-hover:text-accent'
+                }`}
+              >
+                {s.title}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+
+  const sections = SECTIONS.map((s) => {
+    const open = wide || unfolded.has(s.id);
+    return (
+      <section key={s.id} id={s.id} tabIndex={-1} className={`prose-set scroll-mt-20 border-t border-border ${wide ? 'pt-6' : open ? 'pb-4' : ''}`}>
+        {wide ? (
+          <h2 className="mb-2 font-display text-heading font-semibold text-text">{s.title}</h2>
+        ) : (
+          // Folded: the heading is the one line; a tap unfolds the section.
+          <button
+            type="button"
+            aria-expanded={open}
+            onClick={() => toggle(s.id)}
+            className="tap-safe flex w-full items-baseline justify-between gap-3 text-left"
+          >
+            <h2 className="font-display text-heading font-semibold text-text">{s.title}</h2>
+            <span className="mark shrink-0 text-text-3" aria-hidden="true">
+              {open ? '▾' : '▸'}
+            </span>
+          </button>
+        )}
+        <div className={`space-y-1 text-small text-text-2 ${open ? '' : 'hidden'}`}>{s.body}</div>
+      </section>
+    );
+  });
+
+  const intro = (
+    <div className="mt-4 space-y-2">
+      <ReplayWelcome />
+      <ShareApp />
+    </div>
+  );
+
   return (
     <div>
       <Link to="/" className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
@@ -540,18 +700,13 @@ export function HelpRoute() {
         Version {VERSION} ·{' '}
         <button
           type="button"
-          onClick={() => scrollToAnchor('new')}
+          onClick={() => jump('new')}
           className="text-text-3 underline decoration-border underline-offset-2 hover:text-text"
         >
           What’s new
         </button>
       </p>
       {search.has('devtools') && <TestingTools />}
-
-      <div className="mt-4 space-y-2">
-        <ReplayWelcome />
-        <ShareApp />
-      </div>
 
       {/*
         Buttons, not anchors.
@@ -565,40 +720,23 @@ export function HelpRoute() {
         moves focus as well as the scroll position, or it only works for
         people using a mouse.
       */}
-      {/* Contents, set the way a book sets them: numbered, ruled, one line
-          each. It was twelve stacked buttons — about a thousand pixels of
-          chunky boxes on a phone before a word of help. */}
-      <nav className="mt-6" aria-label="Help topics">
-        <h2 className="mark mb-2 text-text-3">Contents</h2>
-        <ol className="border-t border-border">
-          {SECTIONS.map((s, i) => (
-            <li key={s.id} className="border-b border-border">
-              <button
-                type="button"
-                onClick={() => scrollToAnchor(s.id)}
-                className="group tap-safe flex w-full items-baseline gap-3 py-2 text-left"
-              >
-                <span className="mark w-5 shrink-0 tabular-nums text-text-3">{i + 1}</span>
-                <span className="text-body text-text group-hover:text-accent">{s.title}</span>
-              </button>
-            </li>
-          ))}
-        </ol>
-      </nav>
-
-      <div className="mt-8 space-y-8">
-        {SECTIONS.map((s) => (
-          <section
-            key={s.id}
-            id={s.id}
-            tabIndex={-1}
-            className="prose-set scroll-mt-20 border-t border-border pt-6"
-          >
-            <h2 className="mb-2 font-display text-heading font-semibold text-text">{s.title}</h2>
-            <div className="space-y-1 text-small text-text-2">{s.body}</div>
-          </section>
-        ))}
-      </div>
+      {wide ? (
+        <div className="mt-6 grid grid-cols-[13rem_minmax(0,1fr)] gap-x-12">
+          <div className="sticky top-6 max-h-[calc(100vh-3rem)] self-start overflow-y-auto [scrollbar-width:thin]">
+            {contents}
+          </div>
+          <div className="max-w-[40rem]">
+            <div className="-mt-4">{intro}</div>
+            <div className="mt-8 space-y-8">{sections}</div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {intro}
+          {/* The folded headings are the contents: one line each. */}
+          <div className="mt-6 border-b border-border">{sections}</div>
+        </>
+      )}
     </div>
   );
 }

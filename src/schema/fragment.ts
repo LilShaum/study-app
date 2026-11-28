@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CourseSchema, InventorySchema, narration, StudyItemSchema, type Section, type StudyItem } from './course';
+import { CourseSchema, InventorySchema, narration, SourcePagesSchema, StudyItemSchema, type Section, type StudyItem } from './course';
 import { formatZodError } from './formatZodError';
 
 /* ============================================================
@@ -14,7 +14,7 @@ import { formatZodError } from './formatZodError';
  * back to the id rather than rejecting, so a generator that forgets one
  * doesn't cost the student the whole paste).
  */
-export const FragmentSectionSchema = z.looseObject({
+const FragmentSectionSchema = z.looseObject({
   id: z.string().min(1),
   title: z.string().optional(),
   description: z.string().optional(),
@@ -41,12 +41,13 @@ export const FragmentSchema = z
     inventory: InventorySchema.optional(),
     /** What the whole lecture builds to, for a lecture that does not say yet. */
     builds_to: narration(600),
+    /** Slides Fix found teach nothing, joined to the lecture's (docs/proposals/trust.md). */
+    source_pages: SourcePagesSchema.optional().catch(undefined),
   })
-  .refine((f) => (f.sections?.length ?? 0) > 0 || (f.corrections?.length ?? 0) > 0, {
+  .refine((f) => (f.sections?.length ?? 0) > 0 || (f.corrections?.length ?? 0) > 0 || !!f.source_pages?.not_taught?.length, {
     message: 'Expected at least one section of items, or at least one correction.',
   });
 
-export type FragmentSection = z.infer<typeof FragmentSectionSchema>;
 export type Fragment = z.infer<typeof FragmentSchema>;
 
 export type ParseFragmentResult = { ok: true; fragment: Fragment } | { ok: false; error: string };

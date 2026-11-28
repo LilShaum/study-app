@@ -4,6 +4,8 @@ import { sortedSections } from './sortedSections';
 /** How much of the previous lecture's end the prompt lists: its last sections, a bounded list. */
 const LAST_SECTIONS = 3;
 const MAX_EXCERPTS = 40;
+/** Every term the previous lecture defines, not only its last sections' (a session asked "was tetanus already defined?"). */
+const MAX_TERMS = 200;
 
 /**
  * What the lecture before this one already covers, for the new-lecture
@@ -20,6 +22,7 @@ export function previousLectureBlock(previous: Course | undefined): string {
   if (!previous) return '';
   const sections = sortedSections(previous).slice(-LAST_SECTIONS);
   if (!sections.length) return '';
+  const allTerms = [...new Set(previous.sections.flatMap((s) => s.items.filter((i) => i.type === 'definition').map((d) => d.term)))].slice(0, MAX_TERMS);
   const lines = sections.map((s) => {
     const terms = s.items.filter((i) => i.type === 'definition').map((d) => d.term);
     const excerpts = [...new Set(s.items.map((i) => String(i.source_excerpt ?? '').trim()).filter(Boolean))];
@@ -41,11 +44,11 @@ the start of the next. Below is what the end of that lecture already covers.
    write no items, and do not define its terms again.
 2. If a repeated slide adds something (a detail, a new example, a link to
    this lecture's topic), write items only for what it adds.
-3. Name the slides you skipped and why in \`metadata.description\`, e.g.
-   "Slides 1–6 repeat the end of ${previous.metadata.title}; not repeated here."
+3. Put the slides you skipped in \`metadata.source_pages.not_taught\`, e.g.
+   { "range": "slides 1–6", "why": "repeat the end of ${previous.metadata.title}" }.
 4. A term from the previous lecture that this lecture uses may still appear
    in this lecture's questions. It just does not get a second definition.
-
+${allTerms.length ? `\nEvery term that lecture already defines: ${allTerms.join(', ')}.\n` : ''}
 ${lines.join('\n\n')}
 
 `;

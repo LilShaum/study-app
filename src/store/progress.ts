@@ -1,3 +1,7 @@
+/**
+ * Records, per item, how often the student got it right or wrong and the memory state behind it.
+ * Also defines what counts as missed or a mistake, which Review and Practice read.
+ */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { safeJSONStorage } from '@/lib/safeStorage';

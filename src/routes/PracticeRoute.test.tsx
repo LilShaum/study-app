@@ -49,11 +49,11 @@ describe("a class's Practice: built by ticks", () => {
     expect(screen.getByRole('button', { name: 'In order' }).getAttribute('aria-pressed')).toBe('true');
     expect(start()).not.toContain('mix=1');
     expect(start()).toContain('/session/a/practice');
-    expect(screen.getByText(/4 cards, starting in Alpha\./)).toBeTruthy();
+    expect(screen.getByText(/4 cards: .*, starting in Alpha\./)).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Mixed' }));
     expect(start()).toContain('mix=1');
-    expect(screen.getByText(/4 cards, from 2 lectures mixed\./)).toBeTruthy();
+    expect(screen.getByText(/4 cards: .*, from 2 lectures mixed\./)).toBeTruthy();
 
     cleanup();
     renderAt('/class/MIX%201/practice');
@@ -91,7 +91,7 @@ describe("a class's Practice: built by ticks", () => {
     useCoursesStore.setState({ courses: { a: lecture('MIX 1: Alpha', 'a'), b: lecture('MIX 1: Beta', 'b') } });
     renderAt('/class/MIX%201/practice');
     fireEvent.click(screen.getByRole('checkbox', { name: /Alpha/ }));
-    expect(screen.getByText('2 cards.')).toBeTruthy();
+    expect(screen.getByText(/^2 cards: .*\./)).toBeTruthy();
     expect(start()).toContain('/session/b/practice');
     expect(choiceIn(start()).where).toEqual({ a: [], b: 'all' });
     fireEvent.click(screen.getByRole('button', { name: 'Untick all' }));
@@ -124,7 +124,7 @@ describe("a lecture's Practice", () => {
     const box = (name: RegExp) => screen.getByRole('checkbox', { name }) as HTMLInputElement;
     expect(box(/^Multiple choice/).checked).toBe(true);
     expect(box(/^Written answers/).checked).toBe(false);
-    expect(screen.getByText('3 cards.')).toBeTruthy();
+    expect(screen.getByText(/^3 cards: .*\./)).toBeTruthy();
     fireEvent.click(box(/^Written answers/));
     fireEvent.click(box(/^Multiple choice/));
     expect(choiceIn(start()).kinds.sort()).toEqual(['flashcards', 'problems', 'written']);
@@ -133,7 +133,7 @@ describe("a lecture's Practice", () => {
   it('starts on one section when opened from it', () => {
     useCoursesStore.setState({ courses: { k: mixed } });
     renderAt('/study/k/practice?section=s2');
-    expect(screen.getByText('1 card.')).toBeTruthy();
+    expect(screen.getByText(/^1 card: .*\./)).toBeTruthy();
     expect(choiceIn(start()).where).toEqual({ k: ['s2'] });
   });
 
@@ -143,6 +143,6 @@ describe("a lecture's Practice", () => {
     renderAt('/study/k/practice');
     const problems = screen.getByRole('link', { name: /^Problems/ }).getAttribute('href');
     expect(choiceIn(problems).kinds).toEqual(['problems']);
-    expect(screen.getByRole('link', { name: /^Due now/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /^To review/ })).toBeTruthy();
   });
 });

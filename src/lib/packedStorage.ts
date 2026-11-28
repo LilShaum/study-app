@@ -8,7 +8,7 @@ import { safeLocalStorage, trySetItem } from './safeStorage';
  * Browsers give a site about 5 MB of localStorage, iOS included. Lectures are
  * text, and stored plainly 11 of the owner's took 3.4 MB five weeks into a
  * semester, so storage would have filled within weeks
- * (docs/audits/2026-10-17-weak-points.md). Deflated and packed 15 bits to a
+ * (docs/archive/audits/2026-10-17-weak-points.md). Deflated and packed 15 bits to a
  * character they take about an eighth of that.
  *
  * Each lecture has its own key, `arborous:courses/<id>`, and only a lecture

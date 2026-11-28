@@ -25,6 +25,14 @@ reasoning; this is the working version.
   and the minute choices in `ExamDialog.tsx`.
 - **Buttons.** `press` with its ink underline; `press-ink` for the one main
   action on a screen. Text links are quiet (`text-text-3 hover:text-text`).
+- **Blue (the accent) means it can be tapped** (the owner, 2026-11-26: "the
+  blue could indicate that they are a "hyperlink" like they are
+  clickable … If they are static on touch then make them plain"). Links,
+  the picked choice, the touched branch's number: blue. A word that only
+  reports a state (fading, due) is never blue; give it weight or words if
+  it needs to stand out. Things in the same state look the
+  same; any difference must be one the student has been taught (the owner,
+  2026-11-25, Testing 1 and 3, the tree's numbers).
 - **Colour.** Only theme tokens (`text-text`, `text-text-2`, `text-text-3`,
   `text-accent`, `border-border`…), never literals. Both themes must pass
   `node scripts/contrast-report.mjs`.
@@ -52,6 +60,62 @@ reasoning; this is the working version.
 - The reason to come back is when knowledge will fade, never a streak or
   guilt.
 
+## Screens a student works through
+
+Lessons the owner taught on New lecture (2026-11-25), meant for every
+screen, not that one:
+
+- **A step's heading is the student's whole task in that step**, written
+  as what they do ("Give the AI the prompt and your slides, in one
+  message"), including anything they must not miss. Reading only the
+  headings should be enough to get through. A heading never repeats its
+  button: the button names its action ("Copy the prompt"), the heading the
+  task it belongs to.
+- **Anything required lives in the heading or a control's label**, never
+  only in a sentence, a grey note or a fold.
+- **On screen: what to do. In Help: why and how it works.** No explainer
+  lines under controls, no "Why …?" folds. If a control needs a sentence
+  to be understood, redesign the control (its label, grouping, position),
+  don't caption it.
+- **"It looks ugly" means redesign it, never remove it.** Keep every
+  function the owner asked for; change how it looks and where it sits.
+- **An overhaul covers the whole screen**, old parts included: walk every
+  element top to bottom and ask whether it still earns its place and
+  reads clearly, not only the parts added last.
+- **A control nobody finds is a design fault, not a reason to remove it.**
+  First list why a student would miss it (it reads as text, its edge looks
+  like a layout fault, nothing hints that it moves, a more obvious control
+  is beside it), then answer each reason with the control's own look and
+  motion, in the book's style. "Intuitive" never means simpler or duller,
+  and never a line telling the student what to do.
+- **A material covers its whole surface.** If a page, sheet or dialog is
+  paper (the grain), it is paper top to bottom at every scroll position;
+  grain that stops partway reads as a fault. Check long surfaces at their
+  bottom, not only their first screen (the owner, 2026-11-25).
+- **Which surfaces are paper, and why** (decided 2026-11-25, Testing 10).
+  The grain is the paper itself, so anything that is a piece of paper
+  carries it, and nothing else has a fill at all:
+  - *Paper, grain on:* the page (the shell), every leaf laid over it (a
+    sheet, a dialog, the first run), every band pinned over the page that
+    the page scrolls under (the thumb bar, a sticky row, the status-bar
+    cover, the glossary's held letter), and every slip or card set on it
+    (a flashcard, a toast, the resume note, the editor). Put `.paper-grain`
+    on the CONTENT of anything that scrolls, never on the scrolling box: a
+    `::before` on a scroll container covers only its first screen.
+  - *Not paper, no fill:* ink and rules. A note set in the text is a rule
+    at its side (`border-l-2`), never a box filled with flat colour: a flat
+    patch on grained paper reads as a hole in it. No translucent or blurred
+    bars (glass is not paper).
+  - *Controls drawn small* (a key cap, the glyph of a phone's button) may
+    keep a plain fill: they are marks, too small for grain to show.
+- **When a way of doing something is replaced, remove what the old way
+  needed.** A leftover screen that does nothing new, opened by a stray tap,
+  is clutter and a trap. A tap on empty space or a picture never opens a
+  new layer.
+- **Settings are not page content.** Anything the student sets once (their
+  name, theme, reminders, account) lives in a settings place they open,
+  not as open fields on a page that also displays it.
+
 ## Layout and behaviour
 
 - **Phone first.** Design at 390px. The main action stays in thumb reach
@@ -63,6 +127,14 @@ reasoning; this is the working version.
   Anything that opens can close. Anything destructive has Undo (a toast with
   an action), never a browser `confirm`.
 - Every screen sets a tab title (`useTabTitle` in `RootLayout.tsx`).
+
+## Feedback from the owner
+
+When the owner comments on something a student sees, take it in with the
+`owner-feedback` skill first (`docs/FEEDBACK.md`): their words like
+"intuitive", "elegant", "clean" or "not AI slop" are each turned into what
+the student would see, how to check it and the cheap reading to avoid,
+before anything is redrawn.
 
 ## Checking a change
 
@@ -76,7 +148,17 @@ reasoning; this is the working version.
    `localStorage` keys `arborous:courses` and `arborous:onboarding` =
    `{"state":{"onboarded":true}}`).
 4. `node scripts/contrast-report.mjs` if a colour or token changed.
-5. After shipping, confirm the live site serves it (grep the live JS for a
+5. Look at hidden and resting states zoomed in, in dark mode as well as
+   light: dark paper shows specks (a hidden label's dot, a stroke's round
+   cap) that light paper hides (the owner found them, 2026-11-25).
+6. For a big change, compare before and after
+   (`node scripts/compare-shots.mjs <before> <after>`, the `scope-check`
+   skill): the screens it names should read "reworked". Then the
+   `taste-review` skill: a fresh-eyes critic, then fix every Felt item
+   before the owner sees it. Give the owner a preview to try on their
+   phone (`node scripts/preview.mjs <scratch>/preview`, published as a
+   private artifact, the same link each round).
+7. After shipping, confirm the live site serves it (grep the live JS for a
    string from the change), then report what you looked at.
 
 ## Checking what a student is asked

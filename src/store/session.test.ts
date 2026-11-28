@@ -819,3 +819,57 @@ describe('session store: a select-all question', () => {
     expect(s().items.slice(at + 1).some((i) => i.id === 'm1' && i._again === 1)).toBe(true);
   });
 });
+
+describe('the adaptive quiz keeps going (the owner, 2026-11-22)', () => {
+  it('plans the next ten before the last run out, never repeating a card, and re-asks a miss a few cards on', async () => {
+    const { useCoursesStore } = await import('./courses');
+    const c = {
+      schema_version: '1.0',
+      metadata: { title: 'A' },
+      sections: [{ id: 's1', title: 'One', items: Array.from({ length: 25 }, (_, i) => mcq(`q${i}`, `Q${i}?`)) }],
+    } as Course;
+    useCoursesStore.setState({ courses: { quiz: c } });
+    // The section has been met (one card answered, held well), so its new cards are drawn on.
+    useProgressStore.setState({ byCourse: { quiz: { q24: { got: 2, missed: 0, lastSeen: Date.now() - 3_600_000, stability: 30 } } } });
+    const s = () => useSessionStore.getState();
+    s().init('quiz', c, 'adaptive');
+    expect(s().items).toHaveLength(10);
+    const missedId = s().current()!.id;
+    s().record(false);
+    // The miss comes back a few cards on.
+    const again = s().items.findIndex((i, n) => n > s().index && i.id === missedId);
+    expect(again - s().index).toBeGreaterThanOrEqual(3);
+    for (let n = 0; n < 9; n++) {
+      s().next();
+      s().record(true);
+    }
+    expect(s().items.length).toBeGreaterThan(11);
+    const firstAsks = s().items.filter((i) => !i._again).map((i) => i.id);
+    expect(new Set(firstAsks).size).toBe(firstAsks.length);
+  });
+});
+
+describe('session store: Today sized to the time picked', () => {
+  afterEach(() => useSessionStore.getState().setPendingMinutes(null));
+
+  it('plans a shorter sitting from the minutes picked on the lecture page', () => {
+    const many = {
+      schema_version: '1.0',
+      metadata: { title: 'Many' },
+      sections: Array.from({ length: 6 }, (_, n) => ({
+        id: `s${n}`,
+        title: `S${n}`,
+        items: Array.from({ length: 12 }, (_, k) => mcq(`q${n}-${k}`, `Q${n}-${k}?`)),
+      })),
+    } as Course;
+    const s = useSessionStore.getState();
+    s.setPendingMinutes(60);
+    s.init('many', many, 'today');
+    const long = useSessionStore.getState().items.length;
+    s.setPendingMinutes(5);
+    s.init('many', many, 'today');
+    const short = useSessionStore.getState().items.length;
+    expect(short).toBeGreaterThan(0);
+    expect(short).toBeLessThan(long);
+  });
+});

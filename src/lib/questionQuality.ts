@@ -18,18 +18,11 @@ import { multiKey } from './multiKey';
  * having are the ones that can be checked afterwards and reported.
  */
 
-export interface Mcq {
-  id: string;
-  question: string;
-  options: string[];
-  correct_index: number;
-}
-
 const isMcq = (i: StudyItem): i is Extract<StudyItem, { type: 'mcq' }> => i.type === 'mcq';
 const isGradable = (i: StudyItem) => i.type === 'mcq' || i.type === 'flashcard' || i.type === 'multi';
 
 /** What a gradable item asks, whichever type it is. */
-export function stemOf(item: StudyItem): string {
+function stemOf(item: StudyItem): string {
   if (item.type === 'mcq') return item.question;
   if (item.type === 'flashcard') return item.front;
   if (item.type === 'multi') return item.question;
@@ -88,7 +81,7 @@ export interface LengthBias {
  * on); 1.3x would have named 57, taking in answers that are merely a little
  * wordier.
  */
-export const GIVEAWAY_RATIO = 1.5;
+const GIVEAWAY_RATIO = 1.5;
 
 /**
  * What guessing the longest option scores on one question: 1 when the right
@@ -288,7 +281,7 @@ export interface QuestionQuality {
 }
 
 /** Above this share of shared vocabulary, a question is mostly its own source. */
-export const RESTATED_AT = 0.5;
+const RESTATED_AT = 0.5;
 
 export function analyseQuestionQuality(course: Course): QuestionQuality {
   const gradable = course.sections.flatMap((s) => s.items).filter(isGradable);

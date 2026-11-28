@@ -34,24 +34,23 @@ interface SessionRailProps {
   index: number;
   course: Course;
   score: { got: number; missed: number };
-  hints: { keys: string[]; label: string }[];
-  /** Drawn at the top of the rail: the course's tree. */
+  /** The course's tree, large, at the top of the left margin. */
   figure?: ReactNode;
   /** List the parts of the sitting (off for a class's mixed Practice). */
   parts?: boolean;
 }
 
 /**
- * The margin of the study screen on a wide display: what the sitting is made
- * of and where you are in it, the score, and the keys. A phone shows the card
- * alone; a desktop had the same narrow column with empty width either side.
+ * The left margin of the study screen on a wide display: the tree and where
+ * you are in it, what the sitting is made of, and the score. A phone shows the
+ * card alone. The keys are one line under the card, not here.
  */
-export function SessionRail({ items, index, course, score, hints, figure, parts: showParts = true }: SessionRailProps) {
+export function SessionRail({ items, index, course, score, figure, parts: showParts = true }: SessionRailProps) {
   const parts = showParts ? partsOf(items, course) : [];
   const answered = score.got + score.missed;
   return (
     <aside className="hidden text-small wide:block" aria-label="This sitting">
-      <div className="sticky top-6 space-y-8">
+      <div className="sticky top-6 max-h-[calc(100vh-3rem)] space-y-8 overflow-y-auto">
         {figure && <div aria-hidden="true">{figure}</div>}
         {parts.length > 1 && (
           <section>
@@ -87,23 +86,6 @@ export function SessionRail({ items, index, course, score, hints, figure, parts:
           </p>
         </section>
 
-        {hints.length > 0 && (
-          <section className="hidden [@media(hover:hover)]:block">
-            <h2 className="mark mb-2 text-text-3">Keys</h2>
-            <ul className="space-y-1.5 text-xs text-text-3">
-              {hints.map((hint) => (
-                <li key={hint.keys.join()} className="flex items-center gap-1.5">
-                  {hint.keys.map((k) => (
-                    <kbd key={k} className="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-[11px]">
-                      {k}
-                    </kbd>
-                  ))}
-                  <span>{hint.label}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
       </div>
     </aside>
   );

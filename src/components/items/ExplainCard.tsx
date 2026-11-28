@@ -20,7 +20,7 @@ export function ExplainCard({ item, frame = 'card', notesOpen = false }: { item:
           <p key={k}><RichText text={p} /></p>
         ))}
       </div>
-      <SourceNote excerpt={item.source_excerpt} open={notesOpen} />
+      <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={notesOpen} />
     </div>
   );
 }

@@ -5,7 +5,7 @@
 export function TeacherNotesField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-3">
+      <span className="mark mb-1 block text-text-3">
         What your teacher said (optional)
       </span>
       <span className="mb-1.5 block text-sm text-text-2">

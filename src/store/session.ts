@@ -15,6 +15,10 @@ import { twinsOf } from '@/lib/linkedTerms';
 import { useCoursesStore } from './courses';
 import { onlyStudies } from '@/lib/studies';
 import { mixLectures } from '@/lib/mixLectures';
+import { ADAPTIVE_WINDOW } from '@/lib/buildSessionItems';
+
+/** The adaptive quiz plans its next window when this few cards are left. */
+const ADAPTIVE_TOP_UP = 3;
 
 /**
  * When the current card was put in front of the student. Kept outside the
@@ -99,6 +103,13 @@ interface SessionState {
   /** A Practice sitting as the student built it (lib/practiceChoice). Set and kept like pendingKind. */
   pendingPractice: PracticeChoice | null;
   setPendingPractice: (choice: PracticeChoice | null) => void;
+  /**
+   * The minutes the student picked for this Today sitting on the lecture
+   * page ("I have 15"), or null for the planned time. Set like pendingKind;
+   * a resumed sitting or Keep going ignores it.
+   */
+  pendingMinutes: number | null;
+  setPendingMinutes: (minutes: number | null) => void;
   /** `fullDay`: Today planned at the full daily time, ignoring what was studied today ("Keep going"). */
   init: (courseId: string, course: Course, mode: StudyMode, sectionId?: string, resumeItemId?: string, fullDay?: boolean) => void;
   /**
@@ -129,6 +140,8 @@ interface SessionState {
    * answers.
    */
   record: (got: boolean, grade?: Grade, sure?: boolean) => void;
+  /** The adaptive quiz: plan the next window onto the end of the sitting. */
+  topUp: () => void;
   /** Learn only: put a missed card back a few cards on. */
   requeue: (index: number) => void;
   /** Take back a requeued copy that has not been reached, when a miss is overruled. */
@@ -184,7 +197,7 @@ interface SessionState {
 }
 
 /** How many cards on a missed card comes back in Learn. */
-export const AGAIN_AFTER = 3;
+const AGAIN_AFTER = 3;
 /** Comes back at most this many times; after that it is left to Review. */
 export const AGAIN_MAX = 3;
 
@@ -294,10 +307,10 @@ function listFor(
   courseId: string,
   course: Course,
   mode: StudyMode,
-  { sectionId, resuming, kind, study, practice }: { sectionId?: string; resuming: boolean; kind: CardKind | null; study: string | null; practice?: PracticeChoice | null },
+  { sectionId, resuming, kind, study, practice, exclude }: { sectionId?: string; resuming: boolean; kind: CardKind | null; study: string | null; practice?: PracticeChoice | null; exclude?: ReadonlySet<string> },
 ): { items: SessionItem[]; progress: Record<string, ItemResult> } {
   const progressStore = useProgressStore.getState();
-  const missedIds = mode === 'missed' || mode === 'practice' ? progressStore.missedIds(courseId) : undefined;
+  const missedIds = mode === 'missed' || mode === 'practice' || mode === 'adaptive' ? progressStore.missedIds(courseId) : undefined;
   // Weakest-first ranks by the student's own history, so it is the one mode
   // that needs the full per-item record rather than a set of ids.
   // Weakest and Review rank by history, Terms pairs mixed-up terms from it,
@@ -314,6 +327,7 @@ function listFor(
         ? // A resumed sitting is the one already under way: the time spent in it
           // is already in the day's total, so re-planning from what is left
           // would shrink it, or empty it, under the bookmark.
+          (!resuming && useSessionStore.getState().pendingMinutes) ||
           todaySitting(courseId, course, progress, Date.now(), resuming).minutes
         : usePlanStore.getState().minutesFor(courseId),
     pace: measuredPace(useStudyLogStore.getState().byCourse),
@@ -331,6 +345,7 @@ function listFor(
         }
       : {}),
     questionsFirst: useLearnStore.getState().everySection,
+    exclude,
   });
   return { items, progress };
 }
@@ -356,6 +371,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   setPendingStudy: (study) => set({ pendingStudy: study }),
   pendingPractice: null,
   setPendingPractice: (choice) => set({ pendingPractice: choice }),
+  pendingMinutes: null,
+  setPendingMinutes: (minutes) => set({ pendingMinutes: minutes }),
 
   init: (courseId, course, mode, sectionId, resumeItemId, fullDay = false) => {
     adoptLinkedTerms(courseId);
@@ -448,6 +465,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   hasPrev: () => get().index > 0,
 
   next: () => {
+    // The adaptive quiz plans its next window before the last one runs out.
+    if (get().mode === 'adaptive' && get().items.length - get().index <= ADAPTIVE_TOP_UP) get().topUp();
     if (!get().hasNext()) return false;
     logCurrentCard(get());
     set((state) => {
@@ -455,6 +474,22 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
       return { index, activeSectionId: state.items[index]?._sectionId ?? null };
     });
     return true;
+  },
+
+  topUp: () => {
+    const { courseId, items, lectures } = get();
+    if (!courseId) return;
+    const courses = useCoursesStore.getState().courses;
+    const ids = lectures ?? [courseId];
+    // Every card already in this sitting, by lecture: not planned again.
+    const lists = ids.flatMap((id) => {
+      const course = courses[id];
+      if (!course) return [];
+      const exclude = new Set(items.filter((i) => lectureOf(i, courseId) === id).map((i) => i.id));
+      return [{ courseId: id, ...listFor(id, course, 'adaptive', { resuming: false, kind: null, study: null, exclude }) }];
+    });
+    const more = lectures ? mixLectures(lists).slice(0, ADAPTIVE_WINDOW) : (lists[0]?.items ?? []);
+    if (more.length) set((s) => ({ items: [...s.items, ...more] }));
   },
 
   prev: () => {
@@ -490,7 +525,8 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
   requeue: (index) => {
     const { mode, items } = get();
     const item = items[index];
-    const learning = mode === 'learn' || (mode === 'today' && item?._step !== undefined);
+    // The adaptive quiz re-asks a miss a few cards on too (docs/proposals/zen.md).
+    const learning = mode === 'learn' || mode === 'adaptive' || (mode === 'today' && item?._step !== undefined);
     if (!learning || !item || !isGradable(item) || (item._again ?? 0) >= AGAIN_MAX) return;
     // A written answer of several points is not asked again minutes later:
     // that is memorising a list on the spot, again and again (the owner,
@@ -685,7 +721,7 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
  * the student's other lectures. Every way of answering a card goes through
  * here: a study session (record, above) and a practice test (TestRoute).
  */
-export function recordAnswer(courseId: string, item: { id: string; type: string }, got: boolean, grade?: Grade, sure?: boolean): void {
+function recordAnswer(courseId: string, item: { id: string; type: string }, got: boolean, grade?: Grade, sure?: boolean): void {
   recordAnswers([{ courseId, item, got, grade, sure }]);
 }
 

@@ -180,3 +180,16 @@ install is the state the script must cover), live.
   make an account to try an app.
 - If the sample lecture is not wanted, the start page leads with Make your
   first lecture.
+
+## The owner, 2026-11-24
+
+"I want it to really show the user what the app is about and demonstrate
+what the tree is all about and making it a cool experience and elegant for
+the user like making them try things/direct their attention or something
+instead of explaining in bullet points." So the first run is something to
+do, not to read: the student makes the tree grow, sees leaves fall when a
+part is left unstudied (where "fading" is taught, by watching it), and
+tries the few gestures and controls that matter, each with attention
+drawn to it, a line of words at most. It also asks the daily time
+(2026-11-24). Built with the design update (part 4), shown on the branch
+first.

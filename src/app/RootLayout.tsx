@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { Link, Outlet, ScrollRestoration, useLocation, useParams } from 'react-router-dom';
 import { ThemeEffect } from '@/components/ThemeEffect';
-import { DarkModeToggle } from '@/components/DarkModeToggle';
 import { Toaster } from '@/components/Toaster';
 import { Onboarding } from '@/components/Onboarding';
 import { Sprig } from '@/components/Sprig';
@@ -31,7 +30,7 @@ function useLocationName(): string {
   });
 
   if (pathname === '/help') return 'Using Arborous';
-  if (pathname === '/sync') return 'Sync';
+  if (pathname === '/settings') return 'Settings';
   if (pathname === '/account') return pageName(name);
   if (pathname.startsWith('/shared/')) return 'Shared lecture';
   if (pathname.startsWith('/class/') && params.code) {
@@ -41,7 +40,7 @@ function useLocationName(): string {
   }
   if (pathname.startsWith('/session/')) return title ?? 'Session';
   if (pathname.includes('/progress')) return title ? `${title} · Progress` : 'Progress';
-  if (pathname.includes('/diagrams')) return title ? `${title} · Plates` : 'Plates';
+  if (pathname.includes('/diagrams')) return title ? `${title} · Diagrams` : 'Diagrams';
   if (pathname.endsWith('/glossary')) return title ? `${title} · Glossary` : 'Glossary';
   if (pathname.endsWith('/practice')) return title ? `${title} · Practice` : 'Practice';
   if (/^\/study\/[^/]+\/test$/.test(pathname)) return title ? `${title} · Practice test` : 'Practice test';
@@ -62,7 +61,7 @@ function useTabTitle(here: string): void {
   let name: string | null = here === 'The library' ? null : pathname === '/help' ? 'Help' : here;
   if (title) {
     if (pathname.includes('/progress')) name = `${title} · Progress`;
-    else if (pathname.includes('/diagrams')) name = `${title} · Plates`;
+    else if (pathname.includes('/diagrams')) name = `${title} · Diagrams`;
     else if (pathname.endsWith('/glossary')) name = `${title} · Glossary`;
     else if (pathname.endsWith('/practice')) name = `${title} · Practice`;
     else if (/^\/study\/[^/]+\/test$/.test(pathname)) name = `${title} · Practice test`;
@@ -79,9 +78,17 @@ export function RootLayout() {
   useTabTitle(here);
   const { pathname } = useLocation();
   const name = useProfileStore((s) => s.name);
-  // The course page and the study screen are laid out in two columns on a
-  // desktop; head, page and colophon widen together so the rules still line up.
-  const wide = /^\/study\/[^/]+$/.test(pathname) || pathname.startsWith('/session/') ? ' is-wide' : '';
+  // The pages laid out as a spread or with margins on a desktop; head, page
+  // and colophon widen together so the rules still line up.
+  const inSession = pathname.startsWith('/session/');
+  const wide =
+    pathname === '/' ||
+    pathname === '/help' ||
+    inSession ||
+    /^\/(study|class)\/[^/]+$/.test(pathname) ||
+    /^\/(study|class)\/[^/]+\/(practice|test|progress|glossary|diagrams|set-aside)$/.test(pathname)
+      ? ' is-wide'
+      : '';
 
   return (
     <div className="app-shell paper-grain flex min-h-screen flex-col bg-bg">
@@ -94,7 +101,7 @@ export function RootLayout() {
       {/* Behind the phone's clock and signal icons: the page scrolls under
           them in the installed app, so this band keeps it from showing
           through. Zero high where there is no status bar to cover. */}
-      <div className="status-bar-cover bg-bg" aria-hidden="true" />
+      <div className="status-bar-cover paper-grain bg-bg" aria-hidden="true" />
       {/* The running head, not a nav bar.
           The page used to sit in an `lg:` rounded, bordered, shadowed box —
           a card on a backdrop, which is a dashboard's anatomy, not a
@@ -103,7 +110,7 @@ export function RootLayout() {
           the way a page is trimmed rather than pasted down. */}
       {/* A sitting has its own Back; on a short screen held sideways the
           running head would push the card below the fold. */}
-      <header className={`app-header page-block shrink-0${wide}${pathname.startsWith('/session/') ? ' short:hidden' : ''}`}>
+      <header className={`app-header page-block shrink-0${wide}${inSession ? ' hidden wide:block short:hidden' : ''}`}>
         <div className="flex min-h-header items-end justify-between gap-4 pb-2 short:min-h-[2.75rem]">
           {/* shrink-0 and whitespace-nowrap are both load-bearing. Without
               them a long location on the right squeezed this side until the
@@ -125,7 +132,9 @@ export function RootLayout() {
         <div className="rule-oxford" />
       </header>
 
-      <main className={`page-block flex-1 py-8 short:py-4${wide}`}>
+      {/* With the running head gone on a phone, a sitting keeps itself clear of
+          the status bar (the cover above is fixed and opaque). */}
+      <main className={`page-block flex-1 ${inSession ? 'session-top pb-8 wide:py-8' : 'py-8'} short:py-4${wide}`}>
         <Outlet />
       </main>
 
@@ -141,21 +150,23 @@ export function RootLayout() {
           unexplained mark at the foot of every page. */}
       {/* Not under a card being studied: it made every question page taller
           than a phone, so the card slid up under the clock band even when it
-          fitted (the owner, 2026-10-13). Help and the theme are a tap back. */}
+          fitted (the owner, 2026-10-13). Settings is a tap back. */}
       {!pathname.startsWith('/session/') && (
         <footer className={`page-block shrink-0 pb-8 pt-10${wide}`}>
           <div className="mb-5 flex justify-center text-text-3">
             <Sprig size={22} />
           </div>
           <div className="flex items-center justify-center gap-5">
-            <Link to="/help" className="press press-quiet">
-              Help
-            </Link>
-            {/* The student's own page (Sync is reached from it), named for them. */}
+            {/* Two things: the student's own page, named for them, and
+                Settings, where Help, the theme, the name, reminders and the
+                account live (the owner, 2026-11-25: "It's not okay that
+                settings are just openly available"; docs/proposals/settings.md). */}
             <Link to="/account" className="press press-quiet">
               {pageName(name)}
             </Link>
-            <DarkModeToggle />
+            <Link to="/settings" className="press press-quiet">
+              Settings
+            </Link>
           </div>
         </footer>
       )}

@@ -366,6 +366,20 @@
     }
   }
 
+  /* The same entry in a narrow page (a spread's left page): the figures stay
+     under the title whatever the window's width, as on a phone. */
+  .entry.entry-stack {
+    grid-template-columns: 1.5rem auto minmax(0, 1fr);
+    grid-template-areas:
+      'num art body'
+      'num art figs';
+    column-gap: 0.75rem;
+  }
+  .entry.entry-stack > .entry-figs {
+    justify-self: start;
+    text-align: left;
+  }
+
   /* ---- a long list that only pays for what is on screen ----
      Browse lays out an entire course in one document: a real 498-item course
      measured 168,640px tall. Every entry was styled, laid out and painted on
@@ -479,6 +493,15 @@
      a cover the clock sat on top of whatever line was passing beneath it
      (the owner's iPhone). Opaque, the page's own colour, above everything
      that scrolls. */
+  /* A sitting on a phone has no running head: its own top clears the status bar. */
+  .session-top {
+    padding-top: calc(max(env(safe-area-inset-top), var(--safe-top-fallback, 0px)) + 0.75rem);
+  }
+  @media (min-width: 1024px) {
+    .session-top {
+      padding-top: 2rem;
+    }
+  }
   .status-bar-cover {
     position: fixed;
     inset-inline: 0;
@@ -540,11 +563,19 @@
      the wood that carries them. Used at the end of a session and nowhere
      else. The reduced-motion block below neutralises both. */
   @keyframes tree-wood {
+    /* Hidden until it starts: a round cap on a stroke with nothing yet
+       drawn still paints a dot, and a crown of waiting strokes was a
+       spatter of them. */
     from {
       stroke-dashoffset: 1;
+      opacity: 0;
+    }
+    3% {
+      opacity: 1;
     }
     to {
       stroke-dashoffset: 0;
+      opacity: 1;
     }
   }
   @keyframes tree-leaf {
@@ -559,8 +590,18 @@
     stroke-dasharray: 1;
     animation: tree-wood 900ms ease-out both;
   }
-  /* A leaf's vein (.vn) arrives with its leaf, not with the wood. */
-  .tree-grow .lf,
+  /* A leaf's vein (.vn) arrives with its leaf, not with the wood. Not the
+     falling leaves: this rule outranks .leaf-fall, and held every leaf on its
+     branch until the drawing-on ended, so the fall came after the shiver
+     instead of with it. */
+  /* Every leaf, on the branch, falling or on the ground, is filled with the
+     paper: its colour and grain (CourseTree's pattern, lib/usePaperFill),
+     the flat paper colour until that is measured. */
+  .tree .lf,
+  .tree .lfm {
+    fill: var(--leaf-paper, var(--color-bg));
+  }
+  .tree-grow .lf:not(.leaf-fall),
   .tree-grow .vn {
     animation: tree-leaf 700ms ease-out 650ms both;
   }
@@ -584,16 +625,13 @@
     animation-duration: 2600ms;
     animation-fill-mode: both;
   }
+  /* A leaf waits on its branch until its own moment (its delay), then lets
+     go at once: no hang before it moves. */
   @keyframes leaf-fall {
     0% {
-      opacity: 0;
-      transform: translate(0, 0) rotate(0deg);
-      animation-timing-function: ease-out;
-    }
-    6% {
       opacity: 0.9;
       transform: translate(0, 0) rotate(0deg);
-      animation-timing-function: ease-in-out;
+      animation-timing-function: cubic-bezier(0.35, 0.2, 0.6, 1);
     }
     28% {
       transform: translate(var(--sway), calc(var(--dy) * 0.22)) rotate(calc(var(--rot) + 18deg));
@@ -636,6 +674,104 @@
       transform: scale(1) rotate(0deg);
     }
   }
+    /* A sheet drawn up from the bottom of a phone, and the page dimming
+     behind it. On a larger screen it is a leaf over the page and simply
+     appears. The reduced-motion block below neutralises both. */
+  @media (max-width: 639px) {
+    .sheet-panel {
+      animation: sheet-up 260ms cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+      transition: transform 200ms ease;
+    }
+    .sheet-scrim {
+      animation: tree-leaf 200ms ease-out both;
+    }
+  }
+  @keyframes sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* The first run (components/Onboarding). The tree stays; it grows or
+     shrinks to make room for each page's words. The words leave and the
+     next page's arrive, line after line. On the title page they wait for the
+     tree to draw itself on (the owner, 2026-11-16: "the tree branches
+     unfurling … and the name of the app arborous appears"). */
+  .first-run-tree {
+    transition: height 500ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  .fr-words > *,
+  .fr-words h1,
+  .fr-words p {
+    animation: fr-in 520ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+  .fr-words p {
+    animation-delay: 110ms;
+  }
+  .fr-words > *:last-child,
+  .fr-action > * {
+    animation-delay: 220ms;
+  }
+  .fr-title h1 {
+    animation-delay: 1500ms;
+    animation-duration: 900ms;
+  }
+  .fr-title p {
+    animation-delay: 1900ms;
+  }
+  .fr-title > *:last-child,
+  .fr-title.fr-action > * {
+    animation-delay: 2300ms;
+  }
+  .fr-leaving {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+      opacity 180ms ease-in,
+      transform 180ms ease-in;
+  }
+  @keyframes fr-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  /* The arrival's shiver: each branch trembles about its own base, quick
+     and dying away, the way a gust goes through a tree; the faded leaves
+     come off with it. The trunk and the ground do not move. --amp is set
+     per branch (harder where leaves are falling). */
+  /* Long enough for the leaves to go on falling while it trembles, dying
+     away slowly rather than stopping as they start (the owner, 2026-11-25). */
+  .branch-shiver {
+    animation: branch-shiver 1700ms ease-in-out both;
+  }
+  @keyframes branch-shiver {
+    0% { transform: rotate(0deg); }
+    5% { transform: rotate(calc(var(--amp, 1) * 1deg)); }
+    11% { transform: rotate(calc(var(--amp, 1) * -0.95deg)); }
+    18% { transform: rotate(calc(var(--amp, 1) * 0.9deg)); }
+    25% { transform: rotate(calc(var(--amp, 1) * -0.8deg)); }
+    33% { transform: rotate(calc(var(--amp, 1) * 0.7deg)); }
+    41% { transform: rotate(calc(var(--amp, 1) * -0.6deg)); }
+    50% { transform: rotate(calc(var(--amp, 1) * 0.5deg)); }
+    59% { transform: rotate(calc(var(--amp, 1) * -0.4deg)); }
+    68% { transform: rotate(calc(var(--amp, 1) * 0.3deg)); }
+    77% { transform: rotate(calc(var(--amp, 1) * -0.2deg)); }
+    87% { transform: rotate(calc(var(--amp, 1) * 0.1deg)); }
+    100% { transform: rotate(0deg); }
+  }
+  /* A leaf already on the ground under a branch that has just lost it: it
+     comes into the pile as the falling leaves land, not before. Three
+     classes, to win over the drawing-on's fade for the same leaf. */
+  .tree .lf.leaf-land,
+  .tree .vn.leaf-land {
+    animation: tree-leaf 600ms ease-out both;
+  }
+
   /* The rest of the tree stepping back while a session's regrowth plays,
      and coming back up once it has. */
   .tree-spotlight [data-back] {
@@ -691,56 +827,71 @@
 
   /* The numbers a touch raises on the lecture page's tree. Each travels out
      from its branch's tip to its place round the crown, its hairline drawn
-     on behind it, and goes back the same way. Set on the paper, so a
-     hairline stops short of the figure. */
+     on behind it, and goes back the same way. The hairline stops short of
+     the figure (CourseTree, shortOf).
+
+     Every number looks the same but the one under the finger, which is in
+     the accent, the app's mark for "this one", and larger. A branch's state
+     is the tree's to show (its leaves) and the words' to say, never a
+     second colour on its number: the owner could not tell a fading branch's
+     blue number from the one they were touching, nor why one other number
+     was darker (2026-11-25, Testing 1 and 3).
+
+     Hidden means nothing drawn: a hairline dashed down to nothing still
+     painted its round cap as a dot, which dark paper showed (Testing 8).
+     So the lines have flat ends and go invisible as well. */
   .tree-key-num {
     font-family: var(--font-display);
     font-variant-numeric: lining-nums;
     font-size: 12px;
     font-weight: 500;
-    fill: var(--color-text);
-    stroke: var(--color-bg);
-    stroke-width: 3.5px;
-    paint-order: stroke;
+    fill: var(--color-text-2);
+    stroke: none;
     transform-box: fill-box;
     transform-origin: center;
     opacity: 0;
+    visibility: hidden;
     transform: var(--from) scale(0.4);
     transition:
       transform 300ms cubic-bezier(0.2, 0.7, 0.3, 1),
       opacity 200ms ease,
+      visibility 0s linear 300ms,
       font-size 160ms ease;
-  }
-  .tree-key-num[data-state='fading'] {
-    fill: var(--color-accent);
-    font-weight: 700;
-    font-size: 13px;
-  }
-  .tree-key-num[data-state='bare'] {
-    fill: var(--color-text-3);
   }
   .tree-key-line {
     fill: none;
     stroke: var(--color-text-3);
     stroke-width: 0.5px;
+    stroke-linecap: butt;
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
-    transition: stroke-dashoffset 300ms cubic-bezier(0.2, 0.7, 0.3, 1);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      stroke-dashoffset 300ms cubic-bezier(0.2, 0.7, 0.3, 1),
+      opacity 200ms ease,
+      visibility 0s linear 300ms;
   }
-  .tree-key-line[data-state='fading'] {
-    stroke: var(--color-accent);
+  .tree-keys[data-shown] .tree-key-num,
+  .tree-keys[data-shown] .tree-key-line {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
   }
   .tree-keys[data-shown] .tree-key-num {
-    opacity: 1;
     transform: none;
   }
   .tree-keys[data-shown] .tree-key-line {
     stroke-dashoffset: 0;
   }
-  /* The picked branch's number stands up from the rest. */
+  /* The picked branch's number: the one marked. */
   .tree-keys[data-shown] [data-held] .tree-key-num {
+    fill: var(--color-accent);
     font-size: 14.5px;
     font-weight: 700;
+  }
+  .tree-keys[data-shown] [data-held] .tree-key-line {
+    stroke: var(--color-accent);
   }
 
   /* Flashcard 3D flip. Tailwind v3 ships no utilities for perspective,

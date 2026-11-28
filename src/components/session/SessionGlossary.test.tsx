@@ -33,4 +33,12 @@ describe('SessionGlossary', () => {
     fireEvent.change(screen.getByPlaceholderText('Find a term'), { target: { value: 'zzz' } });
     expect(screen.getByText('No terms match.')).toBeTruthy();
   });
+
+  it('puts the terms the card on screen uses first', () => {
+    const card = { id: 'q1', type: 'mcq', question: 'What does the sarcomere shorten by?', options: ['Sliding filaments', 'Growth'] };
+    render(<SessionGlossary entries={glossaryOf(course)} card={card} />);
+    const onCard = screen.getByRole('region', { name: 'On this card' });
+    expect(onCard.textContent).toContain('Sarcomere');
+    expect(onCard.textContent).not.toContain('Troponin');
+  });
 });

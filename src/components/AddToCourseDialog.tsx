@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { withExamSections } from '@/lib/classExams';
-import { useDialog } from '@/lib/useDialog';
 import type { Course } from '@/schema/course';
 import { parseFragment } from '@/schema/fragment';
 import { planMerge, type MergePlan } from '@/lib/mergeFragment';
@@ -11,7 +10,8 @@ import { buildExplainPrompt } from '@/lib/buildExplainPrompt';
 import { hasStudies } from '@/lib/generatorSpec';
 import { StudiesField } from './StudiesField';
 import { MakeKindsField } from './MakeKindsField';
-import { More, PromptStep } from './PromptStep';
+import { More, PromptBody, PromptStep } from './PromptStep';
+import { Sheet } from './Sheet';
 import { ALL_KINDS, kindsOf, type MakeKind } from '@/lib/makeKinds';
 
 /** What More practice can make: questions, not reading. */
@@ -27,6 +27,7 @@ import { toast } from '@/store/toast';
 import { Icon } from './Icon';
 import { TeacherNotesField } from './TeacherNotesField';
 import { cutMessage, readReply } from '@/lib/readReply';
+import { plural } from '@/lib/plural';
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
@@ -52,10 +53,6 @@ const TYPE_LABELS: Record<string, string> = {
   graphic: 'diagram',
 };
 
-function plural(n: number, word: string): string {
-  return `${n} ${word}${n === 1 ? '' : 's'}`;
-}
-
 /**
  * Two-step "add material to this course": copy a context-loaded prompt out to
  * your AI chat, upload the file it hands back.
@@ -66,7 +63,6 @@ function plural(n: number, word: string): string {
  * anything touches their course.
  */
 export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'material' }: AddToCourseDialogProps) {
-  useDialog(onClose);
   const [mode, setMode] = useState<AddMode>(initialMode);
   const [pasted, setPasted] = useState('');
   const [notes, setNotes] = useState(course.metadata.student_notes ?? '');
@@ -75,7 +71,10 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   const [studies, setStudies] = useState(() => hasStudies(course));
   // What to make, as the lecture was made (lib/makeKinds); More practice
   // makes questions only.
-  const [kinds, setKinds] = useState<MakeKind[]>(() => kindsOf(course));
+  // The AI chooses, unless the lecture was made with only some kinds.
+  const [aiChooses, setAiChooses] = useState(() => !course.metadata.make?.length);
+  const [ticked, setKinds] = useState<MakeKind[]>(() => kindsOf(course));
+  const kinds = aiChooses ? ALL_KINDS : ticked;
   // Written answers only when ticked, as on the practice test (the owner,
   // 2026-10-26: "I NEVER TOLD YOU TO ADD WRITTEN ANSWERS").
   // A lecture with neither keeps to what it has: written answers, or
@@ -146,7 +145,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
   }, [pasted, course, firstSectionId, skipDuplicates, mode]);
 
   const plan = result && 'plan' in result ? result.plan : null;
-  const canApply = !!plan && plan.totalAdded + plan.totalCorrected + plan.totalFramed + (plan.builds_to ? 1 : 0) > 0;
+  const canApply = !!plan && plan.totalAdded + plan.totalCorrected + plan.totalFramed + plan.totalAccounted + (plan.builds_to ? 1 : 0) > 0;
 
   const gaps = useMemo(() => analyseCourseGaps(course), [course]);
   // The same list the More practice prompt puts first (buildPractisePrompt).
@@ -228,6 +227,7 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
     if (plan.totalAdded) parts.push(`Added ${plural(plan.totalAdded, 'item')}`);
     if (plan.totalCorrected) parts.push(`fixed ${plural(plan.totalCorrected, 'item')}`);
     if (plan.totalFramed || plan.builds_to) parts.push('added what the lecture builds to');
+    if (plan.totalAccounted) parts.push(`noted ${plural(plan.totalAccounted, 'slide')} that teach nothing`);
     const said = parts.join(', ');
     toast(
       `${said.charAt(0).toUpperCase()}${said.slice(1)}.${renamed ? ` ${plural(renamed, 'id')} renamed to avoid a clash.` : ''}`,
@@ -244,26 +244,20 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
     options: 'Even out the answers',
   };
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${MODE_TITLES[mode]}: ${course.metadata.title}`}
-    >
-      <div className="my-8 w-full max-w-2xl paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
-        <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="font-semibold text-text">{MODE_TITLES[mode]}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="tap-safe -m-2 p-2 text-text-3 hover:text-text"
-          >
-            <Icon name="x" size={18} />
-          </button>
-        </div>
+  const copyButton = (
+    <button type="button" onClick={copyPrompt} disabled={!chosenKinds.length} className="press">
+      <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
+      {copied ? 'Prompt copied' : 'Copy the prompt'}
+    </button>
+  );
 
+  return (
+    <Sheet
+      label={`${MODE_TITLES[mode]}: ${course.metadata.title}`}
+      title={MODE_TITLES[mode]}
+      onClose={onClose}
+      width="2xl"
+    >
         <div className="flex flex-wrap gap-x-1 border-b border-border px-5 pt-3" role="tablist">
           {(
             [
@@ -296,338 +290,345 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
           ))}
         </div>
 
-        <div className="space-y-5 px-5 py-4">
-          {/* What it is for, in a line, and where to paste it; the rest folds. */}
-          <PromptStep n={1} title="Copy the prompt">
-            {mode === 'material' ? (
-              <>
-                <p className="text-sm text-text-2">
-                  For new notes, such as next week&rsquo;s lecture. Paste the prompt into an AI with the new notes
-                  attached to the same message.
-                </p>
-                <More label="More about this">
-                  <p>
-                    The prompt tells the AI which sections, ids and tags this lecture uses, so nothing is made twice.
-                    Attach the files to the message itself: files kept only in a project often lose their diagrams.
+      <PromptBody
+        left={
+          <>
+            {/* What it is for, in a line, and where to paste it; the rest folds. */}
+            <PromptStep
+              n={1}
+              title={
+                mode === 'material'
+                  ? 'Give the AI the prompt and your new notes, in one message'
+                  : 'Give the prompt to the chat that made this lecture'
+              }
+            >
+              {mode === 'material' ? (
+                <>
+                  <p className="text-sm text-text-2">For new notes, such as next week&rsquo;s lecture.</p>
+                  <More label="More about this">
+                    <p>
+                      The prompt tells the AI which sections, ids and tags this lecture uses, so nothing is made twice.
+                      Attach the files to the message itself: files kept only in a project often lose their diagrams.
+                    </p>
+                  </More>
+                </>
+              ) : mode === 'options' ? (
+                <>
+                  <p className="text-sm text-text-2">
+                    In {plural(rework.length, 'question')} the right answer is the longest option, so it can be guessed.
                   </p>
-                </More>
-              </>
-            ) : mode === 'options' ? (
-              <>
-                <p className="text-sm text-text-2">
-                  In {plural(rework.length, 'question')} the right answer is the longest option, so it can be guessed.
-                  <strong>Paste it into the chat that made this lecture.</strong>
-                </p>
-                <More label="More about this">
-                  <p>
-                    Guessing the longest option gets {shareNow}% of this lecture&rsquo;s questions right; fair is about
-                    25%. The questions, their right answers and your scores stay as they are.
+                  <More label="More about this">
+                    <p>
+                      Guessing the longest option gets {shareNow}% of this lecture&rsquo;s questions right; fair is about
+                      25%. The questions, their right answers and your scores stay as they are.
+                    </p>
+                  </More>
+                </>
+              ) : mode === 'explain' ? (
+                <>
+                  <p className="text-sm text-text-2">
+                    A short explanation of each key idea, shown in Learn before the questions on it.
                   </p>
-                </More>
-              </>
-            ) : mode === 'explain' ? (
-              <>
-                <p className="text-sm text-text-2">
-                  A short explanation of each key idea, shown in Learn before the questions on it.{' '}
-                  <strong>Paste it into the chat that made this lecture.</strong>
-                </p>
-                <More label="More about this">
-                  <p>
-                    {explained > 0 ? `This lecture has ${plural(explained, 'explanation')} already; the prompt asks only for the ones missing. ` : ''}
-                    Your questions and scores stay as they are.
+                  <More label="More about this">
+                    <p>
+                      {explained > 0 ? `This lecture has ${plural(explained, 'explanation')} already; the prompt asks only for the ones missing. ` : ''}
+                      Your questions and scores stay as they are.
+                    </p>
+                  </More>
+                </>
+              ) : mode === 'fix' ? (
+                <>
+                  <p className="text-sm text-text-2">
+                    Sends what the lecture check found back to the AI to fix, in the chat where your notes still are.
                   </p>
-                </More>
-              </>
-            ) : mode === 'fix' ? (
-              <>
-                <p className="text-sm text-text-2">
-                  Sends what the lecture check found back to the AI to fix.{' '}
-                  <strong>Paste it into the chat that made this lecture</strong>, where your notes still are.
-                </p>
-                <More label="More about this">
-                  <p>
-                    Only your notes can say whether a missing term mattered, so the AI judges each one first. It is
-                    told that &ldquo;not worth a card&rdquo; is a fine answer, so a term your notes only mention in
-                    passing is skipped with a reason rather than padded out.
-                  </p>
-                </More>
-              </>
-            ) : (
-              <>
-                <p className="text-sm text-text-2">
-                  New questions on what this lecture already covers, for when you know the ones you have.{' '}
-                  <strong>Paste it into the chat that made this lecture</strong>, where your notes still are.
-                </p>
-                <More label="More about this">
-                  <p>
-                    In another chat it writes from the passages each card quoted from your notes, which works but
-                    misses what no card quoted.
-                  </p>
-                </More>
-              </>
-            )}
-            <div className="mt-3" />
-
-            {mode === 'fix' &&
-              (fixes.empty ? (
-                <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
-                  Nothing to fix.
-                </div>
+                  <More label="More about this">
+                    <p>
+                      Only your notes can say whether a missing term mattered, so the AI judges each one first. It is
+                      told that &ldquo;not worth a card&rdquo; is a fine answer, so a term your notes only mention in
+                      passing is skipped with a reason rather than padded out.
+                    </p>
+                  </More>
+                </>
               ) : (
-                <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
-                  <div className="mb-1 font-medium text-text">The prompt will ask it to:</div>
-                  <ul className="list-inside list-disc space-y-0.5">
-                    {fixes.missingTerms.length > 0 && (
-                      <li>
-                        judge and, where worth it, define{' '}
-                        {plural(fixes.missingTerms.length, 'listed term')} that never got a
-                        definition
-                        <span className="text-text-3">
-                          : {fixes.missingTerms.slice(0, 4).join(', ')}
-                          {fixes.missingTerms.length > 4 ? '…' : ''}
-                        </span>
-                      </li>
-                    )}
-                    {fixes.untestedTerms.length > 0 && (
-                      <li>
-                        write questions for {plural(fixes.untestedTerms.length, 'term')} that are
-                        defined but never tested
-                      </li>
-                    )}
-                    {fixes.thinKeyTerms.length > 0 && (
-                      <li>
-                        ask {plural(fixes.thinKeyTerms.length, 'key term')} from other sides, each
-                        asked by only one card now
-                      </li>
-                    )}
-                    {fixes.faultyItems.length > 0 && (
-                      <li>
-                        repair {plural(fixes.faultyItems.length, 'card')}
-                        {fixes.totalFaulty > fixes.faultyItems.length &&
-                          ` (the most serious of ${fixes.totalFaulty}; run this again afterwards for the rest)`}
-                        : broken answer keys first, then answers that give themselves away by length,
-                        questions that point at your notes instead of the subject, questions that only ask a
-                        term back from its definition, questions that repeat another in nearly the same
-                        words, and definitions that spell out their own term
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              ))}
+                <>
+                  <p className="text-sm text-text-2">
+                    New questions on what this lecture already covers, for when you know the ones you have.
+                  </p>
+                  <More label="More about this">
+                    <p>
+                      In another chat it writes from the passages each card quoted from your notes, which works but
+                      misses what no card quoted.
+                    </p>
+                  </More>
+                </>
+              )}
+              <div className="mt-3" />
 
-            {mode === 'practice' &&
-              (gaps.untestedTerms.length > 0 ||
-                sparse.length > 0 ||
-                gaps.thinKeyTerms.length > 0 ||
-                gaps.thinSections.length > 0 ||
-                gaps.gradableRatio < 0.5) && (
-                <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
-                  <div className="mb-1 font-medium text-text">The prompt will prioritise:</div>
-                  <ul className="list-inside list-disc space-y-0.5">
-                    {sparse.length > 0 && (
-                      <li>
-                        {plural(sparse.length, 'section')} with few items for {sparse.length === 1 ? 'its' : 'their'} slides
-                        <span className="text-text-3">
-                          : {sparse.slice(0, 3).map((x) => `${x.title} (${x.items} for ${x.slides})`).join(', ')}
-                          {sparse.length > 3 ? '…' : ''}
-                        </span>
-                      </li>
-                    )}
-                    {gaps.untestedTerms.length > 0 && (
-                      <li>
-                        {plural(gaps.untestedTerms.length, 'term')} defined but never tested
-                        <span className="text-text-3">
-                          : {gaps.untestedTerms.slice(0, 4).join(', ')}
-                          {gaps.untestedTerms.length > 4 ? '…' : ''}
-                        </span>
-                      </li>
-                    )}
-                    {gaps.thinKeyTerms.length > 0 && (
-                      <li>
-                        {plural(gaps.thinKeyTerms.length, 'key term')} asked only one way
-                        <span className="text-text-3">
-                          : {gaps.thinKeyTerms.slice(0, 4).join(', ')}
-                          {gaps.thinKeyTerms.length > 4 ? '…' : ''}
-                        </span>
-                      </li>
-                    )}
-                    {gaps.thinSections.length > 0 && (
-                      <li>
-                        {plural(gaps.thinSections.length, 'section')} with little that can be scored
-                        <span className="text-text-3">
-                          : {gaps.thinSections.slice(0, 3).map((x) => x.title).join(', ')}
-                          {gaps.thinSections.length > 3 ? '…' : ''}
-                        </span>
-                      </li>
-                    )}
-                    {gaps.gradableRatio < 0.5 && (
-                      <li>
-                        only {Math.round(gaps.gradableRatio * 100)}% of items are gradable (MCQ or
-                        flashcard)
-                      </li>
-                    )}
-                  </ul>
+              {mode === 'fix' &&
+                (fixes.empty ? (
+                  <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
+                    Nothing to fix.
+                  </div>
+                ) : (
+                  <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
+                    <div className="mb-1 font-medium text-text">The prompt will ask it to:</div>
+                    <ul className="list-inside list-disc space-y-0.5">
+                      {fixes.missingTerms.length > 0 && (
+                        <li>
+                          judge and, where worth it, define{' '}
+                          {plural(fixes.missingTerms.length, 'listed term')} that never got a
+                          definition
+                          <span className="text-text-3">
+                            : {fixes.missingTerms.slice(0, 4).join(', ')}
+                            {fixes.missingTerms.length > 4 ? '…' : ''}
+                          </span>
+                        </li>
+                      )}
+                      {fixes.untestedTerms.length > 0 && (
+                        <li>
+                          write questions for {plural(fixes.untestedTerms.length, 'term')} that are
+                          defined but never tested
+                        </li>
+                      )}
+                      {fixes.thinKeyTerms.length > 0 && (
+                        <li>
+                          ask {plural(fixes.thinKeyTerms.length, 'key term')} from other sides, each
+                          asked by only one card now
+                        </li>
+                      )}
+                      {fixes.missingSlides && (
+                        <li>look at {fixes.missingSlides}, which nothing in the lecture comes from, and write what they teach</li>
+                      )}
+                      {fixes.faultyItems.length > 0 && (
+                        <li>
+                          repair {plural(fixes.faultyItems.length, 'card')}
+                          {fixes.totalFaulty > fixes.faultyItems.length &&
+                            ` (the most serious of ${fixes.totalFaulty}; run this again afterwards for the rest)`}
+                          : broken answer keys first, then answers that give themselves away by length,
+                          questions that point at your notes instead of the subject, questions that only ask a
+                          term back from its definition, questions that repeat another in nearly the same
+                          words, and definitions that spell out their own term
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                ))}
+
+              {mode === 'practice' &&
+                (gaps.untestedTerms.length > 0 ||
+                  sparse.length > 0 ||
+                  gaps.thinKeyTerms.length > 0 ||
+                  gaps.thinSections.length > 0 ||
+                  gaps.gradableRatio < 0.5) && (
+                  <div className="mb-2 border-l-2 border-border py-1.5 pl-3 text-sm text-text-2">
+                    <div className="mb-1 font-medium text-text">The prompt will prioritise:</div>
+                    <ul className="list-inside list-disc space-y-0.5">
+                      {sparse.length > 0 && (
+                        <li>
+                          {plural(sparse.length, 'section')} with few items for {sparse.length === 1 ? 'its' : 'their'} slides
+                          <span className="text-text-3">
+                            : {sparse.slice(0, 3).map((x) => `${x.title} (${x.items} for ${x.slides})`).join(', ')}
+                            {sparse.length > 3 ? '…' : ''}
+                          </span>
+                        </li>
+                      )}
+                      {gaps.untestedTerms.length > 0 && (
+                        <li>
+                          {plural(gaps.untestedTerms.length, 'term')} defined but never tested
+                          <span className="text-text-3">
+                            : {gaps.untestedTerms.slice(0, 4).join(', ')}
+                            {gaps.untestedTerms.length > 4 ? '…' : ''}
+                          </span>
+                        </li>
+                      )}
+                      {gaps.thinKeyTerms.length > 0 && (
+                        <li>
+                          {plural(gaps.thinKeyTerms.length, 'key term')} asked only one way
+                          <span className="text-text-3">
+                            : {gaps.thinKeyTerms.slice(0, 4).join(', ')}
+                            {gaps.thinKeyTerms.length > 4 ? '…' : ''}
+                          </span>
+                        </li>
+                      )}
+                      {gaps.thinSections.length > 0 && (
+                        <li>
+                          {plural(gaps.thinSections.length, 'section')} with little that can be scored
+                          <span className="text-text-3">
+                            : {gaps.thinSections.slice(0, 3).map((x) => x.title).join(', ')}
+                            {gaps.thinSections.length > 3 ? '…' : ''}
+                          </span>
+                        </li>
+                      )}
+                      {gaps.gradableRatio < 0.5 && (
+                        <li>
+                          only {Math.round(gaps.gradableRatio * 100)}% of items are gradable (MCQ or
+                          flashcard)
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              {(mode === 'material' || mode === 'practice') && (
+                <div className="mb-3">
+                  <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-text-3">What to make</div>
+                  {mode === 'material' ? (
+                    <MakeKindsField value={ticked} onChange={setKinds} ai={aiChooses} onAi={setAiChooses} />
+                  ) : (
+                    <MakeKindsField value={practiceKinds} onChange={setPracticeKinds} only={QUESTION_KINDS} />
+                  )}
                 </div>
               )}
-            {(mode === 'material' || mode === 'practice') && (
-              <div className="mb-3">
-                <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-text-3">What to make</div>
-                {mode === 'material' ? (
-                  <MakeKindsField value={kinds} onChange={setKinds} />
-                ) : (
-                  <MakeKindsField value={practiceKinds} onChange={setPracticeKinds} only={QUESTION_KINDS} />
+              {copyButton}
+              <More label="More options">
+                <TeacherNotesField value={notes} onChange={setNotes} />
+                {mode === 'material' && <StudiesField checked={studies} onChange={setStudies} />}
+              </More>
+            </PromptStep>
+          </>
+        }
+        right={
+          <>
+            <PromptStep n={2} title="Bring back the file it makes">
+              <label className="cursor-pointer text-sm text-accent hover:underline">
+                Upload the file
+                <input
+                  type="file"
+                  accept=".json,.txt,application/json,text/plain"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = '';
+                    if (file) setPasted(await file.text());
+                  }}
+                />
+              </label>
+            </PromptStep>
+
+            {/* Feedback */}
+            {result && 'error' in result && (
+              <div
+                role="alert"
+                className="whitespace-pre-wrap border-l-2 border-error py-2 pl-3 text-sm text-error"
+              >
+                {result.error}
+              </div>
+            )}
+
+            {result && 'cut' in result && result.cut && (
+              <div role="status" className="border-l-2 border-warning py-2 pl-3 text-sm text-text-2">
+                {result.cut}
+              </div>
+            )}
+            {result && 'note' in result && result.note && (
+              <div role="status" className="border-l-2 border-border py-2 pl-3 text-sm text-text-2">
+                {result.note}
+              </div>
+            )}
+
+            {plan && (
+              <div className="border-l-2 border-border-strong py-2 pl-3 text-sm">
+                {plan.totalAdded === 0 && plan.totalCorrected === 0 && plan.totalFramed === 0 && plan.totalAccounted === 0 ? (
+                  <div className="text-text-2">
+                    Nothing new to add
+                    {plan.totalDuplicates > 0
+                      ? `. All ${plural(plan.totalDuplicates, 'item')} already exist in this lecture.`
+                      : '.'}
+                  </div>
+                ) : plan.totalAdded === 0 ? null : (
+                  <>
+                    <div className="font-medium text-text">
+                      Adding {plural(plan.totalAdded, 'item')}
+                      {Object.keys(plan.countsByType).length > 0 && (
+                        <span className="font-normal text-text-2">
+                          {' '}
+                          (
+                          {Object.entries(plan.countsByType)
+                            .map(([type, n]) => plural(n, TYPE_LABELS[type] ?? type))
+                            .join(', ')}
+                          )
+                        </span>
+                      )}
+                    </div>
+                    <ul className="mt-1.5 space-y-0.5 text-text-2">
+                      {plan.sections
+                        .filter((s) => s.added.length > 0)
+                        .map((s) => (
+                          <li key={s.id}>
+                            → {s.title}
+                            {s.isNew && <span className="text-text-3"> (new section)</span>}:{' '}
+                            {plural(s.added.length, 'item')}
+                          </li>
+                        ))}
+                    </ul>
+                  </>
+                )}
+
+                {plan.totalCorrected > 0 && (
+                  <div className={plan.totalAdded > 0 ? 'mt-2.5 border-t border-border pt-2' : ''}>
+                    <div className="font-medium text-text">
+                      Fixing {plural(plan.totalCorrected, 'existing item')} in place
+                    </div>
+                    <ul className="mt-1.5 space-y-0.5 text-text-2">
+                      {plan.corrections.slice(0, 8).map((c) => (
+                        <li key={c.id}>
+                          → <span className="font-mono text-xs">{c.id}</span>
+                          <span className="text-text-3">: changes {c.changed.join(', ')}</span>
+                        </li>
+                      ))}
+                      {plan.corrections.length > 8 && (
+                        <li className="text-text-3">+{plan.corrections.length - 8} more</li>
+                      )}
+                    </ul>
+                    <div className="mt-1 text-xs text-text-3">
+                      Each keeps its id, so your progress on it is kept too.
+                    </div>
+                    {result && 'share' in result && result.share && (
+                      <div className="mt-1.5 text-text-2">
+                        Guessing the longest option: {result.share[0]}% right now, {result.share[1]}% after.
+                      </div>
+                    )}
+                    {result && 'skipped' in result && result.skipped && result.skipped.length > 0 && (
+                      <div className="mt-1 text-text-3">Not used: {result.skipped.join('; ')}.</div>
+                    )}
+                  </div>
+                )}
+
+                {plan.unmatchedCorrections.length > 0 && (
+                  <div className="mt-1.5 text-text-3">
+                    Ignoring {plural(plan.unmatchedCorrections.length, 'correction')} for{' '}
+                    {plan.unmatchedCorrections.length === 1 ? 'an id' : 'ids'} this lecture
+                    doesn&rsquo;t have ({plan.unmatchedCorrections.slice(0, 3).join(', ')}
+                    {plan.unmatchedCorrections.length > 3 ? '…' : ''}).
+                  </div>
+                )}
+
+                {plan.totalDuplicates > 0 && plan.totalAdded > 0 && (
+                  <div className="mt-1.5 text-text-3">
+                    Skipping {plural(plan.totalDuplicates, 'item')} already in this lecture.
+                  </div>
+                )}
+                {Object.keys(plan.renamedIds).length > 0 && (
+                  <div className="mt-1.5 text-text-3">
+                    {plural(Object.keys(plan.renamedIds).length, 'item id')} will be renamed to avoid
+                    overwriting existing progress.
+                  </div>
                 )}
               </div>
             )}
-            <button type="button" onClick={copyPrompt} disabled={!chosenKinds.length} className="press">
-              <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
-              {copied ? 'Prompt copied' : 'Copy the prompt'}
-            </button>
-            <More label="More options">
-              <TeacherNotesField value={notes} onChange={setNotes} />
-              {mode === 'material' && <StudiesField checked={studies} onChange={setStudies} />}
-            </More>
-          </PromptStep>
 
-          <PromptStep n={2} title="Upload the file">
-            <label className="cursor-pointer text-sm text-accent hover:underline">
-              Upload the file the AI made
-              <input
-                type="file"
-                accept=".json,.txt,application/json,text/plain"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  e.target.value = '';
-                  if (file) setPasted(await file.text());
-                }}
-              />
-            </label>
-          </PromptStep>
-
-          {/* Feedback */}
-          {result && 'error' in result && (
-            <div
-              role="alert"
-              className="whitespace-pre-wrap border-l-2 border-error py-2 pl-3 text-sm text-error"
-            >
-              {result.error}
-            </div>
-          )}
-
-          {result && 'cut' in result && result.cut && (
-            <div role="status" className="border-l-2 border-warning py-2 pl-3 text-sm text-text-2">
-              {result.cut}
-            </div>
-          )}
-          {result && 'note' in result && result.note && (
-            <div role="status" className="border-l-2 border-border py-2 pl-3 text-sm text-text-2">
-              {result.note}
-            </div>
-          )}
-
-          {plan && (
-            <div className="border-l-2 border-border-strong bg-bg py-2 pl-3 text-sm">
-              {plan.totalAdded === 0 && plan.totalCorrected === 0 && plan.totalFramed === 0 ? (
-                <div className="text-text-2">
-                  Nothing new to add
-                  {plan.totalDuplicates > 0
-                    ? `. All ${plural(plan.totalDuplicates, 'item')} already exist in this lecture.`
-                    : '.'}
-                </div>
-              ) : plan.totalAdded === 0 ? null : (
-                <>
-                  <div className="font-medium text-text">
-                    Adding {plural(plan.totalAdded, 'item')}
-                    {Object.keys(plan.countsByType).length > 0 && (
-                      <span className="font-normal text-text-2">
-                        {' '}
-                        (
-                        {Object.entries(plan.countsByType)
-                          .map(([type, n]) => plural(n, TYPE_LABELS[type] ?? type))
-                          .join(', ')}
-                        )
-                      </span>
-                    )}
-                  </div>
-                  <ul className="mt-1.5 space-y-0.5 text-text-2">
-                    {plan.sections
-                      .filter((s) => s.added.length > 0)
-                      .map((s) => (
-                        <li key={s.id}>
-                          → {s.title}
-                          {s.isNew && <span className="text-accent"> (new section)</span>}:{' '}
-                          {plural(s.added.length, 'item')}
-                        </li>
-                      ))}
-                  </ul>
-                </>
-              )}
-
-              {plan.totalCorrected > 0 && (
-                <div className={plan.totalAdded > 0 ? 'mt-2.5 border-t border-border pt-2' : ''}>
-                  <div className="font-medium text-text">
-                    Fixing {plural(plan.totalCorrected, 'existing item')} in place
-                  </div>
-                  <ul className="mt-1.5 space-y-0.5 text-text-2">
-                    {plan.corrections.slice(0, 8).map((c) => (
-                      <li key={c.id}>
-                        → <span className="font-mono text-xs">{c.id}</span>
-                        <span className="text-text-3">: changes {c.changed.join(', ')}</span>
-                      </li>
-                    ))}
-                    {plan.corrections.length > 8 && (
-                      <li className="text-text-3">+{plan.corrections.length - 8} more</li>
-                    )}
-                  </ul>
-                  <div className="mt-1 text-xs text-text-3">
-                    Each keeps its id, so your progress on it is kept too.
-                  </div>
-                  {result && 'share' in result && result.share && (
-                    <div className="mt-1.5 text-text-2">
-                      Guessing the longest option: {result.share[0]}% right now, {result.share[1]}% after.
-                    </div>
-                  )}
-                  {result && 'skipped' in result && result.skipped && result.skipped.length > 0 && (
-                    <div className="mt-1 text-text-3">Not used: {result.skipped.join('; ')}.</div>
-                  )}
-                </div>
-              )}
-
-              {plan.unmatchedCorrections.length > 0 && (
-                <div className="mt-1.5 text-text-3">
-                  Ignoring {plural(plan.unmatchedCorrections.length, 'correction')} for{' '}
-                  {plan.unmatchedCorrections.length === 1 ? 'an id' : 'ids'} this lecture
-                  doesn&rsquo;t have ({plan.unmatchedCorrections.slice(0, 3).join(', ')}
-                  {plan.unmatchedCorrections.length > 3 ? '…' : ''}).
-                </div>
-              )}
-
-              {plan.totalDuplicates > 0 && plan.totalAdded > 0 && (
-                <div className="mt-1.5 text-text-3">
-                  Skipping {plural(plan.totalDuplicates, 'item')} already in this lecture.
-                </div>
-              )}
-              {Object.keys(plan.renamedIds).length > 0 && (
-                <div className="mt-1.5 text-text-3">
-                  {plural(Object.keys(plan.renamedIds).length, 'item id')} will be renamed to avoid
-                  overwriting existing progress.
-                </div>
-              )}
-            </div>
-          )}
-
-          {plan && plan.totalDuplicates > 0 && (
-            <label className="flex items-center gap-2 text-sm text-text-2">
-              <input
-                type="checkbox"
-                checked={skipDuplicates}
-                onChange={(e) => setSkipDuplicates(e.target.checked)}
-              />
-              Skip items this lecture already covers
-            </label>
-          )}
-        </div>
+            {plan && plan.totalDuplicates > 0 && (
+              <label className="flex items-center gap-2 text-sm text-text-2">
+                <input
+                  type="checkbox"
+                  checked={skipDuplicates}
+                  onChange={(e) => setSkipDuplicates(e.target.checked)}
+                />
+                Skip items this lecture already covers
+              </label>
+            )}
+          </>
+        }
+      />
 
         <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
           <button
@@ -655,7 +656,6 @@ export function AddToCourseDialog({ courseId, course, onClose, initialMode = 'ma
               : 'Apply'}
           </button>
         </div>
-      </div>
-    </div>
+    </Sheet>
   );
 }

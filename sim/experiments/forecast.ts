@@ -1,3 +1,7 @@
+/**
+ * Experiment, not in the app: projects where the student will stand on exam morning from their progress.
+ * Held back until calibrated; see sim/FINDINGS.md.
+ */
 import type { Course } from '@/schema/course';
 import { lectureExam } from '@/lib/classExams';
 import type { ItemResult } from '@/store/progress';

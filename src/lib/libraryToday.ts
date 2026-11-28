@@ -74,7 +74,7 @@ export function todayAcrossCourses(
  * spend or the minute changes (the clock only in steps of REUSE_MS: a card
  * that falls due a minute later shows in the sitting itself). Coming back to
  * the library from a lecture page rebuilt every lecture's Today, the
- * library's main cost after the first visit (docs/audits/2026-10-17).
+ * library's main cost after the first visit (docs/archive/audits/2026-10-17).
  */
 const REUSE_MS = 60_000;
 const remembered = new WeakMap<Course, { progress: Record<string, ItemResult> | undefined; key: string; value: CourseToday | null }>();
@@ -126,45 +126,6 @@ export function todayLine(c: CourseToday): string {
     c.catchUp ? `catch-up: ${c.review} to look at again` : c.review > 0 ? `${c.review} to review` : null,
     c.hasNew ? 'new material' : null,
     c.examDays === 0 ? 'exam today' : c.examDays === 1 ? 'exam tomorrow' : c.examDays != null ? `exam in ${c.examDays} days` : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-}
-
-/** The whole day, added up over every lecture that has something to do. */
-export interface DayAcross {
-  /** The day's planned minutes, added up: three lectures of 30 is 90, and saying so is the point. */
-  minutes: number;
-  review: number;
-  hasNew: boolean;
-  /** Every lecture's time is spent, so all that is left is the short second look. */
-  allCatchUp: boolean;
-}
-
-/**
- * One day's work across every lecture.
- *
- * The library showed three lectures of "30 min · new material" and left the
- * student to add them up — ninety minutes implied and never stated, and a
- * choice to make before studying anything (docs/proposals/design-audit.md,
- * finding 2). The totals are what the one Start is sized by, so they are
- * added here rather than in the page.
- */
-export function dayAcross(rows: CourseToday[]): DayAcross {
-  return {
-    minutes: rows.reduce((n, r) => n + r.minutes, 0),
-    review: rows.reduce((n, r) => n + r.review, 0),
-    hasNew: rows.some((r) => r.hasNew),
-    allCatchUp: rows.length > 0 && rows.every((r) => r.catchUp),
-  };
-}
-
-/** "90 min · 18 to review · new material": the line under "All 3 lectures". */
-export function dayLine(d: DayAcross): string {
-  return [
-    d.allCatchUp ? null : `${Math.round(d.minutes)} min`,
-    d.allCatchUp ? `catch-up: ${d.review} to look at again` : d.review > 0 ? `${d.review} to review` : null,
-    d.hasNew ? 'new material' : null,
   ]
     .filter(Boolean)
     .join(' · ');

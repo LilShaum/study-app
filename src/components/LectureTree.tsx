@@ -12,7 +12,9 @@ function TreeLine({ counts }: { counts: TreeCounts }) {
       {treeWordParts(counts).map((part, i) => (
         <span key={part.text}>
           {i > 0 && ' · '}
-          <span className={part.fading ? 'text-accent' : undefined}>{part.text}</span>
+          {/* Plain: blue is for what can be tapped, and these words open
+              nothing (the owner, 2026-11-26). */}
+          <span>{part.text}</span>
         </span>
       ))}
     </p>
@@ -25,21 +27,27 @@ function TreeLine({ counts }: { counts: TreeCounts }) {
  * (2026-11-06), with the numbered branches of another coming back as
  * something a touch reveals: any touch raises a number on every branch, the
  * branch under the finger picked out and named here, and a tap on a number
- * opens its section (docs/proposals/tree.md §2).
+ * opens its section (docs/proposals/tree.md §2). It arrives with the page:
+ * the leaves lost since the last look fall as the lecture opens
+ * (CourseTree `arrive`).
  */
 export function LectureTree({
   courseId,
   course,
   progress,
   wide,
-  onExpand,
+  onOpenSection,
+  highlight,
 }: {
   courseId: string;
   course: Course;
   progress: Record<string, ItemResult>;
   /** The desktop layout's column, which has the height a phone's first screen does not. */
   wide: boolean;
-  onExpand: () => void;
+  /** Open a section beside the page instead of going to it (the computer's spread). */
+  onOpenSection?: (sectionId: string) => void;
+  /** A section to light, e.g. the contents row under the pointer (the computer's spread). */
+  highlight?: string | null;
 }) {
   // Fading is judged as of drawing, as the tree judges it: rendering must not read the clock.
   const [now] = useState(Date.now);
@@ -55,11 +63,12 @@ export function LectureTree({
           course={course}
           progress={progress}
           crop
-          className={`${wide ? 'h-[22rem]' : 'h-72'} max-w-full`}
+          className={`${wide ? 'h-[26rem]' : 'h-72'} max-w-full`}
           interactive
-          mode="reveal"
-          onExpand={onExpand}
           onPoint={setPicked}
+          onOpenSection={onOpenSection}
+          highlight={highlight}
+          arrive
         />
       </div>
       {/* While a branch is picked, the words name it instead, with a way in
@@ -71,15 +80,25 @@ export function LectureTree({
           <span className="flex min-w-0 items-baseline gap-2">
             <span className="mark shrink-0 tabular-nums text-text-3">{named.n}</span>
             <span className="min-w-0 truncate font-display text-text">{named.title}</span>
-            {/* The title is what a phone's width is for; the number's own ink
-                says the rest, and only fading is worth the words. */}
-            {named.state === 'fading' && <span className="mark shrink-0 text-accent">fading</span>}
-            <Link
-              to={`/study/${courseId}/section/${encodeURIComponent(named.id)}`}
-              className="mark tap-safe inline-flex shrink-0 items-center text-accent hover:underline"
-            >
-              Open ▸
-            </Link>
+            {/* The title is what a phone's width is for; the leaves say the
+                rest, and only fading is worth the words. */}
+            {named.state === 'fading' && <span className="mark shrink-0 text-text-3">fading</span>}
+            {onOpenSection ? (
+              <button
+                type="button"
+                onClick={() => onOpenSection(named.id)}
+                className="mark tap-safe inline-flex shrink-0 items-center text-accent hover:underline"
+              >
+                Open ▸
+              </button>
+            ) : (
+              <Link
+                to={`/study/${courseId}/section/${encodeURIComponent(named.id)}`}
+                className="mark tap-safe inline-flex shrink-0 items-center text-accent hover:underline"
+              >
+                Open ▸
+              </Link>
+            )}
           </span>
         ) : (
           <TreeLine counts={counts} />

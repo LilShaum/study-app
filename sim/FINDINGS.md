@@ -976,7 +976,7 @@ the default policy, already sized its review block this way).
 
 ## 2026-09-26 — Audit: the suite could not see Review; late reviews are the ones after a miss
 
-An independent audit of the learning logic (`docs/audits/2026-10-fable-audit.md`).
+An independent audit of the learning logic (`docs/archive/audits/2026-10-fable-audit.md`).
 
 **The simulator was blind to Review under its own default policy.** The
 *In Review*, *Too early* and *Too late* columns counted answers only in a
@@ -1248,3 +1248,38 @@ the student does what the course page suggests (Review, then Learn).
 - Model the student's choices: stopping early when a session feels long,
   skipping Review when there is a lot due.
 - Try the Phase 1 "Today" plan as a policy **before** building its UI.
+
+
+## 2026-11-24 — The adaptive quiz against Today
+
+The adaptive quiz (docs/proposals/zen.md, `buildSessionItems` 'adaptive')
+as student policies, 3 seeds:
+
+| Scenario | Exam score |
+|---|---|
+| steady-30 (Today) | 47% |
+| steady-30-learn-review (Learn half the day, then Review) | 26% |
+| steady-30-learn-adaptive (Learn half, then the quiz), first version | 19% |
+| the same, new cards only from sections met, due first | 20% |
+| steady-45 (Today) | 67% |
+| steady-45-today-adaptive (Today 30 min, then the quiz 15) | 64% |
+
+- **The first version drew new cards from sections never studied**, cold.
+  Alone it reached everything and held almost nothing, and it kept Learn
+  from teaching those sections (it counted them as started). Fixed: new
+  cards only from sections already met.
+- **Most of the gap in the Learn-then-quiz policy is the policy**: the same
+  split with Review scores 26%. Half of every day on new material leaves
+  reviews late; Today balances it better.
+- **The quiz is a little below Review at the same split** (20% against
+  26%), and below Today when used as extra time (64% against 67% for
+  giving Today the same 15 minutes, which it spends partly on new
+  material). Giving due cards all the slots they need moved it by one point
+  only; the rest was not found in this pass (candidates: re-asking misses
+  in the sitting, which the simulator has found buys nothing; asking MCQs
+  with their options where Review asks some typed).
+- **Decision**: Today stays the daily way in; the library's Review
+  suggestion opens Today, not the quiz. The quiz stays as its own way to
+  study, "for once a lot has been covered" (the owner, 2026-11-22), and the
+  plan to retire Today's sitting in its favour (docs/proposals/ecosystem.md
+  step 3) is off until a version of the quiz matches Today here.

@@ -1,3 +1,7 @@
+/**
+ * Shows a multiple choice question, shuffles the options, and marks the pick with its reasons.
+ * Reports the pick and whether the student was sure to the session through onAnswered.
+ */
 import { useMemo, useState, type KeyboardEvent } from 'react';
 import type { McqItem } from '@/schema/course';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
@@ -268,7 +272,7 @@ export function McqCard({ item: written, onAnswered, onNext, onUnsure, keyboardE
       )}
       {/* After a miss the why is open, then the passage: the lesson again, not only the right option. */}
       {revealed && !keyBroken && <IdeaNote idea={idea} open={!correct || unsure} />}
-      {revealed && <SourceNote excerpt={item.source_excerpt} open={(learning || !correct || unsure) && !keyBroken} />}
+      {revealed && <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={(learning || !correct || unsure) && !keyBroken} />}
     </div>
   );
 }

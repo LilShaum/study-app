@@ -25,7 +25,7 @@ export function Toaster() {
           onOpenChange={(open) => {
             if (!open) dismiss(t.id);
           }}
-          className={`flex items-center justify-between gap-3 rounded-sm border border-border-light border-l-2 bg-surface px-4 py-3 text-text shadow-md ${TYPE_CLASSES[t.type]}`}
+          className={`paper-grain flex items-center justify-between gap-3 rounded-sm border border-border-light border-l-2 bg-surface px-4 py-3 text-text shadow-md ${TYPE_CLASSES[t.type]}`}
         >
           <RadixToast.Description className="whitespace-pre-line text-sm">{t.message}</RadixToast.Description>
           {t.onAction && t.actionLabel && (

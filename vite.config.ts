@@ -63,7 +63,7 @@ export default defineConfig({
         // instead of the whole bundle.
         manualChunks: {
           react: ['react', 'react-dom', 'react-router-dom'],
-          vendor: ['zustand', 'zod', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast', 'clsx'],
+          vendor: ['zustand', 'zod', '@radix-ui/react-toast'],
         },
       },
     },

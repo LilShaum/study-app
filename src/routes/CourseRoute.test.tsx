@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
@@ -58,10 +58,17 @@ describe("the lecture page's first screen", () => {
     }
   });
 
+  it('sizes Today to the time picked, and the Start carries it to the sitting', () => {
+    open();
+    fireEvent.click(screen.getByRole('radio', { name: '10 min' }));
+    const start = screen.getByRole('link', { name: /^Start · 10 min/ });
+    expect(start.getAttribute('href')).toMatch(/\/today\?min=10$/);
+  });
+
   it("keeps the title and Today's Start outside the fold", () => {
     open();
     expect(screen.getByRole('heading', { name: 'Cell Biology' }).closest('details')).toBeNull();
-    expect(screen.getByRole('link', { name: 'Start' }).closest('details')).toBeNull();
+    expect(screen.getByRole('link', { name: /^Start/ }).closest('details')).toBeNull();
   });
 });
 
@@ -79,9 +86,11 @@ describe('the tree on the lecture page', () => {
     const caption = container.querySelector('figcaption')!;
     expect(caption.textContent).toContain('Transport');
     expect(caption.textContent).not.toContain('fading');
-    expect(caption.querySelector('a')!.getAttribute('href')).toBe('/study/cell/section/s2');
     // Tapping its Open must not put the numbers away under the finger.
     expect(caption.hasAttribute('data-keeps-tree-open')).toBe(true);
+    // On a phone it opens the section as a sheet over the lecture.
+    fireEvent.click(within(caption as HTMLElement).getByRole('button', { name: /Open/ }));
+    expect(screen.getByRole('dialog', { name: /Transport/ })).toBeTruthy();
   });
 
   it('has no switch between versions any more: the owner chose', () => {
@@ -108,5 +117,34 @@ describe('CourseRoute: notes from the AI', () => {
   it('shows nothing when there are none', () => {
     open();
     expect(screen.queryByText('Notes from the AI')).toBeNull();
+  });
+});
+
+describe('the computer spread', () => {
+  it('opens a picked section beside the page, without leaving, and Close removes it', () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: true,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+      onchange: null,
+    })) as unknown as typeof window.matchMedia;
+    try {
+      open();
+      expect(screen.queryByRole('region', { name: 'Transport' })).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: /Transport/ }));
+      const panel = screen.getByRole('region', { name: 'Transport' });
+      expect(panel.textContent).toContain('Study just this section');
+      // Still the lecture page: its contents are beside the panel.
+      expect(screen.getByRole('button', { name: /Signals/ })).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+      expect(screen.queryByRole('region', { name: 'Transport' })).toBeNull();
+    } finally {
+      window.matchMedia = original;
+    }
   });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { EMPTY_PROGRESS, useProgressStore, type ItemResult } from '@/store/progress';
@@ -25,6 +25,13 @@ import { examRule } from '@/lib/exam';
 import { isDueFor } from '@/lib/memory';
 import { roman } from '@/lib/roman';
 import type { Course } from '@/schema/course';
+import { Sheet } from '@/components/Sheet';
+import { plural } from '@/lib/plural';
+import { ThumbBar } from '@/components/ThumbBar';
+import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
+
+/** A group of ticks longer than this folds on a phone. */
+const LONG = 6;
 
 const ALL_WHICH: Which[] = WHICH.map((w) => w.value);
 
@@ -125,6 +132,8 @@ function PracticePage() {
   const byCourse = useProgressStore((s) => s.byCourse);
   // Judged as of opening the page; rendering must not read the clock.
   const [now] = useState(Date.now);
+  const wide = useMediaQuery(WIDE);
+  const [fromOpen, setFromOpen] = useState(false);
 
   const course = id ? courses[id] : undefined;
   const lectures = useMemo<[string, Course][]>(
@@ -225,7 +234,7 @@ function PracticePage() {
   const nothingStudied = lectures.every(([lid]) => Object.keys(byCourse[lid] ?? {}).length === 0);
 
   /** A ready-made sitting: these ticks over the whole lecture or class. */
-  const ready = (label: string, preset: Pick<PracticeChoice, 'kinds' | 'which' | 'order' | 'newCap'>) => {
+  const ready = (label: string, use: string, preset: Pick<PracticeChoice, 'kinds' | 'which' | 'order' | 'newCap'>) => {
     const c: PracticeChoice = { ...preset };
     const per = lectures.map(([lid, l]) => ({
       lid,
@@ -233,15 +242,15 @@ function PracticePage() {
     }));
     const firstWith = per.find((p) => p.n > 0);
     const total = per.reduce((a, p) => a + p.n, 0);
-    return { label, total, to: firstWith ? choiceLink(firstWith.lid, c, id ? undefined : code, !id && c.order === 'mixed' && per.filter((p) => p.n > 0).length > 1) : '' };
+    return { label, use, total, to: firstWith ? choiceLink(firstWith.lid, c, id ? undefined : code, !id && c.order === 'mixed' && per.filter((p) => p.n > 0).length > 1) : '' };
   };
   const everyKind = present.filter((k) => k !== 'written');
   const presets = [
-    ready('Due now', { kinds: everyKind.length ? everyKind : present, which: ['due'], order: 'weakest' }),
-    ready('Mistakes', { kinds: present, which: ['missed'], order: 'mixed' }),
+    ready('To review', 'What is fading, faintest first.', { kinds: everyKind.length ? everyKind : present, which: ['due'], order: 'weakest' }),
+    ready('Mistakes', 'Every one you have missed, mixed.', { kinds: present, which: ['missed'], order: 'mixed' }),
     // Anki's way: what is fading first, then up to ten new (docs/proposals/practice.md).
-    ...(present.includes('flashcards') ? [ready('Flashcards', { kinds: ['flashcards'], which: ['due', 'missed', 'new'], order: 'weakest', newCap: FLASHCARDS_NEW })] : []),
-    ...(present.includes('problems') ? [ready('Problems', { kinds: ['problems'], which: ALL_WHICH, order: 'mixed' })] : []),
+    ...(present.includes('flashcards') ? [ready('Flashcards', `The ones fading, then up to ${FLASHCARDS_NEW} new.`, { kinds: ['flashcards'], which: ['due', 'missed', 'new'], order: 'weakest', newCap: FLASHCARDS_NEW })] : []),
+    ...(present.includes('problems') ? [ready('Problems', 'Every problem, mixed.', { kinds: ['problems'], which: ALL_WHICH, order: 'mixed' })] : []),
   ].filter((p) => p.total > 0);
 
   const toggle = <T,>(list: T[], v: T): T[] => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -278,9 +287,31 @@ function PracticePage() {
       : `${lecturesChosen} of ${lectures.length} lectures, ${sectionsChosen} of ${sectionsTotal} sections`;
 
   const orderUse = ORDERS.find((o) => o.value === order)?.use;
+  const status =
+    !kinds.length || !which.length
+      ? 'Tick at least one kind and one set of cards.'
+      : n === 0
+        ? 'No card matches these ticks.'
+        : `${n} card${n === 1 ? '' : 's'}: ${PRACTICE_KINDS.filter((k) => kinds.includes(k.value)).map((k) => k.label.toLowerCase()).join(', ')}, ${(ORDERS.find((o) => o.value === order)?.label ?? '').toLowerCase()}${reached.length > 1 ? (mixing ? `, from ${reached.length} lectures mixed` : `, starting in ${firstTitle}`) : ''}.`;
+  const startButton =
+    n > 0 ? (
+      <Link to={to} className="press press-ink tap-safe shrink-0 px-6 py-3">
+        Start
+      </Link>
+    ) : (
+      <span className="press tap-safe shrink-0 cursor-default px-6 py-3 opacity-40" aria-disabled="true">
+        Start
+      </span>
+    );
 
-  return (
-    <div className="pb-24">
+  const kindOptions = PRACTICE_KINDS.filter((k) => present.includes(k.value)).map((k) => ({
+    ...k,
+    count: counts.reduce((a, c) => a + (c.byKind.get(k.value) ?? 0), 0),
+  }));
+  const whichOptions = WHICH.map((w) => ({ ...w, count: counts.reduce((a, c) => a + (c.byWhich.get(w.value) ?? 0), 0) }));
+
+  const head = (
+    <>
       {id ? (
         <Link to={`/study/${id}`} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
           ← {course!.metadata.title}
@@ -317,175 +348,276 @@ function PracticePage() {
           .
         </p>
       )}
+    </>
+  );
 
-      {presets.length > 0 && (
-        <section className="mt-6">
-          <h2 className="mark mb-1 text-text-3">Ready-made</h2>
-          <ul className="border-t border-border">
-            {presets.map((p) => (
-              <li key={p.label} className="border-b border-border">
-                <Link to={p.to} className="group tap-safe flex items-baseline gap-3 py-3">
-                  <span className="font-display text-body text-text group-hover:text-accent">{p.label}</span>
-                  <span className="leaders hidden sm:block" aria-hidden="true" />
-                  <span className="mark ml-auto shrink-0 tabular-nums text-text-3">{p.total}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+  const readyList = presets.length > 0 && (
+    <section className="mt-6">
+      <h2 className="mark mb-1 text-text-3">Ready-made</h2>
+      <ul className="border-t border-border">
+        {presets.map((p) => (
+          <li key={p.label} className="border-b border-border">
+            {/* Rows you tap, saying what each is: a word and a number alone
+                did not look like something to start (docs/proposals/phone-round.md). */}
+            <Link to={p.to} className="group tap-safe flex items-center gap-3 py-3">
+              <span className="min-w-0 flex-1">
+                <span className="flex items-baseline gap-3">
+                  <span className="font-display text-body font-semibold text-text group-hover:text-accent">{p.label}</span>
+                  <span className="mark tabular-nums text-text-3">{plural(p.total, 'card')}</span>
+                </span>
+                <span className="mt-0.5 block text-small text-text-3">{p.use}</span>
+              </span>
+              <span aria-hidden="true" className="shrink-0 font-display text-[1.75rem] leading-none text-text-2 group-hover:text-accent">
+                ›
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+
+  const kindsTicks = (
+    <Ticks label="Kinds" options={kindOptions} value={kinds} onToggle={(v) => setKinds((ks) => toggle(ks, v))} stacked={wide} />
+  );
+  const whichTicks = (
+    <Ticks label="Cards" options={whichOptions} value={which} onToggle={(v) => setWhich((ws) => toggle(ws, v))} stacked={wide} />
+  );
+
+  const orderRow = (
+    <div className={`flex flex-col gap-y-1 ${wide ? '' : 'sm:flex-row sm:items-baseline sm:gap-x-3'}`}>
+      <span className={`mark shrink-0 text-text-3 ${wide ? '' : 'sm:w-20'}`}>Order</span>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
+          {ORDERS.map((o, i) => {
+            const active = o.value === order;
+            return (
+              <span key={o.value} className="flex items-baseline">
+                <button
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setOrder(o.value)}
+                  className={`tap-safe px-0.5 text-small transition-colors ${active ? 'text-accent' : 'text-text-2 hover:text-text'}`}
+                >
+                  <span className={active ? 'underline decoration-accent decoration-2 underline-offset-4' : ''}>{o.label}</span>
+                </button>
+                {i < ORDERS.length - 1 && <span className="ml-1 text-text-3">·</span>}
+              </span>
+            );
+          })}
+        </div>
+        <p className="mt-1 text-small text-text-3">
+          {orderUse}
+          {!id && order !== 'mixed' && ' One lecture after another.'}
+          {!id && order === 'mixed' && ' Every lecture in one sitting, so their ideas have to be told apart.'}
+          {!id && soon && order === 'mixed' && saved?.order !== 'mixed' &&
+            ` Mixed because ${soon.name} is ${soon.days === 0 ? 'today' : soon.days === 1 ? 'tomorrow' : `in ${soon.days} days`}.`}
+        </p>
+      </div>
+    </div>
+  );
+
+  // The sections as ticks. Where there is room they lie open in columns.
+  const fromBody = (
+    <div className="space-y-3">
+      <div className="flex gap-4 text-small">
+        <button type="button" onClick={() => setWhere(undefined)} className="tap-safe text-text-3 underline-offset-4 hover:text-text hover:underline">
+          Tick all
+        </button>
+        <button
+          type="button"
+          onClick={() => setWhere(Object.fromEntries(lectures.map(([l]) => [l, [] as string[]])))}
+          className="tap-safe text-text-3 underline-offset-4 hover:text-text hover:underline"
+        >
+          Untick all
+        </button>
+      </div>
+      <div className={wide ? 'columns-2 gap-x-8 [&>fieldset]:mb-3 [&>fieldset]:break-inside-avoid' : 'space-y-3'}>
+        {lectures.map(([lid, c], li) => (
+          <fieldset key={lid}>
+            {!id && (
+              <legend className="w-full">
+                <label className="tap-safe flex cursor-pointer items-center gap-2 py-1 text-small font-semibold text-text">
+                  <input type="checkbox" checked={lectureOn(lid)} onChange={() => setLecture(lid)} className="accent-accent" />
+                  {roman(li + 1)}. {lectureName(c.metadata.title, code)}
+                </label>
+              </legend>
+            )}
+            <div className={id ? (wide ? 'columns-2 gap-x-8' : '') : 'pl-5'}>
+              {sectionsOf(lid).map((s, si) => {
+                const k = counts.find((x) => x.lid === lid)?.bySection.get(s.id) ?? 0;
+                return (
+                  <label key={s.id} className="tap-safe flex cursor-pointer items-baseline gap-2 break-inside-avoid py-1 text-small text-text">
+                    <input type="checkbox" checked={isOn(lid, s.id)} onChange={() => setSection(lid, s.id)} className="accent-accent" />
+                    <span className="min-w-0 flex-1">
+                      {si + 1}. {s.title}
+                    </span>
+                    <span className="shrink-0 text-xs tabular-nums text-text-3">{k}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+        ))}
+      </div>
+    </div>
+  );
+  const fromRow = (
+    <div className={`flex flex-col gap-y-1 ${wide ? '' : 'sm:flex-row sm:items-baseline sm:gap-x-3'}`}>
+      <span className={`mark shrink-0 text-text-3 ${wide ? '' : 'sm:w-20'}`}>From</span>
+      {wide ? (
+        <div className="min-w-0 flex-1">
+          <p className="text-small text-text-2">{whereLine}</p>
+          <div className="mt-2">{fromBody}</div>
+        </div>
+      ) : sectionsTotal > LONG ? (
+        // A long list of sections folds behind one line that opens as a sheet.
+        <button type="button" onClick={() => setFromOpen(true)} className="tap-safe min-w-0 flex-1 text-left text-small text-text-2 hover:text-text">
+          <span className="underline decoration-border-strong underline-offset-4">{whereLine}</span> ▸
+        </button>
+      ) : (
+        <details className="min-w-0 flex-1">
+          <summary className="tap-safe cursor-pointer text-small text-text-2 hover:text-text">{whereLine}</summary>
+          <div className="mt-2">{fromBody}</div>
+        </details>
       )}
+    </div>
+  );
 
+  const studiesRow = studies.length > 0 && (
+    <div className={`flex flex-col gap-y-1 ${wide ? '' : 'sm:flex-row sm:items-baseline sm:gap-x-3'}`}>
+      <span className={`mark shrink-0 text-text-3 ${wide ? '' : 'sm:w-20'}`}>Studies</span>
+      <label className="min-w-0 sm:max-w-sm sm:flex-1">
+        <span className="sr-only">Only the cards on studies</span>
+        <select value={study ?? ''} onChange={(e) => setStudy(e.target.value || null)} className="field tap-safe w-full truncate text-small text-text-2">
+          <option value="">Every card</option>
+          <option value="all">Only the cards on studies</option>
+          {studies.map((s) => (
+            <option key={`${s.courseId}|${s.key}`} value={s.key}>
+              Only {s.label}
+              {id ? '' : ` · ${s.lecture}`}
+            </option>
+          ))}
+        </select>
+      </label>
+    </div>
+  );
+
+  const testBlock = (
+    <section className="mt-10 border-t border-border pt-5">
+      <h2 className="mark text-text-3">Practice test</h2>
+      <p className="mt-2 max-w-prose text-small text-text-2">
+        Answers held to the end, then your score.{' '}
+        <span className="tabular-nums text-text-3">
+          {test.count} question{test.count === 1 ? '' : 's'}.
+        </span>
+      </p>
+      {test.count > 0 && (
+        <Link to={test.to} className="press tap-safe mt-3">
+          Take a practice test
+        </Link>
+      )}
+    </section>
+  );
+
+  if (wide) {
+    // What is picked, summed on the left page with Start under it.
+    const picked = lectures.flatMap(([lid, c], li) =>
+      sectionsOf(lid)
+        .filter((s) => isOn(lid, s.id))
+        .map((s, si) => ({ key: `${lid}/${s.id}`, label: `${si + 1}. ${s.title}`, lecture: id ? '' : `${roman(li + 1)}. ${lectureName(c.metadata.title, code)}` })),
+    );
+    const line = (k: string, v: ReactNode) => (
+      <li className="flex items-baseline gap-4 border-b border-border py-2 text-small">
+        <span className="mark w-16 shrink-0 text-text-3">{k}</span>
+        <span className="min-w-0 flex-1 text-text">{v}</span>
+      </li>
+    );
+    const studyName = study === 'all' ? 'Only the cards on studies' : study ? studies.find((s) => s.key === study)?.label : null;
+    return (
+      <div>
+        <div className="flex gap-10">
+          <aside
+            aria-label="What you have picked"
+            className="sticky top-6 flex max-h-[calc(100vh-3rem)] w-[22rem] shrink-0 flex-col self-start pt-1"
+          >
+            <h2 className="mark mb-1 shrink-0 text-text-3">Your sitting</h2>
+            <ul className="shrink-0 border-t border-border">
+              {line('Gives', <span className="font-display text-heading tabular-nums">{n}</span>)}
+              {line('Kinds', kinds.length ? kindOptions.filter((k) => kinds.includes(k.value)).map((k) => k.label).join(', ') : 'None')}
+              {line('Cards', which.length ? whichOptions.filter((w) => which.includes(w.value)).map((w) => w.label).join(', ') : 'None')}
+              {line('Order', ORDERS.find((o) => o.value === order)?.label)}
+              {studyName && line('Studies', studyName)}
+            </ul>
+            <h3 className="mark mb-1 mt-4 shrink-0 text-text-3">{whereLine}</h3>
+            <ul className="min-h-0 flex-1 overflow-y-auto border-t border-border [scrollbar-width:thin]">
+              {picked.map((p) => (
+                <li key={p.key} className="border-b border-border py-1.5 text-small text-text-2">
+                  {p.lecture && <span className="block text-xs text-text-3">{p.lecture}</span>}
+                  {p.label}
+                </li>
+              ))}
+              {!picked.length && <li className="border-b border-border py-1.5 text-small text-text-3">Nothing ticked.</li>}
+            </ul>
+            <div className="shrink-0 border-t border-border-strong pt-4">
+              <div className="flex items-center gap-4">
+                {startButton}
+                <span className="min-w-0 text-small text-text-2">{status}</span>
+              </div>
+            </div>
+          </aside>
+          <div className="min-w-0 flex-1 border-l border-border pl-10">
+            {head}
+            {readyList}
+            <section className="mt-8">
+              <h2 className="mark mb-1 text-text-3">Choose it yourself</h2>
+              <div className="space-y-6 border-y border-border py-5">
+                <div className="grid grid-cols-2 gap-x-10">
+                  {kindsTicks}
+                  {whichTicks}
+                </div>
+                {orderRow}
+                {fromRow}
+                {studiesRow}
+              </div>
+            </section>
+            {testBlock}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pb-24">
+      {head}
+      {readyList}
       <section className="mt-8">
         <h2 className="mark mb-1 text-text-3">Choose it yourself</h2>
         <div className="space-y-5 border-y border-border py-5">
-          <Ticks
-            label="Kinds"
-            options={PRACTICE_KINDS.filter((k) => present.includes(k.value)).map((k) => ({
-              ...k,
-              count: counts.reduce((a, c) => a + (c.byKind.get(k.value) ?? 0), 0),
-            }))}
-            value={kinds}
-            onToggle={(v) => setKinds((ks) => toggle(ks, v))}
-          />
-          <Ticks
-            label="Cards"
-            options={WHICH.map((w) => ({ ...w, count: counts.reduce((a, c) => a + (c.byWhich.get(w.value) ?? 0), 0) }))}
-            value={which}
-            onToggle={(v) => setWhich((ws) => toggle(ws, v))}
-          />
-          <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
-            <span className="mark shrink-0 text-text-3 sm:w-20">Order</span>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
-                {ORDERS.map((o, i) => {
-                  const active = o.value === order;
-                  return (
-                    <span key={o.value} className="flex items-baseline">
-                      <button
-                        type="button"
-                        aria-pressed={active}
-                        onClick={() => setOrder(o.value)}
-                        className={`tap-safe px-0.5 text-small transition-colors ${active ? 'text-accent' : 'text-text-2 hover:text-text'}`}
-                      >
-                        <span className={active ? 'underline decoration-accent decoration-2 underline-offset-4' : ''}>{o.label}</span>
-                      </button>
-                      {i < ORDERS.length - 1 && <span className="ml-1 text-text-3">·</span>}
-                    </span>
-                  );
-                })}
-              </div>
-              <p className="mt-1 text-small text-text-3">
-                {orderUse}
-                {!id && order !== 'mixed' && ' One lecture after another.'}
-                {!id && order === 'mixed' && ' Every lecture in one sitting, so their ideas have to be told apart.'}
-                {!id && soon && order === 'mixed' && saved?.order !== 'mixed' &&
-                  ` Mixed because ${soon.name} is ${soon.days === 0 ? 'today' : soon.days === 1 ? 'tomorrow' : `in ${soon.days} days`}.`}
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
-            <span className="mark shrink-0 text-text-3 sm:w-20">From</span>
-            <details className="min-w-0 flex-1">
-              <summary className="tap-safe cursor-pointer text-small text-text-2 hover:text-text">{whereLine}</summary>
-              <div className="mt-2 space-y-3">
-                <div className="flex gap-4 text-small">
-                  <button type="button" onClick={() => setWhere(undefined)} className="tap-safe text-text-3 underline-offset-4 hover:text-text hover:underline">
-                    Tick all
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setWhere(Object.fromEntries(lectures.map(([l]) => [l, [] as string[]])))}
-                    className="tap-safe text-text-3 underline-offset-4 hover:text-text hover:underline"
-                  >
-                    Untick all
-                  </button>
-                </div>
-                {lectures.map(([lid, c], li) => (
-                  <fieldset key={lid}>
-                    {!id && (
-                      <legend className="w-full">
-                        <label className="tap-safe flex cursor-pointer items-center gap-2 py-1 text-small font-semibold text-text">
-                          <input type="checkbox" checked={lectureOn(lid)} onChange={() => setLecture(lid)} className="accent-accent" />
-                          {roman(li + 1)}. {lectureName(c.metadata.title, code)}
-                        </label>
-                      </legend>
-                    )}
-                    <div className={id ? '' : 'pl-5'}>
-                      {sectionsOf(lid).map((s, si) => {
-                        const k = counts.find((x) => x.lid === lid)?.bySection.get(s.id) ?? 0;
-                        return (
-                          <label key={s.id} className="tap-safe flex cursor-pointer items-baseline gap-2 py-1 text-small text-text">
-                            <input type="checkbox" checked={isOn(lid, s.id)} onChange={() => setSection(lid, s.id)} className="accent-accent" />
-                            <span className="min-w-0 flex-1">
-                              {si + 1}. {s.title}
-                            </span>
-                            <span className="shrink-0 text-xs tabular-nums text-text-3">{k}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </fieldset>
-                ))}
-              </div>
-            </details>
-          </div>
-          {studies.length > 0 && (
-            <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
-              <span className="mark shrink-0 text-text-3 sm:w-20">Studies</span>
-              <label className="min-w-0 sm:max-w-sm sm:flex-1">
-                <span className="sr-only">Only the cards on studies</span>
-                <select value={study ?? ''} onChange={(e) => setStudy(e.target.value || null)} className="field tap-safe w-full truncate text-small text-text-2">
-                  <option value="">Every card</option>
-                  <option value="all">Only the cards on studies</option>
-                  {studies.map((s) => (
-                    <option key={`${s.courseId}|${s.key}`} value={s.key}>
-                      Only {s.label}
-                      {id ? '' : ` · ${s.lecture}`}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          )}
+          {kindsTicks}
+          {whichTicks}
+          {orderRow}
+          {fromRow}
+          {studiesRow}
         </div>
       </section>
+      {testBlock}
 
-      <section className="mt-10 border-t border-border pt-5">
-        <h2 className="mark text-text-3">Practice test</h2>
-        <p className="mt-2 max-w-prose text-small text-text-2">
-          Answers held to the end, then your score.{' '}
-          <span className="tabular-nums text-text-3">
-            {test.count} question{test.count === 1 ? '' : 's'}.
-          </span>
-        </p>
-        {test.count > 0 && (
-          <Link to={test.to} className="press tap-safe mt-3">
-            Take a practice test
-          </Link>
-        )}
-      </section>
+      {fromOpen && (
+        <Sheet label="Choose the sections" title={whereLine} onClose={() => setFromOpen(false)}>
+          <div className="px-5 py-4">{fromBody}</div>
+        </Sheet>
+      )}
 
       {/* Start in thumb reach, with what it gives: every tick shows its effect here. */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border-strong bg-bg/95 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center gap-4 px-5 sm:px-6">
-          {n > 0 ? (
-            <Link to={to} className="press press-ink tap-safe shrink-0">
-              Start
-            </Link>
-          ) : (
-            <span className="press tap-safe shrink-0 cursor-default opacity-40" aria-disabled="true">
-              Start
-            </span>
-          )}
-          <span className="min-w-0 text-small text-text-2">
-            {!kinds.length || !which.length
-              ? 'Tick at least one kind and one set of cards.'
-              : n === 0
-                ? 'No card matches these ticks.'
-                : `${n} card${n === 1 ? '' : 's'}${reached.length > 1 ? (mixing ? `, from ${reached.length} lectures mixed` : `, starting in ${firstTitle}`) : ''}.`}
-          </span>
+      <ThumbBar>
+        {/* What the ticks add up to on the left, Start under the thumb on the right. */}
+        <div className="flex items-center gap-4">
+          <span className="min-w-0 flex-1 text-small text-text-2">{status}</span>
+          {startButton}
         </div>
-      </div>
+      </ThumbBar>
     </div>
   );
 }
@@ -496,16 +628,19 @@ function Ticks<T extends string>({
   options,
   value,
   onToggle,
+  stacked,
 }: {
   label: string;
   options: { value: T; label: string; count: number }[];
   value: T[];
   onToggle: (v: T) => void;
+  /** Label above, one tick to a line: for a column of the wide page. */
+  stacked?: boolean;
 }) {
   return (
-    <fieldset className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
-      <legend className="mark float-left shrink-0 text-text-3 sm:w-20">{label}</legend>
-      <div className="clear-left grid grid-cols-2 gap-x-4 sm:clear-none sm:grid-cols-3">
+    <fieldset className={`flex flex-col gap-y-1 ${stacked ? '' : 'sm:flex-row sm:items-baseline sm:gap-x-3'}`}>
+      <legend className={`mark float-left shrink-0 text-text-3 ${stacked ? '' : 'sm:w-20'}`}>{label}</legend>
+      <div className={`clear-left ${stacked ? '' : 'grid grid-cols-2 gap-x-4 sm:clear-none sm:grid-cols-3'}`}>
         {options.map((o) => (
           <label key={o.value} className="tap-safe flex cursor-pointer items-baseline gap-2 py-1 text-small text-text">
             <input type="checkbox" checked={value.includes(o.value)} onChange={() => onToggle(o.value)} className="accent-accent" />

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { PracticeKinds } from '@/components/PracticeKinds';
 import { useCoursesStore } from '@/store/courses';
 import type { Course } from '@/schema/course';
@@ -13,11 +13,15 @@ import { bookmarkResolves, useResumeStore } from '@/store/resume';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
 import { LectureTree } from '@/components/LectureTree';
+import { ThumbBar } from '@/components/ThumbBar';
+import { useListKeys } from '@/lib/useListKeys';
+import { Sheet } from '@/components/Sheet';
+import { SectionDetail } from '@/components/SectionDetail';
 import { SpecimenLabel } from '@/components/SpecimenLabel';
-import { TreeDialog } from '@/components/TreeDialog';
 import { AddToCourseDialog, type AddMode } from '@/components/AddToCourseDialog';
 import { kindsOf } from '@/lib/makeKinds';
 import { CourseHealthPanel } from '@/components/CourseHealthPanel';
+import { analyseCourseHealth, findingGroup } from '@/lib/courseHealth';
 import { CourseDetailsDialog } from '@/components/CourseDetailsDialog';
 import { CATCH_UP_HOURS, isDueFor, missedThisSitting } from '@/lib/memory';
 import { nextSectionToLearn } from '@/lib/nextToLearn';
@@ -30,8 +34,10 @@ import { usePlanStore } from '@/store/plan';
 import { measuredPace, useStudyLogStore } from '@/store/studyLog';
 import { ExamDialog } from '@/components/ExamDialog';
 import { notesFromAI } from '@/lib/notesFromAI';
+import { runsOf, sourceCoverage } from '@/lib/sourceCoverage';
 import { examLabel, ranges } from '@/lib/examLabel';
 import { classOf, lectureExam } from '@/lib/classExams';
+import { plural } from '@/lib/plural';
 
 interface Counts {
   total: number;
@@ -63,8 +69,6 @@ const MODE_LABELS: Record<string, string> = {
   today: 'Today',
 };
 
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
-
 /** "5 minutes ago" — precise enough to tell you whether this is today's work. */
 function ago(ts: number): string {
   const mins = Math.max(0, Math.round((Date.now() - ts) / 60000));
@@ -74,6 +78,38 @@ function ago(ts: number): string {
   if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
   const days = Math.round(hours / 24);
   return `${days} day${days === 1 ? '' : 's'} ago`;
+}
+
+/** A contents row: a link to the section's page, or on the desktop spread a button that opens it in place. */
+function Row({
+  to,
+  onPick,
+  onHover,
+  className,
+  children,
+}: {
+  to: string;
+  onPick?: () => void;
+  onHover?: (on: boolean) => void;
+  className: string;
+  children: ReactNode;
+}) {
+  return onPick ? (
+    <button
+      type="button"
+      data-list-item
+      onClick={onPick}
+      onMouseEnter={() => onHover?.(true)}
+      onMouseLeave={() => onHover?.(false)}
+      className={className}
+    >
+      {children}
+    </button>
+  ) : (
+    <Link to={to} data-list-item className={className}>
+      {children}
+    </Link>
+  );
 }
 
 /** The small ink links under the header: things you do to a course, not with it. */
@@ -99,7 +135,6 @@ export function CourseRoute() {
   const course = useCoursesStore((s) => (id ? s.courses[id] : undefined));
   const [adding, setAdding] = useState<AddMode | null>(null);
   const [editingDetails, setEditingDetails] = useState(false);
-  const [treeOpen, setTreeOpen] = useState(false);
   // Indexing straight into the map keeps the selector's return reference
   // stable — a getter that built an object would change the snapshot on every
   // store read (see EMPTY_PROGRESS for the render loop that causes).
@@ -139,7 +174,49 @@ export function CourseRoute() {
     };
   }, [course, progress, now]);
 
+  // What the lecture check found to fix, said on the phone's More line so
+  // folding the check away does not hide it (CourseHealthPanel's own rule).
+  const healthNote = useMemo(() => {
+    if (!course) return null;
+    const health = analyseCourseHealth(course);
+    const n = health.findings.filter(
+      (f) => findingGroup(f) === 'fix' && !(f.id === 'declared-terms-missing' && health.declaredTermCoverage),
+    ).length;
+    return n > 0 ? `${n} to fix` : null;
+  }, [course]);
+
   const wide = useMediaQuery(WIDE);
+  // J and K through the sections (a computer's keyboard).
+  useListKeys();
+  // The picked section lives in the URL so Back un-picks it. Only the wide
+  // layout reads it; on a phone a section is its own page.
+  const [params, setParams] = useSearchParams();
+  const pickedId = wide ? params.get('s') : null;
+  const picked = course && pickedId ? course.sections.find((s) => s.id === pickedId) : undefined;
+  // The row under the pointer lights its branch; otherwise the picked one.
+  const [hovered, setHovered] = useState<string | null>(null);
+  // On a phone a section opens as a sheet over the lecture, so the tree and
+  // where you were stay underneath; its own page stays for links.
+  const [sheetId, setSheetId] = useState<string | null>(null);
+  const sheetSection = course && sheetId ? course.sections.find((s) => s.id === sheetId) : undefined;
+  const pick = useCallback(
+    (sid: string | null) =>
+      setParams((p) => {
+        const next = new URLSearchParams(p);
+        if (sid) next.set('s', sid);
+        else next.delete('s');
+        return next;
+      }),
+    [setParams],
+  );
+  useEffect(() => {
+    if (!picked) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') pick(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [picked, pick]);
   // The pinned Start on a phone shows only while Today's own Start cannot be
   // tapped: with both on screen it said the same thing twice and covered the
   // line under it. Watching the button and not its row, because the row now
@@ -165,6 +242,10 @@ export function CourseRoute() {
   }, [id, now, ownMinutes, total, progress]);
   const logs = useStudyLogStore((s) => s.byCourse);
   const pace = useMemo(() => measuredPace(logs), [logs]);
+  // "I have 15 minutes": the time the student picks for this sitting, or
+  // null for what the plan gives. It changes the sitting itself (?min=),
+  // not the plan, which Settings owns.
+  const [chosen, setChosen] = useState<number | null>(null);
   /**
    * What pressing Today would give, said before it is pressed: how many
    * reviews, then where new material picks up. Built by the same call the
@@ -182,10 +263,11 @@ export function CourseRoute() {
       progress,
       now,
       exam: examRule(course, progress, now),
-      minutes: sitting.minutes,
+      minutes: chosen ?? sitting.minutes,
       pace,
     });
     const review = items.filter((i) => i._block === 'review').length;
+    const fresh = items.length - review;
     const firstNew = items.find((i) => i._block !== 'review');
     // A sitting is planned in whole steps and usually ends a little short of
     // its part, so a part counts as done at three quarters of its time.
@@ -195,8 +277,8 @@ export function CourseRoute() {
       .filter((r) => missedThisSitting(r) && now - r.lastSeen! < CATCH_UP_HOURS * 3_600_000)
       .map((r) => r.lastSeen! + CATCH_UP_HOURS * 3_600_000);
     const catchUpAt = backAt.length && new Date(Math.min(...backAt)).toDateString() === new Date(now).toDateString() ? Math.min(...backAt) : null;
-    return { review, firstNew, empty: items.length === 0, minutes: Math.round(sitting.minutes), catchUp: sitting.catchUp, part: sitting.part, partNo: sitting.part ? Math.min(PARTS, Math.floor(studiedToday(id, now) / 60 / sitting.part + 0.25) + 1) : 0, studied, catchUpAt, waiting: backAt.length };
-  }, [course, id, progress, now, minutes, pace, logs]);
+    return { review, fresh, firstNew, empty: items.length === 0, minutes: Math.round(chosen ?? sitting.minutes), planned: Math.round(sitting.minutes), catchUp: sitting.catchUp, part: sitting.part, partNo: sitting.part ? Math.min(PARTS, Math.floor(studiedToday(id, now) / 60 / sitting.part + 0.25) + 1) : 0, studied, catchUpAt, waiting: backAt.length };
+  }, [course, id, progress, now, minutes, pace, logs, chosen]);
 
   // A bookmark outlives the item it points at — the item can be edited away,
   // the section deleted — so it is only offered when it still resolves. A
@@ -228,17 +310,18 @@ export function CourseRoute() {
             : ''
         }`
       : today?.catchUp
-        ? `Catch-up: ${plural(today.review, 'card')} that came due since you studied, mostly ones you missed.`
+        ? `A second look: ${plural(today.review, 'question')} back to review since you studied, mostly ones you missed.`
         : !today || today.empty
-      ? 'Nothing is due, and everything added so far has been studied. Add material after your next lecture.'
+      ? 'Nothing to review, and everything added so far has been studied. Add material after your next lecture.'
       : [
-          today.review > 0 ? plural(today.review, 'card') + ' to review' : null,
+          today.review > 0 ? plural(today.review, 'question') + ' to review' : null,
           today.firstNew
-            ? `${today.review > 0 ? 'then new' : 'New'}: section ${sectionsInOrder.findIndex((s) => s.id === today.firstNew!._sectionId) + 1}, ${today.firstNew._sectionTitle}`
+            ? // How many, so picking a time shows what it changes.
+              `${today.review > 0 ? 'then ' : ''}${plural(today.fresh, 'new card')}, starting at section ${sectionsInOrder.findIndex((s) => s.id === today.firstNew!._sectionId) + 1}, ${today.firstNew._sectionTitle}`
             : null,
         ]
           .filter(Boolean)
-          .join(', ');
+          .join(', ') + '.';
   // The exam this lecture is planned for now: its own, or the next class exam on it.
   const exam = lectureExam(course, now);
   // The last days before it, the day comes in parts (lib/today.ts, partMinutes).
@@ -257,13 +340,16 @@ export function CourseRoute() {
     ? `${exam.name ?? 'Exam'} ${examLabel(exam.date)}, on ${coverage} · Change`
     : 'Exam coming up? Add its date and what it covers';
 
+  const todayLink = `/session/${id}/today${chosen ? `?min=${chosen}` : ''}`;
+
   const treeBlock = (
     <LectureTree
       courseId={id}
       course={course}
       progress={progress}
       wide={wide}
-      onExpand={() => setTreeOpen(true)}
+      onOpenSection={wide ? pick : setSheetId}
+      highlight={wide ? (hovered ?? picked?.id ?? null) : null}
     />
   );
   const titleBlock = (
@@ -310,6 +396,9 @@ export function CourseRoute() {
                 course.sections.length
               } section${course.sections.length === 1 ? '' : 's'}`,
             },
+            // Every slide accounted for (lib/sourceCoverage): the one count
+            // that says whether the lecture skipped part of the deck.
+            { label: 'Slides', value: slidesLine(course) },
             {
               label: 'Studied',
               value:
@@ -327,13 +416,59 @@ export function CourseRoute() {
     </div>
   );
 
+  const tools = (
+    <>
+        {/* Two rows by purpose, each labelled. Seven links in one wrapping run
+            broke into three ragged lines on a phone. The first row went
+            unlabelled, and Diagrams in it read as a mode that had been left
+            out of the list above; it is a page to look at, like Browse, and
+            the label says so. No icons: every link here is a word, and a
+            14px picture beside each word only added noise. */}
+        <div className="space-y-4 text-small sm:space-y-1">
+          <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
+            <span className="mark shrink-0 text-text-3 sm:w-16">View</span>
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 sm:gap-x-5">
+              <ToolLink to={`/study/${id}/progress`}>Progress</ToolLink>
+              <ToolLink to={`/session/${id}/browse`}>Browse and edit</ToolLink>
+              {counts.definition > 0 && <ToolLink to={`/study/${id}/glossary`}>Glossary ({counts.definition})</ToolLink>}
+              {/* Shown whenever anything is set aside, so a card set aside by
+                  mistake is always one tap from coming back. */}
+              {setAsideCount > 0 && <ToolLink to={`/study/${id}/set-aside`}>Set aside ({setAsideCount})</ToolLink>}
+              {counts.graphic > 0 && <ToolLink to={`/study/${id}/diagrams`}>Diagrams ({counts.graphic})</ToolLink>}
+            </div>
+          </div>
+          <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
+            <span className="mark shrink-0 text-text-3 sm:w-16">Lecture</span>
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 sm:gap-x-5">
+              <ToolButton onClick={() => setAdding('material')}>Add material</ToolButton>
+              <ToolButton onClick={() => setAdding('practice')}>Add questions</ToolButton>
+              {/* For a lecture made before explanations existed. */}
+              {(counts.explain === 0 || !course.sections.some((s) => s.builds_to)) && kindsOf(course).includes('explain') && (
+                <ToolButton onClick={() => setAdding('explain')}>Add explanations</ToolButton>
+              )}
+              <ToolButton onClick={() => setEditingDetails(true)}>Edit details</ToolButton>
+              <ToolButton
+                onClick={async () => {
+                  if (await exportCourse(id, course)) toast('Lecture exported.', { type: 'success' });
+                }}
+              >
+                Export
+              </ToolButton>
+              <ToolButton onClick={() => void share(course)}>Share</ToolButton>
+            </div>
+          </div>
+        </div>
+    </>
+  );
   const main = (
     <>
-      <CourseHealthPanel course={course} onFix={() => setAdding('fix')} onEvenOut={() => setAdding('options')} />
+      {wide && <CourseHealthPanel course={course} onFix={() => setAdding('fix')} onEvenOut={() => setAdding('options')} />}
 
       {resumable && (
-        <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded border border-border-strong bg-surface-raised p-4 shadow">
-          <span className="min-w-0 flex-1">
+        <div className="paper-grain mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded border border-border-strong bg-surface-raised p-4 shadow">
+          {/* basis: at a large text size the words wrapped one letter to a
+              line beside the button; now the button drops below instead. */}
+          <span className="min-w-0 flex-1 basis-52">
             <span className="block font-medium text-text">
               {MODE_LABELS[resumable.mode] ?? resumable.mode}
               {resumable.sectionId && (
@@ -374,78 +509,115 @@ export function CourseRoute() {
         </div>
       )}
 
-      {/* The ways to work, set as an index rather than a tile grid: ruled
-          entries with the figures in a right-hand column, the same book as
-          the library's contents list.
-
-          Today leads. It is the one entry that answers "what should I do
-          now" (review what is fading, then carry on with new material,
-          sized to the time the student has), and the simulator found a
-          student who simply presses it every day does better than one who
-          works the course page by hand (sim/FINDINGS.md). Learn and
-          Practice are for choosing yourself; Practice holds what used to be
-          six format-named modes and a Review row. */}
-      <section className="mt-8">
-        <h2 className="mark mb-2 text-text-3">Ways to work</h2>
-        <ul className="border-t border-border">
-          <li className="border-b-2 border-text-3 py-4">
-            <div className="flex items-start gap-4">
-              <div className="min-w-0 flex-1">
-                <span className="flex items-baseline gap-3">
-                  <span className="font-display text-heading font-semibold text-text">Today</span>
-                  {!today?.empty && (
-                    <span className="mark tabular-nums text-text-2">
-                      {today?.catchUp ? 'catch-up · ' : ''}
-                      {today?.minutes ?? minutes} min{today?.part != null && !today.catchUp ? ` · ${today.partNo} of ${PARTS}` : today && !today.catchUp && today.minutes < minutes ? ' left' : ''}
-                    </span>
-                  )}
-                </span>
-                <span className="mt-0.5 block text-small text-text-3">What is fading, then something new.</span>
-                <span className="mt-0.5 block text-small text-text-2">{todaySummary}</span>
-                {partLine && <span className="mt-1 block text-small text-text-3">{partLine}</span>}
-                <button
-                  type="button"
-                  onClick={() => setExamOpen(true)}
-                  className="tap-safe mt-1 text-left text-small text-text-3 underline-offset-4 hover:text-text hover:underline"
-                >
-                  {examLine}
-                </button>
+      {/* Today leads, as the page's one block. It answers "what do I do
+          now" (review what is fading, then carry on with new material) in
+          words, sized to the time the student says they have, with one
+          Start. The simulator found a student who simply presses it every
+          day does better than one who works the page by hand
+          (sim/FINDINGS.md). A phone round (docs/proposals/phone-round.md):
+          it had been one row among twenty, "30 min" twice and no way to say
+          "I have 15". */}
+      <section aria-labelledby="today-h" className="mt-8 border-y-2 border-text-3 py-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 id="today-h" className="font-display text-heading font-semibold text-text">
+            Today
+          </h2>
+          {!today?.empty && (today?.catchUp || today?.part != null) && (
+            <span className="mark tabular-nums text-text-3">
+              {today.catchUp ? 'catch-up' : `${today.partNo} of ${PARTS}`}
+            </span>
+          )}
+        </div>
+        <p className="mt-1 text-body text-text-2">{todaySummary}</p>
+        {partLine && <p className="mt-1 text-small text-text-3">{partLine}</p>}
+        {!today?.empty && today && (
+          <>
+            <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+              <span className="text-small text-text-3">Time</span>
+              <div role="radiogroup" aria-label="Time for this sitting" className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                {/* The planned time and the usual three; a usual one within
+                    two minutes of the plan gives way to it (29 and 30 side
+                    by side read as a glitch). */}
+                {[today.planned, ...[10, 15, 30].filter((m) => Math.abs(m - today.planned) > 2)]
+                  .sort((a, b) => a - b)
+                  .map((m) => {
+                    const on = today.minutes === m;
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        onClick={() => setChosen(m === today.planned ? null : m)}
+                        className={`tap-safe px-0.5 font-display text-body tabular-nums ${
+                          on ? 'text-accent underline decoration-accent decoration-2 underline-offset-4' : 'text-text-2 hover:text-text'
+                        }`}
+                      >
+                        {m} min
+                      </button>
+                    );
+                  })}
               </div>
-              {!today?.empty && (
-                <Link ref={todayRef} to={`/session/${id}/today`} className="press press-ink shrink-0">
-                  Start
-                </Link>
-              )}
             </div>
-          </li>
-          {/* Each says what it is for: three ways in with nothing to tell
-              them apart was the owner's "idek know anymore" (2026-10-26). */}
+            <Link ref={todayRef} to={todayLink} className="press press-ink mt-4 w-full py-3 sm:w-auto">
+              Start · {today.minutes} min
+            </Link>
+          </>
+        )}
+        <button
+          type="button"
+          onClick={() => setExamOpen(true)}
+          className="tap-safe mt-3 block text-left text-small text-text-3 underline-offset-4 hover:text-text hover:underline"
+        >
+          {examLine}
+        </button>
+      </section>
+
+      {/* The other ways in, each saying what it is for (three with nothing
+          to tell them apart was the owner's "idek know anymore",
+          2026-10-26), set as rows you tap: black words on their own did
+          not look tappable (the fresh-eyes review, 2026-11-27). */}
+      <section aria-labelledby="ways-h" className="mt-8">
+        <h2 id="ways-h" className="mark mb-1 text-text-3">
+          Or choose
+        </h2>
+        <ul className="divide-y divide-border border-b border-border">
           {[
             {
-              to: nextUp ? `learn?section=${encodeURIComponent(nextUp.section.id)}` : 'learn',
+              to: `/session/${id}/${nextUp ? `learn?section=${encodeURIComponent(nextUp.section.id)}` : 'learn'}`,
               label: 'Learn',
-              unit: nextUp ? `section ${nextUp.index + 1}` : plural(counts.total + counts.definition, 'item'),
+              unit: nextUp ? `section ${nextUp.index + 1}` : null,
               use: 'In the order it was taught, beside your notes.',
             },
             {
-              to: null,
+              // docs/proposals/zen.md: questions that keep coming, planned from where you are.
+              to: `/session/${id}/adaptive`,
+              label: 'Adaptive quiz',
+              unit: counts.due > 0 ? `${counts.due} to review` : null,
+              use: 'Questions keep coming, picked for where you need them.',
+            },
+            {
+              to: `/study/${id}/practice`,
               label: 'Practice',
-              unit: counts.due > 0 ? `${counts.due} due` : 'any part',
-              use: 'Study what you choose, each answer marked as you go: tick the kinds of card and the parts. Or rehearse the exam with a practice test.',
+              unit: null,
+              use: 'Pick the kinds, cards and sections, or a practice test.',
             },
           ].map((m) => (
-            <li key={m.label} className="border-b border-border pb-3">
-              <Link
-                to={m.to === null ? `/study/${id}/practice` : `/session/${id}/${m.to}`}
-                className="group tap-safe flex items-baseline gap-3 pt-3"
-              >
-                <span className="font-display text-body text-text group-hover:text-accent">{m.label}</span>
-                <span className="leaders hidden sm:block" aria-hidden="true" />
-                <span className="mark shrink-0 tabular-nums text-text-3">{m.unit}</span>
+            <li key={m.label}>
+              <Link to={m.to} className="group tap-safe flex items-center gap-3 py-3.5">
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline gap-3">
+                    <span className="font-display text-body font-semibold text-text group-hover:text-accent">{m.label}</span>
+                    {m.unit && <span className="mark tabular-nums text-text-3">{m.unit}</span>}
+                  </span>
+                  <span className="mt-0.5 block text-small text-text-3">{m.use}</span>
+                </span>
+                <span aria-hidden="true" className="shrink-0 font-display text-[1.75rem] leading-none text-text-2 group-hover:text-accent">
+                  ›
+                </span>
               </Link>
-              <span className="mt-0.5 block text-small text-text-3">{m.use}</span>
-              {m.to === null && (
-                <div className="mt-1.5">
+              {m.label === 'Practice' && (
+                <div className="-mt-1 pb-3">
                   <PracticeKinds courseId={id} course={course} />
                 </div>
               )}
@@ -454,46 +626,32 @@ export function CourseRoute() {
         </ul>
       </section>
 
-      {/* Two rows by purpose, each labelled. Seven links in one wrapping run
-          broke into three ragged lines on a phone. The first row went
-          unlabelled, and Diagrams in it read as a mode that had been left
-          out of the list above; it is a page to look at, like Browse, and
-          the label says so. No icons: every link here is a word, and a
-          14px picture beside each word only added noise. */}
-      <div className="mt-6 space-y-4 text-small sm:space-y-1">
-        <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
-          <span className="mark shrink-0 text-text-3 sm:w-16">View</span>
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 sm:gap-x-5">
-            <ToolLink to={`/study/${id}/progress`}>Progress</ToolLink>
-            <ToolLink to={`/session/${id}/browse`}>Browse and edit</ToolLink>
-            {counts.definition > 0 && <ToolLink to={`/study/${id}/glossary`}>Glossary ({counts.definition})</ToolLink>}
-            {/* Shown whenever anything is set aside, so a card set aside by
-                mistake is always one tap from coming back. */}
-            {setAsideCount > 0 && <ToolLink to={`/study/${id}/set-aside`}>Set aside ({setAsideCount})</ToolLink>}
-            {counts.graphic > 0 && <ToolLink to={`/study/${id}/diagrams`}>Diagrams ({counts.graphic})</ToolLink>}
+      {/* What you look at and what you do to the lecture, rather than with
+          it. On a phone they fold under one line, with the lecture check,
+          so the page leads with studying (docs/proposals/phone-round.md);
+          the line says when the check found something to fix. On a
+          computer there is room for them in view. */}
+      {wide ? (
+        <div className="mt-6">{tools}</div>
+      ) : (
+        <details className="group/more mt-2 border-b border-border">
+          <summary className="tap-safe flex cursor-pointer list-none items-center gap-3 py-3.5">
+            <span className="min-w-0 flex-1">
+              <span className="font-display text-body text-text-2">More</span>
+              <span className="mt-0.5 block text-small text-text-3">
+                Progress, glossary, diagrams; add to or share the lecture{healthNote ? ` · ${healthNote}` : ''}
+              </span>
+            </span>
+            <span aria-hidden="true" className="shrink-0 font-display text-[1.75rem] leading-none text-text-3 transition-transform group-open/more:rotate-90">
+              ›
+            </span>
+          </summary>
+          <div className="pb-5">
+            <CourseHealthPanel course={course} onFix={() => setAdding('fix')} onEvenOut={() => setAdding('options')} />
+            <div className="mt-4">{tools}</div>
           </div>
-        </div>
-        <div className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:gap-x-3">
-          <span className="mark shrink-0 text-text-3 sm:w-16">Lecture</span>
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 sm:gap-x-5">
-            <ToolButton onClick={() => setAdding('material')}>Add material</ToolButton>
-            <ToolButton onClick={() => setAdding('practice')}>Add questions</ToolButton>
-            {/* For a lecture made before explanations existed. */}
-            {(counts.explain === 0 || !course.sections.some((s) => s.builds_to)) && kindsOf(course).includes('explain') && (
-              <ToolButton onClick={() => setAdding('explain')}>Add explanations</ToolButton>
-            )}
-            <ToolButton onClick={() => setEditingDetails(true)}>Edit details</ToolButton>
-            <ToolButton
-              onClick={async () => {
-                if (await exportCourse(id, course)) toast('Lecture exported.', { type: 'success' });
-              }}
-            >
-              Export
-            </ToolButton>
-            <ToolButton onClick={() => void share(course)}>Share</ToolButton>
-          </div>
-        </div>
-      </div>
+        </details>
+      )}
     </>
   );
   const contents = (
@@ -514,37 +672,51 @@ export function CourseRoute() {
           const stats = sectionStats(section, progress);
           return (
             <li key={section.id}>
-              <Link
+              <Row
                 to={`/study/${id}/section/${encodeURIComponent(section.id)}`}
-                className="group tap-safe flex items-baseline gap-3 py-3"
+                onHover={wide ? (on) => setHovered(on ? section.id : null) : undefined}
+                onPick={wide ? () => pick(picked?.id === section.id ? null : section.id) : () => setSheetId(section.id)}
+                className="group tap-safe flex w-full items-baseline gap-3 py-3 text-left"
               >
                 <span className="mark w-6 shrink-0 text-right tabular-nums text-text-3">{index + 1}</span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-baseline gap-2">
-                    <span className="font-display text-body font-medium text-text group-hover:text-accent">
+                    <span
+                      className={`font-display text-body font-medium group-hover:text-accent ${
+                        picked?.id === section.id
+                          ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
+                          : 'text-text'
+                      }`}
+                    >
                       {section.title}
                     </span>
                     <span className="leaders hidden sm:block" aria-hidden="true" />
                   </span>
                 </span>
                 <span className="shrink-0 text-right tabular-nums">
+                  {/* How much is studied first, in words: "100% · 5 studied"
+                      on a ten-item section read as finished (the fresh-eyes
+                      review, 2026-11-27). */}
                   <span className="mark block text-text-2">
-                    {section.items.length} item{section.items.length === 1 ? '' : 's'}
+                    {stats.studied > 0
+                      ? `${stats.studied} of ${stats.gradable} studied`
+                      : `${section.items.length} item${section.items.length === 1 ? '' : 's'}`}
                   </span>
+                  {/* Coloured only once there is enough to judge by: a green
+                      100% from one answer read as mastered. */}
                   {stats.accuracy !== null && (
-                    <span className="mark block">
-                      <span
-                        className={
-                          stats.accuracy >= 80 ? 'text-success' : stats.accuracy >= 50 ? 'text-warning' : 'text-error'
-                        }
-                      >
-                        {stats.accuracy}%
-                      </span>
-                      <span className="text-text-3"> · {stats.studied} studied</span>
+                    <span
+                      className={`mark block ${
+                        stats.studied < 3
+                          ? 'text-text-3'
+                          : stats.accuracy >= 80 ? 'text-success' : stats.accuracy >= 50 ? 'text-warning' : 'text-error'
+                      }`}
+                    >
+                      {stats.accuracy}% right
                     </span>
                   )}
                 </span>
-              </Link>
+              </Row>
             </li>
           );
         })}
@@ -554,7 +726,7 @@ export function CourseRoute() {
 
   return (
     // Room under the page on a phone for the pinned Start bar.
-    <div className={wide ? '' : 'pb-20 sm:pb-0'}>
+    <div className={wide ? '' : 'pb-24'}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4">
         <span className="flex items-baseline gap-2 text-sm text-text-3">
           <Link to="/" className="tap-safe inline-flex items-center text-text-2 hover:text-text">
@@ -577,14 +749,48 @@ export function CourseRoute() {
           under it, and everything you do on the right — all of it on one
           screen. Text you read stays at reading width either way. */}
       {wide ? (
-        <div className="mt-6 grid grid-cols-[22rem_minmax(0,1fr)] gap-12">
-          <aside>
+        // An open spread: contents on the left page, held in place as the
+        // right page scrolls, with a gutter rule between. A picked section
+        // opens beside the ways to study, or in their place where there is
+        // no room for both.
+        <div className="mt-6 flex gap-10">
+          <aside className="sticky top-6 max-h-[calc(100vh-3rem)] w-[24rem] shrink-0 self-start overflow-y-auto [scrollbar-width:thin]">
             {treeBlock}
             <div className="mt-6">{contents}</div>
           </aside>
-          <div>
-            {titleBlock}
-            {main}
+          <div className="min-w-0 flex-1 border-l border-border pl-10">
+            {picked ? (
+              // The title runs across the whole right page; under it the
+              // ways to study and the section face each other. In one
+              // narrow column the title broke over three lines.
+              <>
+              <div className="hidden xl:block">{titleBlock}</div>
+              <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] xl:gap-10">
+                <div className="hidden min-w-0 xl:block">
+                  {main}
+                </div>
+                <section
+                  aria-label={picked.title}
+                  className="min-w-0 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:self-start xl:overflow-y-auto xl:[scrollbar-width:thin]"
+                >
+                  <div className="mb-3 flex items-baseline justify-between gap-4">
+                    <button type="button" onClick={() => pick(null)} className="text-sm text-text-2 hover:text-text xl:hidden">
+                      ← Ways to study
+                    </button>
+                    <button type="button" onClick={() => pick(null)} className="ml-auto text-sm text-text-3 hover:text-text">
+                      Close
+                    </button>
+                  </div>
+                  <SectionDetail courseId={id} course={course} section={picked} progress={progress} compact />
+                </section>
+              </div>
+              </>
+            ) : (
+              <>
+                {titleBlock}
+                {main}
+              </>
+            )}
           </div>
         </div>
       ) : (
@@ -605,57 +811,34 @@ export function CourseRoute() {
       {/* On a phone, Today's Start stays where a thumb is, however far the
           page has scrolled. */}
       {!wide && !today?.empty && !todayInView && (
-        <PinnedBar>
+        <ThumbBar>
           <div className="flex items-center gap-4">
             <span className="min-w-0 flex-1 truncate text-small text-text-2">
               <span className="font-display font-semibold text-text">Today</span> · {today?.minutes ?? minutes} min
             </span>
-            <Link to={`/session/${id}/today`} className="press press-ink shrink-0">
+            <Link to={todayLink} className="press press-ink shrink-0">
               Start
             </Link>
           </div>
-        </PinnedBar>
+        </ThumbBar>
+      )}
+
+      {sheetSection && !wide && (
+        <Sheet label={sheetSection.title} title={<span className="mark text-text-3">Section {course.sections.indexOf(sheetSection) + 1}</span>} onClose={() => setSheetId(null)}>
+          <div className="px-5 pb-6 pt-4">
+            <SectionDetail courseId={id} course={course} section={sheetSection} progress={progress} compact />
+          </div>
+        </Sheet>
       )}
 
       {examOpen && <ExamDialog courseId={id} course={course} onClose={() => setExamOpen(false)} />}
 
-      {treeOpen && <TreeDialog courseId={id} course={course} progress={progress} onClose={() => setTreeOpen(false)} />}
 
       {editingDetails && <CourseDetailsDialog courseId={id} course={course} onClose={() => setEditingDetails(false)} />}
 
       {adding && (
         <AddToCourseDialog courseId={id} course={course} initialMode={adding} onClose={() => setAdding(null)} />
       )}
-    </div>
-  );
-}
-
-/**
- * A bar pinned to the bottom of a phone screen. While it shows, it tells the
- * page how tall it is (--pinned-bottom), so messages rise above it instead of
- * covering its button.
- */
-function PinnedBar({ children }: { children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const root = document.documentElement;
-    const set = () => root.style.setProperty('--pinned-bottom', `${el.offsetHeight}px`);
-    set();
-    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(set) : null;
-    observer?.observe(el);
-    return () => {
-      observer?.disconnect();
-      root.style.removeProperty('--pinned-bottom');
-    };
-  }, []);
-  return (
-    <div
-      ref={ref}
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border-strong bg-bg/95 px-5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:hidden"
-    >
-      {children}
     </div>
   );
 }
@@ -669,7 +852,7 @@ async function share(course: Course) {
     toast('Sign in to share a lecture.', {
       type: 'info',
       actionLabel: 'Sign in',
-      onAction: () => window.location.assign('#/sync'),
+      onAction: () => window.location.assign('#/settings?s=account'),
     });
     return;
   }
@@ -689,4 +872,13 @@ async function share(course: Course) {
   } catch (e) {
     toast(cloudError(e), { type: 'error' });
   }
+}
+
+/** "42 slides, all accounted for", or which ones nothing came from; null when the file does not say. */
+function slidesLine(course: Course): string | null {
+  const c = sourceCoverage(course);
+  if (!c) return null;
+  const units = `${c.count} ${c.unit}${c.count === 1 ? '' : 's'}`;
+  if (!c.missing.length) return `${units}, all accounted for`;
+  return `${units}, nothing from ${c.missing.length === 1 ? c.unit : `${c.unit}s`} ${runsOf(c.missing)}`;
 }

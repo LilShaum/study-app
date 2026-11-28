@@ -97,12 +97,6 @@ export function retrievability(r: ItemResult | undefined, at: number): number | 
   return Math.exp(-days / (s * personalScale));
 }
 
-/** Whether a studied item has faded enough to be worth reviewing. Never-seen items are not due. */
-export function isDue(r: ItemResult | undefined, at: number): boolean {
-  const R = retrievability(r, at);
-  return R != null && R < DUE_BELOW;
-}
-
 /**
  * How well a right answer was known, when the student says so: a flip
  * card's Hard or Got it (docs/proposals/practice.md). Every other right

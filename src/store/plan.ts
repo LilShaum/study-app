@@ -10,6 +10,9 @@ import { DEFAULT_MINUTES } from '@/lib/today';
  * belong to the course and travel with it to a classmate; how much time you
  * have does not.
  */
+/** The daily times offered, on the library and in the first run. */
+export const DAILY_CHOICES = [15, 30, 45, 60, 90, 120];
+
 interface PlanState {
   byCourse: Record<string, { minutes: number }>;
   /**
@@ -21,8 +24,6 @@ interface PlanState {
   totalSetAt?: number;
   setTotal: (minutes: number | null) => void;
   minutesFor: (courseId: string) => number;
-  /** Whether the student has chosen, rather than getting the default. */
-  hasChosen: (courseId: string) => boolean;
   setMinutes: (courseId: string, minutes: number) => void;
 }
 
@@ -33,7 +34,6 @@ export const usePlanStore = create<PlanState>()(
       total: null,
       setTotal: (total) => set({ total, totalSetAt: Date.now() }),
       minutesFor: (courseId) => get().byCourse[courseId]?.minutes ?? DEFAULT_MINUTES,
-      hasChosen: (courseId) => courseId in get().byCourse,
       setMinutes: (courseId, minutes) =>
         set((s) => ({ byCourse: { ...s.byCourse, [courseId]: { minutes } } })),
     }),

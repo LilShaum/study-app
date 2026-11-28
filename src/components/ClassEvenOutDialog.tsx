@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import type { Course } from '@/schema/course';
-import { useDialog } from '@/lib/useDialog';
 import { buildClassEvenOptionsPrompt, classToRework, longestShare, readClassEvenOptions, readEvenReply } from '@/lib/evenOptions';
 import { lecturesOf } from '@/lib/classExams';
 import { parseFragment } from '@/schema/fragment';
@@ -11,8 +10,8 @@ import { persisted } from '@/lib/safeStorage';
 import { useCoursesStore } from '@/store/courses';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
-
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+import { Sheet } from './Sheet';
+import { plural } from '@/lib/plural';
 
 /**
  * Even out the answers (lib/evenOptions.ts) for every lecture of a class in
@@ -21,7 +20,6 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
  * lecture, previewed, and merged into each as corrections under the same ids.
  */
 export function ClassEvenOutDialog({ code, lectures, onClose }: { code: string; lectures: [string, Course][]; onClose: () => void }) {
-  useDialog(onClose);
   const mergeIntoCourse = useCoursesStore((s) => s.mergeIntoCourse);
   const todo = useMemo(() => classToRework(lectures), [lectures]);
   const total = todo.reduce((n, l) => n + l.count, 0);
@@ -87,104 +85,90 @@ export function ClassEvenOutDialog({ code, lectures, onClose }: { code: string; 
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Even out the answers: ${code}`}
-    >
-      <div className="my-8 w-full max-w-2xl paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
-        <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="font-semibold text-text">Even out the answers: {code}</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">
-            <Icon name="x" size={18} />
+    <Sheet label={`Even out the answers: ${code}`} title={<>Even out the answers: {code}</>} onClose={onClose} width="2xl">
+      <div className="space-y-5 px-5 py-4 text-sm">
+        <section>
+          <h3 className="mark mb-1.5 text-text-3">Step 1: copy the prompt</h3>
+          <p className="mb-2 text-text-2">
+            In {plural(total, 'question')} across {plural(todo.length, 'lecture')} the right answer is the longest option, or
+            tied for it, so you could pick it without knowing the material. The questions, their right
+            answers and your scores stay as they are.
+          </p>
+          <ul className="mb-3 border-y border-border">
+            {todo.map((l) => (
+              <li key={l.id} className="flex items-baseline justify-between gap-3 border-b border-border py-1.5 last:border-b-0">
+                <span className="text-text">{lectureName(l.course.metadata.title, code)}</span>
+                <span className="shrink-0 tabular-nums text-text-3">
+                  {plural(l.count, 'question')} · guessing the longest {longestShare(l.course)}%
+                </span>
+              </li>
+            ))}
+          </ul>
+          <button type="button" onClick={copy} className="press">
+            <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
+            {copied ? 'Prompt copied' : 'Copy prompt'}
           </button>
-        </div>
-
-        <div className="space-y-5 px-5 py-4 text-sm">
-          <section>
-            <h3 className="mark mb-1.5 text-text-3">Step 1: copy the prompt</h3>
-            <p className="mb-2 text-text-2">
-              In {plural(total, 'question')} across {plural(todo.length, 'lecture')} the right answer is the longest option, or
-              tied for it, so you could pick it without knowing the material. The questions, their right
-              answers and your scores stay as they are.
-            </p>
-            <ul className="mb-3 border-y border-border">
-              {todo.map((l) => (
-                <li key={l.id} className="flex items-baseline justify-between gap-3 border-b border-border py-1.5 last:border-b-0">
-                  <span className="text-text">{lectureName(l.course.metadata.title, code)}</span>
-                  <span className="shrink-0 tabular-nums text-text-3">
-                    {plural(l.count, 'question')} · guessing the longest {longestShare(l.course)}%
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <button type="button" onClick={copy} className="press">
-              <Icon name={copied ? 'check-circle' : 'clipboard'} size={14} />
-              {copied ? 'Prompt copied' : 'Copy prompt'}
-            </button>
-            {manual && (
-              <textarea readOnly value={manual} rows={6} className="field mt-2 w-full font-mono text-xs" onFocus={(e) => e.target.select()} />
-            )}
-          </section>
-
-          <section>
-            <span className="mark mb-1.5 block text-text-3">Step 2: upload the file</span>
-            <label className="cursor-pointer text-accent hover:underline">
-              Upload the file the AI made
-              <input
-                type="file"
-                accept=".json,.txt,application/json,text/plain"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  e.target.value = '';
-                  if (file) setPasted(await file.text());
-                }}
-              />
-            </label>
-          </section>
-
-          {result && 'error' in result && (
-            <div role="alert" className="whitespace-pre-wrap border-l-2 border-error py-2 pl-3 text-error">
-              {result.error}
-            </div>
+          {manual && (
+            <textarea readOnly value={manual} rows={6} className="field mt-2 w-full font-mono text-xs" onFocus={(e) => e.target.select()} />
           )}
+        </section>
 
-          {read?.ok && read.cut != null && (
-            <div role="status" className="border-l-2 border-warning py-2 pl-3 text-text-2">
-              The reply was cut off. The {plural(read.cut, 'question')} before the cut can be used; copy the prompt again after
-              applying them and the rest will be asked for.
-            </div>
-          )}
+        <section>
+          <span className="mark mb-1.5 block text-text-3">Step 2: upload the file</span>
+          <label className="cursor-pointer text-accent hover:underline">
+            Upload the file the AI made
+            <input
+              type="file"
+              accept=".json,.txt,application/json,text/plain"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = '';
+                if (file) setPasted(await file.text());
+              }}
+            />
+          </label>
+        </section>
 
-          {result && !('error' in result) && (
-            <div className="border-l-2 border-border-strong py-2 pl-3">
-              {result.lectures.map((l) => (
-                <div key={l.id} className="mb-1.5">
-                  <span className="text-text">{lectureName(l.title, code)}</span>
-                  <span className="text-text-2">
-                    : {l.error ?? (l.corrections.length ? `${plural(l.corrections.length, 'question')} evened out, guessing the longest ${l.before}% → ${l.after}%` : 'nothing usable')}
-                  </span>
-                  {l.skipped.length > 0 && (
-                    <div className="text-text-3">Not used: {l.skipped.map((x) => `${x.id} (${x.why})`).join('; ')}.</div>
-                  )}
-                </div>
-              ))}
-              {result.unknown.length > 0 && <div className="text-text-3">No lecture here has the id {result.unknown.join(', ')}.</div>}
-            </div>
-          )}
-        </div>
+        {result && 'error' in result && (
+          <div role="alert" className="whitespace-pre-wrap border-l-2 border-error py-2 pl-3 text-error">
+            {result.error}
+          </div>
+        )}
 
-        <div className="flex justify-end gap-3 border-t border-border px-5 py-3">
-          <button type="button" onClick={onClose} className="press">
-            Cancel
-          </button>
-          <button type="button" onClick={apply} disabled={fixing === 0} className="press press-ink">
-            {fixing ? `Even out ${plural(fixing, 'question')}` : 'Even out'}
-          </button>
-        </div>
+        {read?.ok && read.cut != null && (
+          <div role="status" className="border-l-2 border-warning py-2 pl-3 text-text-2">
+            The reply was cut off. The {plural(read.cut, 'question')} before the cut can be used; copy the prompt again after
+            applying them and the rest will be asked for.
+          </div>
+        )}
+
+        {result && !('error' in result) && (
+          <div className="border-l-2 border-border-strong py-2 pl-3">
+            {result.lectures.map((l) => (
+              <div key={l.id} className="mb-1.5">
+                <span className="text-text">{lectureName(l.title, code)}</span>
+                <span className="text-text-2">
+                  : {l.error ?? (l.corrections.length ? `${plural(l.corrections.length, 'question')} evened out, guessing the longest ${l.before}% → ${l.after}%` : 'nothing usable')}
+                </span>
+                {l.skipped.length > 0 && (
+                  <div className="text-text-3">Not used: {l.skipped.map((x) => `${x.id} (${x.why})`).join('; ')}.</div>
+                )}
+              </div>
+            ))}
+            {result.unknown.length > 0 && <div className="text-text-3">No lecture here has the id {result.unknown.join(', ')}.</div>}
+          </div>
+        )}
       </div>
-    </div>
+
+      <div className="flex justify-end gap-3 border-t border-border px-5 py-3">
+        <button type="button" onClick={onClose} className="press">
+          Cancel
+        </button>
+        <button type="button" onClick={apply} disabled={fixing === 0} className="press press-ink">
+          {fixing ? `Even out ${plural(fixing, 'question')}` : 'Even out'}
+        </button>
+      </div>
+    </Sheet>
   );
 }

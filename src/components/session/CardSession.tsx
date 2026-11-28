@@ -1,3 +1,4 @@
+import { partCount } from '@/lib/partCount';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
@@ -11,11 +12,18 @@ import { resumesOnOpen, useResumeStore } from '@/store/resume';
 import { CourseTree } from '@/components/CourseTree';
 import { answered, EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { ItemRenderer } from '@/components/items/ItemRenderer';
+import { RichText } from '@/components/items/RichText';
 import type { ComesBack } from '@/components/items/FlashcardCard';
 import { SectionJump } from './SectionJump';
 import { SessionGlossary } from './SessionGlossary';
+import { AdaptiveBar } from './AdaptiveBar';
 import { glossaryOf } from '@/lib/glossary';
 import { SessionRail } from './SessionRail';
+import type { CardStage } from '@/lib/useReportStage';
+import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
+import { useSwipe } from '@/lib/useSwipe';
+import { ThumbBar } from '@/components/ThumbBar';
+import { Sheet } from '@/components/Sheet';
 import { MixedLectures } from './MixedLectures';
 import { CATCH_UP_HOURS, inWords, missedThisSitting, nextDueAt, whenLabel, type Grade } from '@/lib/memory';
 import { examRule } from '@/lib/exam';
@@ -85,6 +93,7 @@ const MODE_LABELS: Record<CardMode, string> = {
   missed: 'Mistakes',
   review: 'Review',
   today: 'Today',
+  adaptive: 'Adaptive quiz',
 };
 
 interface KeyHint {
@@ -105,7 +114,7 @@ const MULTI_HINTS: KeyHint[] = [
 ];
 
 const ALL_CARD_KEYS: KeyHint[] = [
-  { keys: ['1', '–', '4'], label: 'select' },
+  { keys: ['1', '–', '4'], label: 'choose' },
   { keys: ['Space'], label: 'flip' },
   { keys: ['Enter'], label: 'check' },
   { keys: ['G'], label: 'got' },
@@ -144,12 +153,13 @@ function ideaFor(item: SessionItem, lecture: Course | undefined): { title: strin
 }
 
 const KEY_HINTS: Record<CardMode, KeyHint[]> = {
+  adaptive: ALL_CARD_KEYS,
   learn: ALL_CARD_KEYS,
   weakest: ALL_CARD_KEYS,
   review: ALL_CARD_KEYS,
   today: ALL_CARD_KEYS,
   quiz: [
-    { keys: ['1', '–', '4'], label: 'select' },
+    { keys: ['1', '–', '4'], label: 'choose' },
     { keys: ['Enter'], label: 'check' },
     ...NAV_HINTS,
   ],
@@ -164,7 +174,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
   problems: [{ keys: ['Enter'], label: 'check' }, ...NAV_HINTS],
   practice: ALL_CARD_KEYS,
   mixed: [
-    { keys: ['1', '–', '4'], label: 'select' },
+    { keys: ['1', '–', '4'], label: 'choose' },
     { keys: ['Space'], label: 'flip' },
     { keys: ['Enter'], label: 'check' },
     { keys: ['G'], label: 'got' },
@@ -173,7 +183,7 @@ const KEY_HINTS: Record<CardMode, KeyHint[]> = {
     ...NAV_HINTS,
   ],
   missed: [
-    { keys: ['1', '–', '4'], label: 'select' },
+    { keys: ['1', '–', '4'], label: 'choose' },
     { keys: ['Space'], label: 'flip' },
     { keys: ['Enter'], label: 'check' },
     ...NAV_HINTS,
@@ -201,7 +211,61 @@ const ONE_POINT_HINTS: KeyHint[] = [
   ...NAV_HINTS,
 ];
 
+/** "1–4" for a run of number keys, else the keys side by side. */
+function keyText(keys: string[]): string {
+  return keys[1] === '–' ? keys.join('') : keys.join(' / ');
+}
+
+/**
+ * The keys that work on this card right now, for the line under it: from the
+ * card, whether it is answered, and the stage it reports (flipped, "I don't
+ * know"), so no key is listed that would do nothing. The full list stays
+ * behind the ? button.
+ */
+function keysFor(
+  current: SessionItem | null | undefined,
+  hints: KeyHint[],
+  written: ReturnType<typeof answerPoints>,
+  stage: CardStage,
+  answeredNow: boolean,
+  pause: boolean,
+): KeyHint[] {
+  if (!current || pause) return [];
+  const next: KeyHint = { keys: ['→'], label: 'next' };
+  const pick = (list: KeyHint[], ...first: string[]) => list.filter((h) => first.includes(h.keys[0]));
+  /** The number keys run to the card's own count, not the list's. */
+  const upTo = (list: KeyHint[], n: number) =>
+    list.map((h) => (h.keys.length === 3 ? { ...h, keys: [h.keys[0], '–', String(Math.min(9, Math.max(1, n)))] } : h));
+  const enterNext: KeyHint = { keys: ['Enter'], label: 'next' };
+  switch (current.type) {
+    case 'mcq':
+    case 'multi':
+      return answeredNow ? [next] : pick(hints, '1', 'Enter');
+    case 'flashcard':
+      if (written) {
+        if (stage === 'front') return pick(WRITTEN_HINTS, 'Space');
+        if (stage === 'dont') return [enterNext];
+        return written.points.length === 1 ? pick(ONE_POINT_HINTS, 'G', 'M') : upTo(pick(WRITTEN_HINTS, '1', 'Enter'), written.points.length);
+      }
+      if (stage === 'front') return pick(KEY_HINTS.flashcards, 'Space');
+      return stage === 'dont' ? [enterNext] : pick(KEY_HINTS.flashcards, 'G', 'H', 'M');
+    case 'problem':
+      if (answeredNow) return [next];
+      if (answerKind(current) !== 'self') return [{ keys: ['Enter'], label: 'check' }];
+      if (stage === 'front') return pick(STEPS_HINTS, 'Space');
+      return stage === 'dont' ? [{ keys: ['Enter'], label: 'done' }] : upTo(pick(STEPS_HINTS, '1', 'Enter'), current.steps?.length ?? 1);
+    case 'recall':
+    case 'slides':
+      return [next];
+    default:
+      // Reading cards: Enter moves on as well as the arrow.
+      return [{ keys: ['Enter', '→'], label: 'next' }];
+  }
+}
+
 const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
+  // New cards come only from parts already studied (sim/FINDINGS.md, 2026-11-24).
+  adaptive: { title: 'Nothing to quiz yet', text: 'The quiz asks about parts you have studied. Learn a section first, then come back.' },
   learn: { title: 'Nothing to learn yet', text: 'This lecture has no items to walk through.' },
   weakest: {
     title: 'Nothing to rank',
@@ -225,13 +289,13 @@ const EMPTY_COPY: Record<CardMode, { title: string; text: string }> = {
     text: "This lecture doesn't have any problems to work out yet. Add questions, on the lecture page, can write some.",
   },
   review: {
-    title: 'Nothing is due',
+    title: 'Nothing to review',
     text: 'Everything you have studied is still fresh.',
   },
   mixed: { title: 'No items', text: 'This lecture has no items yet.' },
   today: {
     title: 'Nothing for today',
-    text: 'Nothing is due, and everything here has been studied.',
+    text: 'Nothing to review, and everything here has been studied.',
   },
   missed: {
     title: 'Nothing to review',
@@ -264,14 +328,15 @@ function StepLine({ item, questionsFirst, onSwitch }: { item: SessionItem; quest
       </div>
     );
   }
-  if (item._step === undefined || !phase) return null;
+  // A section's start names the section and asks how to begin; a part
+  // name above it ("Read") said nothing yet.
+  if (item.type === 'slides' || item._step === undefined || !phase) return null;
   const at = PHASES.findIndex((p) => p.key === phase);
   return (
     <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border pb-2 text-small">
-      <span className="mark whitespace-nowrap text-text-3">
-        Step {item._step + 1} of {item._steps}
-      </span>
-      {/* All three parts where there is room; on a phone, the one you are in. */}
+      {/* All three parts where there is room; on a phone, the one you are in.
+          No step count: the header says where you are in the section, and
+          two counts on one screen read as two different promises. */}
       <span className="flex items-baseline gap-2 whitespace-nowrap" aria-label={`Part: ${PHASES[at].label}`}>
         {PHASES.map((p, i) => (
           <span
@@ -286,15 +351,13 @@ function StepLine({ item, questionsFirst, onSwitch }: { item: SessionItem; quest
       {item._again ? <span className="whitespace-nowrap text-text-2">Again, from earlier</span> : null}
       {/* The section's choice, changed partway (the owner, 2026-11-22). Not
           on the section's first card, which asks it. */}
-      {item.type !== 'slides' && (
-        <button
-          type="button"
-          onClick={onSwitch}
-          className="tap-safe ml-auto whitespace-nowrap text-text-3 underline-offset-4 hover:text-text hover:underline"
-        >
-          {questionsFirst ? 'Read it here first' : 'Questions first'}
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={onSwitch}
+        className="tap-safe ml-auto whitespace-nowrap text-text-3 underline-offset-4 hover:text-text hover:underline"
+      >
+        {questionsFirst ? 'Read it here first' : 'Questions first'}
+      </button>
     </div>
   );
 }
@@ -357,6 +420,16 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   // spans several lectures, so it has none.
   const glossary = useMemo(() => (mixedClass ? [] : glossaryOf(course)), [course, mixedClass]);
   const [glossaryOpen, setGlossaryOpen] = useState(false);
+  // Three columns from 1280px: the glossary then has its own margin, so the
+  // button that swaps it in only exists below that (and is not drawn twice).
+  const threeColumns = useMediaQuery('(min-width: 1280px)');
+  // A phone: Prev and Next at the bottom in thumb reach, the glossary as a
+  // sheet, and a swipe to go on once the answer is in.
+  const wideLayout = useMediaQuery(WIDE);
+  const [phoneGlossary, setPhoneGlossary] = useState(false);
+  /** Where each card is (flipped, answered), as the card reports it: the keys under the card follow. */
+  const [stages, setStages] = useState<Record<number, CardStage>>({});
+  const [keysOpen, setKeysOpen] = useState(false);
   // Read after the session has recorded its results, so the tree on the
   // finish screen is the tree this session just grew.
   const progress = useProgressStore((s) => s.getProgress(courseId) ?? EMPTY_PROGRESS);
@@ -411,9 +484,49 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
   /** Learn: the pause between two steps, while it is showing. */
   const [pause, setPause] = useState<Pause | null>(null);
   /** A question on screen, not yet answered: the glossary is shut, as it would hold the answer. */
+  // The adaptive quiz's line: whether anything that was due is left.
+  const sessionResults = useSessionStore((s) => s.results);
+  // Due is judged as of opening the sitting; rendering must not read the clock.
+  const [openedAt] = useState(Date.now);
+  const adaptive = useMemo(() => {
+    if (mode !== 'adaptive') return { dueLeft: false, dueAtStart: false };
+    const st = useSessionStore.getState();
+    const asked = new Set([...sessionResults.keys()].map((n) => st.items[n] && cardKey(st.items[n])));
+    const now = openedAt;
+    const dueLeft = (st.lectures ?? [courseId]).some((id) => {
+      const c = id === courseId ? course : useCoursesStore.getState().courses[id];
+      if (!c) return false;
+      const progress = useProgressStore.getState().getProgress(id);
+      return buildSessionItems(c, 'review', { progress, now, exam: examRule(c, progress, now), minutes: Infinity }).some(
+        (i) => !asked.has(st.lectures ? `${id}\u0000${i.id}` : i.id),
+      );
+    });
+    // Whether anything was due when the sitting began, from the progress it
+    // began with: only then is "everything due is done" news.
+    const dueAtStart = (st.lectures ?? [courseId]).some((id) => {
+      const c = id === courseId ? course : useCoursesStore.getState().courses[id];
+      const progress = st.startByCourse[id] ?? {};
+      return !!c && buildSessionItems(c, 'review', { progress, now, exam: examRule(c, progress, now), minutes: Infinity }).length > 0;
+    });
+    return { dueLeft, dueAtStart };
+    // Recomputed after every answer; the course and mode are fixed for a sitting.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionResults, mode]);
   // Subscribed, so the step line's switch follows the section's choice.
   const sectionQuestionsFirst = useLearnStore((s) => (current ? s.startedQuestionsFirst(lectureOf(current, courseId), current._sectionId) : false));
   const questionUp = !pause && !!current && QUESTION_TYPES.has(current.type) && !answeredIndices.has(index);
+  // Only once the answer is showing, never on a question still waiting for
+  // one (a swipe can be an accident). A flipped flashcard takes its own
+  // swipes, as its verdict.
+  // The page slides off with the finger and the next comes in from the far
+  // edge, one motion (lib/useSwipe).
+  const cardSwipe = useSwipe({
+    enabled: !wideLayout && !pause && !!current && !questionUp,
+    onLeft: () => handleNext(),
+    onRight: hasPrev ? () => prev() : undefined,
+    at: index,
+  });
+  const keysNow = keysFor(current, hints, written, stages[index] ?? 'front', answeredIndices.has(index), !!pause);
 
   useEffect(() => {
     // Read the bookmark rather than subscribing to it: this session writes one
@@ -716,7 +829,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        navigate(home);
+        // The full list of keys closes first; Escape only leaves with it shut.
+        if (keysOpen) setKeysOpen(false);
+        else navigate(home);
         return;
       }
       if (pause) {
@@ -774,7 +889,18 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
     const pct = attempted > 0 ? Math.round((score.got / attempted) * 100) : 100;
     // Not score.missed: in Learn a miss comes back until it is right, and
     // one put right in the sitting is not still to retry.
-    const missedNow = stillMissed().length;
+    const missedKeys = stillMissed();
+    const missedNow = missedKeys.length;
+    // A computer has room to face the tree with the result (design-update.md).
+    const spreadEnd = wideLayout && !mixedClass;
+    const missedItems = missedKeys
+      .map((key) => items.find((it) => cardKey(it) === key))
+      .filter((it): it is SessionItem => !!it)
+      .map((it) => {
+        const c = it as unknown as { question?: string; front?: string; term?: string; title?: string };
+        return c.question ?? c.front ?? c.term ?? c.title ?? '';
+      })
+      .filter(Boolean);
     return (
       /*
        * The end of a session is where the tree pays off.
@@ -786,21 +912,32 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
        * number cannot show you that a branch you had never opened is now in
        * leaf.
        */
-      <div className="mx-auto flex max-w-2xl flex-col items-center py-10 text-center sm:px-10">
+      <div
+        className={
+          spreadEnd
+            ? 'mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_minmax(0,30rem)] items-start gap-14 py-10'
+            : 'mx-auto flex max-w-2xl flex-col items-center py-10 text-center sm:px-10'
+        }
+      >
         {/* A mixed sitting grew several trees: they are in the list below. */}
         {!mixedClass && (
-          <CourseTree
-            courseId={courseId}
-            course={course}
-            progress={progress}
-            className="h-44 sm:h-56"
-            // What this session changed, shown on the tree: leaves won back
-            // rise from the ground, new ones grow. It replaced a draw-on of the
-            // whole tree, which looked the same whatever the session had done.
-            grewFrom={startProgress}
-          />
+          <div className={spreadEnd ? 'sticky top-6 flex justify-center' : undefined}>
+            <CourseTree
+              courseId={courseId}
+              course={course}
+              progress={progress}
+              className={spreadEnd ? 'h-[30rem] max-w-full' : 'h-44 sm:h-56'}
+              // What this session changed, shown on the tree: leaves won back
+              // rise from the ground, new ones grow. It replaced a draw-on of the
+              // whole tree, which looked the same whatever the session had done.
+              grewFrom={startProgress}
+            />
+          </div>
         )}
-        <h1 className={`${mixedClass ? '' : 'mt-5 '}font-display text-title font-semibold text-text`}>
+        {/* On a computer the right page: the result, what was missed, and
+            what comes next, facing the tree that grew. */}
+        <div className={spreadEnd ? 'flex min-w-0 flex-col items-start border-l border-border pl-10 text-left' : 'contents'}>
+        <h1 className={`${mixedClass || spreadEnd ? '' : 'mt-5 '}font-display text-title font-semibold text-text`}>
           {MODE_LABELS[mode]} finished
         </h1>
         <div className="mt-3 flex justify-center gap-5 text-small tabular-nums">
@@ -812,10 +949,23 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         {appointment && <p className="mt-3 max-w-prose text-small text-text-2">{appointment}</p>}
         {moreDue > 0 && (
           <p className="mt-3 max-w-prose text-small text-text-2">
-            {moreDue} more {moreDue === 1 ? 'is' : 'are'} due.
+            {moreDue} more {moreDue === 1 ? 'is' : 'are'} waiting to review.
           </p>
         )}
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
+        {spreadEnd && missedItems.length > 0 && (
+          <section aria-label="Still to get right" className="mt-6 w-full">
+            <h2 className="mark mb-1 text-text-3">Still to get right</h2>
+            <ol className="divide-y divide-border border-y border-border text-small text-text-2">
+              {missedItems.slice(0, 8).map((text, i) => (
+                <li key={i} className="line-clamp-2 py-2">
+                  <RichText text={text} />
+                </li>
+              ))}
+            </ol>
+            {missedItems.length > 8 && <p className="mt-1 text-small text-text-3">and {missedItems.length - 8} more</p>}
+          </section>
+        )}
+        <div className={`mt-6 flex flex-wrap gap-3 ${spreadEnd ? '' : 'justify-center'}`}>
           {/* Straight back over what went wrong, while the correction is
               fresh — the most useful next step when there is one, so it
               leads. */}
@@ -887,13 +1037,16 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
             Next: Today in {classCode ? lectureName(nextCourse.title, classCode) : nextCourse.title}
           </Link>
         )}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={`mx-auto max-w-2xl py-6 short:py-2 sm:px-6 wide:grid wide:max-w-5xl wide:gap-12 ${glossaryOpen ? 'wide:grid-cols-[minmax(0,1fr)_20rem]' : 'wide:grid-cols-[minmax(0,1fr)_13rem]'}`}>
-      <div className="min-w-0">
+    // Phone: the card alone. 1024px: card and a left margin. 1280px: a margin
+    // each side, the card centred even when there is no glossary to fill one.
+    <div className="mx-auto max-w-2xl pb-28 pt-6 short:pt-2 wide:pb-6 sm:px-6 wide:grid wide:max-w-none wide:grid-cols-[13rem_minmax(0,44rem)] wide:justify-center wide:gap-10 xl:grid-cols-[15rem_minmax(0,42rem)_17rem] xl:gap-8">
+      <div className="min-w-0 wide:col-start-2 wide:row-start-1">
       <div className="mb-4 flex items-center justify-between">
         <Link to={home} className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
           ← Back
@@ -903,7 +1056,12 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
             {MODE_LABELS[mode]}
           </span>
           <span className="whitespace-nowrap text-xs tabular-nums text-text-3">
-            {index + 1} / {items.length}
+            {/* The adaptive quiz has no end, so no total. Learn and Today
+                count within the part you are in ("Review 2 of 5", "Section
+                1 · 3 of 9"), which is what the lecture page promised; the
+                bar under it keeps the whole sitting. 1 of 57 across it read
+                as a broken promise (the fresh-eyes review, 2026-11-27). */}
+            {mode === 'adaptive' ? index + 1 : mode === 'learn' || mode === 'today' ? partCount(items, index, course) : `${index + 1} / ${items.length}`}
           </span>
         </span>
         <div className="flex gap-3 text-sm">
@@ -936,7 +1094,7 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
       )}
 
       {resumed && (
-        <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-surface px-4 py-2 text-sm">
+        <div className="paper-grain mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-surface px-4 py-2 text-sm">
           <span className="text-text-2">Picked up where you left off.</span>
           <button type="button" onClick={() => restart()} className="text-accent hover:underline">
             Start from the beginning
@@ -944,6 +1102,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         </div>
       )}
 
+      {mode === 'adaptive' && current && !pause && (
+        <AdaptiveBar dueDone={adaptive.dueAtStart && !adaptive.dueLeft} />
+      )}
       {(mode === 'learn' || mode === 'today') && current && !pause && (
         <StepLine
           item={current}
@@ -1059,6 +1220,9 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         * why. Keyed by the card object, which a copy of a missed card is not,
         * so a card that comes back starts unanswered.
         */}
+      {/* Clipped sideways, so a page off the screen never widens it. */}
+      <div className="overflow-x-clip">
+      <div {...cardSwipe.handlers} style={cardSwipe.style}>
       {items.map((it, n) => {
         const here = n === index;
         if (!here && (!answeredIndices.has(n) || Math.abs(n - index) > KEEP_NEAR)) return null;
@@ -1098,29 +1262,59 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
               onConfused={(otherId) => useProgressStore.getState().noteConfusion(lectureOf(it, courseId), it.id, otherId)}
               onNext={handleNext}
               learning={it._step !== undefined}
+              onStage={(st) => setStages((p) => (p[n] === st ? p : { ...p, [n]: st }))}
               keyboardEnabled={here && !pause}
             />
           </div>
         );
       })}
-
-      <div className={`mt-4 flex justify-between ${pause ? 'hidden' : ''}`}>
-        <button
-          type="button"
-          disabled={!hasPrev}
-          onClick={prev}
-          className="press"
-        >
-          ← Prev
-        </button>
-        <button
-          type="button"
-          onClick={handleNext}
-          className="press"
-        >
-          {hasNext ? 'Next →' : 'Finish'}
-        </button>
       </div>
+      </div>
+
+      {wideLayout ? (
+        <div className={`mt-4 flex justify-between ${pause ? 'hidden' : ''}`}>
+          <button type="button" disabled={!hasPrev} onClick={prev} className="press">
+            ← Prev
+          </button>
+          <button type="button" onClick={handleNext} className="press">
+            {hasNext ? 'Next →' : 'Finish'}
+          </button>
+        </div>
+      ) : (
+        !pause && (
+          // On a phone the way through the sitting is at the bottom, where the
+          // thumb is, with the lecture's glossary between (a sheet, shut
+          // while a question waits for its answer, as on a computer).
+          <ThumbBar>
+            <div className="flex items-center justify-between gap-3">
+              <button type="button" disabled={!hasPrev} onClick={prev} className="press tap-safe">
+                ← Prev
+              </button>
+              {glossary.length > 0 && !mixedClass && (
+                <button
+                  type="button"
+                  onClick={() => setPhoneGlossary(true)}
+                  disabled={questionUp}
+                  className="tap-safe flex flex-col items-center text-small text-text-2 disabled:text-text-3"
+                >
+                  Glossary
+                  {questionUp && <span className="sr-only">, after you answer</span>}
+                </button>
+              )}
+              <button type="button" onClick={handleNext} className="press tap-safe">
+                {hasNext ? 'Next →' : 'Finish'}
+              </button>
+            </div>
+          </ThumbBar>
+        )
+      )}
+      {phoneGlossary && !questionUp && (
+        <Sheet label="Glossary" onClose={() => setPhoneGlossary(false)}>
+          <div className="px-5 py-4">
+            <SessionGlossary entries={glossary} card={current} />
+          </div>
+        </Sheet>
+      )}
 
       {/* Set a card aside without leaving the sitting: a slide shown to
           illustrate, a table the teacher said to skip, a card that is wrong.
@@ -1148,78 +1342,126 @@ export function CardSession({ courseId, course, mode, sectionId, resume = false,
         </div>
       )}
 
-      {/* Hidden on touch, where there's no keyboard to hint about. */}
-      <p
-        className={`mt-4 hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-3 wide:!hidden ${pause ? '' : '[@media(hover:hover)]:flex'}`}
-      >
-        {hints.map((hint) => (
-          <span key={hint.keys.join()} className="flex items-center gap-1">
-            {hint.keys.map((k) => (
-              <kbd key={k} className="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-[11px]">
-                {k}
-              </kbd>
+      {/* The keys that work on this card now, one quiet line. Only where there
+          is a keyboard to hint about: a wide screen that can hover. */}
+      {!pause && keysNow.length > 0 && (
+        <div className="mt-4 hidden text-center text-xs text-text-3 wide:[@media(hover:hover)]:block">
+          <p>
+            {keysNow.map((hint, i) => (
+              <span key={hint.keys.join()}>
+                {i > 0 && ' · '}
+                <span className="font-mono text-[11px] text-text-2">{keyText(hint.keys)}</span> {hint.label}
+              </span>
             ))}
-            <span>{hint.label}</span>
-          </span>
-        ))}
-      </p>
-      </div>
-      <div className="hidden min-w-0 wide:block">
-      {/* The lecture's glossary, opened beside the card (a wide screen only). */}
-      {glossary.length > 0 && (
-        <div className="mb-4">
-          <button
-            type="button"
-            onClick={() => setGlossaryOpen((o) => !o)}
-            aria-expanded={glossaryOpen && !questionUp}
-            aria-describedby={questionUp ? 'glossary-shut' : undefined}
-            disabled={questionUp && !glossaryOpen}
-            className="press press-quiet tap-safe"
-          >
-            {glossaryOpen ? '← This sitting' : 'Glossary'}
-          </button>
-          {questionUp && !glossaryOpen && (
-            <p id="glossary-shut" className="mt-1 text-small text-text-3">
-              Opens after you answer.
-            </p>
+            {' · '}
+            <button
+              type="button"
+              onClick={() => setKeysOpen((o) => !o)}
+              aria-label="All keys"
+              aria-expanded={keysOpen}
+              className="font-mono text-[11px] text-text-3 hover:text-text"
+            >
+              ?
+            </button>
+          </p>
+          {keysOpen && (
+            <ul className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+              {hints.map((hint) => (
+                <li key={hint.keys.join()}>
+                  <span className="font-mono text-[11px] text-text-2">{keyText(hint.keys)}</span> {hint.label}
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       )}
-      {glossaryOpen && questionUp ? (
-        /* Shut while a question is asked: the term asked would be in it
-           (the owner, 2026-11-17). Said so, so it does not look broken. */
-        <p id="glossary-shut" className="border-t border-border pt-3 text-small text-text-3">
-          Shut while a question is asked. It opens after you answer.
-        </p>
-      ) : glossaryOpen ? (
-        <SessionGlossary entries={glossary} />
-      ) : (
-      <>
-      {!mixedClass && (
-        <div className="hidden sideways:block">
-          <SectionJump items={items} mode={mode} activeSectionId={activeSectionId} onJump={jumpToSection} />
-        </div>
-      )}
-      <SessionRail
-        items={items}
-        index={index}
-        course={course}
-        score={score}
-        hints={pause ? [] : hints}
-        // A mixed sitting shows neither which lecture the card is from (that
-        // is part of the question) nor its parts (a run is a card or two).
-        parts={!mixedClass}
-        figure={
-          /* The course's tree with the section you are in lit: the one
-             screen you spend the most time on otherwise has nothing of the
-             course on it but its text. */
-          mixedClass ? undefined : (
-            <CourseTree courseId={courseId} course={course} progress={progress} className="h-40" highlight={activeSectionId} />
+      </div>
+
+      {/* Left margin: the tree large and where you are in the sitting. Below
+          1280px the glossary swaps in here instead of having a margin. */}
+      <div className="hidden min-w-0 wide:col-start-1 wide:row-start-1 wide:block">
+        {glossary.length > 0 && wideLayout && !threeColumns && (
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={() => setGlossaryOpen((o) => !o)}
+              aria-expanded={glossaryOpen && !questionUp}
+              aria-describedby={questionUp ? 'glossary-shut' : undefined}
+              disabled={questionUp && !glossaryOpen}
+              className="press press-quiet tap-safe"
+            >
+              {glossaryOpen ? '← This sitting' : 'Glossary'}
+            </button>
+            {questionUp && !glossaryOpen && (
+              // Greyed is enough to see; the reason is for a screen reader (the
+              // owner, 2026-11-25: no explainer text under the glossary).
+              <span id="glossary-shut" className="sr-only">
+                Opens after you answer.
+              </span>
+            )}
+          </div>
+        )}
+        {glossaryOpen && !threeColumns ? (
+          questionUp ? (
+            /* Shut while a question is asked: the term asked would be in it
+               (the owner, 2026-11-17). A bare rule; the reason is read out only. */
+            <p id="glossary-shut" className="border-t border-border pt-3">
+              <span className="sr-only">Shut while a question is asked. It opens after you answer.</span>
+            </p>
+          ) : (
+            <SessionGlossary entries={glossary} card={current} />
           )
-        }
-      />
-      </>
-      )}
+        ) : (
+          <>
+            {!mixedClass && (
+              <div className="hidden sideways:block">
+                <SectionJump items={items} mode={mode} activeSectionId={activeSectionId} onJump={jumpToSection} />
+              </div>
+            )}
+            <SessionRail
+              items={items}
+              index={index}
+              course={course}
+              score={score}
+              // A mixed sitting shows neither which lecture the card is from (that
+              // is part of the question) nor its parts (a run is a card or two).
+              parts={!mixedClass}
+              figure={
+                /* The course's tree with the section you are in lit, and the
+                   leaves held at where the sitting began so a miss does not
+                   take one off mid-sitting; new ones bud as they are learned. */
+                mixedClass ? undefined : (
+                  <CourseTree
+                    courseId={courseId}
+                    course={course}
+                    progress={progress}
+                    className="h-72 w-full"
+                    highlight={activeSectionId}
+                    growOnly={startProgress}
+                  />
+                )
+              }
+            />
+          </>
+        )}
+      </div>
+
+      {/* Right margin (1280px up): the glossary, always there. */}
+      <div className="hidden min-w-0 xl:col-start-3 xl:row-start-1 xl:block">
+        {threeColumns && glossary.length > 0 && (
+          <div className="sticky top-6 max-h-[calc(100vh-3rem)] self-start overflow-y-auto">
+            {questionUp ? (
+              <section aria-label="Glossary" className="text-small">
+                <h2 className="mark mb-2 text-text-3 opacity-60">Glossary</h2>
+                <p id="glossary-shut" className="border-t border-border pt-3">
+                  <span className="sr-only">Shut while a question is asked. It opens after you answer.</span>
+                </p>
+              </section>
+            ) : (
+              <SessionGlossary entries={glossary} card={current} />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,150 +1,170 @@
 /**
- * Draws the app icon and writes public/icons/*.
+ * Draws the app icon and writes public/icons/* and the header mark's path data
+ * (src/lib/sprigMark.ts).
  *
  *   node scripts/make-icons.mjs
  *
- * The mark is a sprig: one stem, four leaves, drawn the way the course tree
- * is drawn — placed curves, no primitives, no mirror symmetry, leaves filled
- * with the paper colour so they occlude the stem behind them.
+ * The mark is a sprig: one curved stem and six solid ink leaves, each with a
+ * thin paper-coloured midrib, on a rounded paper tile. Leaves alternate sides
+ * at uneven intervals and shorten towards the tip, which keeps it from
+ * looking stamped out.
  *
- * It is NOT the course tree itself. That was tried first: the generated tree
- * is several hundred leaves, and below about 64px every version of it
- * collapsed into a grey smudge. An icon has to survive at 32px in a browser
- * tab, so it gets a mark of the same hand with a tenth of the marks.
+ * Why solid: the earlier sprig drew four leaves in outline, and thin outlines
+ * went faint at small sizes (a browser tab, a home screen). Solid leaves hold
+ * at 16px. Owner's pick, 2026-11-25 (docs/proposals/icon.md).
+ *
+ * It is NOT the course tree itself: the generated tree is several hundred
+ * leaves and collapses into a smudge below about 64px.
  *
  * The tile keeps its own light paper background in both themes, because a
  * home-screen or tab icon is composited by the OS and cannot follow one.
+ * The header mark (src/components/Sprig.tsx) uses the same path data, so the
+ * app icon, the tab and the header are one drawing rather than three that
+ * drift apart.
  *
- * It also writes src/lib/sprigMark.ts, so the header wordmark and the app
- * icon are the same drawing rather than two that drift apart.
- *
- * PNG rasterisation needs playwright on the path; without it the script
- * still writes the SVGs and tells you which PNGs to render by other means.
+ * PNG rasterisation needs playwright's chromium; without it the script still
+ * writes the SVGs and tells you which PNGs to render by other means.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public', 'icons');
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const OUT = path.join(ROOT, 'public', 'icons');
 
-/** Matches --color-bg and --color-text in the light theme. */
-const PAPER = '#e2e0d5';
-const INK = '#1b1d1f';
+const PAPER = '#f4f0e6';
+const INK = '#1d1c19';
 
-const r2 = (n) => Math.round(n * 10) / 10;
+const r = (n) => Math.round(n * 10) / 10;
+const p = (q) => `${r(q[0])},${r(q[1])}`;
 
 /** A point on a cubic, so every leaf is anchored exactly on the stem. */
-function onCurve(p, t) {
+function onCubic(P, t) {
   const u = 1 - t;
-  const [a, b, c, d] = [u * u * u, 3 * u * u * t, 3 * u * t * t, t * t * t];
-  return [
-    a * p[0][0] + b * p[1][0] + c * p[2][0] + d * p[3][0],
-    a * p[0][1] + b * p[1][1] + c * p[2][1] + d * p[3][1],
-  ];
+  const c = [u * u * u, 3 * u * u * t, 3 * u * t * t, t * t * t];
+  return [0, 1].map((i) => P.reduce((s, q, k) => s + q[i] * c[k], 0));
 }
 
-/**
- * One leaf: two different curves either side of the midrib, so it is never
- * its own reflection. w1/w2 are the two bulges, as a fraction of length.
- */
-function leaf(bx, by, deg, len, w1, w2) {
-  const a = (deg * Math.PI) / 180;
-  const [dx, dy] = [Math.sin(a), -Math.cos(a)];
-  const [px, py] = [-dy, dx];
-  const at = (t, o) => `${r2(bx + dx * len * t + px * len * o)},${r2(by + dy * len * t + py * len * o)}`;
-  return (
-    `M${r2(bx)},${r2(by)}` +
-    `C${at(0.2, w1)} ${at(0.68, w1 * 0.8)} ${at(1, 0)}` +
-    `C${at(0.76, -w2 * 0.82)} ${at(0.26, -w2)} ${r2(bx)},${r2(by)}`
-  );
+/** One leaf, anchored at its base, plus its midrib. */
+function leaf([x, y], a, L, w, lean = 0.12) {
+  const t = (a * Math.PI) / 180;
+  const dx = Math.cos(t);
+  const dy = Math.sin(t);
+  const nx = -dy;
+  const ny = dx;
+  const at = (s, k) => [x + dx * L * s + nx * w * k, y + dy * L * s + ny * w * k];
+  return {
+    o:
+      `M${p([x, y])}C${p(at(0.22, 1.25 + lean))} ${p(at(0.72, 0.95))} ${p(at(1, 0))}` +
+      `C${p(at(0.68, -1.05 + lean))} ${p(at(0.25, -1.1))} ${p([x, y])}`,
+    rib: `M${p(at(0.12, 0))}Q${p(at(0.5, 0.1))} ${p(at(0.84, 0))}`,
+  };
 }
 
-// The stem leans and thins; leaves alternate sides at uneven intervals and
-// shorten towards the tip, which is what keeps it from looking stamped out.
-const STEM = [[92, 160], [88, 134], [98, 104], [110, 58]];
-const LEAVES = [[0.2, -68, 64], [0.48, 66, 58], [0.76, -60, 50]];
-const TIP = [12, 44];
-// A heavy stroke on a narrow leaf squeezes the paper interior to a sliver and
-// the leaf reads as a fat comma, so the two move together.
-const [W1, W2] = [0.55, 0.4];
+const STEM = [[206, 440], [188, 356], [238, 262], [306, 140]];
+const STEM_W = 16;
+const LEAF_W = 12;
+const RIB_W = 6;
+// [position on stem, angle, length]
+const SPOTS = [[0.16, 196, 130], [0.32, -22, 138], [0.5, 192, 132], [0.66, -36, 124], [0.82, 200, 104], [1, -64, 96]];
 
-/** The stem, then one path per leaf. */
-function geometry() {
-  const stem = `M${STEM[0]}C${STEM[1]} ${STEM[2]} ${STEM[3]}`.replace(/,(\d)/g, ',$1');
-  const leaves = LEAVES.map(([t, deg, len]) => {
-    const [x, y] = onCurve(STEM, t);
-    return leaf(x, y, deg, len, W1, W2);
-  });
-  const [tx, ty] = onCurve(STEM, 1);
-  leaves.push(leaf(tx, ty, TIP[0], TIP[1], W1, W2));
-  return { stem, leaves };
+const stem = `M${p(STEM[0])}C${p(STEM[1])} ${p(STEM[2])} ${p(STEM[3])}`;
+const leaves = SPOTS.map(([t, a, L], i) => leaf(onCubic(STEM, t), a, L, L * 0.34, i % 2 ? 0.15 : -0.05));
+
+/** Sample the drawing (stroke included) to find its box, for centring and fitting. */
+function bounds() {
+  const pts = [];
+  for (let i = 0; i <= 40; i++) pts.push(onCubic(STEM, i / 40));
+  for (const { o } of leaves) {
+    const n = o.match(/-?\d+(\.\d+)?/g).map(Number);
+    const cs = [[n.slice(0, 2), n.slice(2, 4), n.slice(4, 6), n.slice(6, 8)], [n.slice(6, 8), n.slice(8, 10), n.slice(10, 12), n.slice(12, 14)]];
+    for (const c of cs) for (let i = 0; i <= 40; i++) pts.push(onCubic(c, i / 40));
+  }
+  const xs = pts.map((q) => q[0]);
+  const ys = pts.map((q) => q[1]);
+  const pad = LEAF_W / 2;
+  const box = [Math.min(...xs) - pad, Math.min(...ys) - pad, Math.max(...xs) + pad, Math.max(...ys) + pad];
+  const cx = (box[0] + box[2]) / 2;
+  const cy = (box[1] + box[3]) / 2;
+  return { box, cx, cy, radius: Math.max(...pts.map((q) => Math.hypot(q[0] - cx, q[1] - cy))) + pad };
+}
+const B = bounds();
+
+/** The drawing, optionally moved to the middle of the 512 box and scaled about it. */
+function sprig({ bg = PAPER, ink = INK, ribs = true, scale = 1, centre = false } = {}) {
+  const g = [`<path d="${stem}" stroke-width="${STEM_W}"/>`];
+  for (const l of leaves) {
+    g.push(`<path d="${l.o}" fill="${ink}" stroke-width="${LEAF_W}"/>`);
+    if (ribs) g.push(`<path d="${l.rib}" stroke="${bg}" stroke-width="${RIB_W}"/>`);
+  }
+  const body = `<g fill="none" stroke="${ink}" stroke-linecap="round" stroke-linejoin="round">${g.join('')}</g>`;
+  if (scale === 1 && !centre) return body;
+  const [ox, oy] = centre ? [B.cx, B.cy] : [256, 256];
+  return `<g transform="translate(256 256) scale(${r(scale * 1000) / 1000}) translate(${-r(ox)} ${-r(oy)})">${body}</g>`;
 }
 
-function mark(scale = 1) {
-  const { stem, leaves } = geometry();
-  const parts = [`<path d="${stem}"/>`, ...leaves.map((d) => `<path d="${d}" fill="${PAPER}"/>`)];
+const ROUND = `<path d="M112,0H400C470,0 512,42 512,112V400C512,470 470,512 400,512H112C42,512 0,470 0,400V112C0,42 42,0 112,0Z" fill="${PAPER}"/>`;
+const SQUARE = `<rect width="512" height="512" fill="${PAPER}"/>`;
+const svg = (inner) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">${inner}</svg>`;
 
-  const g =
-    `<g fill="none" stroke="${INK}" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">` +
-    parts.join('') +
-    `</g>`;
-  return scale === 1 ? g : `<g transform="translate(96 96) scale(${scale}) translate(-96 -96)">${g}</g>`;
-}
-
-/** `rx` 0 is the maskable/full-bleed tile; the OS supplies the shape. */
-function tile({ rx = 40, scale = 1 } = {}) {
-  return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">` +
-    `<rect width="192" height="192"${rx ? ` rx="${rx}"` : ''} fill="${PAPER}"/>` +
-    mark(scale) +
-    `</svg>`
-  );
-}
-
-const ROUNDED = tile();
-// Maskable art is cropped to a circle by some launchers, so the mark sits
-// inside the 80% safe zone and the paper runs to the edge.
-const MASKABLE = tile({ rx: 0, scale: 0.72 });
+const TILE = svg(ROUND + sprig());
+// Maskable art is cropped to a circle by some launchers: centre the drawing
+// and fit it inside the central 80% (radius 0.4 of the box).
+const MASKABLE = svg(SQUARE + sprig({ centre: true, scale: (512 * 0.4) / B.radius }));
+// iOS rounds it itself and ignores transparency: full bleed, a little smaller than the tile.
+const APPLE = svg(SQUARE + sprig({ scale: 0.9 }));
+// Android's notification badge is a white silhouette on transparent.
+const BADGE = svg(sprig({ bg: '#ffffff', ink: '#ffffff', ribs: false, centre: true, scale: (512 * 0.44) / B.radius }));
 
 fs.mkdirSync(OUT, { recursive: true });
-fs.writeFileSync(path.join(OUT, 'icon.svg'), ROUNDED + '\n');
+fs.writeFileSync(path.join(OUT, 'icon.svg'), TILE + '\n');
 
-// The same geometry, for the wordmark in the app header.
-const { stem, leaves } = geometry();
 fs.writeFileSync(
-  path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'src', 'lib', 'sprigMark.ts'),
-  `/**\n * The sprig, as path data in a 0 0 192 192 viewBox.\n *\n * GENERATED by scripts/make-icons.mjs — edit the geometry there, not here,\n * or the header mark and the app icon stop being the same drawing.\n */\nexport const SPRIG_VIEWBOX = '0 0 192 192';\nexport const SPRIG_STROKE_WIDTH = 9;\nexport const SPRIG_STEM = '${stem}';\nexport const SPRIG_LEAVES = [\n${leaves
-    .map((d) => `  '${d}',`)
-    .join('\n')}\n];\n`,
+  path.join(ROOT, 'src', 'lib', 'sprigMark.ts'),
+  `/**
+ * The sprig, as path data in a 0 0 512 512 viewBox.
+ *
+ * GENERATED by scripts/make-icons.mjs, edit the geometry there, not here,
+ * or the header mark and the app icon stop being the same drawing.
+ */
+export const SPRIG_VIEWBOX = '0 0 512 512';
+export const SPRIG_STROKE_WIDTH = ${STEM_W};
+export const SPRIG_LEAF_STROKE_WIDTH = ${LEAF_W};
+export const SPRIG_RIB_STROKE_WIDTH = ${RIB_W};
+export const SPRIG_STEM = '${stem}';
+export const SPRIG_LEAVES = [
+${leaves.map((l) => `  '${l.o}',`).join('\n')}
+];
+export const SPRIG_RIBS = [
+${leaves.map((l) => `  '${l.rib}',`).join('\n')}
+];
+`,
 );
 
 const PNGS = [
-  ['icon-192.png', ROUNDED, 192],
-  ['icon-512.png', ROUNDED, 512],
-  ['icon-maskable-512.png', MASKABLE, 512],
-  // iOS applies its own mask and ignores transparency, so this one is
-  // full-bleed square rather than pre-rounded.
-  ['apple-touch-icon.png', tile({ rx: 0 }), 180],
+  ['icon-192.png', TILE, 192, true],
+  ['icon-512.png', TILE, 512, true],
+  ['icon-maskable-512.png', MASKABLE, 512, false],
+  ['apple-touch-icon.png', APPLE, 180, false],
+  ['badge-96.png', BADGE, 96, true],
 ];
 
 let chromium;
 try {
   ({ chromium } = await import('playwright'));
 } catch {
-  console.log('icon.svg written. playwright not found — render these from it by hand:');
+  console.log('icon.svg written. playwright not found, render these from it by hand:');
   for (const [name, , size] of PNGS) console.log(`  ${name} (${size}px)`);
   process.exit(0);
 }
 
-const browser = await chromium.launch();
-for (const [name, svg, size] of PNGS) {
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium' });
+for (const [name, markup, size, transparent] of PNGS) {
   const page = await browser.newPage({ viewport: { width: size, height: size } });
-  await page.setContent(
-    `<style>html,body{margin:0;padding:0}svg{width:${size}px;height:${size}px;display:block}</style>${svg}`,
-  );
-  await page.screenshot({ path: path.join(OUT, name), omitBackground: true });
+  await page.setContent(`<style>html,body{margin:0;padding:0;background:transparent}svg{width:${size}px;height:${size}px;display:block}</style>${markup}`);
+  await page.screenshot({ path: path.join(OUT, name), omitBackground: transparent });
   await page.close();
   console.log(`wrote ${name}`);
 }
 await browser.close();
-console.log('wrote icon.svg');
+console.log('wrote icon.svg and src/lib/sprigMark.ts');

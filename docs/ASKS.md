@@ -15,9 +15,122 @@ the owner remembers asking that is not here goes in when they say so.
 
 How the owner wants the app to work, as standing rules, is in CLAUDE.md
 ("How the owner wants it to work"); this file is for things to get done.
+Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
+`owner-feedback` skill) before it becomes work here.
 
 ## Open
 
+- **A first run without repeats, and a tree that keeps up** (2026-11-27:
+  "dont they seem to be kinda showing the same thing? … the order of the
+  onboarding should be reevaluated and also the contents of it, not only for
+  the redundant stuff but also if its maybe missing anything important"; and
+  three faults: lag after a tap grows leaves, a leafy branch skipped when
+  sweeping, leaves that vanish and reappear before falling). Also: "to click
+  a branch for it to start growing leaves, you have to click the number …
+  is this intentional?" Broken down in `docs/FEEDBACK.md`; plan in
+  `docs/proposals/first-run-flow.md`. Open until live.
+
+- **Lectures a student can trust** (2026-11-27: "it needs to be built in a
+  way where users can trust that the course they are studying is very
+  accurate to what they are meant to be studying, even if they missed
+  lecture"). Plan: `docs/proposals/trust.md` (every slide accounted for and
+  a slide on every card, then a check by a second AI in a fresh chat, then
+  the app reading the slides itself). Open until built and live.
+- **Make lectures here, and grade them** (2026-11-27: "maybe we should make
+  a rubric … ways to measure the variables of the course generating …
+  especially since different classes can provide wide ranges of examples").
+  Rubric `docs/rubric.md`, scorer `src/lib/rubric.ts`, procedure
+  `.claude/skills/generate-lecture`, log `docs/rubric-log.md`. Also (same
+  day) fold the four pasted session summaries into the prompt, "with a
+  grain of salt" (`docs/proposals/trust.md` §6). Open until the first real
+  lecture is made and graded.
+
+- **A phone round for Today, Learn, the lecture page, Practice and
+  Progress** (2026-11-27: "i wanna go ahead with all your suggestions btw",
+  on the fresh-eyes review's findings; plan in
+  `docs/proposals/phone-round.md`). Before part 4's final check.
+  Built on the work branch 2026-11-27; the owner kept the rows under
+  Start and chose the compact Progress page. Open until part 4 is live.
+
+- **Make how Arborous gets built work better** (2026-11-27: "while working
+  on arborous I want any inefficiencies in the process of making it to be
+  fixed and also like if any new skills are required then I approve.
+  Anything that helps with coding, to designing user interface, especially
+  since claude struggles to understand human taste and what matters to a
+  human. also, an issue I faced a lot … is asking for big wider scoped
+  macro updates … and then the ai goes and focuses on minute fixes or
+  changes that a user would barely notice"; and "I am not a software
+  developer nor a manager … help guide me and this project to be worked on
+  the best way possible … if you cant download skills … tell me what
+  skills would be good to get and where … I want to give claude all the
+  abilities it needs to be great at coding, designing, testing, and making
+  an elegant solution instead of a solution that goes backwards/feels
+  cheap"). Built on claude/project-thread-dfsq36 (a PR into the work
+  branch): the `scope-check` and `taste-review` skills,
+  `scripts/compare-shots.mjs`, `scripts/preview.mjs`, every phone screen
+  shot in dark too, a one-line-per-ask session start, `docs/WORKFLOW.md`.
+  Code organisation and CI are a separate thread. Open until merged and
+  the owner has seen the skills work on a real ask.
+- **Take feedback in properly** (2026-11-25: "whenever I give you feedback
+  on something and explain expectations, you mark them down, write what you
+  did wrong, write what I'm asking, all in your own words … break down each
+  one and see what I really mean"). Built: `.claude/skills/owner-feedback`,
+  `docs/FEEDBACK.md`, wired into CLAUDE.md, HANDOFF, RIPPLES. Open until the
+  owner has seen it work on their testing feedback.
+- **Testing feedback, one screenshot at a time** (2026-11-25: "I took a lot
+  of screenshots while testing I need to go over one by one with you … only
+  after I have shown all of them can you begin"). Replies a line or two
+  until they say to start. 2026-11-25: start given ("Fix everything in
+  them"), each point broken down in docs/FEEDBACK.md, Testing 1 to 11 and
+  the review page notes:
+  - the find page's numbers: one marked, following the finger, the rest
+    alike, the other branches faded (Testing 1, 3);
+  - every leaf on a twig (Testing 2, review notes);
+  - falling and fallen leaves as the tree's line art, vein, no fill
+    (Testing 4);
+  - a Settings place: name, theme, reminders, Help, account email and
+    password; the name once on the page (Testing 5, review notes); planned
+    in docs/proposals/settings.md;
+  - New lecture keeps a visible "the AI chooses" choice, redesigned, no
+    explainer line, how it decides in Help (Testing 6); planned in
+    docs/proposals/new-lecture-screen.md;
+  - New lecture's step 2 heading says prompt and notes together; the Why
+    fold goes (Testing 7);
+  - no specks where hidden numbers sit, dark mode (Testing 8);
+  - Diagrams' sideways row obviously scrolls (Testing 9); planned in
+    docs/proposals/diagrams-row.md;
+  - paper grain to the bottom of every surface, and a rule on which
+    surfaces are paper (Testing 10);
+  - the enlarged tree sheet removed, its info card's words in Help
+    (Testing 11; the owner: "remove it, and move its info card's wording
+    into Help");
+  - swipes turn the page in one smooth motion (review notes);
+  - no bare section names in the first run: "the Evaporation section"
+    (review notes).
+  Then the review page and the preview rebuilt with only what is new, with
+  notes boxes.
+  2026-11-26, round 2 notes on that page: every leaf (on the tree too)
+  filled with the paper's colour and grain, plus the vein; blue only on
+  what can be tapped ("fading" under the tree goes plain); the first run's
+  other branches fade on touch from its first page, and the tree never
+  jumps when the words under it change ("go iron out the remaining
+  things"); the grow page says a question answered right grows leaves on
+  its section's branch.
+  2026-11-26: the first run without the made-up lecture ("I wanted a more
+  general explanation of the tree and what its parts represent"), asked
+  about difficulty and cost first; and the first run's lag (measured: the
+  freezes at its redraws), fix proposed. Both wait on the owner.
+  2026-11-27: go-ahead given ("ill give you the full go ahead"). Built on
+  the branch: the first run explains the tree in general (numbered
+  sections, no topic, no questions; docs/proposals/first-run-general.md),
+  and the leaves' paper is baked into one picture, so the freeze at "Skip
+  ahead three weeks" went from 1.3 s to 0.25 s on a phone at quarter
+  speed. Open until the owner has seen it.
+
+- **A new app icon** (2026-11-25: "I also think the apps icon needs an
+  update since the current icon I think was made once at the start and
+  never touched"). Planned (docs/proposals/icon.md). 2026-11-25: the owner
+  picked C, the sprig on paper.
 - **Keep going until the list is clear, then check, then report**
   (2026-11-03: "dont stop until you run out of limit or the to do list is
   cleared. and even after its cleared, if there are any follow up checks or
@@ -47,7 +160,13 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   certain questions for different parts of the batch of 10, they are
   someone randomly picked"); the button without explainer text. 2026-11-22: named "Adaptive quiz"; the
   shape in docs/proposals/ecosystem.md agreed for now ("I dont mind your
-  recommendations for the four parts so far").
+  recommendations for the four parts so far"). 2026-11-24: built on the work branch
+  (not main) and shown as parts 1-3. The simulator put it a little below
+  Today as the daily way in (sim/FINDINGS.md), so Today stays daily and the
+  quiz is its own mode; waits on the owner's look before going live. 2026-11-25: the Missed list
+  taken out (it only repeated what each answer already shows; the owner
+  meant "easier than implementing a way to see them all at once", 2026-11-25).
+  Held on the branch until part 4 ("Hold off again until 4 is done").
 - **The ways to study fit together, audited as a whole** (2026-11-22: "make
   sure it fits nicely into the ecosystem with the other modes and the daily
   things … would the daily studying be more fitting to be the learn daily
@@ -67,6 +186,14 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   the lectures, so the more lectures you have the less time it is per
   lecture, which is stupid. it should be replaced with some sort of
   suggestion with what to study today").
+  Built 2026-11-24 on the work branch (not main): suggestions, shown to the
+  owner as change 1 of 4; waits on their look.
+  The owner, 2026-11-24: "a step in the right direction functionally but I
+  still think more thought and testing needs to be put into it to see if
+  it really is a good way to do it and how it handles different
+  scenarios"; its look is for the design update.
+  2026-11-24: held on the branch until part 4 ("Hold until part 4");
+  "questions to review" kept ("Happy with the wording").
 - **Phone and computer each use their format; a design update with the
   onboarding** (2026-11-22: "the difference between the phone view and pc
   view is not good enough, meaning that both do not fully take advantage
@@ -82,11 +209,82 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   should look and feel intentional. start with a plan building on my
   ideas and it will go through in the design update along with the
   onboarding"). Plan: docs/proposals/design-update.md (2026-11-23).
+  2026-11-25: "The goal is to make the platforms have distinct feels,
+  ui/ux, that take full advantage of the benefits and downsides of the
+  form factor": every screen, and the phone as much as the computer (the
+  brief had too few phone changes and screens; widened in part4-brief.md).
+  2026-11-25: the screen-by-format table (design-update.md) approved as a
+  whole on judgement ("yes to everything … do your best to make everything
+  high quality and not look like ai slop"); feedback after the
+  presentation.
+  2026-11-25 (P4-1): built on the branch and shown as one page
+  (part4-brief.md, "Where things stand"); waits on the owner's feedback in
+  P4-2, then P4-3 and the merge.
+  2026-11-25, the owner's feedback on that page (in full in
+  design-update.md, "The owner's feedback on the P4-1 page"): the shake as
+  a shiver in the branches, the ground still; no explainer text under the
+  glossary or in the test's Questions sheet; swipes to be explored ("see if
+  it's worth keeping the swiping for certain things or not"); "plate" made
+  intuitive, "from A to Z" gone; a "suggested items" choice on New lecture
+  and the copy step to name a stronger model on high effort; the first
+  run's words rewritten ("elegant … easy to understand but worded nicely
+  and concisely"), a nicer example tree, then a username and an account
+  with email, and transitions between pages ("dynamic and elegant …
+  impressive and intuitive").
+  2026-11-25: "Finish the other things you had left to do on top of fixing
+  my suggestions before saying you are done": the end of a sitting on a
+  computer, the class check when a file comes back, a term in a card shown
+  in the glossary column, J and K in lists.
+  2026-11-25, on the first run's sample lecture: "im confused by what
+  encoding and retrieval mean. they are very confusing" (the part names).
+- **Notifications, and asking about them in the first run** (2026-11-25: "I
+  also think the app should send notifications for various things and near
+  the end of onboarding it should ask if you would like to be sent
+  reminders and that you can adjust what you specifically receive
+  notifications for in the settings"). To plan first
+  (docs/proposals/notifications.md).
+  2026-11-25, on the plan: "you missed the most obvious kind which is like a
+  daily study reminder"; "yes to notifications if you can do the supabase
+  stuff yourself if you are connected".
+  2026-11-25: built on the branch (Supabase tables, function and minute job
+  live; app side on the branch). Open until merged and a reminder is seen
+  on a real phone.
+- **Round 3 feedback (2026-11-25)**: the copy step's model advice "too far
+  the other way … it should just be a general suggestion like for best
+  results, use a more capable model on high effort"; the leaves "start
+  falling when it starts shaking, not after"; the first run's study page
+  "lacks context … does the user go through and try a question or
+  something? … why use a specific example?"; the branches growing leaves
+  not greyed out while a number is picked; "Figure 1." with a period, not
+  all caps, like a science paper; the dark paper improved ("the white paper
+  background is actually pretty good and its just the dark mode one that
+  could be improved"); to see New lecture's two versions again; to know when
+  leaves are programmed to grow.
+- **Help the student choose the reminder time** (2026-11-25: "For the daily
+  reminder, why not help the user choose? Maybe have a default but let them
+  choose a time or something in settings"). Built 2026-11-25: times to tap
+  in the first run, and "You usually start around …" on the page.
+- **Round 4 feedback (2026-11-25)**: the icon: "I'd choose c since I'm not
+  a big fan of the leaves falling on the tree and I think c is a good icon";
+  the first run's "evaporation has grown its leaves" still disliked ("I had
+  suggested that in the case you hadn't asked a question, why not just make
+  it a general example": general words such as "leaves grow when you learn
+  a topic or concept"); the leaves to "drop 0.1-0.2 seconds sooner. I want
+  it to seem realistic rather than a step by step animations … very soon
+  after it starts shaking the leaves should start falling and continuing to
+  do so while the shake continues until it's finished"; New lecture: "I
+  like the side by side more in terms of the actual content but I do like
+  the in a stack better"; "What suits my material / Only the kinds I tick"
+  "looks ugly and low effort. That whole screen honestly needs some
+  reorganization especially after tacking on new things. It needs to be a
+  lot more intuitive without losing function."
 - **A code audit** (2026-11-22: "the code itself needs a big audit on how
   efficient it is, how many redundant or useless sections there are, how
   well its annotated for ai to understand the code, how well its
   organized, etc"). Its order is argued in docs/proposals/design-update.md:
   a removal pass before the redesign, the audit proper after.
+  Removal pass done 2026-11-24 on the work branch (shown with parts 1-3);
+  the audit proper comes after the design update.
 - **Interactive diagrams** (2026-11-23, idea only, not to start yet: "I
   want to add one more ambitious thing, interactive diagrams. idk if we
   would give the generating ai free reign with only little guidelines for
@@ -100,6 +298,37 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   when a diagram earns being interactive, how free the generator is,
   how it is drawn safely (course diagrams are user content: security
   review), and how it fits the design update.
+- **Build on a branch, show it, then merge** (2026-11-24: "instead of
+  making mock ups, you just make it in a branch, show me the updates, take
+  my feedback, and then fix it and push it to main … make sure when you
+  show me the updated stuff you do so clearly because every previous time
+  you did mock ups or tried showing me things it was always unclear what
+  was what. Like make it like a presentation almost but don't waste too
+  much usage"). Standing for the design work.
+- **The app's own words explained where they are met** (2026-11-24: "when
+  I read "14 fading" it's unclear what is fading and what fading means. If
+  we are gonna use new terms unique to the app, they need to be explained
+  in the on-boarding or something … fading could be outlined in the
+  onboarding when it shows the tree pop up and how it works and it shows
+  the user what happens when they don't study and topics fade and the
+  leaves fall … "cards" seems maybe specifically referring to flash cards
+  so maybe items is better but like what items, the graded ones only?
+  These things need to be somehow made clear and intuitive to the user by
+  being elegantly integrated into the flow of the app"). With the first
+  run: a list of the app's own terms, each taught where it is first met.
+  2026-11-25 (P4-1): listed and decided in docs/proposals/terms.md, built
+  on the branch; waits on P4-2/P4-3.
+- **The daily time asked in the first run** (2026-11-24, on where "Set one
+  daily time" belongs: "this is something that would be good to ask in the
+  onboarding"). Built on the branch 2026-11-25 (P4-1); waits on P4-2/P4-3.
+- **A scantron layout for the practice test** (2026-11-25, an idea for
+  later: "it could be as a tick in the practice test settings called
+  scantron multiple choice or something"; from the owner's earlier "like a
+  real test where you have your scantron sheet and then your test sheet
+  with several questions per page and you flip between them. Maybe that's
+  doing to much tho"). Several multiple-choice questions on a page, an
+  answer sheet beside them, marked at the end. A tick on the test's setup;
+  fits the design update's computer layout.
 - **Rearrange lectures, and fold each class's lectures on the library**
   (2026-11-16: "also i should be able to rearrange them and also collapse
   all the lectures of each course on the home page"). Folding live
@@ -141,6 +370,9 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   for generally and give a demonstration of moving your finger across the
   branches to show how it works … ill leave that up to you to plan and
   mess around with". For the onboarding plan when it resumes.
+  2026-11-24: "really show the user what the app is about and demonstrate
+  what the tree is all about … making them try things/direct their
+  attention … instead of explaining in bullet points" (onboarding.md).
 - **A fresh ultracode session that grades the whole app against its goals**
   (2026-11-03: "I want to eventually start a fresh ultra code session for
   this project that will go through and grade the app and every component
@@ -150,7 +382,7 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   the gaps, even to the point of suggesting overhauling certain things if
   necessary. Idk how I should do this tho. If I just need you to make me a
   prompt and that's enough or if there is more prep required"). Prepared
-  2026-11-03: the prompt in docs/prompts/grade-the-app.md, drafted goals
+  2026-11-03: the prompt in docs/archive/prompts/grade-the-app.md, drafted goals
   for the components EXPECTATIONS lacked (to confirm). Not yet: the owner
   will run it after the open changes are built (2026-11-03: "I want to do
   it after you have finished doing a bunch of the changes I've asked you
@@ -965,7 +1197,7 @@ How the owner wants the app to work, as standing rules, is in CLAUDE.md
   before one. (lib/practice examSoon)
 - 2026-10-18 Better systems suggested and tested: mixed-lecture class
   Practice, modelled in the simulator first.
-- 2026-10-17 Audit of the app's weak points. (docs/audits/2026-10-17)
+- 2026-10-17 Audit of the app's weak points. (docs/archive/audits/2026-10-17)
 - 2026-10-17 iPhone header: dropped by the owner ("stop wasting time on
   it"). Do not try again unless asked.
 - 2026-10-15 Practise every lecture of a class together, and a class

@@ -186,23 +186,28 @@
    Applies when the OS prefers dark and there is no manual override, or
    when the user has toggled it. The two blocks carry identical values;
    only their triggers differ. */
+/* Dark stock, not a dark screen (the owner, 2026-11-25: the dark paper
+   "looks decent but not perfect"). It was a cool blue-black, the colour of
+   any app's dark mode; it is now a warm near-black, like black card, with a
+   warm off-white ink like chalk or white pencil on it, and rules of the same
+   warmth. The plate-blue accent stays: it reads on warm dark. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
 
-    --color-bg: #15171a;
-    --color-surface: #1d2024;
-    --color-surface-raised: #262a2f;
-    --color-surface-sunken: #0f1113;
+    --color-bg: #1b1a17;
+    --color-surface: #23221e;
+    --color-surface-raised: #2c2b26;
+    --color-surface-sunken: #121110;
 
-    --color-border: #333840;
-    --color-ink-dim: #595a5d;
-    --color-border-light: #262a30;
-    --color-border-strong: #767d88;
+    --color-border: #3b3933;
+    --color-ink-dim: #5f5c55;
+    --color-border-light: #2b2a25;
+    --color-border-strong: #7f7a70;
 
-    --color-text: #e8e9ea;
-    --color-text-2: #b2b7bd;
-    --color-text-3: #939aa1;
+    --color-text: #ece7dc;
+    --color-text-2: #bfb9ad;
+    --color-text-3: #a09a8d;
 
     --color-accent: #8fb0e6;
     --color-accent-hover: #a9c3f0;
@@ -232,8 +237,8 @@
     --color-heat-3: #526c46;
     --color-heat-4: #93b077;
 
-    --shadow: 0 1px 0 #0f1113, 2px 3px 0 -1px rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 1px 0 #0f1113, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
+    --shadow: 0 1px 0 #121110, 2px 3px 0 -1px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 1px 0 #121110, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
 
     /* Grain has to lighten on dark stock, or it just muddies it. */
     /* Dark carries its OWN grain image, not just its own opacity. It used to
@@ -251,19 +256,19 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --color-bg: #15171a;
-  --color-surface: #1d2024;
-  --color-surface-raised: #262a2f;
-  --color-surface-sunken: #0f1113;
+  --color-bg: #1b1a17;
+  --color-surface: #23221e;
+  --color-surface-raised: #2c2b26;
+  --color-surface-sunken: #121110;
 
-  --color-border: #333840;
-  --color-ink-dim: #595a5d;
-  --color-border-light: #262a30;
-  --color-border-strong: #767d88;
+  --color-border: #3b3933;
+  --color-ink-dim: #5f5c55;
+  --color-border-light: #2b2a25;
+  --color-border-strong: #7f7a70;
 
-  --color-text: #e8e9ea;
-  --color-text-2: #b2b7bd;
-  --color-text-3: #939aa1;
+  --color-text: #ece7dc;
+  --color-text-2: #bfb9ad;
+  --color-text-3: #a09a8d;
 
   --color-accent: #8fb0e6;
   --color-accent-hover: #a9c3f0;
@@ -292,8 +297,8 @@
   --color-heat-3: #526c46;
   --color-heat-4: #93b077;
 
-  --shadow: 0 1px 0 #0f1113, 2px 3px 0 -1px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 1px 0 #0f1113, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
+  --shadow: 0 1px 0 #121110, 2px 3px 0 -1px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 1px 0 #121110, 4px 6px 0 -2px rgba(0, 0, 0, 0.55);
 
   /* Dark carries its OWN grain image, not just its own opacity. It used to
      inherit the image from :root, so when light moved to the

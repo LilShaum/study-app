@@ -1,0 +1,2 @@
+# The app today: "Skip ahead three weeks" on the first run
+Tapping it runs: the tree shakes for 1.8 s (CSS keyframes on the trunk group); the leaves that fade are drawn by a "drawing-on" rule that holds them in place until their branch's draw animation has finished; then each fading leaf falls (a 1.4 s drop-and-sway) starting at 1.2 s after the shake starts; then they settle on the ground. Code: src/components/CourseTree.tsx, src/styles/tree.css.

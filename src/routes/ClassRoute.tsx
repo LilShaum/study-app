@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
@@ -19,6 +19,9 @@ import { NewCourseDialog } from '@/components/NewCourseDialog';
 import { ClassEvenOutDialog } from '@/components/ClassEvenOutDialog';
 import { classToRework } from '@/lib/evenOptions';
 import { Icon } from '@/components/Icon';
+import { useListKeys } from '@/lib/useListKeys';
+import { ThumbBar } from '@/components/ThumbBar';
+import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 
 /** How far into a lecture the student is: never opened, partway, every item answered once. */
 function studied(course: Course, progress: Record<string, ItemResult>): string {
@@ -63,6 +66,8 @@ export function ClassRoute() {
   const code = raw ?? '';
   const courses = useCoursesStore((s) => s.courses);
   const allProgress = useProgressStore((s) => s.byCourse);
+  // J and K through the lectures (a computer's keyboard).
+  useListKeys();
   const [now] = useState(Date.now);
   const lectures = useMemo(() => lecturesOf(courses, code), [courses, code]);
   const exams = useMemo(() => classExams(lectures, now), [lectures, now]);
@@ -87,6 +92,17 @@ export function ClassRoute() {
   const [editing, setEditing] = useState<ClassExamView | 'new' | null>(null);
   const [adding, setAdding] = useState(false);
   const [evening, setEvening] = useState(false);
+  const wide = useMediaQuery(WIDE);
+  // The thumb bar carries Today's Start only while the page's own Start is out
+  // of view, so a phone never shows the same button twice.
+  const [startInView, setStartInView] = useState(true);
+  const startObserver = useRef<IntersectionObserver | null>(null);
+  const startRef = useCallback((el: HTMLAnchorElement | null) => {
+    startObserver.current?.disconnect();
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    startObserver.current = new IntersectionObserver(([entry]) => setStartInView(entry.intersectionRatio > 0.9), { threshold: [0, 1] });
+    startObserver.current.observe(el);
+  }, []);
   const rework = useMemo(() => classToRework(lectures), [lectures]);
   const reworkCount = rework.reduce((n, l) => n + l.count, 0);
 
@@ -105,19 +121,19 @@ export function ClassRoute() {
   const next = exams.find((e) => (examTime(e.date) ?? 0) > now);
   const first = todays[0];
 
-  return (
-    <div>
-      <Link to="/" className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
-        ← Library
-      </Link>
-
-      <h1 className="mt-4 font-display text-display font-semibold text-text">{code}</h1>
+  const titleBlock = (
+    <>
+      <h1 className={`font-display ${wide ? "" : "mt-4"} text-display font-semibold text-text`}>{code}</h1>
       <p className="mark mt-1 text-text-3">
         {[subject, `${lectures.length} lecture${lectures.length === 1 ? '' : 's'}`, next ? `${next.name} ${examLabel(next.date)}` : null]
           .filter(Boolean)
           .join(' · ')}
       </p>
 
+    </>
+  );
+  const waysBlock = (
+    <>
       <section className="mt-7">
         <ul className="border-y-2 border-text-3">
           <li className="flex items-center gap-4 py-4">
@@ -130,7 +146,7 @@ export function ClassRoute() {
               </span>
             </div>
             {first && (
-              <Link to={`/session/${first.id}/today?class=${encodeURIComponent(code)}`} className="press press-ink tap-safe shrink-0">
+              <Link ref={startRef} to={`/session/${first.id}/today?class=${encodeURIComponent(code)}`} className="press press-ink tap-safe shrink-0">
                 Start
               </Link>
             )}
@@ -142,6 +158,16 @@ export function ClassRoute() {
             (2026-11-03). */}
         <ul>
           {[
+            ...(lectures.length
+              ? [
+                  {
+                    // The class's lectures together, in one sitting (store/session initMixed).
+                    to: `/session/${lectures[0][0]}/adaptive?class=${encodeURIComponent(code)}&mix=1`,
+                    label: 'Adaptive quiz',
+                    use: 'Questions keep coming, from every lecture, picked for where you need them.',
+                  },
+                ]
+              : []),
             {
               to: `/class/${encodeURIComponent(code)}/practice`,
               label: 'Practice',
@@ -167,6 +193,10 @@ export function ClassRoute() {
         </ul>
       </section>
 
+    </>
+  );
+  const examsBlock = (
+    <>
       <section className="mt-8">
         <h2 className="mark mb-2 text-text-3">Exams</h2>
         {exams.length > 0 ? (
@@ -221,6 +251,10 @@ export function ClassRoute() {
         )}
       </section>
 
+    </>
+  );
+  const lecturesBlock = (
+    <>
       <section className="mt-8">
         <h2 className="mark mb-2 text-text-3">Lectures</h2>
         <ul className="border-t border-border">
@@ -229,7 +263,7 @@ export function ClassRoute() {
             const items = course.sections.reduce((n, s) => n + s.items.length, 0);
             return (
               <li key={id} className="group border-b border-border">
-                <Link to={`/study/${id}`} className="entry py-3 pr-2">
+                <Link to={`/study/${id}`} data-list-item className={`entry py-3 pr-2 ${wide ? 'entry-stack' : ''}`}>
                   <span className="entry-num mark text-right text-text-3">{roman(i + 1)}</span>
                   <LazyTree courseId={id} course={course} progress={progress} className="entry-art h-10 w-10 sm:h-12 sm:w-12" />
                   <span className="entry-body min-w-0">
@@ -237,7 +271,7 @@ export function ClassRoute() {
                       <span className="font-display text-body font-semibold leading-snug text-text group-hover:text-accent">
                         {lectureName(course.metadata.title, code)}
                       </span>
-                      <span className="leaders hidden sm:block" aria-hidden="true" />
+                      <span className={`leaders hidden ${wide ? '' : 'sm:block'}`} aria-hidden="true" />
                     </span>
                   </span>
                   <span className="entry-figs tabular-nums">
@@ -266,6 +300,51 @@ export function ClassRoute() {
           Add a lecture
         </button>
       </section>
+
+    </>
+  );
+
+  return (
+    <div className={wide ? '' : 'pb-24'}>
+      <Link to="/" className="tap-safe inline-flex items-center text-sm text-text-2 hover:text-text">
+        ← Library
+      </Link>
+
+
+      {wide ? (
+        // An open spread, as on the lecture and library pages: the class's
+        // lectures and exams on the left page, its ways to study on the right.
+        <div className="mt-6 flex gap-10">
+          <aside className="sticky top-6 max-h-[calc(100vh-3rem)] w-[24rem] shrink-0 self-start overflow-y-auto [scrollbar-width:thin] [&>section:first-child]:mt-0">
+            {lecturesBlock}
+            {examsBlock}
+          </aside>
+          <div className="min-w-0 flex-1 border-l border-border pl-10">
+            {titleBlock}
+            {waysBlock}
+          </div>
+        </div>
+      ) : (
+        <>
+          {titleBlock}
+          {waysBlock}
+          {examsBlock}
+          {lecturesBlock}
+        </>
+      )}
+
+      {!wide && first && !startInView && (
+        <ThumbBar>
+          <div className="flex items-center gap-4">
+            <span className="min-w-0 flex-1 truncate text-small text-text-2">
+              <span className="font-display font-semibold text-text">Today</span> · {code}
+            </span>
+            <Link to={`/session/${first.id}/today?class=${encodeURIComponent(code)}`} className="press press-ink shrink-0">
+              Start
+            </Link>
+          </div>
+        </ThumbBar>
+      )}
 
       {editing && (
         <ClassExamDialog

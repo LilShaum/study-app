@@ -1,3 +1,7 @@
+/**
+ * A button on a section that lets the student add a blank item of a chosen type and edit it.
+ * Stores the new item through the courses store.
+ */
 import { useState } from 'react';
 import type { ItemType, StudyItem } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';

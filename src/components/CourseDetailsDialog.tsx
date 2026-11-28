@@ -1,10 +1,10 @@
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from 'react';
-import { useDialog } from '@/lib/useDialog';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
 import { persisted } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from './Icon';
+import { Sheet } from './Sheet';
 
 interface CourseDetailsDialogProps {
   courseId: string;
@@ -31,7 +31,6 @@ const FIELD = 'field w-full text-sm';
  * student's whole history for that course.
  */
 export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetailsDialogProps) {
-  useDialog(onClose);
   const updateCourse = useCoursesStore((s) => s.updateCourse);
   const allCourses = useCoursesStore((s) => s.courses);
 
@@ -102,130 +101,116 @@ export function CourseDetailsDialog({ courseId, course, onClose }: CourseDetails
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Edit lecture details"
-    >
-      <form onSubmit={save} className="my-8 w-full max-w-lg paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
-        <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="font-semibold text-text">Lecture details</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">
-            <Icon name="x" size={18} />
-          </button>
+    <Sheet label="Edit lecture details" title="Lecture details" onClose={onClose} width="lg" onSubmit={save}>
+      <div className="space-y-4 px-5 py-4">
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium text-text">Title</span>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            className={FIELD}
+            placeholder="Enzyme Kinetics and Regulation"
+          />
+        </label>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium text-text">Class code</span>
+            <input value={code} onChange={(e) => setCode(e.target.value)} className={FIELD} placeholder="BIOC 301" />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium text-text">Subject</span>
+            <input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className={FIELD}
+              placeholder="Biochemistry"
+            />
+          </label>
         </div>
 
-        <div className="space-y-4 px-5 py-4">
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-text">Title</span>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              className={FIELD}
-              placeholder="Enzyme Kinetics and Regulation"
-            />
-          </label>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-text">Class code</span>
-              <input value={code} onChange={(e) => setCode(e.target.value)} className={FIELD} placeholder="BIOC 301" />
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium text-text">Subject</span>
-              <input
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                className={FIELD}
-                placeholder="Biochemistry"
-              />
-            </label>
-          </div>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium text-text">Description</span>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            className={`${FIELD} resize-y`}
+            placeholder="What this lecture covers"
+          />
+        </label>
 
-
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-text">Description</span>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className={`${FIELD} resize-y`}
-              placeholder="What this lecture covers"
-            />
-          </label>
-
-          <div>
-            <span className="mb-1 block text-sm font-medium text-text">Tags</span>
-            <p className="mb-2 text-xs text-text-3">Used to filter your library. Enter or comma adds one.</p>
-            {tags.length > 0 && (
-              <div className="mb-2 flex flex-wrap gap-1.5">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 rounded-sm border border-border-strong px-2 py-0.5 text-xs text-text-2"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => setTags((prev) => prev.filter((t) => t !== tag))}
-                      aria-label={`Remove tag ${tag}`}
-                      className="hover:text-text"
-                    >
-                      <Icon name="x" size={12} />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-            <input
-              value={tagDraft}
-              onChange={(e) => setTagDraft(e.target.value)}
-              onKeyDown={tagKeyDown}
-              className={FIELD}
-              placeholder="week-9, exam, shaky…"
-              aria-label="Add a tag"
-            />
-            {suggestions.length > 0 && (
-              <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-                <span className="text-text-3">Used elsewhere:</span>
-                {suggestions.map((tag) => (
+        <div>
+          <span className="mb-1 block text-sm font-medium text-text">Tags</span>
+          <p className="mb-2 text-xs text-text-3">Used to filter your library. Enter or comma adds one.</p>
+          {tags.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1 rounded-sm border border-border-strong px-2 py-0.5 text-xs text-text-2"
+                >
+                  {tag}
                   <button
-                    key={tag}
                     type="button"
-                    onClick={() => addTag(tag)}
-                    className="rounded border border-border px-2 py-0.5 text-text-2 hover:border-border-strong hover:text-text"
+                    onClick={() => setTags((prev) => prev.filter((t) => t !== tag))}
+                    aria-label={`Remove tag ${tag}`}
+                    className="hover:text-text"
                   >
-                    + {tag}
+                    <Icon name="x" size={12} />
                   </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <p className="text-xs text-text-3">
-            Renaming keeps its progress.
-          </p>
+                </span>
+              ))}
+            </div>
+          )}
+          <input
+            value={tagDraft}
+            onChange={(e) => setTagDraft(e.target.value)}
+            onKeyDown={tagKeyDown}
+            className={FIELD}
+            placeholder="week-9, exam, shaky…"
+            aria-label="Add a tag"
+          />
+          {suggestions.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+              <span className="text-text-3">Used elsewhere:</span>
+              {suggestions.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => addTag(tag)}
+                  className="rounded border border-border px-2 py-0.5 text-text-2 hover:border-border-strong hover:text-text"
+                >
+                  + {tag}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="press"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={!title.trim()}
-            className="press press-ink"
-          >
-            Save
-          </button>
-        </div>
-      </form>
-    </div>
+        <p className="text-xs text-text-3">
+          Renaming keeps its progress.
+        </p>
+      </div>
+
+      <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
+        <button
+          type="button"
+          onClick={onClose}
+          className="press"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={!title.trim()}
+          className="press press-ink"
+        >
+          Save
+        </button>
+      </div>
+    </Sheet>
   );
 }

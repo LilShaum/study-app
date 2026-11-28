@@ -1,0 +1,191 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { PracticeKinds } from '@/components/PracticeKinds';
+import { scoredEntries } from '@/lib/scored';
+import { isDueFor } from '@/lib/memory';
+import type { Course, Section } from '@/schema/course';
+import type { ItemResult } from '@/store/progress';
+import { availableModes, sectionStats } from '@/lib/sectionStats';
+import { ItemRenderer } from '@/components/items/ItemRenderer';
+import { CourseTree } from '@/components/CourseTree';
+import { examRule } from '@/lib/exam';
+import { RichText } from '@/components/items/RichText';
+import { plural } from '@/lib/plural';
+
+const TYPE_LABELS: Record<string, string> = {
+  mcq: 'MCQ',
+  multi: 'select-all question',
+  flashcard: 'flashcard',
+  definition: 'definition',
+  example: 'example',
+  explain: 'explanation',
+  problem: 'problem',
+  graphic: 'diagram',
+};
+
+/**
+ * One section's page body: its summary, the ways to study just it, and every
+ * item in it. Shared by the section page and the desktop lecture page's
+ * panel, so the two cannot drift apart. `compact` drops the tree drawing
+ * (the lecture page's own tree is already beside it) and the display title.
+ */
+export function SectionDetail({
+  courseId,
+  course,
+  section,
+  progress,
+  compact = false,
+}: {
+  courseId: string;
+  course: Course;
+  section: Section;
+  progress: Record<string, ItemResult>;
+  compact?: boolean;
+}) {
+  // Judged as of opening; rendering must not read the clock.
+  const [now] = useState(Date.now);
+  const stats = sectionStats(section, progress);
+  const modes = availableModes(section);
+
+  const scored = scoredEntries(section.items);
+  const examAt = examRule(course, progress, now).forSection(section.id);
+  const due = scored.filter(({ id: itemId }) => isDueFor(progress[itemId], now, examAt)).length;
+
+  // Learn leads; Practice holds the rest (the page that replaced the six
+  // format-named modes), opened with this section chosen.
+  const practice = `/study/${courseId}/practice?section=${encodeURIComponent(section.id)}`;
+  const MODE_LINKS: {
+    to: string;
+    label: string;
+    unit: string;
+    lead?: boolean;
+  }[] = [
+    {
+      to: `/session/${courseId}/learn?section=${encodeURIComponent(section.id)}`,
+      label: 'Learn',
+      unit: plural(modes.learn, 'item'),
+      lead: true,
+    },
+    {
+      to: practice,
+      label: 'Practice this section',
+      unit: due > 0 ? `${due} to review` : 'any part',
+    },
+  ];
+
+  return (
+    <div>
+      {/* The course's own tree with this section's limb lit and the rest
+          dropped back, so a section is always somewhere in a whole rather
+          than a page you arrived at from a list. */}
+      <div className={`flex flex-col items-start gap-3 ${compact ? '' : 'sm:flex-row sm:gap-8'}`}>
+        {!compact && (
+          <CourseTree courseId={courseId} course={course} progress={progress} className="h-24 sm:h-36" highlight={section.id} />
+        )}
+        <div className="min-w-0 flex-1">
+          <h1 className={`font-display text-title font-semibold text-text ${compact ? '' : 'sm:text-display'}`}>
+            {section.title}
+          </h1>
+          {/* What this run of slides builds to: the sentences that joined the
+              bullets and were never written down (docs/proposals/narration.md).
+              It leads, because it is why the rest of the page is in this order. */}
+          {section.builds_to && (
+            <p className="mt-2 max-w-prose text-body text-text">
+              <RichText text={section.builds_to} />
+            </p>
+          )}
+          {section.description && <p className="mt-2 max-w-prose text-small text-text-2">{section.description}</p>}
+
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-2">
+            <span>{plural(stats.total, 'item')}</span>
+            {Object.entries(stats.byType).map(([type, n]) => (
+              <span key={type} className="text-text-3">
+                {plural(n, TYPE_LABELS[type] ?? type)}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {stats.gradable > 0 && (
+        <div className="mt-4 border-l-2 border-border-strong py-2 pl-3 text-sm">
+          {stats.accuracy === null ? (
+            <span className="text-text-2">
+              Nothing studied in this section yet. {plural(stats.gradable, 'item')} can be scored.
+            </span>
+          ) : (
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+              <span className="font-medium text-text">{stats.accuracy}% accuracy</span>
+              <span className="text-text-2">
+                {stats.studied} of {stats.gradable} studied
+              </span>
+              <span className="text-success">{stats.got} correct</span>
+              <span className="text-error">{stats.missed} missed</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {stats.total === 0 ? (
+        // Six greyed-out "none here" tiles told an empty section's story six
+        // times over; one line says it once.
+        <p className="mt-6 border-y border-border py-5 text-center text-sm text-text-2">
+          This section is empty. Add questions on the lecture page, or add items in Browse.
+        </p>
+      ) : (
+        <>
+          {/* The heading says what these are. The paragraph that used to sit
+              under it explained what Learn does, on a page where Learn is one
+              of five tiles that all say what they are. */}
+          <h2 className="mb-3 mt-8 font-display text-title font-semibold text-text">Study just this section</h2>
+          {/* The same ruled list the course page uses. This was a grid of
+              tiles — icon, then label, then count, stacked — so on a phone
+              each mode was a quarter of a screen tall and six of them ran on
+              for two screens, in a different style from the page that led
+              here. */}
+          <ul className="border-t border-border">
+            {MODE_LINKS.map((m) => (
+              <li key={m.label} className="border-b border-border">
+                {m.unit === '0 items' ? (
+                  <div aria-disabled="true" className="flex items-baseline gap-3 py-3 text-text-3">
+                    <span className="font-display text-body">{m.label}</span>
+                    <span className="leaders hidden sm:block" aria-hidden="true" />
+                    <span className="mark shrink-0">none here</span>
+                  </div>
+                ) : (
+                  <Link to={m.to} className="group tap-safe flex items-baseline gap-3 py-3">
+                    <span
+                      className={`font-display text-text group-hover:text-accent ${
+                        m.lead ? 'text-heading font-semibold' : 'text-body'
+                      }`}
+                    >
+                      {m.label}
+                    </span>
+                    <span className="leaders hidden sm:block" aria-hidden="true" />
+                    <span className="mark shrink-0 tabular-nums text-text-3">{m.unit}</span>
+                  </Link>
+                )}
+                {m.to === practice && (
+                  <div className="pb-3">
+                    <PracticeKinds courseId={courseId} course={course} sectionId={section.id} />
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {stats.total > 0 && (
+        <>
+          <h2 className="mb-4 mt-10 font-display text-title font-semibold text-text">Everything in this section</h2>
+          <div className="space-y-4">
+            {section.items.map((item) => (
+              <ItemRenderer key={item.id} item={item} courseId={courseId} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

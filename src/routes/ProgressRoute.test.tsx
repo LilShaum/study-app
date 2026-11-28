@@ -66,8 +66,10 @@ describe('ProgressRoute', () => {
     expect(screen.getByText('Accuracy')).toBeTruthy();
     expect(screen.getByText('Least accurate sections')).toBeTruthy();
     // Twice: once in "Still remembered", once in the accuracy ranking.
+    // The page says first what needs the student, in words.
+    expect(screen.getAllByText(/^(Nothing fading|1 section fading)/).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Membranes')).toHaveLength(2);
-    expect(screen.getByText('Still remembered')).toBeTruthy();
+    expect(screen.getByText('Still remembered, weakest first')).toBeTruthy();
   });
 
   it('leads with what is fading, each with its Review, and folds the accuracy below it', () => {
@@ -78,12 +80,12 @@ describe('ProgressRoute', () => {
 
     renderProgress();
 
-    const fading = screen.getByText('Still remembered');
+    const fading = screen.getByText('Still remembered, weakest first');
     const fold = screen.getByText('How well you answered ▸').closest('details')!;
     // Fading comes first in the page, and is not inside the fold.
     expect(fading.compareDocumentPosition(fold) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(fading.closest('details')).toBeNull();
-    expect(screen.getByRole('link', { name: 'Review 1' }).getAttribute('href')).toBe('/session/cell_biology/review?section=s1');
+    expect(screen.getByRole('link', { name: /Review 1/ }).getAttribute('href')).toBe('/session/cell_biology/review?section=s1');
     // The accuracy and the tags are closed, and all still there.
     expect(fold.open).toBe(false);
     for (const label of ['Accuracy', 'Least accurate sections', 'Least accurate tags']) {

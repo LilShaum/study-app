@@ -201,6 +201,14 @@ export const SCENARIOS: Scenario[] = [
   { ...base, name: 'steady-30-retry', why: 'steady-30, retrying the misses at once, then the catch-up 4 hours later.', minutes: () => 30, policy: 'retry-then-evening' },
   { ...base, name: 'steady-30-retry-harsh', why: 'steady-30-retry under the harsher student.', memory: 'harsh', minutes: () => 30, policy: 'retry-then-evening' },
   { ...base, name: 'crammer-retry', why: 'crammer, retrying the misses at once, then the catch-up.', minutes: (d: number) => (d >= 24 ? 90 : 10), policy: 'retry-then-evening' },
+  // 2026-11-24: the adaptive quiz (docs/proposals/zen.md), alone and after
+  // Learn, against the Today button at the same minutes.
+  { ...base, name: 'steady-30-adaptive', why: 'steady-30, the adaptive quiz alone every day.', minutes: () => 30, policy: 'adaptive-daily' },
+  { ...base, name: 'steady-30-learn-adaptive', why: 'steady-30, Learn the next section for up to half, then the adaptive quiz.', minutes: () => 30, policy: 'learn-then-adaptive' },
+  { ...base, name: 'steady-30-learn-review', why: 'control: steady-30, Learn then Review, the same split.', minutes: () => 30, policy: 'learn-then-review' },
+  { ...base, name: 'steady-45-today-adaptive', why: 'steady-45: Today for 30 minutes, then the adaptive quiz for 15.', minutes: () => 45, policy: 'today-then-adaptive' },
+  { ...base, name: 'steady-45-learn-adaptive', why: 'steady-45, Learn then the adaptive quiz.', minutes: () => 45, policy: 'learn-then-adaptive' },
+  { ...base, name: 'crammer-learn-adaptive', why: 'crammer, Learn then the adaptive quiz.', minutes: (d: number) => (d >= 24 ? 90 : 10), policy: 'learn-then-adaptive' },
   // A student who forgets far more slowly than the app assumes (MEMORY.slow,
   // 2026-10-13): what the personal forgetting rate is for.
   { ...base, name: 'steady-30-slow', why: 'steady-30, a slow forgetter.', memory: 'slow', minutes: () => 30 },

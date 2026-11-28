@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { sortedSections } from '@/lib/sortedSections';
-import { EditableItem } from '@/components/items/EditableItem';
+import { BrowseItem } from './BrowseItem';
 import { AddItemButton } from '@/components/items/AddItemButton';
 import { RichText } from '@/components/items/RichText';
 
@@ -16,7 +16,7 @@ interface BrowseSessionProps {
  *
  * The section nav restores something the vanilla app had and the first rebuild
  * dropped: without it a long course is an unnavigable scroll. Sidebar on wide
- * screens, horizontally-scrolling chips on phones (a fixed sidebar would eat
+ * screens, a horizontally-scrolling strip on phones (a fixed sidebar would eat
  * most of a 375px viewport).
  */
 export function BrowseSession({ courseId, course }: BrowseSessionProps) {
@@ -82,7 +82,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
   const hasNav = sections.length > 1;
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
+    <div className="mx-auto max-w-5xl p-6 wide:max-w-none">
       <div className="mb-4 flex items-center gap-3">
         <Link to={`/study/${courseId}`} className="text-sm text-text-2 hover:text-text">
           ← Back
@@ -94,17 +94,17 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
       {hasNav && (
         <nav
           aria-label="Sections"
-          className="sticky top-0 z-10 -mx-6 mb-4 flex gap-2 overflow-x-auto bg-bg px-6 py-2 wide:hidden"
+          className="paper-grain sticky top-0 z-10 -mx-6 mb-4 flex gap-5 overflow-x-auto border-b border-border bg-bg px-6 py-1 wide:hidden"
         >
           {sections.map((s) => (
             <button
               key={s.id}
               type="button"
               onClick={() => scrollToSection(s.id)}
-              className={`shrink-0 rounded border px-3 py-1 text-xs transition-colors ${
+              className={`tap-safe shrink-0 text-small ${
                 activeSection === s.id
-                  ? 'border-border-strong bg-surface-sunken font-medium text-text'
-                  : 'border-border text-text-2'
+                  ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
+                  : 'text-text-2'
               }`}
             >
               {s.title}
@@ -116,15 +116,15 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
       <div className={hasNav ? 'wide:flex wide:gap-8' : undefined}>
         {hasNav && (
           <aside className="hidden shrink-0 wide:block wide:w-56">
-            <nav aria-label="Sections" className="sticky top-6 space-y-1">
+            <nav aria-label="Sections" className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto border-t border-border [scrollbar-width:thin]">
               {sections.map((s) => (
                 <button
                   key={s.id}
                   type="button"
                   onClick={() => scrollToSection(s.id)}
-                  className={`block w-full rounded px-3 py-1.5 text-left text-sm transition-colors ${
+                  className={`block w-full border-b border-border py-2 text-left text-small ${
                     activeSection === s.id
-                      ? 'bg-surface-sunken font-medium text-text'
+                      ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
                       : 'text-text-2 hover:text-text'
                   }`}
                 >
@@ -156,7 +156,7 @@ export function BrowseSession({ courseId, course }: BrowseSessionProps) {
               <div className="mt-4 space-y-4">
                 {section.items.map((item) => (
                   <div key={item.id} className="browse-entry">
-                    <EditableItem courseId={courseId} sectionId={section.id} item={item} />
+                    <BrowseItem courseId={courseId} sectionId={section.id} item={item} />
                   </div>
                 ))}
                 <AddItemButton courseId={courseId} sectionId={section.id} />

@@ -79,3 +79,49 @@ self.addEventListener('install', () => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
+
+/* ---------------- reminders (docs/proposals/notifications.md) ---------------- */
+
+interface PushMessage {
+  title?: string;
+  body?: string;
+  /** Hash route to open, e.g. "#/study/abc". */
+  url?: string;
+}
+
+self.addEventListener('push', (event) => {
+  let msg: PushMessage;
+  try {
+    msg = event.data?.json() ?? {};
+  } catch {
+    msg = { body: event.data?.text() };
+  }
+  event.waitUntil(
+    self.registration.showNotification(msg.title || 'Arborous', {
+      body: msg.body ?? '',
+      icon: `${BASE}icons/icon-192.png`,
+      badge: `${BASE}icons/badge-96.png`,
+      data: { url: msg.url ?? '' },
+      // A newer reminder replaces one still showing, never piles up.
+      tag: 'arborous-reminder',
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const hash = String((event.notification.data as { url?: string } | null)?.url ?? '');
+  const target = `${self.registration.scope}${hash.startsWith('#') ? hash : ''}`;
+  event.waitUntil(
+    (async () => {
+      const open = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const app = open.find((c) => c.url.startsWith(self.registration.scope));
+      if (app) {
+        await app.focus();
+        await app.navigate(target).catch(() => undefined);
+      } else {
+        await self.clients.openWindow(target);
+      }
+    })(),
+  );
+});

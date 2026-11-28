@@ -19,8 +19,29 @@ export interface Change {
 
 export const WHATS_NEW: Change[] = [
   {
+    date: '2026-11-27',
+    items: [
+      'A lecture leads with Today: what it holds, a 10, 15 or 30 minute choice that sizes the sitting, and one Start.',
+      'Learn and Today count within the part you are in, like Review 2 of 5, and a section opens on Start reading.',
+      'Progress says what needs you first, lists the sections not started, and keeps Review at your thumb.',
+      'Clicking a branch opens its section, as its number does, and pointing at a branch’s leaves picks it.',
+      'Lectures made from now name each card’s slide, answer notes you marked unsure, and spell out abbreviations.',
+    ],
+  },
+  {
+    date: '2026-11-25',
+    items: [
+      'A new first run: grow a tree by studying its branches, watch a section fade, and pick your daily time.',
+      'Opening a lecture, its tree grows and the leaves you have let fade fall. Sweeping a finger over it names a section.',
+      'On a phone, Prev and Next sit at the bottom, a swipe turns the page, and Diagrams shows which section you are in.',
+      'Settings, at the foot of every page: your name, light or dark, reminders, your account, backups and Help.',
+      'New lecture: let the AI choose the kinds of card, or pick Only these. On a computer, a lecture opens as two facing pages.',
+    ],
+  },
+  {
     date: '2026-11-24',
-    items: ['New lecture can ask the AI to explain more than your slides do: more context where they are thin, labelled as not from your notes.'],
+    items: [
+      'Adaptive quiz: questions keep coming, picked from what is fading, what you missed and what you have not answered yet.','New lecture can ask the AI to explain more than your slides do: more context where they are thin, labelled as not from your notes.'],
   },
   {
     date: '2026-11-22',

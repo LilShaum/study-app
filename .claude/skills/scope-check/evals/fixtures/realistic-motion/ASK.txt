@@ -1,0 +1,1 @@
+the leaves should drop 0.1-0.2 seconds sooner. I want it to seem realistic rather than a step by step animations … very soon after it starts shaking the leaves should start falling and continuing to do so while the shake continues until it's finished

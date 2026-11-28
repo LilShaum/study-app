@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
@@ -51,17 +51,22 @@ describe('DiagramsRoute', () => {
     renderDiagrams();
 
     expect(screen.getByText(/2 diagrams across 2 sections/)).toBeTruthy();
-    const titles = screen.getAllByRole('img').map((el) => el.getAttribute('aria-label'));
-    expect(titles).toEqual(['Bilayer diagram', 'Sodium pump diagram']);
+    // A phone shows one plate at a time, in section order, and turns to the next.
+    const title = () => screen.getAllByRole('img').map((el) => el.getAttribute('aria-label'));
+    expect(title()).toEqual(['Bilayer diagram']);
+    expect(screen.getByText('1 of 2')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Next/ }));
+    expect(title()).toEqual(['Sodium pump diagram']);
+    expect(screen.getByText('2 of 2')).toBeTruthy();
   });
 
-  it('numbers the plates straight through the course', () => {
+  it('numbers the figures straight through the course', () => {
     useCoursesStore.setState({ courses: { cell_biology: course } });
     renderDiagrams();
-    // The number IS the plate's name, so it never restarts per section.
-    const plates = screen.getAllByText(/^Plate [IVXLC]+$/).map((el) => el.textContent);
-    expect(plates).toEqual([...new Set(plates)]);
-    expect(plates[0]).toBe('Plate I');
+    // The number IS the figure's name, so it never restarts per section.
+    expect(screen.getByText(/^Figure 1\.$/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Next/ }));
+    expect(screen.getByText(/^Figure 2\.$/)).toBeTruthy();
   });
 
   it('jumps to a section without leaving the page', () => {
@@ -73,6 +78,25 @@ describe('DiagramsRoute', () => {
     // reader back to the library — the bug this page shipped with.
     expect(nav.querySelectorAll('a')).toHaveLength(0);
     expect(nav.querySelectorAll('button').length).toBeGreaterThan(0);
+  });
+
+  it('on a phone, marks the section of the figure shown, and moves the mark as the figures turn (Testing 9)', () => {
+    useCoursesStore.setState({ courses: { cell_biology: course } });
+    renderDiagrams();
+    const row = screen.getByRole('navigation', { name: 'Sections with figures' });
+    const marked = () => row.querySelector('[aria-current="true"]')?.textContent;
+    expect(marked()).toMatch(/^Membranes/);
+    // Through every figure with Next: the mark ends on the last section.
+    for (let i = 0; i < 5; i++) {
+      const next = screen.getByRole('button', { name: 'Next →' }) as HTMLButtonElement;
+      if (next.disabled) break;
+      fireEvent.click(next);
+    }
+    expect(marked()).toMatch(/^Transport/);
+    // A tap on a name turns to its first figure, and marks it.
+    fireEvent.click(within(row).getByRole('button', { name: /^Membranes/ }));
+    expect(marked()).toMatch(/^Membranes/);
+    expect(row.querySelectorAll('[aria-current="true"]')).toHaveLength(1);
   });
 
   it('leaves out sections that have no diagram', () => {
@@ -92,5 +116,22 @@ describe('DiagramsRoute', () => {
   it('does not crash on an unknown course id', () => {
     expect(() => renderDiagrams('nope')).not.toThrow();
     expect(screen.getByText(/Lecture not found/)).toBeTruthy();
+  });
+});
+
+describe('DiagramsRoute on a computer', () => {
+  it('lays the plates out together and opens one large with its note', () => {
+    window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+    try {
+      useCoursesStore.setState({ courses: { cell_biology: course } });
+      renderDiagrams();
+      expect(screen.getAllByRole('img')).toHaveLength(2);
+      fireEvent.click(screen.getByRole('button', { name: 'Bilayer' }));
+      expect(screen.getByRole('dialog')).toBeTruthy();
+      expect(screen.getByText('1 of 2')).toBeTruthy();
+    } finally {
+      // @ts-expect-error back to jsdom's none
+      delete window.matchMedia;
+    }
   });
 });

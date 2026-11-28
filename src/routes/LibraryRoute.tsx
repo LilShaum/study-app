@@ -1,10 +1,11 @@
-import { useMemo, useRef, useState, type ChangeEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useCoursesStore } from '@/store/courses';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
 import { EMPTY_PROGRESS, useProgressStore } from '@/store/progress';
 import { useResumeStore } from '@/store/resume';
+import { useListKeys } from '@/lib/useListKeys';
 import { beginWriteCheck, writesLanded } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
 import { Icon } from '@/components/Icon';
@@ -18,18 +19,16 @@ import { examRule } from '@/lib/exam';
 import { clearSavedTests } from '@/lib/practiceTest';
 import { KeepSafe } from '@/components/KeepSafe';
 import { RestoreButton } from '@/components/Backup';
-import { measuredPace, useStudyLogStore } from '@/store/studyLog';
-import { usePlanStore } from '@/store/plan';
-import { dayAcross, dayLine, todayAcrossCourses, todayLine } from '@/lib/libraryToday';
-import { plannedMinutes, studiedToday } from '@/lib/todaySitting';
+import { useStudyLogStore } from '@/store/studyLog';
+import { usePlanStore, DAILY_CHOICES } from '@/store/plan';
+import { todaySuggestions } from '@/lib/todaySuggestions';
 import { roman } from '@/lib/roman';
 import { toastNotesFromAI } from '@/lib/notesFromAI';
+import { ThumbBar } from '@/components/ThumbBar';
+import { useMediaQuery, WIDE } from '@/lib/useMediaQuery';
 
 /** The classes open on the library, on this device. */
 const OPEN_KEY = 'arborous:library-open';
-
-/** The most courses the Today block names; the list below carries the rest. */
-const TODAY_ROWS = 3;
 
 const STORAGE_FULL =
   "Browser storage is full, so this wasn't saved. It will disappear when you reload. Export a lecture you've finished and remove it, then try again.";
@@ -62,22 +61,40 @@ export function LibraryRoute() {
   const updateCourse = useCoursesStore((s) => s.updateCourse);
   const inputRef = useRef<HTMLInputElement>(null);
   const ids = Object.keys(courses);
-  const total = usePlanStore((s) => s.total);
-  const logs = useStudyLogStore((s) => s.byCourse);
-  const pace = useMemo(() => measuredPace(logs), [logs]);
-  // Only worth working out when there is a choice to make between courses.
-  const todays = useMemo(
+  const bookmarks = useResumeStore((s) => s.byCourse);
+  // J and K through the lectures, / to search (a computer's keyboard).
+  useListKeys();
+  // Two to four suggestions, each into one way to study (lib/todaySuggestions).
+  const suggestions = useMemo(
     () =>
-      Object.keys(courses).length >= 2
-        ? todayAcrossCourses(courses, allProgress, now, (id) => plannedMinutes(id, now), pace, (id) => studiedToday(id, now))
-        : [],
-    // `total` is read through plannedMinutes, so it is what has to recompute this.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [courses, allProgress, now, total, pace],
+      todaySuggestions(
+        Object.keys(courses).map((id) => {
+          const progress = allProgress[id] ?? EMPTY_PROGRESS;
+          return {
+            id,
+            course: courses[id],
+            due: courseTotals(courses[id], progress, now).due,
+            started: Object.values(progress).some((r) => r.got + r.missed > 0),
+            learnUnderWay: bookmarks[id]?.mode === 'learn',
+          };
+        }),
+        now,
+      ),
+    [courses, allProgress, bookmarks, now],
   );
-  const day = useMemo(() => dayAcross(todays), [todays]);
 
+  // The first run ends on New lecture: it sends the student here with ?new=1.
+  const [params, setParams] = useSearchParams();
   const [creating, setCreating] = useState(false);
+  useEffect(() => {
+    if (params.get('new') !== '1') return;
+    // The library may already be under the first run, so the param is read as it arrives.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCreating(true);
+    const rest = new URLSearchParams(params);
+    rest.delete('new');
+    setParams(rest, { replace: true });
+  }, [params, setParams]);
   const [search, setSearch] = useState('');
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
@@ -205,8 +222,23 @@ export function LibraryRoute() {
     });
   };
 
-  return (
-    <div>
+  const wide = useMediaQuery(WIDE);
+  // The thumb bar carries the first suggestion only while its own button is
+  // out of view: with both showing, the page said the same thing twice.
+  const [firstInView, setFirstInView] = useState(true);
+  const firstObserver = useRef<IntersectionObserver | null>(null);
+  const firstRef = useCallback((el: HTMLAnchorElement | null) => {
+    firstObserver.current?.disconnect();
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    firstObserver.current = new IntersectionObserver(([entry]) => setFirstInView(entry.intersectionRatio > 0.9), { threshold: [0, 1] });
+    firstObserver.current.observe(el);
+  }, []);
+  const hasToday = ids.length > 0 && suggestions.length > 0;
+  // A spread only when there is a day to put on the left page; otherwise the
+  // one column, set at reading width in the middle of the wide sheet.
+  const spread = wide && hasToday;
+
+  const header = (
       <div className="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div>
           <h1 className="font-display text-display font-semibold text-text">My lectures</h1>
@@ -223,7 +255,7 @@ export function LibraryRoute() {
           </button>
           {/* Struck hardest only when it is the main thing to do here: with a
               day to start, that is Today's Start, and a screen has one. */}
-          <button type="button" className={`press tap-safe ${todays.length > 0 ? '' : 'press-ink'}`} onClick={() => setCreating(true)}>
+          <button type="button" className={`press tap-safe ${suggestions.length > 0 ? '' : 'press-ink'}`} onClick={() => setCreating(true)}>
             <Icon name="plus" size={13} />
             New lecture
           </button>
@@ -236,94 +268,48 @@ export function LibraryRoute() {
           onChange={handleUpload}
         />
       </div>
+  );
 
-      {ids.length === 0 ? (
-        <div className="border-y border-border py-14 text-center text-text-2">
-          <div className="mb-5 flex justify-center text-text-3">
-            <Sprig size={48} />
-          </div>
-          <p className="font-display text-heading text-text">The library is empty.</p>
-          <p className="mx-auto mt-2 max-w-md text-small">
-            A lecture is a{' '}
-            <code className="font-mono text-text-2">.study.json</code> file generated from your own
-            notes. Start here and the app will give you the prompt.
-          </p>
-          <button
-            type="button"
-            onClick={() => setCreating(true)}
-            className="press press-ink tap-safe mt-6"
-          >
-            <Icon name="plus" size={13} />
-            New lecture
-          </button>
-          <p className="mt-6 text-small">
-            Studied on another device?{' '}
-            <RestoreButton className="tap-safe text-text-2 underline decoration-border-strong underline-offset-4 hover:text-text" label="Restore a backup" />
-          </p>
-        </div>
-      ) : (
-        <>
-          <KeepSafe />
-          {todays.length > 0 && (
-            <div className="mb-7">
+  const todayBlock = (
+    <>
+          {suggestions.length > 0 && (
+            <div className={spread ? '' : 'mb-7'}>
               <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                 <h2 className="mark text-text-3">Today</h2>
                 <DailyTime />
               </div>
-              {/* One Start for the day, over every lecture at once.
-                  Today already plans across lectures (lib/libraryToday), so
-                  one row per lecture made the student add up three "30 min"
-                  lines and pick one before studying anything: a choice to
-                  make every day, where the app is meant to be one tap
-                  (docs/proposals/design-audit.md §3A). The day's own totals
-                  are stated here, and the lectures stay below for the day a
-                  student wants one of them alone.
-
-                  With one lecture there is nothing to add up or choose
-                  between, so its own row is the day and the main action. */}
-              {todays.length > 1 && (
-                <>
-                  <ul className="border-y-2 border-text-3">
-                    <li className="flex items-center gap-4 py-4">
-                      <div className="min-w-0 flex-1">
-                        <span className="block font-display text-heading font-semibold text-text">All {todays.length} lectures</span>
-                        <span className="block text-small text-text-2">{dayLine(day)}</span>
-                        <span className="mt-0.5 block text-small text-text-3">Starts with {todays[0].title}.</span>
-                      </div>
-                      <Link to={`/session/${todays[0].id}/today`} className="press press-ink tap-safe shrink-0">
-                        Start
-                      </Link>
-                    </li>
-                  </ul>
-                  <h3 className="mark mb-1 mt-5 text-text-3">One lecture instead</h3>
-                </>
-              )}
+              {/* What to study today, a few lines, each one tap into a way to
+                  study (the owner, 2026-11-22). It replaced one Start over every
+                  lecture and a row per lecture with a share of the day's time,
+                  which shrank as the library grew. On the left page there is no
+                  width for the button beside its words, so it sits under them. */}
               <ul className="border-y border-border">
-                {todays.slice(0, TODAY_ROWS).map((c) => (
-                  <li key={c.id} className="flex items-center gap-4 border-b border-border py-3 last:border-b-0">
+                {suggestions.map((sg, i) => (
+                  <li
+                    key={sg.key}
+                    className={`border-b border-border py-3 last:border-b-0 ${spread ? '' : 'flex items-center gap-4'}`}
+                  >
                     <div className="min-w-0 flex-1">
-                      <span className="block font-display text-body font-semibold leading-snug text-text">
-                        {c.title}
-                      </span>
-                      <span className="block text-small text-text-2">{todayLine(c)}</span>
+                      <span className="block font-display text-body font-semibold leading-snug text-text">{sg.who}</span>
+                      <span className="block text-small text-text-2">{sg.what}</span>
                     </div>
-                    {/* A lecture on its own: "?single=1" ends the sitting in
-                        that lecture rather than offering the next one, which
-                        is what choosing one here means. */}
                     <Link
-                      to={`/session/${c.id}/today${todays.length > 1 ? '?single=1' : ''}`}
-                      className={`press tap-safe shrink-0 ${todays.length > 1 ? '' : 'press-ink'}`}
+                      ref={i === 0 ? firstRef : undefined}
+                      to={sg.to}
+                      className={`press tap-safe ${spread ? 'mt-2' : 'shrink-0'} ${i === 0 ? 'press-ink' : ''}`}
                     >
-                      Start
+                      {sg.action}
                     </Link>
                   </li>
                 ))}
               </ul>
-              {todays.length > TODAY_ROWS && (
-                <p className="mt-2 text-small text-text-3">+{todays.length - TODAY_ROWS} more below</p>
-              )}
             </div>
           )}
+    </>
+  );
+  const listPage = (
+    <>
+          <KeepSafe />
           {/* The apparatus of a contents page: a ruled line to write the
               search on, and the classes and tags set as index lines. Both used to
               be web furniture — a grey rounded search box and a row of
@@ -339,6 +325,7 @@ export function LibraryRoute() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="title, code or subject"
                 aria-label="Search lectures"
+                data-find
                 className="field w-full text-small"
               />
             </label>
@@ -416,7 +403,7 @@ export function LibraryRoute() {
                         <span className="mark text-text group-hover:text-accent">{code}</span>
                         <span className="text-small text-text-3">
                           {inClass.length} lecture{inClass.length === 1 ? '' : 's'}
-                          {classDue > 0 && <span className="text-text"> · {classDue} due</span>}
+                          {classDue > 0 && <span className="text-text"> · {classDue} to review</span>}
                         </span>
                       </button>
                       <Link to={`/class/${encodeURIComponent(code)}`} className="mark tap-safe shrink-0 text-text-3 hover:text-text">
@@ -425,7 +412,7 @@ export function LibraryRoute() {
                     </li>
                   ),
                   open && <li key={id} className="group relative border-b border-border">
-                    <Link to={`/study/${id}`} className="entry py-4 pr-8">
+                    <Link to={`/study/${id}`} data-list-item className="entry py-4 pr-8">
                       <span className="entry-num mark text-right text-text-3">
                         {roman(numberIn(id))}
                       </span>
@@ -433,7 +420,7 @@ export function LibraryRoute() {
                         courseId={id}
                         course={course}
                         progress={allProgress[id] ?? EMPTY_PROGRESS}
-                        className="entry-art h-12 w-12 sm:h-16 sm:w-16"
+                        className={`entry-art h-12 w-12 sm:h-16 sm:w-16 ${spread ? 'wide:h-20 wide:w-20' : ''}`}
                       />
                       <span className="entry-body min-w-0">
                         {/* The class heads the group now; a lecture with no class has no code. */}
@@ -460,7 +447,7 @@ export function LibraryRoute() {
                         {/* The library's one line about today: which course has
                             something slipping. Opening the app should show
                             where to go before you have picked a course. */}
-                        {stats.due > 0 && <span className="mark block text-text">{stats.due} due</span>}
+                        {stats.due > 0 && <span className="mark block text-text">{stats.due} to review</span>}
                       </span>
                     </Link>
                     <button
@@ -480,8 +467,69 @@ export function LibraryRoute() {
               })}
             </ul>
           )}
+    </>
+  );
+
+  return (
+    <div className={wide && !spread ? 'mx-auto max-w-[44rem]' : !wide && hasToday ? 'pb-24' : ''}>
+      {!spread && header}
+
+      {ids.length === 0 ? (
+        <div className="border-y border-border py-14 text-center text-text-2">
+          <div className="mb-5 flex justify-center text-text-3">
+            <Sprig size={48} />
+          </div>
+          <p className="font-display text-heading text-text">The library is empty.</p>
+          <p className="mx-auto mt-2 max-w-md text-small">
+            A lecture is a{' '}
+            <code className="font-mono text-text-2">.study.json</code> file generated from your own
+            notes. Start here and the app will give you the prompt.
+          </p>
+          <button
+            type="button"
+            onClick={() => setCreating(true)}
+            className="press press-ink tap-safe mt-6"
+          >
+            <Icon name="plus" size={13} />
+            New lecture
+          </button>
+          <p className="mt-6 text-small">
+            Studied on another device?{' '}
+            <RestoreButton className="tap-safe text-text-2 underline decoration-border-strong underline-offset-4 hover:text-text" label="Restore a backup" />
+          </p>
+        </div>
+      ) : spread ? (
+        // An open spread, the lecture page's measurements: today on the left
+        // page, held in place, and the lectures on the right past a gutter rule.
+        <div className="flex gap-10">
+          <aside className="sticky top-6 max-h-[calc(100vh-3rem)] w-[24rem] shrink-0 self-start overflow-y-auto [scrollbar-width:thin]">
+            {todayBlock}
+          </aside>
+          <div className="min-w-0 flex-1 border-l border-border pl-10">
+            {header}
+            {listPage}
+          </div>
+        </div>
+      ) : (
+        <>
+          {todayBlock}
+          {listPage}
         </>
       )}
+
+      {!wide && hasToday && !firstInView && (
+        <ThumbBar>
+          <div className="flex items-center gap-4">
+            <span className="min-w-0 flex-1 truncate text-small text-text-2">
+              <span className="font-display font-semibold text-text">{suggestions[0].who}</span>
+            </span>
+            <Link to={suggestions[0].to} className="press press-ink shrink-0">
+              {suggestions[0].action}
+            </Link>
+          </div>
+        </ThumbBar>
+      )}
+
 
       {creating && <NewCourseDialog onClose={() => setCreating(false)} />}
     </div>
@@ -527,7 +575,6 @@ function IndexLine({
   );
 }
 
-const DAILY_CHOICES = [30, 45, 60, 90, 120, 180];
 
 /**
  * One daily time for every course together, split by how soon each exam is

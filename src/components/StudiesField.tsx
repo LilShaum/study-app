@@ -7,11 +7,11 @@
  */
 export function StudiesField({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="flex items-start gap-2 text-sm text-text-2">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-1" />
+    <label className="tap-safe flex cursor-pointer items-start gap-2 py-1 text-sm text-text">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-1 accent-accent" />
       <span>
-        <span className="text-text">My exams ask about the studies in my material</span>
-        <span className="block text-text-3">Each study is then taught in full, which uses much more of the AI&rsquo;s usage.</span>
+        My exams ask about the studies in my material{' '}
+        <span className="text-text-3">(each taught in full: much more of the AI&rsquo;s usage)</span>
       </span>
     </label>
   );
@@ -20,11 +20,10 @@ export function StudiesField({ checked, onChange }: { checked: boolean; onChange
 /** "Explain more than my slides do" (lib/moreContext): off unless ticked, since it makes a longer file. */
 export function MoreContextField({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="flex items-start gap-2 text-sm text-text-2">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-1" />
+    <label className="tap-safe flex cursor-pointer items-start gap-2 py-1 text-sm text-text">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-1 accent-accent" />
       <span>
-        <span className="text-text">Explain more than my slides do</span>
-        <span className="block text-text-3">More explanation and context where the slides are thin. A longer file, so more of the AI&rsquo;s usage.</span>
+        Explain more than my slides do <span className="text-text-3">(a longer file)</span>
       </span>
     </label>
   );

@@ -16,6 +16,8 @@ afterEach(cleanup);
  */
 describe('HelpRoute topics', () => {
   it('scrolls to the section instead of navigating away', () => {
+    // The contents column is the computer's; a phone folds the sections instead.
+    window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
     const scrollIntoView = vi.fn();
     const focus = vi.fn();
     Element.prototype.scrollIntoView = scrollIntoView;
@@ -42,6 +44,21 @@ describe('HelpRoute topics', () => {
     fireEvent.click(topics[1]!);
     expect(scrollIntoView).toHaveBeenCalled();
     expect(focus).toHaveBeenCalled();
+    // @ts-expect-error back to jsdom's none
+    delete window.matchMedia;
+  });
+
+  it('folds the sections on a phone and unfolds one on a tap', () => {
+    render(
+      <MemoryRouter initialEntries={['/help']}>
+        <HelpRoute />
+      </MemoryRouter>,
+    );
+    const folds = document.querySelectorAll('section[id] > button[aria-expanded]');
+    expect(folds.length).toBeGreaterThan(2);
+    expect(folds[1]!.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(folds[1]!);
+    expect(folds[1]!.getAttribute('aria-expanded')).toBe('true');
   });
 });
 
@@ -58,7 +75,7 @@ describe("HelpRoute: what's new and sharing", () => {
     expect(section).toBeTruthy();
     expect(section.textContent).toContain(WHATS_NEW[0]!.items[0]!);
 
-    fireEvent.click(screen.getByRole('button', { name: 'What’s new' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'What’s new' })[0]!);
     expect(scrollIntoView).toHaveBeenCalled();
     expect(scrollIntoView.mock.contexts[0]).toBe(section);
   });

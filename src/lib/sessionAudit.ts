@@ -2,7 +2,6 @@ import type { SessionItem } from './buildSessionItems';
 import { givesAway } from './contentChecks';
 import { answers, askedOf, MIN_GAP, shownOf } from './learnSteps';
 
-export { askedOf };
 
 /**
  * A sitting read the way a student meets it, measured.

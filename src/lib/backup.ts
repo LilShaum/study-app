@@ -17,7 +17,7 @@ import { useProgressStore } from '@/store/progress';
 import { useThemeStore } from '@/store/theme';
 import { useOnboardingStore } from '@/store/onboarding';
 import { useResumeStore } from '@/store/resume';
-import { useStudyLogStore } from '@/store/studyLog';
+import { dayKey, useStudyLogStore } from '@/store/studyLog';
 import { usePlanStore } from '@/store/plan';
 import { useFallenStore } from '@/store/fallen';
 import { pack, unpack, writePackedCourses } from './packedStorage';
@@ -118,9 +118,8 @@ function fromNewerApp(backup: Backup): boolean {
   });
 }
 
-export function backupFileName(now = new Date()): string {
-  const d = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  return `arborous-backup-${d}.json`;
+function backupFileName(now = new Date()): string {
+  return `arborous-backup-${dayKey(now.getTime())}.json`;
 }
 
 /**

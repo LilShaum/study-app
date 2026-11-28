@@ -30,14 +30,14 @@ export function ExampleCard({ item, frame = 'card', notesOpen = false }: { item:
       )}
 
       {item.takeaway && (
-        <div className="mt-3 flex items-start gap-1.5 rounded border-l-2 border-border-strong bg-surface-sunken px-3 py-2 text-sm text-text">
+        <div className="mt-3 flex items-start gap-1.5 paper-grain rounded border-l-2 border-border-strong bg-surface-sunken px-3 py-2 text-sm text-text">
           <Icon name="bulb" size={13} className="mt-0.5 shrink-0" />
           <span>
             <span className="font-medium">Key Takeaway</span>: <RichText text={item.takeaway} />
           </span>
         </div>
       )}
-      <SourceNote excerpt={item.source_excerpt} open={notesOpen} />
+      <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={notesOpen} />
     </div>
   );
 }

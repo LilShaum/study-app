@@ -1,3 +1,7 @@
+/**
+ * Shows one quiet line on the library about backing up the student's work.
+ * Reads lib/keepSafe to decide whether to nudge; offers a backup or sign-in.
+ */
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { keepSafe, readBackedUp, writeBackedUp, countAnswers, type KeepSafe as Notice } from '@/lib/keepSafe';

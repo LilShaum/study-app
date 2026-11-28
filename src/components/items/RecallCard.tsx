@@ -1,3 +1,7 @@
+/**
+ * Shows a term's meaning and asks the student to type the word, graded against accepted forms.
+ * The student can overrule the grader's verdict; see lib/typedAnswer.
+ */
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import type { RecallItem } from '@/lib/buildSessionItems';
 import { gradeTyped, maskTerm, type Verdict } from '@/lib/typedAnswer';
@@ -218,7 +222,7 @@ export function RecallCard({
       )}
 
       {/* After a miss the passage is open: the lesson again, not only the right word. */}
-      {verdict && <SourceNote excerpt={item.source_excerpt} open={learning || !verdict.correct} />}
+      {verdict && <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={learning || !verdict.correct} />}
     </div>
   );
 }

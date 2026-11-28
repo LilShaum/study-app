@@ -59,7 +59,7 @@ describe('the sections the prompts quote from prompts/generator.md', () => {
     // A question that asked two things read as an unrelated answer (the owner, 2026-10-26).
     expect(QUALITY_BAR_SPEC).toMatch(/One question per stem/);
     expect(QUALITY_BAR_SPEC).toMatch(/never only that the source does not say/);
-    expect(ITEM_TYPES_SPEC).toMatch(/not a word from its family/);
+    expect(ITEM_TYPES_SPEC).toMatch(/must not all be in it/);
   });
 
   it('is quoted verbatim, so the prompts cannot drift from the spec', () => {
@@ -205,7 +205,10 @@ describe('generatorSpec: the narration', () => {
 
   it('sends every handwritten note to the student', () => {
     expect(on).toMatch(/What is written beside a slide is the narration itself/);
-    expect(on).toMatch(/Walk the handwriting, note by note/);
+    // Listed in the Pass 2 inventory, which Pass 4 walks: no separate
+    // end-of-draft walk (Anthropic: re-checking lists over-verify, trust.md).
+    expect(on).toMatch(/Every note written by hand\*\* beside a slide/);
+    expect(on).toMatch(/walk the Pass 2 inventory and confirm each entry/);
   });
 
   it('lets a reason in from outside only labelled, and never under a card, studies or not', () => {

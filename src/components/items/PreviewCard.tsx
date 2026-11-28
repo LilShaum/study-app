@@ -1,3 +1,6 @@
+/**
+ * Shows a flashcard open, question and answer together, to read before it is asked in Learn.
+ */
 import type { PreviewItem } from '@/lib/buildSessionItems';
 import { Icon } from '@/components/Icon';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
@@ -46,7 +49,7 @@ export function PreviewCard({ item, keyboardEnabled = false, onNext, frame = 'sh
         <p className="mt-3 text-small text-text-2">
           Read the points now; you write the whole answer later.
         </p>
-        <SourceNote excerpt={card.source_excerpt} />
+        <SourceNote excerpt={card.source_excerpt} page={card.source_page} />
       </div>
     );
   }
@@ -62,7 +65,7 @@ export function PreviewCard({ item, keyboardEnabled = false, onNext, frame = 'sh
           {card.hint}
         </p>
       )}
-      <SourceNote excerpt={card.source_excerpt} open />
+      <SourceNote excerpt={card.source_excerpt} page={card.source_page} open />
     </div>
   );
 }

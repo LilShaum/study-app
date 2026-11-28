@@ -3,6 +3,7 @@ import type { Grade } from '@/lib/memory';
 import { McqCard } from './McqCard';
 import { MultiCard } from './MultiCard';
 import { FlashcardCard, type ComesBack } from './FlashcardCard';
+import type { CardStage } from '@/lib/useReportStage';
 import { DefinitionCard } from './DefinitionCard';
 import { ExampleCard } from './ExampleCard';
 import { ExplainCard } from './ExplainCard';
@@ -37,6 +38,8 @@ interface ItemRendererProps {
   frame?: ItemFrame;
   /** Learn: reading cards show the passage from the notes open, and so does every answer. */
   learning?: boolean;
+  /** A flip, written or problem card: where it is, for the keys under the card. */
+  onStage?: (stage: CardStage) => void;
   /** Learn, on a section's slides card: the student has read them, so ask first. */
   onReadThem?: () => void;
   /** A section's first card: read it here first (Next when absent). */
@@ -62,6 +65,7 @@ export function ItemRenderer({
   keyboardEnabled,
   frame = 'card',
   learning = false,
+  onStage,
   onReadThem,
   onTeachHere,
   courseId,
@@ -91,7 +95,7 @@ export function ItemRenderer({
       );
     case 'flashcard':
       return (
-        <FlashcardCard item={item} onGot={onGot} onMissed={onMissed} comesBack={comesBack} keyboardEnabled={keyboardEnabled} learning={learning} />
+        <FlashcardCard item={item} onGot={onGot} onMissed={onMissed} comesBack={comesBack} keyboardEnabled={keyboardEnabled} learning={learning} onStage={onStage} />
       );
     case 'definition':
       return (
@@ -131,6 +135,7 @@ export function ItemRenderer({
           keyboardEnabled={keyboardEnabled}
           frame={frame}
           learning={learning}
+          onStage={onStage}
         />
       );
     case 'recall':

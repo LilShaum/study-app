@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Course } from '@/schema/course';
 import type { ItemResult } from '@/store/progress';
-import { dayAcross, dayLine, todayAcrossCourses, type CourseToday } from './libraryToday';
+import { todayAcrossCourses } from './libraryToday';
 
 const DAY = 86_400_000;
 const now = new Date(2026, 9, 1, 19).getTime();
@@ -93,35 +93,6 @@ describe('todayAcrossCourses', () => {
       c: build('C', 4, 2),
     });
     expect(rows.map((r) => r.id)).toEqual(['b', 'a', 'c']);
-  });
-});
-
-describe('the whole day across lectures', () => {
-  const row = (over: Partial<CourseToday>): CourseToday => ({
-    id: 'x',
-    title: 'X',
-    minutes: 30,
-    catchUp: false,
-    review: 0,
-    hasNew: false,
-    examDays: null,
-    ...over,
-  });
-
-  it('adds up what the lectures left the student to add up', () => {
-    const day = dayAcross([row({ review: 12, examDays: 9 }), row({ review: 6, hasNew: true, examDays: 4 }), row({ hasNew: true })]);
-    expect(day).toEqual({ minutes: 90, review: 18, hasNew: true, allCatchUp: false });
-    // The lectures are counted in the heading above it ("All 3 lectures").
-    expect(dayLine(day)).toBe('90 min · 18 to review · new material');
-  });
-
-  it('says the catch-up when that is all that is left, as one lecture does', () => {
-    const day = dayAcross([row({ minutes: 5, catchUp: true, review: 3 }), row({ minutes: 5, catchUp: true, review: 2 })]);
-    expect(dayLine(day)).toBe('catch-up: 5 to look at again');
-  });
-
-  it('is not a catch-up while any lecture still has its time', () => {
-    expect(dayAcross([row({ catchUp: true }), row({})]).allCatchUp).toBe(false);
   });
 });
 

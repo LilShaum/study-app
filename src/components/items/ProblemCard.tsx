@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import type { ProblemItem } from '@/schema/course';
 import { answerKind, checkAnswer, shownAnswer, unitOf, type ProblemVerdict } from '@/lib/problemAnswer';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
+import { useReportStage, type CardStage } from '@/lib/useReportStage';
 import { DifficultyBadge } from './DifficultyBadge';
 import { SourceNote } from './SourceNote';
 import { CodeBlock, RichText } from './RichText';
@@ -22,6 +23,8 @@ interface ProblemCardProps {
   frame?: ItemFrame;
   /** Learn: the passage opens after every answer (see SourceNote). */
   learning?: boolean;
+  /** Where the card is, for the keys the session lists. */
+  onStage?: (stage: CardStage) => void;
 }
 
 /** The worked steps, numbered: as many as `upTo`, all of them by default. */
@@ -62,6 +65,7 @@ export function ProblemCard({
   keyboardEnabled = false,
   frame = 'card',
   learning = false,
+  onStage,
 }: ProblemCardProps) {
   const kind = answerKind(item);
   const steps = item.steps ?? [];
@@ -82,6 +86,7 @@ export function ProblemCard({
   const [nudge, setNudge] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const answered = verdict !== null || dontKnow || shown;
+  useReportStage(dontKnow ? 'dont' : answered ? 'back' : 'front', onStage);
   // The last step usually is the answer: never offered as a hint.
   const canHint = !answered && hints < steps.length - 1;
 
@@ -373,7 +378,7 @@ export function ProblemCard({
         </div>
       )}
 
-      {answered && <SourceNote excerpt={item.source_excerpt} open={learning || dontKnow || counted === false} />}
+      {answered && <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={learning || dontKnow || counted === false} />}
     </div>
   );
 }

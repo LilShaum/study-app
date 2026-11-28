@@ -16,14 +16,6 @@ import { encodeChoice, sectionsFor, type PracticeChoice } from './practiceChoice
 export type Cards = 'due' | 'weakest' | 'missed' | 'everything';
 export type Kind = 'all' | CardKind;
 
-/** Each choice has one use the others do not (CLAUDE.md, the owner's picture), said under the row. */
-export const CARDS: { value: Cards; label: string; use: string }[] = [
-  { value: 'due', label: 'Due now', use: 'Today’s review on its own.' },
-  { value: 'weakest', label: 'Weakest first', use: 'What you know least first.' },
-  { value: 'missed', label: 'Mistakes', use: 'Kept until you get them right on a later day.' },
-  { value: 'everything', label: 'Everything', use: 'Shuffled, the way an exam mixes them.' },
-];
-
 export const KINDS: { value: Kind; label: string }[] = [
   { value: 'all', label: 'All kinds' },
   { value: 'questions', label: 'Multiple choice' },
@@ -98,26 +90,8 @@ export function practiceCount(basis: CountBasis, cards: Cards, kind: Kind): numb
   return listOf(basis, cards, kind, Infinity).filter(answered).length;
 }
 
-/**
- * The sitting Start opens in one lecture, as it will be: the cards to
- * answer, which Due now fits to the student's daily time (the end of the
- * sitting offers the rest), and the cards to read along the way (worked
- * examples, figures, definitions), which the count beside each choice
- * leaves out. The page counted 637 and the sitting then said 670.
- */
-export function sittingSize(basis: CountBasis, cards: Cards, kind: Kind, minutes: number, pace?: Record<string, number>): { answer: number; read: number } {
-  const list = listOf(basis, cards, kind, minutes, pace);
-  const answer = list.filter(answered).length;
-  return { answer, read: list.length - answer };
-}
-
 /** How a class's Practice takes its lectures: one after another, or mixed in one sitting. */
 export type Lectures = 'in-turn' | 'mixed';
-
-export const LECTURES: { value: Lectures; label: string }[] = [
-  { value: 'in-turn', label: 'One at a time' },
-  { value: 'mixed', label: 'Mixed together' },
-];
 
 /**
  * The class's next exam when it is in the last week (`PROTECT_FROM_DAYS`,

@@ -38,6 +38,12 @@ losing the nuance; testing comprehension and mastery, not recall alone. And
 it must help them reach that, not only test it, even if they never went to
 the lecture or opened the slides.
 
+The owner, 2026-11-27: the first and last resort for a student, looking
+and feeling good; studying made effortless, "especially for people with
+adhd like me, where decreasing the difficulty to study helps a lot"; no
+"cheap tricks like duolingo"; and a course a student can trust is accurate
+to what they must study, even if they missed the lecture.
+
 How the app actually works and feels can drift from it: check a feature
 against its line before changing it, treat a gap as work worth proposing,
 and add a line here whenever the owner says how something should be
@@ -85,6 +91,11 @@ this is the intent it serves.
   gets only those ("if they just want flash cards for example they will
   just get flash cards"); prompt screens are a few short steps, details
   folded, clear to a new user (2026-10-29).
+- **Trusting a lecture** (2026-11-27): a student who missed class must be
+  able to trust the lecture. The owner already dislikes that AI has to make
+  lectures, so no extra AI step for checking: the generator prompt audits
+  its own lecture by a method, and where the app can check without AI
+  (slide accounting, the slides themselves) it does (`docs/proposals/trust.md`).
 - **Wrong options:** a well-reasoned wrong answer that shows a gap in
   what you know matters more than equal length. Words like never, only,
   often are what test the nuance and are not a giveaway (2026-10-20).
@@ -118,6 +129,10 @@ this is the intent it serves.
   about is the point, to be known (2026-11-03: "if a pathway is shown in a
   diagram and then there are bullet points about it … things I need to
   know").
+- **Motion is realistic, not step by step** (2026-11-25): things overlap
+  as they would in life ("very soon after it starts shaking the leaves
+  should start falling and continuing to do so while the shake continues"),
+  never one animation waiting for the last to finish.
 - **How the owner studies:** reads the slides or notes, then answers from
   memory; Learn section by section alongside the notes.
 - **Studying is the app's main job:** keep improving how it teaches,
@@ -140,6 +155,14 @@ this is the intent it serves.
   asked again at the bottom of the next reply, until it is answered or
   dropped (2026-11-11: "if I dont address something that I need to
   address then make sure to bring it up again").
+- **Review pages** (2026-11-25): the page the owner reviews holds only what
+  they have not seen or answered yet; anything changed again later shows
+  only as it is now. Everything to read, and every question, is on the
+  page, each item able to stand alone (what changed, where to look, what is
+  asked), so a reply in chat only points to it. "Do not overcomplicate
+  things for me, do not bombard me with information, do not go so concise
+  and context deprived that I'm not sure what you are referring to, make it
+  intuitive to go through, make it so it's not easy to miss details."
 - **Working with the owner:** usage is limited, so ask before expensive
   work. "What's next?" means work you can do without them. Done means
   tested and live.
@@ -150,7 +173,24 @@ this is the intent it serves.
   before anything ships. Mind the cost: five at once used a session's
   usage in ten minutes (2026-10-21), so say before a large fan-out. An
   earlier session wrote that complaint down as "one agent at a time"; the
-  owner never said that.
+  owner never said that. **But anything a student sees or feels is built
+  by the session itself, never an agent; agents do mechanical work only
+  (scripts, data, tests)** (2026-11-25).
+- **Done means checked the way the owner tests** (2026-11-25): on a phone,
+  zoomed in, light and dark, scrolled to the bottom, several taps in a
+  row, and against each expectation in its `docs/FEEDBACK.md` entry.
+- **Big asks get big changes** (2026-11-27: "asking for big wider scoped
+  macro updates changes and improvements to how the app functions and
+  feels, and then the ai goes and focuses on minute fixes or changes that
+  a user would barely notice"). Every ask is sized first and proved at
+  the end with before/after pictures (`scope-check`); an ask made before
+  gets a different approach, not a reworded one.
+- **Judged as a student, by fresh eyes** (2026-11-27: Claude "struggles to
+  understand human taste and what matters to a human"; the app should
+  "make learning and studying feel effortless, especially for people with
+  adhd", with no "cheap tricks like duolingo", and a student who missed
+  the lecture must be able to trust it). Anything a student sees is
+  reviewed by a critic who never saw the code or the plan (`taste-review`).
 - **Models** (2026-11-04). Sessions run on Opus 5.5: check before the
   first message (an early switch is cheap; one 22 minutes in made the new
   model reread everything and used the owner's usage). Every agent is
@@ -177,6 +217,9 @@ this is the intent it serves.
   reason it wins, and only then write the build plan. Written down in
   `docs/proposals/`, so the reasoning outlives the session.
 
+**Part 4 codes** (2026-11-25): if the owner types `P4-1`, `P4-2` or `P4-3`,
+read `docs/proposals/part4-brief.md` and do that stage.
+
 ## Working on the app
 
 - `prompts/generator.md` is the generator prompt the app hands out (imported
@@ -193,6 +236,15 @@ this is the intent it serves.
 
 ## How to work here
 
+**How a change goes from ask to live**, and who checks what, is in
+`docs/WORKFLOW.md` (roles, the order of checks, the preview).
+
+**Every piece of feedback is broken down before anything is built**
+(2026-11-25: "don't just accept them as adjectives but break down each one
+and see what I really mean"): the `owner-feedback` skill writes it into
+`docs/FEEDBACK.md` with what went wrong, the ask in my own words, and each
+expectation turned into a meaning, a check and the cheap reading to avoid.
+
 **Every ask goes in `docs/ASKS.md` the moment the owner makes it** (dated,
 their words), and leaves Open only when it is live or the owner drops it.
 The session-start hook prints the Open list; work it before proposing
@@ -207,7 +259,9 @@ the app had dropped weeks before because nobody looked.
 
 Plan first: keep a task list for anything over two steps, one task in
 progress at a time, and a task is done only when it is tested and live
-(pushed, merged to `main`, and the live site checked). Leave anything blocked
+(pushed, in a pull request the owner merges, and the live site checked once
+it is in `main`; PRs are the default, 2026-11-27, and the owner is new to
+GitHub, so the description is plain words). Leave anything blocked
 open and say what it waits on.
 
 Load these skills when the work matches; don't wait until halfway through:
@@ -215,6 +269,9 @@ Load these skills when the work matches; don't wait until halfway through:
 | When | Skill |
 |---|---|
 | Start of the session, any multi-step task | `working-method` (if the account has it) |
+| Any ask to build, change, improve, audit or redesign, at its start and before calling it done | `scope-check` |
+| Anything a student sees or feels, before showing the owner; or "it feels cheap / ugly / slop / unintuitive" | `taste-review` |
+| Any feedback, correction or expectation from the owner (screenshots, review-page notes, "you didn't listen") | `owner-feedback`, before replying or building |
 | Anything a student sees: screens, labels, toasts, Help, the tree | `arborous-design` and `app-making` |
 | Scheduling, Review, Learn, Today, the memory model, any "will this help students" question | `simulate` |
 | Before shipping a code change | `code-review` |
@@ -224,5 +281,9 @@ Load these skills when the work matches; don't wait until halfway through:
 
 A new session starts with `npm install` and Playwright already done (the
 SessionStart hook in `.claude/hooks/`). `node scripts/screenshots.mjs <dir>`
-shoots every screen; `node scripts/ui-dashes.mjs` lists the em dashes in the copy, to judge each one.
+shoots every screen (every phone screen in both themes);
+`node scripts/compare-shots.mjs <before> <after> [out]` says how much of each
+screen visibly changed; `node scripts/preview.mjs <dir>` builds a preview the
+owner can try on their phone (published as a private artifact);
+`node scripts/ui-dashes.mjs` lists the em dashes in the copy, to judge each one.
 

@@ -1,3 +1,7 @@
+/**
+ * Shows a definition card to read, with its source note and related terms.
+ * Used in Learn and Browse; the typed recall of the term is a separate card (RecallCard).
+ */
 import type { DefinitionItem } from '@/schema/course';
 import { useKeyboardShortcuts } from '@/lib/useKeyboardShortcuts';
 import { DifficultyBadge } from './DifficultyBadge';
@@ -63,7 +67,7 @@ export function DefinitionCard({ item, keyboardEnabled = false, onNext, frame = 
             after an answer, where restudying the source is what the evidence
             supports (Karpicke & Roediger 2010), and on a card with no example
             sentence nothing changes. */}
-        <SourceNote excerpt={item.source_excerpt} open={notesOpen && !item.example_sentence} />
+        <SourceNote excerpt={item.source_excerpt} page={item.source_page} open={notesOpen && !item.example_sentence} />
       </div>
     </div>
   );

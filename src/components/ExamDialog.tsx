@@ -1,12 +1,11 @@
 import { useState, type FormEvent } from 'react';
-import { useDialog } from '@/lib/useDialog';
 import { sortedSections } from '@/lib/sortedSections';
 import type { Course } from '@/schema/course';
 import { useCoursesStore } from '@/store/courses';
 import { usePlanStore } from '@/store/plan';
 import { persisted } from '@/lib/safeStorage';
 import { toast } from '@/store/toast';
-import { Icon } from './Icon';
+import { Sheet } from './Sheet';
 import { Link } from 'react-router-dom';
 import { classExams, classOf, lecturesOf } from '@/lib/classExams';
 import { examLabel } from '@/lib/examLabel';
@@ -35,7 +34,6 @@ interface ExamDialogProps {
  * (lib/classExams): several lectures, several exams.
  */
 export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
-  useDialog(onClose);
   const updateCourse = useCoursesStore((s) => s.updateCourse);
   const minutesNow = usePlanStore((s) => s.minutesFor(courseId));
   const setMinutes = usePlanStore((s) => s.setMinutes);
@@ -86,128 +84,114 @@ export function ExamDialog({ courseId, course, onClose }: ExamDialogProps) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Exam and study time"
-    >
-      <form onSubmit={save} className="my-8 w-full max-w-lg paper-grain rounded-sm border border-border-strong bg-surface shadow-md">
-        <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <h2 className="font-semibold text-text">Exam and study time</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="tap-safe -m-2 p-2 text-text-3 hover:text-text">
-            <Icon name="x" size={18} />
-          </button>
-        </div>
-
-        <div className="space-y-6 px-5 py-4">
-          {code ? (
-            <div>
-              <span className="mb-1 block text-sm font-medium text-text">Exams</span>
-              {theirs.length ? (
-                <ul className="border-y border-border">
-                  {theirs.map((x) => (
-                    <li key={x.id} className="flex items-baseline gap-3 border-b border-border py-2 text-small last:border-b-0">
-                      <span className="min-w-0 flex-1 text-text">{x.name}</span>
-                      <span className="mark shrink-0 text-text-2">{examLabel(x.date)}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-small text-text-2">No exam covers this lecture yet.</p>
-              )}
-              <p className="mt-2 text-small text-text-2">
-                Exams are set for the whole class: each one, and what it covers across {code}&rsquo;s lectures.{' '}
-                <Link to={`/class/${encodeURIComponent(code)}`} onClick={onClose} className="tap-safe text-text underline decoration-border-strong underline-offset-4 hover:decoration-text">
-                  Set the exams for {code}
-                </Link>
-              </p>
-            </div>
-          ) : (
-          <>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-text">Exam date</span>
-            <span className="flex items-baseline gap-4">
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="field text-sm" />
-              {date && (
-                <button type="button" onClick={() => setDate('')} className="tap-safe text-small text-text-3 hover:text-text">
-                  No exam
-                </button>
-              )}
-            </span>
-          </label>
-
-          {date && sections.length > 1 && (
-            <fieldset>
-              <legend className="mb-1 text-sm font-medium text-text">What it covers</legend>
-              <p className="mb-2 text-xs text-text-3">
-                Untick anything that won&rsquo;t be on it. In the last few days, new material comes
-                from these first.
-              </p>
-              <ul className="max-h-64 overflow-y-auto border-y border-border">
-                {sections.map((s, i) => (
-                  <li key={s.id} className="border-b border-border last:border-b-0">
-                    <label className="tap-safe flex cursor-pointer items-baseline gap-3 py-2 text-small">
-                      <input type="checkbox" checked={covered.has(s.id)} onChange={() => toggle(s.id)} />
-                      <span className="mark w-5 shrink-0 text-right tabular-nums text-text-3">{i + 1}</span>
-                      <span className={covered.has(s.id) ? 'text-text' : 'text-text-3'}>{s.title}</span>
-                    </label>
+    <Sheet label="Exam and study time" title="Exam and study time" onClose={onClose} width="lg" onSubmit={save}>
+      <div className="space-y-6 px-5 py-4">
+        {code ? (
+          <div>
+            <span className="mb-1 block text-sm font-medium text-text">Exams</span>
+            {theirs.length ? (
+              <ul className="border-y border-border">
+                {theirs.map((x) => (
+                  <li key={x.id} className="flex items-baseline gap-3 border-b border-border py-2 text-small last:border-b-0">
+                    <span className="min-w-0 flex-1 text-text">{x.name}</span>
+                    <span className="mark shrink-0 text-text-2">{examLabel(x.date)}</span>
                   </li>
                 ))}
               </ul>
-              <span className="mt-2 flex gap-4 text-small">
-                <button type="button" className="tap-safe text-text-2 hover:text-text" onClick={() => setCovered(new Set(sections.map((s) => s.id)))}>
-                  All
-                </button>
-                <button type="button" className="tap-safe text-text-2 hover:text-text" onClick={() => setCovered(new Set())}>
-                  None
-                </button>
-              </span>
-            </fieldset>
-          )}
-
-          </>
-          )}
-
-          {sharedTotal != null ? (
-            <p className="text-small text-text-3">
-              Time a day comes from one daily time for all your lectures ({sharedTotal} min), shared by how soon each
-              exam is. Change it under Today on the library page.
+            ) : (
+              <p className="text-small text-text-2">No exam covers this lecture yet.</p>
+            )}
+            <p className="mt-2 text-small text-text-2">
+              Exams are set for the whole class: each one, and what it covers across {code}&rsquo;s lectures.{' '}
+              <Link to={`/class/${encodeURIComponent(code)}`} onClick={onClose} className="tap-safe text-text underline decoration-border-strong underline-offset-4 hover:decoration-text">
+                Set the exams for {code}
+              </Link>
             </p>
-          ) : (
-            <fieldset>
-              <legend className="mb-1 text-sm font-medium text-text">Time a day</legend>
-              <div role="radiogroup" aria-label="Minutes a day" className="flex flex-wrap gap-x-4 gap-y-2">
-                {MINUTE_CHOICES.map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    role="radio"
-                    aria-checked={minutes === m}
-                    onClick={() => setMinutesDraft(m)}
-                    className={`tap-safe px-0.5 text-small tabular-nums ${
-                      minutes === m
-                        ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
-                        : 'text-text-2 hover:text-text'
-                    }`}
-                  >
-                    {m} min
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-          )}
-        </div>
+          </div>
+        ) : (
+        <>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium text-text">Exam date</span>
+          <span className="flex items-baseline gap-4">
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="field text-sm" />
+            {date && (
+              <button type="button" onClick={() => setDate('')} className="tap-safe text-small text-text-3 hover:text-text">
+                No exam
+              </button>
+            )}
+          </span>
+        </label>
 
-        <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
-          <button type="button" onClick={onClose} className="press">
-            Cancel
-          </button>
-          <button type="submit" disabled={!code && Boolean(date) && covered.size === 0} className="press press-ink">
-            Save
-          </button>
-        </div>
-      </form>
-    </div>
+        {date && sections.length > 1 && (
+          <fieldset>
+            <legend className="mb-1 text-sm font-medium text-text">What it covers</legend>
+            <p className="mb-2 text-xs text-text-3">
+              Untick anything that won&rsquo;t be on it. In the last few days, new material comes
+              from these first.
+            </p>
+            <ul className="max-h-64 overflow-y-auto border-y border-border">
+              {sections.map((s, i) => (
+                <li key={s.id} className="border-b border-border last:border-b-0">
+                  <label className="tap-safe flex cursor-pointer items-baseline gap-3 py-2 text-small">
+                    <input type="checkbox" checked={covered.has(s.id)} onChange={() => toggle(s.id)} />
+                    <span className="mark w-5 shrink-0 text-right tabular-nums text-text-3">{i + 1}</span>
+                    <span className={covered.has(s.id) ? 'text-text' : 'text-text-3'}>{s.title}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+            <span className="mt-2 flex gap-4 text-small">
+              <button type="button" className="tap-safe text-text-2 hover:text-text" onClick={() => setCovered(new Set(sections.map((s) => s.id)))}>
+                All
+              </button>
+              <button type="button" className="tap-safe text-text-2 hover:text-text" onClick={() => setCovered(new Set())}>
+                None
+              </button>
+            </span>
+          </fieldset>
+        )}
+
+        </>
+        )}
+
+        {sharedTotal != null ? (
+          <p className="text-small text-text-3">
+            Time a day comes from one daily time for all your lectures ({sharedTotal} min), shared by how soon each
+            exam is. Change it under Today on the library page.
+          </p>
+        ) : (
+          <fieldset>
+            <legend className="mb-1 text-sm font-medium text-text">Time a day</legend>
+            <div role="radiogroup" aria-label="Minutes a day" className="flex flex-wrap gap-x-4 gap-y-2">
+              {MINUTE_CHOICES.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  role="radio"
+                  aria-checked={minutes === m}
+                  onClick={() => setMinutesDraft(m)}
+                  className={`tap-safe px-0.5 text-small tabular-nums ${
+                    minutes === m
+                      ? 'text-accent underline decoration-accent decoration-2 underline-offset-4'
+                      : 'text-text-2 hover:text-text'
+                  }`}
+                >
+                  {m} min
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
+      </div>
+
+      <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
+        <button type="button" onClick={onClose} className="press">
+          Cancel
+        </button>
+        <button type="submit" disabled={!code && Boolean(date) && covered.size === 0} className="press press-ink">
+          Save
+        </button>
+      </div>
+    </Sheet>
   );
 }
