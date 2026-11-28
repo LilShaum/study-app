@@ -20,16 +20,6 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
 
 ## Open
 
-- **A first run without repeats, and a tree that keeps up** (2026-11-27:
-  "dont they seem to be kinda showing the same thing? … the order of the
-  onboarding should be reevaluated and also the contents of it, not only for
-  the redundant stuff but also if its maybe missing anything important"; and
-  three faults: lag after a tap grows leaves, a leafy branch skipped when
-  sweeping, leaves that vanish and reappear before falling). Also: "to click
-  a branch for it to start growing leaves, you have to click the number …
-  is this intentional?" Broken down in `docs/FEEDBACK.md`; plan in
-  `docs/proposals/first-run-flow.md`. Open until live.
-
 - **Lectures a student can trust** (2026-11-27: "it needs to be built in a
   way where users can trust that the course they are studying is very
   accurate to what they are meant to be studying, even if they missed
@@ -44,13 +34,6 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   day) fold the four pasted session summaries into the prompt, "with a
   grain of salt" (`docs/proposals/trust.md` §6). Open until the first real
   lecture is made and graded.
-
-- **A phone round for Today, Learn, the lecture page, Practice and
-  Progress** (2026-11-27: "i wanna go ahead with all your suggestions btw",
-  on the fresh-eyes review's findings; plan in
-  `docs/proposals/phone-round.md`). Before part 4's final check.
-  Built on the work branch 2026-11-27; the owner kept the rows under
-  Start and chose the compact Progress page. Open until part 4 is live.
 
 - **Make how Arborous gets built work better** (2026-11-27: "while working
   on arborous I want any inefficiencies in the process of making it to be
@@ -166,7 +149,7 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   quiz is its own mode; waits on the owner's look before going live. 2026-11-25: the Missed list
   taken out (it only repeated what each answer already shows; the owner
   meant "easier than implementing a way to see them all at once", 2026-11-25).
-  Held on the branch until part 4 ("Hold off again until 4 is done").
+  Held on the branch until part 4 ("Hold off again until 4 is done"); part 4 live 2026-11-28 (PR #9).
 - **The ways to study fit together, audited as a whole** (2026-11-22: "make
   sure it fits nicely into the ecosystem with the other modes and the daily
   things … would the daily studying be more fitting to be the learn daily
@@ -192,7 +175,7 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   still think more thought and testing needs to be put into it to see if
   it really is a good way to do it and how it handles different
   scenarios"; its look is for the design update.
-  2026-11-24: held on the branch until part 4 ("Hold until part 4");
+  2026-11-24: held on the branch until part 4 ("Hold until part 4"); part 4 live 2026-11-28 (PR #9);
   "questions to review" kept ("Happy with the wording").
 - **Phone and computer each use their format; a design update with the
   onboarding** (2026-11-22: "the difference between the phone view and pc
@@ -305,22 +288,6 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
   you did mock ups or tried showing me things it was always unclear what
   was what. Like make it like a presentation almost but don't waste too
   much usage"). Standing for the design work.
-- **The app's own words explained where they are met** (2026-11-24: "when
-  I read "14 fading" it's unclear what is fading and what fading means. If
-  we are gonna use new terms unique to the app, they need to be explained
-  in the on-boarding or something … fading could be outlined in the
-  onboarding when it shows the tree pop up and how it works and it shows
-  the user what happens when they don't study and topics fade and the
-  leaves fall … "cards" seems maybe specifically referring to flash cards
-  so maybe items is better but like what items, the graded ones only?
-  These things need to be somehow made clear and intuitive to the user by
-  being elegantly integrated into the flow of the app"). With the first
-  run: a list of the app's own terms, each taught where it is first met.
-  2026-11-25 (P4-1): listed and decided in docs/proposals/terms.md, built
-  on the branch; waits on P4-2/P4-3.
-- **The daily time asked in the first run** (2026-11-24, on where "Set one
-  daily time" belongs: "this is something that would be good to ask in the
-  onboarding"). Built on the branch 2026-11-25 (P4-1); waits on P4-2/P4-3.
 - **A scantron layout for the practice test** (2026-11-25, an idea for
   later: "it could be as a tick in the practice test settings called
   scantron multiple choice or something"; from the owner's earlier "like a
@@ -595,6 +562,39 @@ Feedback on what was built is broken down in `docs/FEEDBACK.md` (the
 
 ## Done
 
+- **A first run without repeats, and a tree that keeps up** (2026-11-27:
+  "dont they seem to be kinda showing the same thing? … the order of the
+  onboarding should be reevaluated and also the contents of it, not only for
+  the redundant stuff but also if its maybe missing anything important"; and
+  three faults: lag after a tap grows leaves, a leafy branch skipped when
+  sweeping, leaves that vanish and reappear before falling). Also: "to click
+  a branch for it to start growing leaves, you have to click the number …
+  is this intentional?" Broken down in `docs/FEEDBACK.md`; plan in
+  `docs/proposals/first-run-flow.md`. Live 2026-11-28 (PR #9, part 4).
+
+- **A phone round for Today, Learn, the lecture page, Practice and
+  Progress** (2026-11-27: "i wanna go ahead with all your suggestions btw",
+  on the fresh-eyes review's findings; plan in
+  `docs/proposals/phone-round.md`). Before part 4's final check.
+  Built on the work branch 2026-11-27; the owner kept the rows under
+  Start and chose the compact Progress page. Live 2026-11-28 (PR #9, part 4).
+
+- **The app's own words explained where they are met** (2026-11-24: "when
+  I read "14 fading" it's unclear what is fading and what fading means. If
+  we are gonna use new terms unique to the app, they need to be explained
+  in the on-boarding or something … fading could be outlined in the
+  onboarding when it shows the tree pop up and how it works and it shows
+  the user what happens when they don't study and topics fade and the
+  leaves fall … "cards" seems maybe specifically referring to flash cards
+  so maybe items is better but like what items, the graded ones only?
+  These things need to be somehow made clear and intuitive to the user by
+  being elegantly integrated into the flow of the app"). With the first
+  run: a list of the app's own terms, each taught where it is first met.
+  2026-11-25 (P4-1): listed and decided in docs/proposals/terms.md, built
+  on the branch; Live 2026-11-28 (PR #9, part 4).
+- **The daily time asked in the first run** (2026-11-24, on where "Set one
+  daily time" belongs: "this is something that would be good to ask in the
+  onboarding"). Built on the branch 2026-11-25 (P4-1); Live 2026-11-28 (PR #9, part 4).
 - **Versions follow a rule** (2026-11-24: "make it so the versions follow
   an actual rule rather than being a random string every time"; then "Why
   not make it a version number rule"). Live 2026-11-24: MAJOR.MINOR.PATCH,
